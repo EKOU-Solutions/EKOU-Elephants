@@ -1,0 +1,32 @@
+"""Configuración del pipeline, validada al arrancar.
+
+Todos los valores se pueden sobrescribir con variables de entorno con el prefijo ``EKOU_``,
+por ejemplo ``EKOU_SOCRATA_APP_TOKEN`` o ``EKOU_MAX_WORKERS``.
+"""
+
+from pathlib import Path
+
+from pydantic import Field, SecretStr
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+class Settings(BaseSettings):
+    model_config = SettingsConfigDict(env_prefix="EKOU_", env_file=".env", extra="ignore")
+
+    socrata_domain: str = "www.datos.gov.co"
+    socrata_app_token: SecretStr | None = None
+    """App Token de datos.gov.co. Opcional, pero sin él la API aplica límites más estrictos."""
+
+    data_dir: Path = Path("data")
+    """Raíz de las capas de datos (bronze, silver, gold)."""
+
+    page_size: int = Field(default=50_000, ge=1, le=50_000)
+    """Filas por página. 50.000 es el máximo práctico medido para la API de Socrata."""
+
+    max_workers: int = Field(default=8, ge=1, le=32)
+    """Particiones que se extraen en paralelo."""
+
+    request_timeout_s: float = Field(default=300.0, gt=0)
+    max_retries: int = Field(default=6, ge=0)
+    backoff_base_s: float = Field(default=2.0, ge=0)
+    """Espera base de los reintentos; crece de forma exponencial: 2, 4, 8, 16… segundos."""
