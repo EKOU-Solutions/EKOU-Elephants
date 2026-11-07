@@ -62,13 +62,15 @@ Visualización clara de en qué gasta su presupuesto cada entidad pública, por 
 
 ## Métricas
 
-- **Ejecución presupuestal:** presupuesto asignado frente a gasto actual (lo efectivamente pagado), por entidad y territorio.
-- **Contratación:** monto total contratado y número de contratos.
-- **Modalidad de contratación:** porcentaje de contratación directa frente a licitación.
-- **Principales contratistas:** contratistas con más contratos o con más dinero recibido.
-- **Obras con problemas:** obras retrasadas o paralizadas y su valor.
-- **Sobrecostos:** valor inicial frente a valor final del contrato, incluidas las adiciones.
-- **Alertas de riesgo:** número de alertas y porcentaje de obras con patrones sospechosos, por entidad, municipio y departamento.
+| Métrica | Qué mide | Dónde aparece |
+|---|---|---|
+| **Ejecución presupuestal** | Presupuesto asignado frente a gasto actual (lo efectivamente pagado), por entidad y territorio | Mapa de inversión · Presupuesto por entidad · Seguimiento de obras |
+| **Contratación** | Monto total contratado y número de contratos | Mapa de inversión · Buscador · Presupuesto por entidad |
+| **Modalidad de contratación** | Porcentaje de contratación directa frente a licitación | Presupuesto por entidad · Seguimiento de obras (licitación) · Alertas de riesgo |
+| **Principales contratistas** | Contratistas con más contratos o con más dinero recibido | Principales contratistas · Buscador |
+| **Obras con problemas** | Obras retrasadas o paralizadas y su valor | Mapa de inversión · Seguimiento de obras · Principales contratistas |
+| **Sobrecostos** | Valor inicial frente a valor final del contrato, incluidas las adiciones | Seguimiento de obras · Alertas de riesgo · Principales contratistas |
+| **Alertas de riesgo** | Número de alertas y porcentaje de obras con patrones sospechosos, por entidad, municipio y departamento | Mapa de inversión (colores) · Alertas de riesgo · Seguimiento de obras · Principales contratistas |
 
 ## Qué esperamos del proyecto
 
