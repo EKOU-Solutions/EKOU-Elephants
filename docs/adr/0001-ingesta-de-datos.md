@@ -172,7 +172,88 @@ El corte cambia una vez al mes, pero se lee miles de veces. La caché se define 
 
 ---
 
-## Decisión 7: estándares de publicación
+## Decisión 7: diseño físico y rendimiento
+
+Cómo se organizan los datos para que la extracción, la carga mensual y las consultas sean rápidas. Cada capa tiene su propia técnica.
+
+### 7.1 Extracción desde Socrata
+
+| Técnica | Qué gana |
+|---|---|
+| **`$select` solo con las columnas necesarias** | SECOP II Contratos tiene más de 90 columnas y el mapa usa unas 10: se descarga mucho menos |
+| **Paginación estable** con `$order=:id` y páginas grandes (`$limit` de ~50.000) | Menos llamadas, sin filas repetidas ni perdidas entre páginas |
+| **Extracción en paralelo por partición** (por año de firma o por departamento), con un límite de concurrencia | Divide 23 M de filas en consultas pequeñas que no se agotan por tiempo; si una falla, solo se repite esa |
+| **Filtros simples en el servidor, agregaciones en local** | Socrata filtra bien pero se agota al agregar millones de filas (lo observamos con CUIPO) |
+| **Formato de descarga (CSV o JSON)** | A evaluar en la POC: el CSV suele ser más liviano |
+
+### 7.2 Archivos Parquet (raw, staging y mart)
+
+| Opción | Ventajas | Desventajas |
+|---|---|---|
+| **Partición estilo Hive por corte y fuente** ✅ (`corte=2026-11/fuente=secop_contratos/anio_firma=2025/`) | Las consultas leen solo las carpetas que necesitan (*partition pruning*); el reproceso de un mes no toca otros meses | Si se particiona de más, aparecen miles de archivos pequeños y se pierde rendimiento |
+| Partición por municipio | Lectura directa por municipio | ~1.100 particiones por fuente y corte: demasiados archivos pequeños ❌ |
+| Sin partición | Simple | Cada consulta lee todo |
+
+**Además de la partición:**
+- **Ordenar por `cod_dane` y fecha antes de escribir.** Parquet guarda el mínimo y el máximo de cada bloque de filas (*row group*), y DuckDB salta los bloques que no coinciden con el filtro. Así se consigue el efecto de un índice sin crearlo.
+- **Compresión ZSTD** y row groups de ~100.000 a 1.000.000 de filas.
+- **En DuckDB no se crean índices** para análisis: usa automáticamente los mínimos y máximos por bloque (*zone maps*). Los índices ART de DuckDB solo sirven para búsquedas puntuales y hacen más lenta la carga.
+
+### 7.3 PostgreSQL (buscador, fase posterior)
+
+**Qué guarda:** solo el **corte vigente**. El histórico vive en Parquet (GitHub Releases), así la base se mantiene pequeña y barata dentro de los límites de los planes del Marketplace de Vercel.
+
+**Índices según la consulta:**
+
+| Consulta del buscador | Índice | Tipo |
+|---|---|---|
+| Por contrato | `id_contrato` | B-tree único |
+| Por territorio (filtro territorial global) | `cod_dane` | B-tree |
+| Por contratista (NIT) | `nit_proveedor` | B-tree |
+| Por nombre con errores o sin tildes ("alcaldia medelin") | `nombre_entidad`, `proveedor`, `objeto` | **GIN con `pg_trgm`** sobre texto normalizado con `unaccent` |
+| Búsqueda de texto completo en el objeto del contrato | `objeto` | **GIN sobre `tsvector`** en español |
+| Por rango de fechas | `fecha_firma` | **BRIN** (muy pequeño, porque los datos se cargan ordenados por fecha) |
+| Obras con alerta activa | `WHERE nivel_alerta > 0` | **Índice parcial**: solo indexa las filas con alerta |
+| Listados que siempre muestran las mismas columnas | `(cod_dane) INCLUDE (valor, estado)` | **Índice de cobertura**: responde sin leer la tabla |
+
+**Partición en PostgreSQL:**
+
+| Opción | Cuándo |
+|---|---|
+| **Sin partición** ✅ (MVP) | Con un solo corte y unos pocos millones de filas, los índices bastan |
+| Partición por rango de `fecha_firma` (por año) | Si la tabla supera ~10–20 M de filas o las consultas casi siempre filtran por año |
+| Partición por lista de `corte` | Solo si se decide guardar varios cortes en la base |
+
+### 7.4 Carga mensual en PostgreSQL (migración sin cortes de servicio)
+
+| Opción | Ventajas | Desventajas |
+|---|---|---|
+| **Tabla nueva + intercambio atómico** ✅ | La app nunca ve datos a medias; si algo falla, se descarta la tabla nueva y no pasa nada; se puede revertir | Necesita el doble de espacio durante la carga |
+| `DELETE` + `INSERT` sobre la misma tabla | Simple | Lento; la app ve datos incompletos durante la carga; la tabla queda llena de espacio muerto |
+| `UPSERT` fila por fila | Solo cambia lo necesario | Muy lento con millones de filas |
+
+**Pasos del intercambio atómico:**
+1. Crear `contratos_nuevo` **sin índices** (las inserciones son mucho más rápidas sin ellos).
+2. Cargar con **`COPY`**, no con `INSERT`. Es la forma más rápida de cargar en PostgreSQL, y DuckDB puede escribir directo con su extensión `postgres`.
+3. **Crear los índices después de cargar** y ejecutar `ANALYZE` para que el planificador tenga estadísticas.
+4. Validar la tabla con las compuertas de calidad.
+5. **Intercambio atómico** en una sola transacción: `contratos` pasa a `contratos_anterior` y `contratos_nuevo` pasa a `contratos`.
+6. Borrar `contratos_anterior` en la siguiente ejecución, para tener un mes de margen para revertir.
+
+### 7.5 Datos del mapa (lo que descarga el navegador)
+
+| Técnica | Qué gana |
+|---|---|
+| **Agregados precalculados** por municipio y departamento | El navegador no calcula nada; recibe cifras listas |
+| **Carga por niveles:** un archivo liviano de departamentos y uno de municipios **por departamento**, que se descarga al hacer clic | La primera carga es pequeña; no se descargan los ~1.100 municipios de una vez |
+| **Geometrías simplificadas** (TopoJSON o simplificación con mapshaper) | Los polígonos oficiales pesan varios MB; simplificados bastan para el mapa y pesan una fracción |
+| **Compresión** gzip o brotli | La aplica automáticamente el CDN de Vercel |
+
+> **Fuente nueva necesaria:** DIVIPOLA solo trae el punto central de cada municipio. Para dibujar las fronteras de municipios y departamentos hace falta el **Marco Geoestadístico Nacional (MGN) del DANE**, que tiene los polígonos oficiales. Hay que agregarlo al [inventario de fuentes](../fuentes-de-datos.md).
+
+---
+
+## Decisión 8: estándares de publicación
 
 Para que el proyecto sea de estándar global y verificable por las comunidades, todo lo que produce el pipeline se publica como **dato abierto** siguiendo estándares internacionales:
 
@@ -238,6 +319,8 @@ flowchart LR
 
 ## Pendiente de decidir con el equipo
 
-- [ ] Validar la propuesta de cada decisión (1 a 7)
+- [ ] Validar la propuesta de cada decisión (1 a 8)
+- [ ] Agregar el Marco Geoestadístico Nacional (MGN) del DANE al inventario de fuentes para los polígonos del mapa
+- [ ] Medir en la POC los tiempos de extracción y consulta con y sin partición y orden, para confirmar las técnicas de la decisión 7
 - [ ] Definir la ventana de análisis (¿últimos 5 años?) y los umbrales de las compuertas de calidad
 - [ ] Confirmar con TASK-03 (#4) que la app consume los archivos estáticos publicados en Vercel
