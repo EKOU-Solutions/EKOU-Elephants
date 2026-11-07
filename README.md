@@ -12,42 +12,63 @@ La meta es que la ciudadanía pueda identificar por sí misma dónde se está us
 
 ## Público objetivo
 
-La ciudadanía colombiana en general, sobre todo personas sin conocimientos técnicos en finanzas públicas, contratación estatal o análisis de datos. La herramienta debe poder usarla cualquier persona, sin formación previa.
+La ciudadanía colombiana. Atendemos dos tipos de público:
 
-COMMET: separar los dos tipos de publico, 1 publico con falencias en las herramientas e interpretacion de la info, 2 publico interesado en temas de politica - contratos.
+1. **Ciudadanía general:** personas sin conocimientos técnicos o con dificultades para usar herramientas digitales e interpretar información pública. Para ellas, la experiencia por defecto es simple y visual: colores, mapas y mensajes en lenguaje cotidiano.
+2. **Público interesado:** personas que siguen temas de política y contratación pública, como periodistas, veedurías, estudiantes y líderes comunitarios. Para ellas hay una vista de detalle con la información completa de cada contrato y cada obra.
 
 ## Funcionalidades
 
-- **Mapa de inversión:** mapa interactivo de Colombia que muestra cuánto dinero público se invierte por departamento y municipio.
-  Referencia: https://www.registraduria.gov.co/-Mapa-elecciones-en-el-mundo-2024-.html
-  
-COMMET: definir que información|Metricas vamos a mostrar en este mapa interactivo. ejemplo: presupuesto vs Gasto actual, numero total de obras, una alerta en caso de un patron sospechoso.
- 
-- **Buscador de contratos:** búsqueda de contratos por entidad, contratista o ubicación.
-COMMET: ejemplo de entidad y contratista, sumar obra obra al buscador
+### Mapa de inversión
+Mapa interactivo de Colombia por departamento y municipio. Al seleccionar un territorio muestra:
+- Presupuesto asignado frente a gasto actual
+- Número total de obras y cuántas tienen señales de retraso
+- Nivel de alerta del territorio (ver *Alertas de riesgo*)
 
-- **Seguimiento de obras:** consulta del avance de obras públicas.
-  COMMET: detallar eso, que es un seguimiento, qué mostramos por ejemplo: cuanto porcentaje han avanzado, quien ejecuta, cuanto dinero se han gastado vs cuanto se habia presupuesto para la obra. sumar el detalle de la licitación, quienes participaron, quien ganó, estado de la obra.
+Referencia visual: [Mapa de elecciones de la Registraduría](https://www.registraduria.gov.co/-Mapa-elecciones-en-el-mundo-2024-.html)
 
-- **Alertas de riesgo:** señales sobre contratos sospechosos, como sobrecostos, obras sin terminar o contratación directa repetida.
-COMMET: cada departamento, municipio u obra que tenga un patron sospechoso recibir una alerta visual, un ejemplo puede ser cuando una obra tiene sobre costo, debe recibir una alerta en el contrato, por ende el municipio y el departamento quedan alertados.
-- separar por colores el riesgo en los departamentos y municipios, el color indica el porcentaje de obras con patrones sospechosos.
+### Buscador
+Búsqueda de contratos y obras por:
+- **Entidad:** por ejemplo, *Alcaldía de Medellín* o *Instituto Nacional de Vías (INVÍAS)*
+- **Contratista:** por nombre de la empresa, del consorcio o de la persona, o por su NIT o cédula
+- **Obra:** por nombre o código de proyecto (BPIN), por ejemplo, *Construcción puente vehicular*
+- **Ubicación:** departamento o municipio
 
-- **Reportes ciudadanos:** espacio para reportar o comentar posibles irregularidades.
-COMMET: separar en 2 funcionalidades: primera, feedback del usuario sobre la interfaz, la información, la usabilidad y/o cualquier error del proyecto y segunda, funcionalidad de compartir para que las personas puedan conversar en redes sociales sobre el tema, poniendo un #EkouElephants por defecto.
+### Seguimiento de obras
+Ficha de cada obra con:
+- **Avance:** porcentaje de avance físico frente a lo esperado a la fecha
+- **Ejecutor:** entidad contratante y contratista
+- **Dinero:** valor presupuestado frente a valor gastado, incluidas las adiciones
+- **Licitación:** modalidad, quiénes participaron, cuánto ofertó cada uno y quién ganó
+- **Estado:** en ejecución, suspendida, terminada, o con señales de retraso
+- **Alertas** asociadas a la obra
 
-- **Principales contratistas**: Mostrar al usuario los principales contratistas con el estado de las obras, para poder identificar cuando un contratista tiene muchas obras que no avanzan o tienen un patron sospechoso (definir los patrones sospechosos).
+### Alertas de riesgo
+Señales visuales sobre patrones sospechosos, como sobrecostos, obras sin terminar, contratación directa repetida o un solo oferente.
+- **En cascada:** una alerta en un contrato u obra también marca a su municipio y a su departamento.
+- **Por colores:** cada departamento y municipio se colorea según el porcentaje de sus obras con patrones sospechosos.
+- La lista y la definición de cada patrón se documentan en la metodología de alertas (TASK-03).
+
+### Principales contratistas
+Ranking de los contratistas con más contratos y más dinero recibido, junto con el estado de sus obras. Sirve para identificar contratistas con muchas obras que no avanzan o con patrones sospechosos.
+
+### Presupuesto por entidad
+Visualización clara de en qué gasta su presupuesto cada entidad pública, por sector (salud, educación, vías…).
+
+### Participación ciudadana
+- **Retroalimentación:** un canal para que el usuario reporte errores o problemas con la interfaz, la información o la usabilidad.
+- **Compartir:** botón para compartir un contrato, una obra o un territorio en redes sociales, con `#EkouElephants` por defecto.
+- **Denunciar:** enlaces directos a los canales oficiales de denuncia (Procuraduría, Contraloría, Fiscalía), para que la persona pueda pasar de identificar una irregularidad a denunciarla.
 
 ## Métricas
 
-- **Ejecución presupuestal:** presupuesto asignado frente a ejecutado, por entidad y territorio.
-  COMMET: presupuesto vs Gasto actual
+- **Ejecución presupuestal:** presupuesto asignado frente a gasto actual (lo efectivamente pagado), por entidad y territorio.
 - **Contratación:** monto total contratado y número de contratos.
 - **Modalidad de contratación:** porcentaje de contratación directa frente a licitación.
 - **Principales contratistas:** contratistas con más contratos o con más dinero recibido.
 - **Obras con problemas:** obras retrasadas o paralizadas y su valor.
 - **Sobrecostos:** valor inicial frente a valor final del contrato, incluidas las adiciones.
-- **Alertas de riesgo:** número de alertas por entidad o municipio.
+- **Alertas de riesgo:** número de alertas y porcentaje de obras con patrones sospechosos, por entidad, municipio y departamento.
 
 ## Qué esperamos del proyecto
 
