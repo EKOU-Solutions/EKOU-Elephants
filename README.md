@@ -30,7 +30,7 @@ Referencia visual: [Mapa de elecciones de la Registraduría](https://www.registr
 ### Buscador
 Búsqueda de contratos y obras por:
 - **Entidad:** por ejemplo, *Alcaldía de Medellín* o *Instituto Nacional de Vías (INVÍAS)*
-- **Contratista:** por nombre de la empresa, del consorcio o de la persona, o por su NIT o cédula
+- **Contratista:** por nombre o NIT de la empresa o del consorcio. Mostrar el nombre o la cédula de **personas naturales** depende de la validación legal en [TASK-08](https://github.com/EKOU-Solutions/EKOU-Elephants/issues/9).
 - **Obra:** por nombre o código de proyecto (BPIN), por ejemplo, *Construcción puente vehicular*
 - **Ubicación:** departamento o municipio
 
@@ -47,7 +47,7 @@ Ficha de cada obra con:
 Señales visuales sobre patrones sospechosos, como sobrecostos, obras sin terminar, contratación directa repetida o un solo oferente.
 - **En cascada:** una alerta en un contrato u obra también marca a su municipio y a su departamento.
 - **Por colores:** cada departamento y municipio se colorea según el porcentaje de sus obras con patrones sospechosos.
-- La lista y la definición de cada patrón se documentan en la metodología de alertas (TASK-03).
+- La lista de patrones, cómo se calculan y con qué datos se definen en [TASK-07](https://github.com/EKOU-Solutions/EKOU-Elephants/issues/8).
 
 ### Principales contratistas
 Ranking de los contratistas con más contratos y más dinero recibido, junto con el estado de sus obras. Sirve para identificar contratistas con muchas obras que no avanzan o con patrones sospechosos.
@@ -59,6 +59,10 @@ Visualización clara de en qué gasta su presupuesto cada entidad pública, por 
 - **Retroalimentación:** un canal para que el usuario reporte errores o problemas con la interfaz, la información o la usabilidad.
 - **Compartir:** botón para compartir un contrato, una obra o un territorio en redes sociales, con `#EkouElephants` por defecto.
 - **Denunciar:** enlaces directos a los canales oficiales de denuncia (Procuraduría, Contraloría, Fiscalía), para que la persona pueda pasar de identificar una irregularidad a denunciarla.
+
+## Reglas de negocio
+
+- **Filtro territorial global:** al seleccionar un departamento o un municipio, todas las vistas se limitan a ese territorio: buscador, obras, entidades, contratistas, presupuesto y alertas. Por ejemplo, con *Medellín* seleccionado solo se ven las obras, las entidades y los contratistas de Medellín. El territorio se identifica con el código DANE.
 
 ## Métricas
 
