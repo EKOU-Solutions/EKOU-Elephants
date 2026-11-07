@@ -15,8 +15,9 @@ El primer corte vertical es el **Mapa Interactivo**: por cada municipio, el pres
 | **Calidad** | SECOP trae valores atípicos (la suma de obras da $6.500 billones), nombres de municipio sin código DANE y alrededor del 12 % de registros con "No Definido" |
 | **Frecuencia** | SECOP se actualiza a diario y CUIPO cada trimestre. No hace falta tiempo real. |
 | **Equipo** | Dos personas. Debe ser simple de operar y barato o gratuito. |
-| **Despliegue de la app** | Vercel o Cloudflare (TASK-04). El stack de la app todavía está por definir (TASK-03). |
-| **Proyecto open source y global** | Cualquiera debe poder reproducirlo localmente. A futuro habrá que exportar en OCDS. |
+| **Despliegue de la app** | **Vercel.** Sus funciones serverless tienen límites de tiempo (minutos, no horas), así que no pueden ejecutar procesos de millones de filas. |
+| **Estándares globales** | El proyecto debe seguir estándares internacionales de datos abiertos, ser reproducible por cualquiera y poder llevarse a otros países |
+| **Demostrable para las comunidades** | Los datos procesados, la metodología y cada ejecución del pipeline deben ser públicos y verificables, no una caja negra |
 
 La ingesta se divide en **cuatro decisiones**, y cada una se evalúa por separado.
 
@@ -56,11 +57,19 @@ La ingesta se divide en **cuatro decisiones**, y cada una se evalúa por separad
 | **BigQuery / Snowflake** | Escala sin límites; analítica potente | Costo variable; nos ata a un proveedor; demasiado para el tamaño actual | Pago por uso |
 | **MotherDuck** (DuckDB en la nube) | Mismo motor que la opción local, pero compartido y consultable desde la app | Es un servicio más reciente; nos ata parcialmente a un proveedor | Gratis a bajo |
 
-**Propuesta:**
-- **POC: DuckDB + Parquet.** Es lo más rápido de iterar y reproducir, y no exige decidir la infraestructura de la app.
-- **Producción: a decidir con TASK-03**, según cómo consuma los datos la app:
-  - Si el mapa usa **datos precalculados** (lo más probable en el MVP): se exportan Parquet o JSON por municipio y se sirven como archivos estáticos (Vercel o R2). No hace falta servidor de base de datos.
-  - Si la app necesita **consultas dinámicas** (buscador, filtros combinados): DuckDB carga PostgreSQL/PostGIS como capa de servicio.
+**Propuesta: DuckDB + Parquet para procesar, y archivos estáticos en Vercel para servir.**
+
+Con la app en Vercel, la capa de servicio se elige así:
+
+| Necesidad | Solución en Vercel | Cuándo |
+|---|---|---|
+| **Mapa** (datos precalculados por municipio y departamento) | Archivos **GeoJSON/JSON** en el CDN de Vercel, o en **Vercel Blob** si son pesados | MVP |
+| **Descargas de datos abiertos** | Archivos **Parquet y CSV** en Vercel Blob | MVP |
+| **Buscador y filtros combinados** (millones de contratos) | **PostgreSQL** desde el Marketplace de Vercel (Neon o Supabase), cargado por el pipeline | Cuando se construya el buscador |
+| **Exploración avanzada en el navegador** (opcional) | **DuckDB-WASM**: consulta los Parquet directamente en el navegador, sin servidor | Fase 2 |
+
+- **Por qué archivos estáticos primero:** el mapa es de solo lectura y cambia como mucho una vez al día. Servirlo desde el CDN es lo más rápido y gratuito, y no tiene base de datos que se pueda caer en una demostración.
+- **Por qué no procesar en Vercel:** sus funciones tienen límites de minutos. El pipeline corre fuera (decisión 4) y Vercel solo sirve el resultado.
 
 ---
 
@@ -73,7 +82,31 @@ La ingesta se divide en **cuatro decisiones**, y cada una se evalúa por separad
 | **Airflow** | Estándar de la industria | Pesado de operar; curva de aprendizaje alta | Requiere servidor |
 | **Cron de Vercel / Cloudflare Workers** | Integrado con el despliegue | Límites de tiempo de ejecución (segundos o minutos); no sirve para procesos de millones de filas | Gratis a bajo |
 
-**Propuesta: GitHub Actions** con ejecución diaria (SECOP) y trimestral (CUIPO). Si el pipeline crece a muchos pasos con dependencias, se migra a Dagster o Prefect.
+**Propuesta: GitHub Actions** con ejecución diaria (SECOP) y trimestral (CUIPO). Al terminar, publica los archivos en Vercel Blob y dispara un nuevo despliegue con un *Deploy Hook* de Vercel.
+
+Además de ser gratis, cada ejecución queda **pública en la pestaña Actions del repo**, con sus registros y su reporte de calidad. Cualquiera puede comprobar cuándo y cómo se generaron los datos, y eso es clave para la credibilidad ante las comunidades.
+
+Si el pipeline crece a muchos pasos con dependencias, se migra a Dagster o Prefect.
+
+---
+
+## Decisión 5: estándares de publicación
+
+Para que el proyecto sea de estándar global y verificable por las comunidades, todo lo que produce el pipeline se publica como **dato abierto** siguiendo estándares internacionales:
+
+| Estándar | Para qué | Alternativa descartada |
+|---|---|---|
+| **[OCDS](https://standard.open-contracting.org/latest/es/)** (Open Contracting Data Standard) | Exportar los contratos en el estándar internacional de contratación abierta. Permite que el motor de alertas funcione en cualquier país que publique OCDS. | Formato propio: nos encierra en Colombia |
+| **[Frictionless Data Package](https://datapackage.org/)** | Describir cada archivo publicado con un `datapackage.json`: esquema, tipos, licencia y fuente. Validable automáticamente. | Solo un README: no se puede validar por máquina |
+| **[GeoJSON](https://datatracker.ietf.org/doc/html/rfc7946)** (RFC 7946) | Datos del mapa; lo leen todas las librerías de mapas (MapLibre, Leaflet, D3) | Formato propio de coordenadas |
+| **Códigos DANE + ISO 3166-2:CO** | Identificar municipios (DANE) y departamentos (ISO 3166-2) | Nombres de texto: ambiguos |
+| **ISO 8601** para fechas y **COP** explícito en montos | Que no haya ambigüedad en fechas ni en moneda | — |
+| **CC BY-SA 4.0** | La misma licencia de las fuentes, con atribución en cada archivo | — |
+
+**Verificabilidad:**
+- **Metodología pública:** cada cifra y cada alerta enlaza a su fórmula ([TASK-07](https://github.com/EKOU-Solutions/EKOU-Elephants/issues/8)) y a su fuente original en SECOP.
+- **Reproducible con un comando:** cualquiera puede clonar el repo y regenerar los mismos datos.
+- **Reporte de calidad publicado** en cada ejecución: qué se descartó, qué no se pudo vincular y por qué.
 
 ---
 
@@ -81,17 +114,24 @@ La ingesta se divide en **cuatro decisiones**, y cada una se evalúa por separad
 
 ```mermaid
 flowchart LR
-  API[datos.gov.co<br/>API Socrata] -->|extracción paginada<br/>con filtros| RAW[raw/<br/>Parquet tal cual]
-  RAW -->|limpieza y normalización<br/>SQL en DuckDB| STG[staging<br/>tipos, nombres, código DANE]
-  STG -->|cruces y agregaciones| MART[mart<br/>mapa_municipios]
-  MART -->|export| OUT[Parquet / JSON<br/>consumible por la app]
-  MART --> QA[reporte de calidad]
+  subgraph GH[GitHub Actions · público]
+    API[datos.gov.co<br/>API Socrata] -->|extracción paginada| RAW[raw<br/>Parquet tal cual]
+    RAW -->|limpieza · SQL DuckDB| STG[staging<br/>tipos, código DANE]
+    STG -->|cruces y agregaciones| MART[mart<br/>mapa_municipios]
+    MART --> QA[reporte de calidad]
+  end
+  subgraph V[Vercel]
+    MART -->|GeoJSON / JSON| CDN[CDN · mapa]
+    MART -->|Parquet / CSV / OCDS<br/>+ datapackage.json| BLOB[Vercel Blob · descargas]
+    CDN --> APP[App EKOU-Elephants]
+  end
 ```
 
 1. **Extracción:** cliente de la API de Socrata con paginación, App Token, reintentos con espera creciente y filtros en la consulta. Se guarda sin modificar en `raw/` (Parquet), con fecha de extracción.
 2. **Limpieza y normalización:** tipos de datos; nombres de municipio normalizados (sin tildes, en mayúsculas) y cruzados con DIVIPOLA para obtener el código DANE; marca de valores atípicos; deduplicación.
 3. **Cruces y agregación:** tabla `mapa_municipios` con código DANE, coordenadas, presupuesto asignado y pagado, número y valor de obras, y obras suspendidas o vencidas.
-4. **Salida:** Parquet/JSON más un **reporte de calidad** con campos vacíos, duplicados, registros que no se pudieron vincular y valores atípicos.
+4. **Salida:** GeoJSON para el mapa; Parquet, CSV y OCDS para descarga, cada uno con su `datapackage.json`; y un **reporte de calidad** con campos vacíos, duplicados, registros que no se pudieron vincular y valores atípicos.
+5. **Publicación:** se suben los archivos a Vercel Blob y se dispara el Deploy Hook de Vercel.
 
 ---
 
@@ -107,9 +147,10 @@ flowchart LR
 - Los datos llegan con un rezago de horas (SECOP) o de un trimestre (CUIPO).
 - Hay un segundo lenguaje (Python) si la app se hace en TypeScript.
 - Habrá que mantener las reglas de normalización de nombres mientras SECOP no publique el código DANE.
-- Pasar a producción exige decidir la capa de servicio (archivos estáticos o PostgreSQL) junto con TASK-03.
+- El buscador va a necesitar una base de datos (PostgreSQL en Vercel Marketplace), lo que agrega un costo y algo que operar.
+- Publicar en varios estándares (OCDS, Data Package) implica mantener esos esquemas.
 
 ## Pendiente de decidir con el equipo
 
-- [ ] Validar la propuesta de cada decisión (1 a 4)
-- [ ] Capa de servicio en producción: archivos estáticos o PostgreSQL/PostGIS (depende de TASK-03)
+- [ ] Validar la propuesta de cada decisión (1 a 5)
+- [ ] Confirmar con TASK-03 (#4) que la app consume los archivos estáticos publicados en Vercel
