@@ -2,7 +2,7 @@
 
 APIs públicas que usa EKOU-Elephants, para qué sirve cada una y en qué fase entra.
 
-> Última verificación: 2026-11-07
+> Tarea: [TASK-02 Inventario de fuentes](https://github.com/EKOU-Solutions/EKOU-Elephants/issues/2) · Última verificación: 2026-11-07
 
 ## En 30 segundos
 

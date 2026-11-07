@@ -2,6 +2,8 @@
 
 📊 **Fuentes de datos:** ver [docs/fuentes-de-datos.md](docs/fuentes-de-datos.md)
 
+> Tarea: [TASK-01 Definir alcance de negocio del proyecto](https://github.com/EKOU-Solutions/EKOU-Elephants/issues/1)
+
 ## Objetivo del proyecto
 
 Crear una aplicación web que muestre, de forma clara y visual, qué pasa con el dinero público. Con gráficos, mapas y otras herramientas fáciles de entender, cualquier persona puede hacer veeduría ciudadana sin perderse entre documentos ni lenguaje técnico.
