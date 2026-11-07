@@ -4,13 +4,48 @@
 
 ## Contexto
 
-El primer corte vertical es el **Mapa Interactivo**: por cada municipio, el presupuesto asignado frente a pagado, el número de obras y su estado, y el nivel de alerta. Los datos salen de las APIs de [datos.gov.co](../fuentes-de-datos.md): SECOP II, CUIPO y DIVIPOLA.
+EKOU-Elephants necesita un **pipeline de datos de producción**, no un prototipo. Cada mes debe procesar a **escala nacional** la contratación, el presupuesto y el registro empresarial de Colombia, y publicarlos como dato abierto verificable. El primer consumidor es el **Mapa Interactivo**, pero el pipeline se diseña para todas las funcionalidades del [README](../../README.md).
+
+### Escala objetivo (por corte mensual)
+
+| Fuente | Filas | Uso |
+|---|---|---|
+| SECOP II – Contratos | 5,7 M | Mapa, buscador, alertas |
+| SECOP II – Procesos | 9,4 M | Único oferente, licitación |
+| SECOP II – Adiciones | 8,5 M | Sobrecostos |
+| SECOP II – Ejecución de contratos | 7,7 M | Obras retrasadas |
+| SECOP II – Suspensiones | 0,9 M | Obras paralizadas |
+| CUIPO – Programación y ejecución de gastos | 19,5 M | Presupuesto por municipio |
+| RUES – Confecámaras | 9,5 M | Alertas de contratistas |
+| **Total** | **~61 M de filas** | |
+
+### Mediciones de la API de origen (2026-11-07)
+
+| Medición | Resultado | Decisión que provoca |
+|---|---|---|
+| Página de 50.000 filas (15 columnas) | ~63 s → **~800 filas/s por conexión** | El límite es el servidor, no la red: hay que **extraer en paralelo** |
+| JSON frente a CSV (misma página) | 63 s frente a 67 s; el CSV pesa 15 % menos | El CSV no es más rápido y pierde los tipos de datos: **se usa JSON** |
+| Paginación por `$offset` en la fila 5 M | **12,9 s** solo para posicionarse | El offset se degrada con la profundidad: **no escala** |
+| Paginación *keyset* (`$where=:id > último`) | **0,66 s** | ~20 veces más rápida y constante: **es la que se usa** |
+| Agregación de 12 M de filas en el servidor (CUIPO) | Se agota por tiempo | **Las agregaciones se hacen localmente** |
+
+**Implicación:** en secuencia, una sola conexión tardaría ~2 h solo en SECOP II Contratos y más de 20 h en el corte completo. Con extracción en paralelo por partición (8 conexiones) y saltando las fuentes sin cambios, el corte completo debe caber en **menos de 3 h**, dentro del límite de 6 h de GitHub Actions.
+
+### Objetivos de nivel de servicio
+
+| Indicador | Objetivo |
+|---|---|
+| Duración del corte mensual completo | < 3 h |
+| Primera carga del mapa | < 1 s (datos desde el CDN) |
+| Búsqueda en el buscador (p95) | < 300 ms |
+| Corte publicado con compuertas de calidad aprobadas | 100 % |
+| Reproducible por un tercero con un comando | Sí |
 
 **Restricciones que condicionan la decisión:**
 
 | Restricción | Detalle |
 |---|---|
-| **Volumen** | Hay datasets de entre 5 y 23 M de registros, y CUIPO tiene 12 M |
+| **Volumen** | ~61 M de filas por corte mensual (ver escala objetivo) |
 | **API de origen** | Socrata: paginada, con límites de uso, y **las agregaciones grandes en el servidor se agotan por tiempo** (lo observamos con CUIPO en esta tarea) |
 | **Calidad** | SECOP trae valores atípicos (la suma de obras da $6.500 billones), nombres de municipio sin código DANE y alrededor del 12 % de registros con "No Definido" |
 | **Frecuencia** | **Actualización mensual en producción.** SECOP se actualiza a diario y CUIPO cada trimestre en origen, pero el proyecto publica un corte mensual. |
@@ -20,7 +55,7 @@ El primer corte vertical es el **Mapa Interactivo**: por cada municipio, el pres
 | **Estándares globales** | El proyecto debe seguir estándares internacionales de datos abiertos, ser reproducible por cualquiera y poder llevarse a otros países |
 | **Demostrable para las comunidades** | Los datos procesados, la metodología y cada ejecución del pipeline deben ser públicos y verificables, no una caja negra |
 
-La ingesta se divide en **cuatro decisiones**, y cada una se evalúa por separado.
+La ingesta se divide en **nueve decisiones**, y cada una se evalúa por separado.
 
 ---
 
@@ -32,7 +67,7 @@ La ingesta se divide en **cuatro decisiones**, y cada una se evalúa por separad
 | **B. Extracción por lotes a un almacén propio (ELT)** ✅ | Controlamos la limpieza, los cruces y el rendimiento; la app no depende de datos.gov.co; se puede reproducir | Hay que operar un proceso periódico; los datos llegan con un rezago de horas |
 | **C. Descarga masiva de los archivos CSV completos** | Simple; no depende de la paginación | Archivos de varios GB; descarga lenta y frágil; se baja mucho más de lo que se usa |
 
-**Propuesta: B.** Se extrae con filtros (tipo de contrato, periodo, territorio) usando la API paginada, y las agregaciones se hacen localmente, no en el servidor de Socrata. La opción C queda como respaldo para cargas históricas completas.
+**Propuesta: B.** Se extrae cada dataset **completo a escala nacional**, solo con las columnas necesarias, usando paginación *keyset* y extracción en paralelo por partición. Las agregaciones se hacen localmente, no en el servidor de Socrata. La opción C queda como respaldo para cargas históricas completas.
 
 ---
 
@@ -44,7 +79,23 @@ La ingesta se divide en **cuatro decisiones**, y cada una se evalúa por separad
 | **TypeScript / Node** | Un solo lenguaje con la app (si TASK-03 elige JS); mismos tipos | Ecosistema de datos más débil; procesar millones de filas es más difícil; hay menos herramientas para limpieza y análisis |
 | **Solo SQL (dbt / SQLMesh)** | Transformaciones declarativas, probadas y documentadas | No resuelve la extracción; necesita otra herramienta para traer los datos |
 
-**Propuesta: Python** para extraer y SQL para transformar (dentro del motor elegido en la decisión 3). Separa responsabilidades y no ata el pipeline al stack de la app.
+**Propuesta: Python** para extraer y **SQL con dbt** para transformar. Separa responsabilidades y no ata el pipeline al stack de la app.
+
+### 2.1 Herramienta de transformación
+
+| Opción | Ventajas | Desventajas |
+|---|---|---|
+| **dbt-core + dbt-duckdb** ✅ | Estándar de la industria (*analytics engineering*); cada modelo SQL tiene **pruebas, documentación y linaje**; genera un **sitio de documentación con el grafo de linaje** que se puede publicar para las comunidades; el adaptador de DuckDB corre sin servidor | Una herramienta más que aprender; el modo incremental requiere cuidado |
+| SQLMesh | Linaje a nivel de columna; entornos virtuales; detecta cambios que rompen | Comunidad más pequeña; menos conocido por reclutadores y colaboradores |
+| Scripts SQL ejecutados desde Python | Sin dependencias extra | Sin pruebas, documentación ni linaje: todo eso habría que construirlo a mano |
+
+### 2.2 Arquitectura de capas (medallion)
+
+| Capa | Contenido | Formato |
+|---|---|---|
+| **Bronze** | Datos tal como llegan de la API, con metadatos de extracción (corte, fecha, fuente, consulta) | Parquet particionado |
+| **Silver** | Tipos de datos correctos, nombres normalizados, código DANE asignado, duplicados eliminados, valores atípicos marcados | Modelos dbt |
+| **Gold** | Tablas listas para el producto: `mapa_municipios`, `obras`, `contratistas`, `alertas` | Modelos dbt → GeoJSON, Parquet, OCDS, PostgreSQL |
 
 ---
 
@@ -143,11 +194,11 @@ El corte cambia una vez al mes, pero se lee miles de veces. La caché se define 
 | Opción | Ventajas | Desventajas |
 |---|---|---|
 | **Saltar fuentes sin cambios** usando `rowsUpdatedAt` de los metadatos (`/api/views/{id}.json`) ✅ | CUIPO solo cambia cada trimestre: en 2 de cada 3 meses no hace falta descargarlo; consulta barata | Solo sirve a nivel de dataset completo |
-| **`raw/` como caché por consulta** (dataset + filtros + fecha de corte) ✅ | Si la ejecución falla, al reintentar solo se descarga lo que faltaba; base de la idempotencia | Ocupa disco durante la ejecución |
-| **`actions/cache` de GitHub** para `raw/` entre ejecuciones | Conserva lo descargado entre reintentos del mismo mes | Límite de almacenamiento por repo; las entradas sin uso se borran |
+| **Capa bronze como caché por consulta** (dataset + filtros + fecha de corte) ✅ | Si la ejecución falla, al reintentar solo se descarga lo que faltaba; base de la idempotencia | Ocupa disco durante la ejecución |
+| **`actions/cache` de GitHub** para la capa bronze entre ejecuciones | Conserva lo descargado entre reintentos del mismo mes | Límite de almacenamiento por repo; las entradas sin uso se borran |
 | Sin caché | Simple | Cada reintento vuelve a bajar millones de filas y se expone más a los límites de la API |
 
-**Propuesta:** saltar las fuentes sin cambios con `rowsUpdatedAt`, y usar `raw/` versionado por corte como caché, persistido con `actions/cache` durante el mes. También se cachean las dependencias de Python en CI.
+**Propuesta:** saltar las fuentes sin cambios con `rowsUpdatedAt`, y usar la capa bronze versionada por corte como caché, persistido con `actions/cache` durante el mes. También se cachean las dependencias de Python en CI.
 
 ### 6.2 Caché de publicación (Vercel)
 
@@ -181,12 +232,12 @@ Cómo se organizan los datos para que la extracción, la carga mensual y las con
 | Técnica | Qué gana |
 |---|---|
 | **`$select` solo con las columnas necesarias** | SECOP II Contratos tiene más de 90 columnas y el mapa usa unas 10: se descarga mucho menos |
-| **Paginación estable** con `$order=:id` y páginas grandes (`$limit` de ~50.000) | Menos llamadas, sin filas repetidas ni perdidas entre páginas |
+| **Paginación *keyset*** (`$order=:id` + `$where=:id > último`) con páginas de ~50.000 filas | Tiempo constante por página (0,66 s frente a 12,9 s del offset profundo); sin filas repetidas ni perdidas |
 | **Extracción en paralelo por partición** (por año de firma o por departamento), con un límite de concurrencia | Divide 23 M de filas en consultas pequeñas que no se agotan por tiempo; si una falla, solo se repite esa |
 | **Filtros simples en el servidor, agregaciones en local** | Socrata filtra bien pero se agota al agregar millones de filas (lo observamos con CUIPO) |
 | **Formato de descarga (CSV o JSON)** | A evaluar en la POC: el CSV suele ser más liviano |
 
-### 7.2 Archivos Parquet (raw, staging y mart)
+### 7.2 Archivos Parquet (bronze, silver y gold)
 
 | Opción | Ventajas | Desventajas |
 |---|---|---|
@@ -253,7 +304,28 @@ Cómo se organizan los datos para que la extracción, la carga mensual y las con
 
 ---
 
-## Decisión 8: estándares de publicación
+## Decisión 8: estándares de ingeniería
+
+El pipeline es código de producción open source. Estos son los estándares que se aplican desde el primer commit:
+
+| Área | Estándar | Herramienta |
+|---|---|---|
+| **Gestión del proyecto Python** | Dependencias fijadas con lockfile, versión de Python declarada | `uv` + `pyproject.toml` (PEP 621) |
+| **Estilo y errores comunes** | Lint y formato automáticos | `ruff` |
+| **Tipos** | Tipado estático estricto | `mypy --strict` |
+| **Configuración** | Validada al arrancar; secretos solo por variables de entorno | `pydantic-settings` |
+| **Pruebas** | Unitarias, de integración con HTTP simulado y de contrato con la API real | `pytest` + `respx` + cobertura mínima del 80 % |
+| **Calidad de datos** | Pruebas en cada modelo (no nulos, únicos, relaciones, rangos) | pruebas de `dbt` |
+| **Registros** | Logs estructurados en JSON con el corte y la fuente en cada línea | `structlog` |
+| **Reproducibilidad** | Mismo entorno local, en CI y para colaboradores | Dev Container + `Makefile` |
+| **CI** | Lint, tipos, pruebas y `dbt build` en cada PR | GitHub Actions |
+| **Commits y versiones** | Conventional Commits, SemVer y CHANGELOG automático | `release-please` |
+| **Open source** | LICENSE (código Apache-2.0, datos CC BY-SA 4.0), CONTRIBUTING, CODE_OF_CONDUCT, SECURITY, plantillas de issues y PR | Recomendaciones de la Linux Foundation y OpenSSF |
+| **Seguridad de la cadena de suministro** | Dependencias actualizadas, acciones fijadas por SHA, permisos mínimos en los workflows | Dependabot + OpenSSF Scorecard |
+
+---
+
+## Decisión 9: estándares de publicación
 
 Para que el proyecto sea de estándar global y verificable por las comunidades, todo lo que produce el pipeline se publica como **dato abierto** siguiendo estándares internacionales:
 
@@ -278,9 +350,9 @@ Para que el proyecto sea de estándar global y verificable por las comunidades, 
 ```mermaid
 flowchart LR
   subgraph GH[GitHub Actions · mensual · público]
-    API[datos.gov.co<br/>API Socrata] -->|solo fuentes con cambios<br/>rowsUpdatedAt| RAW[raw · caché por corte<br/>Parquet tal cual]
-    RAW -->|limpieza · SQL DuckDB| STG[staging<br/>tipos, código DANE]
-    STG -->|cruces y agregaciones| MART[mart<br/>mapa_municipios]
+    API[datos.gov.co<br/>API Socrata] -->|solo fuentes con cambios<br/>rowsUpdatedAt| RAW[bronze · caché por corte<br/>Parquet tal cual]
+    RAW -->|dbt · limpieza| STG[silver<br/>tipos, código DANE]
+    STG -->|dbt · cruces y agregaciones| MART[gold<br/>mapa_municipios, obras, alertas]
     MART --> QA{compuertas<br/>de calidad}
     QA -->|falla| ISSUE[issue automático<br/>se mantiene el corte anterior]
   end
@@ -293,7 +365,7 @@ flowchart LR
   end
 ```
 
-1. **Extracción:** cliente de la API de Socrata con paginación, App Token, reintentos con espera creciente y filtros en la consulta. Se guarda sin modificar en `raw/` (Parquet), con fecha de extracción.
+1. **Extracción:** cliente de la API de Socrata con paginación, App Token, reintentos con espera creciente y filtros en la consulta. Se guarda sin modificar en la capa bronze (Parquet), con fecha de extracción.
 2. **Limpieza y normalización:** tipos de datos; nombres de municipio normalizados (sin tildes, en mayúsculas) y cruzados con DIVIPOLA para obtener el código DANE; marca de valores atípicos; deduplicación.
 3. **Cruces y agregación:** tabla `mapa_municipios` con código DANE, coordenadas, presupuesto asignado y pagado, número y valor de obras, y obras suspendidas o vencidas.
 4. **Salida:** GeoJSON para el mapa; Parquet, CSV y OCDS para descarga, cada uno con su `datapackage.json`; y un **reporte de calidad** con campos vacíos, duplicados, registros que no se pudieron vincular y valores atípicos.
@@ -319,7 +391,7 @@ flowchart LR
 
 ## Pendiente de decidir con el equipo
 
-- [ ] Validar la propuesta de cada decisión (1 a 8)
+- [ ] Validar la propuesta de cada decisión (1 a 9)
 - [ ] Agregar el Marco Geoestadístico Nacional (MGN) del DANE al inventario de fuentes para los polígonos del mapa
 - [ ] Medir en la POC los tiempos de extracción y consulta con y sin partición y orden, para confirmar las técnicas de la decisión 7
 - [ ] Definir la ventana de análisis (¿últimos 5 años?) y los umbrales de las compuertas de calidad
