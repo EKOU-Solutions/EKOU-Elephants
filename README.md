@@ -1,5 +1,7 @@
 # EKOU-Elephants
 
+📊 **Fuentes de datos:** ver [docs/fuentes-de-datos.md](docs/fuentes-de-datos.md)
+
 ## Objetivo del proyecto
 
 Crear una aplicación web que muestre, de forma clara y visual, qué pasa con el dinero público. Con gráficos, mapas y otras herramientas fáciles de entender, cualquier persona puede hacer veeduría ciudadana sin perderse entre documentos ni lenguaje técnico.
