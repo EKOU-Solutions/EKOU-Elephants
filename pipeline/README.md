@@ -23,6 +23,8 @@ Los datos quedan en `data/bronze/corte=2026-11/fuente=<fuente>/particion=<año>/
 
 Si la ejecución se interrumpe, al volver a lanzarla **solo se extraen las particiones que faltan**.
 
+Varios datasets de SECOP se reconstruyen completos a diario en origen (SECOP II Contratos hacia las 02:43, hora de Colombia). Si eso ocurre en medio de una partición, el pipeline lo detecta con la cabecera `X-SODA2-Truth-Last-Modified` y vuelve a extraer la partición completa, para no mezclar dos versiones del dataset.
+
 ## Configuración
 
 Variables de entorno (o archivo `.env`):
@@ -32,8 +34,10 @@ Variables de entorno (o archivo `.env`):
 | `EKOU_SOCRATA_APP_TOKEN` | — | [App Token](https://dev.socrata.com/docs/app-tokens) de datos.gov.co. Recomendado: sin él, la API aplica límites más estrictos. |
 | `EKOU_DATA_DIR` | `data` | Raíz de las capas de datos |
 | `EKOU_MAX_WORKERS` | `8` | Particiones que se extraen en paralelo |
-| `EKOU_PAGE_SIZE` | `50000` | Filas por página |
-| `EKOU_MAX_RETRIES` | `6` | Reintentos ante errores transitorios (429, 5xx, tiempos agotados) |
+| `EKOU_PAGE_SIZE` | `20000` | Filas por página. Páginas más grandes tardan más y el servidor llegó a cortarlas a mitad |
+| `EKOU_REQUEST_TIMEOUT_S` | `120` | Espera máxima de cada lectura de red |
+| `EKOU_MAX_REQUEST_S` | `300` | Duración máxima total de una petición; si se supera, se reintenta |
+| `EKOU_MAX_RETRIES` | `6` | Reintentos ante errores transitorios: 429 (respeta `Retry-After`), 5xx, fallas de red, JSON truncado y peticiones demasiado lentas |
 
 ## Desarrollo
 
@@ -51,7 +55,7 @@ El CI ejecuta las mismas comprobaciones en cada pull request.
 ```
 src/ekou_pipeline/
 ├── catalog.py     # fuentes: dataset, columnas y columna de partición
-├── socrata.py     # cliente de la API: paginación keyset y reintentos
+├── socrata.py     # cliente de la API: paginación keyset, reintentos y detección de reemplazos
 ├── bronze.py      # extracción paralela por partición, reanudable, a Parquet
 ├── config.py      # configuración validada (pydantic-settings)
 ├── log_config.py  # logs estructurados en JSON

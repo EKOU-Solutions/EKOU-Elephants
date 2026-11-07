@@ -4,7 +4,12 @@ import respx
 from pydantic import SecretStr
 
 from ekou_pipeline.config import Settings
-from ekou_pipeline.socrata import SocrataClient, SocrataError
+from ekou_pipeline.socrata import (
+    VERSION_HEADER,
+    DatasetReplacedError,
+    SocrataClient,
+    SocrataError,
+)
 
 from .conftest import BASE
 
@@ -112,3 +117,54 @@ def test_sends_app_token(settings: Settings) -> None:
     with SocrataClient(token_settings) as c:
         c.query("abcd-1234", {})
     assert route.calls.last.request.headers["X-App-Token"] == "secreto"
+
+
+@respx.mock
+def test_retry_after_header_is_respected(settings: Settings) -> None:
+    waits: list[float] = []
+    respx.get(RESOURCE).mock(
+        side_effect=[
+            httpx.Response(429, headers={"Retry-After": "30"}),
+            httpx.Response(200, json=[]),
+        ]
+    )
+    with SocrataClient(settings, sleep=waits.append) as c:
+        c.query("abcd-1234", {})
+    assert waits == [30.0]
+
+
+@respx.mock
+def test_slow_response_over_max_request_time_is_retried(settings: Settings) -> None:
+    """Un servidor que envía datos muy lento no puede dejar una página colgada por horas."""
+    ticks = iter([0.0, 10_000.0, 0.0, 1.0])
+    route = respx.get(RESOURCE).mock(return_value=httpx.Response(200, json=[]))
+    with SocrataClient(settings, sleep=lambda _: None, clock=lambda: next(ticks)) as c:
+        assert c.query("abcd-1234", {}) == []
+    assert route.call_count == 2
+
+
+@respx.mock
+def test_iter_pages_detects_dataset_replacement(client: SocrataClient) -> None:
+    respx.get(RESOURCE).mock(
+        side_effect=[
+            httpx.Response(
+                200,
+                json=[{":id": "row-1"}, {":id": "row-2"}],
+                headers={VERSION_HEADER: "2026-11-06T07:43:31Z"},
+            ),
+            httpx.Response(
+                200, json=[{":id": "row-3"}], headers={VERSION_HEADER: "2026-11-07T07:43:31Z"}
+            ),
+        ]
+    )
+    pages = client.iter_pages("abcd-1234", ())
+    next(pages)
+    with pytest.raises(DatasetReplacedError, match="reemplazó"):
+        next(pages)
+
+
+@respx.mock
+def test_sends_gzip_accept_encoding(client: SocrataClient) -> None:
+    route = respx.get(RESOURCE).mock(return_value=httpx.Response(200, json=[]))
+    client.query("abcd-1234", {})
+    assert route.calls.last.request.headers["Accept-Encoding"] == "gzip"

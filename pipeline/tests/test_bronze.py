@@ -2,11 +2,12 @@ from pathlib import Path
 
 import httpx
 import pyarrow.parquet as pq
+import pytest
 import respx
 
 from ekou_pipeline.bronze import SUCCESS_MARKER, dataset_dir, extract_dataset
 from ekou_pipeline.catalog import DatasetSpec
-from ekou_pipeline.socrata import SocrataClient
+from ekou_pipeline.socrata import VERSION_HEADER, DatasetReplacedError, SocrataClient
 
 from .conftest import BASE
 
@@ -90,3 +91,41 @@ def test_single_partition_without_date_column(client: SocrataClient, tmp_path: P
     assert [p.name for p in report.partitions] == ["todo"]
     assert report.rows == 1
     assert report.expected_rows is None
+
+
+@respx.mock
+def test_restarts_partition_when_source_is_replaced(client: SocrataClient, tmp_path: Path) -> None:
+    """SECOP se reconstruye a diario: si cambia a mitad, la partición se rehace completa."""
+    versions = iter(["v1", "v2", "v2", "v2"])
+
+    def api(request: httpx.Request) -> httpx.Response:
+        params = request.url.params
+        if "$group" in params:
+            return httpx.Response(200, json=[{"anio": "2024", "filas": "3"}])
+        response = _fake_api(request)
+        response.headers[VERSION_HEADER] = next(versions)
+        return response
+
+    respx.get(RESOURCE).mock(side_effect=api)
+
+    report = extract_dataset(client, SPEC, data_dir=tmp_path, corte="2026-11", max_workers=1)
+
+    assert report.rows == 3
+    table = pq.read_table(dataset_dir(tmp_path, "2026-11", SPEC) / "particion=2024")
+    assert sorted(table.column("_socrata_id").to_pylist()) == ["row-1", "row-2", "row-3"]
+
+
+@respx.mock
+def test_gives_up_when_source_keeps_changing(client: SocrataClient, tmp_path: Path) -> None:
+    counter = iter(range(100))
+
+    def api(request: httpx.Request) -> httpx.Response:
+        if "$group" in request.url.params:
+            return httpx.Response(200, json=[{"anio": "2024", "filas": "3"}])
+        response = _fake_api(request)
+        response.headers[VERSION_HEADER] = f"v{next(counter)}"
+        return response
+
+    respx.get(RESOURCE).mock(side_effect=api)
+    with pytest.raises(DatasetReplacedError):
+        extract_dataset(client, SPEC, data_dir=tmp_path, corte="2026-11", max_workers=1)

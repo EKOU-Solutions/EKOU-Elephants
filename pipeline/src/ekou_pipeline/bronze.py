@@ -10,6 +10,8 @@ Estructura en disco::
   incompleta (una ejecución que falló a mitad) se borra y se vuelve a extraer.
 - **Verificable:** cada partición registra cuántas filas esperaba según el origen y cuántas
   extrajo, para que las compuertas de calidad puedan comparar.
+- **Consistente:** si el origen se reemplaza durante el recorrido (SECOP se reconstruye a diario
+  y cambia sus ``:id``), la partición se descarta y se vuelve a extraer completa.
 """
 
 import json
@@ -25,13 +27,14 @@ import pyarrow.parquet as pq
 import structlog
 
 from ekou_pipeline.catalog import DatasetSpec
-from ekou_pipeline.socrata import Row, SocrataClient
+from ekou_pipeline.socrata import DatasetReplacedError, Row, SocrataClient
 
 log = structlog.get_logger(__name__)
 
 SUCCESS_MARKER = "_SUCCESS.json"
 NO_DATE_PARTITION = "sin_fecha"
 SINGLE_PARTITION = "todo"
+MAX_REPLACEMENT_RESTARTS = 2
 
 
 @dataclass(frozen=True, slots=True)
@@ -151,20 +154,23 @@ def _extract_partition(
         log.info("bronze.particion_en_cache", fuente=spec.key, particion=partition.name)
         return PartitionResult(**{**done, "skipped": True})
 
-    if path.exists():  # quedó a medias en una ejecución anterior
-        shutil.rmtree(path)
-    path.mkdir(parents=True)
-
-    start = time.perf_counter()
-    extracted_at = datetime.now(tz=UTC).isoformat()
-    schema = _bronze_schema(spec)
-    rows = files = 0
-    for page in client.iter_pages(spec.socrata_id, spec.columns, where=partition.where):
-        table = _to_table(page, spec, schema, corte=corte, extracted_at=extracted_at)
-        pq.write_table(table, path / f"part-{files:05d}.parquet", compression="zstd")
-        rows += len(page)
-        files += 1
-        log.debug("bronze.pagina", fuente=spec.key, particion=partition.name, filas=rows)
+    for restart in range(MAX_REPLACEMENT_RESTARTS + 1):
+        if path.exists():  # quedó a medias en una ejecución o intento anterior
+            shutil.rmtree(path)
+        path.mkdir(parents=True)
+        start = time.perf_counter()
+        try:
+            rows, files = _write_pages(client, spec, partition, path, corte)
+            break
+        except DatasetReplacedError:
+            if restart == MAX_REPLACEMENT_RESTARTS:
+                raise
+            log.warning(
+                "bronze.origen_reemplazado",
+                fuente=spec.key,
+                particion=partition.name,
+                reinicio=restart + 1,
+            )
 
     result = PartitionResult(
         name=partition.name,
@@ -185,6 +191,21 @@ def _extract_partition(
         filas_por_segundo=round(result.rows_per_second),
     )
     return result
+
+
+def _write_pages(
+    client: SocrataClient, spec: DatasetSpec, partition: Partition, path: Path, corte: str
+) -> tuple[int, int]:
+    extracted_at = datetime.now(tz=UTC).isoformat()
+    schema = _bronze_schema(spec)
+    rows = files = 0
+    for page in client.iter_pages(spec.socrata_id, spec.columns, where=partition.where):
+        table = _to_table(page, spec, schema, corte=corte, extracted_at=extracted_at)
+        pq.write_table(table, path / f"part-{files:05d}.parquet", compression="zstd")
+        rows += len(page)
+        files += 1
+        log.debug("bronze.pagina", fuente=spec.key, particion=partition.name, filas=rows)
+    return rows, files
 
 
 def _bronze_schema(spec: DatasetSpec) -> pa.Schema:

@@ -20,13 +20,20 @@ class Settings(BaseSettings):
     data_dir: Path = Path("data")
     """Raíz de las capas de datos (bronze, silver, gold)."""
 
-    page_size: int = Field(default=50_000, ge=1, le=50_000)
-    """Filas por página. 50.000 es el máximo práctico medido para la API de Socrata."""
+    page_size: int = Field(default=20_000, ge=1, le=50_000)
+    """Filas por página. Con 50.000 una página tarda ~52 s y el servidor llegó a cortar
+    respuestas a mitad; 20.000 mantiene páginas cortas y reintentos baratos."""
 
     max_workers: int = Field(default=8, ge=1, le=32)
     """Particiones que se extraen en paralelo."""
 
-    request_timeout_s: float = Field(default=300.0, gt=0)
+    request_timeout_s: float = Field(default=120.0, gt=0)
+    """Tiempo máximo de espera de cada lectura de red (conexión o fragmento de datos)."""
+
+    max_request_s: float = Field(default=300.0, gt=0)
+    """Tiempo máximo total de una petición. Evita que un servidor que envía datos muy lento
+    mantenga viva una página durante horas."""
+
     max_retries: int = Field(default=6, ge=0)
     backoff_base_s: float = Field(default=2.0, ge=0)
     """Espera base de los reintentos; crece de forma exponencial: 2, 4, 8, 16… segundos."""
