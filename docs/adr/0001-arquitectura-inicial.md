@@ -1,7 +1,7 @@
 # ADR-0001 · Arquitectura inicial
 
 - **Fecha:** 2026-11-07
-- **Estado:** arquitectura y stack aceptados; implementación y verificación del arquetipo pendientes.
+- **Estado:** arquitectura, stack y arquetipo implementados y verificados (local y Neon `dev`); pendiente de revisión y merge.
 - **Tarea:** [Arquitectura y arquetipo · #4](https://github.com/EKOU-Solutions/EKOU-Elephants/issues/4).
 
 ## Contexto
