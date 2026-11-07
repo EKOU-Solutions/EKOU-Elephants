@@ -2,6 +2,8 @@
 
 📊 **Fuentes de datos:** ver [docs/fuentes-de-datos.md](docs/fuentes-de-datos.md)
 
+🛠️ **Desarrollo local:** ver [docs/desarrollo.md](docs/desarrollo.md)
+
 > Tarea: [TASK-01 Definir alcance de negocio del proyecto](https://github.com/EKOU-Solutions/EKOU-Elephants/issues/1)
 
 ## Objetivo del proyecto

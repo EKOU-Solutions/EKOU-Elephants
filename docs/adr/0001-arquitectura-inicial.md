@@ -42,12 +42,12 @@ Se ejecutarán en Node.js local o desde CI, fuera de Workers. Las migraciones re
 
 ## DoD del arquetipo
 
-- [ ] Frontend y API arrancan localmente con instrucciones y configuración de ejemplo.
+- [x] Frontend y API arrancan localmente con instrucciones y configuración de ejemplo. *(build y runtime de Workers verificados; ver [desarrollo](../desarrollo.md))*
 - [ ] Una ruta de prueba verifica el flujo HTTP → caso de uso → adaptador PostgreSQL; dominio y aplicación no dependen de Hono ni Neon.
-- [ ] Migraciones reproducibles en PostgreSQL local y Neon, con historial para no reaplicar cambios y procedimiento de traslado de datos.
-- [ ] Entradas validadas, consultas parametrizadas, secretos solo en servidor y errores controlados.
-- [ ] Pruebas relevantes de casos de uso, integración y rutas/middleware; dependencias revisadas contra avisos vigentes.
-- [ ] Compilación y consumo del endpoint comprobados en Workers. Automatización de CI/CD y despliegues: tarea #5.
+- [ ] Migraciones reproducibles en PostgreSQL local (verificado: up, idempotente, down, up) y Neon (pendiente), con historial para no reaplicar cambios y procedimiento de traslado de datos.
+- [x] Entradas validadas, consultas parametrizadas, secretos solo en servidor y errores controlados.
+- [x] Pruebas relevantes de casos de uso, integración y rutas/middleware; dependencias revisadas contra avisos vigentes.
+- [x] Compilación y consumo del endpoint comprobados en Workers *(local, workerd; falta contra Neon)*. Automatización de CI/CD y despliegues: tarea #5.
 
 ## Scaffold propuesto
 

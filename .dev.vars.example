@@ -1,0 +1,2 @@
+# Copy to .dev.vars for `npm run dev` (Workers runtime). Server-side only; never exposed to the client.
+DATABASE_URL=postgres://postgres:postgres@localhost:5432/elephants
