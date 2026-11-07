@@ -132,7 +132,47 @@ Cada mes se publica una **foto versionada** (`2026-11`, `2026-12`…) y no se so
 
 ---
 
-## Decisión 6: estándares de publicación
+## Decisión 6: caché
+
+El corte cambia una vez al mes, pero se lee miles de veces. La caché se define en tres niveles, cada uno con un objetivo distinto.
+
+### 6.1 Caché de extracción (pipeline)
+
+**Objetivo:** no volver a descargar de datos.gov.co lo que no cambió, y poder retomar una ejecución que falló a mitad.
+
+| Opción | Ventajas | Desventajas |
+|---|---|---|
+| **Saltar fuentes sin cambios** usando `rowsUpdatedAt` de los metadatos (`/api/views/{id}.json`) ✅ | CUIPO solo cambia cada trimestre: en 2 de cada 3 meses no hace falta descargarlo; consulta barata | Solo sirve a nivel de dataset completo |
+| **`raw/` como caché por consulta** (dataset + filtros + fecha de corte) ✅ | Si la ejecución falla, al reintentar solo se descarga lo que faltaba; base de la idempotencia | Ocupa disco durante la ejecución |
+| **`actions/cache` de GitHub** para `raw/` entre ejecuciones | Conserva lo descargado entre reintentos del mismo mes | Límite de almacenamiento por repo; las entradas sin uso se borran |
+| Sin caché | Simple | Cada reintento vuelve a bajar millones de filas y se expone más a los límites de la API |
+
+**Propuesta:** saltar las fuentes sin cambios con `rowsUpdatedAt`, y usar `raw/` versionado por corte como caché, persistido con `actions/cache` durante el mes. También se cachean las dependencias de Python en CI.
+
+### 6.2 Caché de publicación (Vercel)
+
+**Objetivo:** que el mapa cargue rápido desde el CDN **sin servir un corte viejo** después de publicar uno nuevo.
+
+| Opción | Ventajas | Desventajas |
+|---|---|---|
+| **Rutas versionadas por corte + caché inmutable** ✅ (`/datos/2026-11/mapa.geojson` con `Cache-Control: public, max-age=31536000, immutable`) | El navegador y el CDN guardan el archivo para siempre sin riesgo, porque un corte nuevo usa otra ruta; no hay que invalidar nada | Hace falta un puntero al corte vigente |
+| **Puntero `latest.json` con caché corta** ✅ (`s-maxage` bajo + `stale-while-revalidate`) | La app descubre el corte nuevo en minutos; si el origen falla, se sigue sirviendo el anterior | Una consulta extra y muy liviana al cargar |
+| Sobrescribir los mismos archivos e invalidar la caché | Una sola ruta | Riesgo de servir datos viejos o mezclados entre cortes; Vercel Blob sirve con caché de CDN de larga duración, así que sobrescribir un archivo puede seguir mostrando la versión anterior |
+| Sin caché (siempre al origen) | Siempre fresco | Lento y costoso; no aprovecha el CDN |
+
+**Propuesta:** rutas versionadas inmutables más un puntero `latest.json`. Además, el *Deploy Hook* regenera las páginas que muestran cifras del corte, para que todo cambie al mismo tiempo.
+
+### 6.3 Caché de consultas (buscador, fase posterior)
+
+**Objetivo:** que las búsquedas frecuentes no golpeen PostgreSQL cada vez.
+
+- Las respuestas de la API del buscador llevan `Cache-Control` con `s-maxage` en el CDN de Vercel. Como los datos solo cambian una vez al mes, se pueden cachear por días.
+- La caché se invalida al publicar un corte nuevo, o se incluye el corte en la clave de caché.
+- Si el uso crece, se puede agregar una caché de aplicación (Redis desde el Marketplace de Vercel). No hace falta en el MVP.
+
+---
+
+## Decisión 7: estándares de publicación
 
 Para que el proyecto sea de estándar global y verificable por las comunidades, todo lo que produce el pipeline se publica como **dato abierto** siguiendo estándares internacionales:
 
@@ -157,7 +197,7 @@ Para que el proyecto sea de estándar global y verificable por las comunidades, 
 ```mermaid
 flowchart LR
   subgraph GH[GitHub Actions · mensual · público]
-    API[datos.gov.co<br/>API Socrata] -->|extracción paginada| RAW[raw<br/>Parquet tal cual]
+    API[datos.gov.co<br/>API Socrata] -->|solo fuentes con cambios<br/>rowsUpdatedAt| RAW[raw · caché por corte<br/>Parquet tal cual]
     RAW -->|limpieza · SQL DuckDB| STG[staging<br/>tipos, código DANE]
     STG -->|cruces y agregaciones| MART[mart<br/>mapa_municipios]
     MART --> QA{compuertas<br/>de calidad}
@@ -165,9 +205,10 @@ flowchart LR
   end
   QA -->|pasa| REL[GitHub Release<br/>corte AAAA-MM · histórico]
   subgraph V[Vercel]
-    QA -->|pasa · GeoJSON| CDN[CDN · mapa]
-    QA -->|pasa · Parquet / CSV / OCDS<br/>+ datapackage.json| BLOB[Vercel Blob · corte vigente]
-    CDN --> APP[App EKOU-Elephants]
+    QA -->|pasa · /datos/AAAA-MM/<br/>caché inmutable| BLOB[Vercel Blob + CDN<br/>GeoJSON · Parquet · CSV · OCDS]
+    QA -->|pasa| LATEST[latest.json<br/>caché corta]
+    LATEST --> APP[App EKOU-Elephants]
+    BLOB --> APP
   end
 ```
 
@@ -176,7 +217,7 @@ flowchart LR
 3. **Cruces y agregación:** tabla `mapa_municipios` con código DANE, coordenadas, presupuesto asignado y pagado, número y valor de obras, y obras suspendidas o vencidas.
 4. **Salida:** GeoJSON para el mapa; Parquet, CSV y OCDS para descarga, cada uno con su `datapackage.json`; y un **reporte de calidad** con campos vacíos, duplicados, registros que no se pudieron vincular y valores atípicos.
 5. **Compuertas de calidad:** si el corte no las pasa, se detiene y se abre un issue.
-6. **Publicación:** se crea un GitHub Release del mes (histórico), se sube el corte vigente a Vercel Blob y se dispara el Deploy Hook de Vercel.
+6. **Publicación:** se crea un GitHub Release del mes (histórico), se sube el corte a Vercel Blob en su ruta versionada (`/datos/AAAA-MM/`), se actualiza el puntero `latest.json` y se dispara el Deploy Hook de Vercel.
 
 ---
 
@@ -197,6 +238,6 @@ flowchart LR
 
 ## Pendiente de decidir con el equipo
 
-- [ ] Validar la propuesta de cada decisión (1 a 6)
+- [ ] Validar la propuesta de cada decisión (1 a 7)
 - [ ] Definir la ventana de análisis (¿últimos 5 años?) y los umbrales de las compuertas de calidad
 - [ ] Confirmar con TASK-03 (#4) que la app consume los archivos estáticos publicados en Vercel
