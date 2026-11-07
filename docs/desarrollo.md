@@ -1,5 +1,7 @@
 # Desarrollo local
 
+La organización del código, los módulos verticales y los puertos y adaptadores se describen en [Arquitectura](arquitectura.md).
+
 Requisitos: Node.js ≥ 22 y una base PostgreSQL (local con `docker compose up -d --wait`, o una rama de Neon). En macOS: `brew install docker docker-compose colima && colima start`.
 
 ```bash

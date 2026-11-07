@@ -12,7 +12,7 @@
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "migrate": "node-pg-migrate --migrations-dir migrations --migration-file-language sql --database-url-var DATABASE_URL",
+    "migrate": "node --env-file-if-exists=.env node_modules/node-pg-migrate/bin/node-pg-migrate.js --migrations-dir migrations --migration-file-language sql",
     "db:seed": "node --env-file-if-exists=.env scripts/seed-dev.mjs",
     "cf-typegen": "wrangler types"
   },

@@ -51,6 +51,8 @@ Se ejecutarán en Node.js local o desde CI, fuera de Workers. Las migraciones re
 
 ## Scaffold propuesto
 
+Responsabilidades, dependencias y ejemplo del flujo implementado: [Arquitectura y organización del código](../arquitectura.md).
+
 ```text
 src/
   client/
