@@ -112,12 +112,17 @@ class SocrataClient:
                 reason = f"{type(exc).__name__}: {exc}"
             else:
                 if response.status_code == httpx.codes.OK:
-                    return response.json()
-                if response.status_code not in _RETRYABLE_STATUS:
+                    try:
+                        return response.json()
+                    except ValueError as exc:
+                        # Observado a escala: HTTP 200 con el JSON cortado a mitad.
+                        reason = f"respuesta incompleta ({len(response.content)} bytes): {exc}"
+                elif response.status_code not in _RETRYABLE_STATUS:
                     raise SocrataError(
                         f"GET {path} → HTTP {response.status_code}: {response.text[:500]}"
                     )
-                reason = f"HTTP {response.status_code}"
+                else:
+                    reason = f"HTTP {response.status_code}"
             if attempt == attempts:
                 raise SocrataError(f"GET {path} falló tras {attempts} intentos: {reason}")
             wait = self._settings.backoff_base_s * 2 ** (attempt - 1)

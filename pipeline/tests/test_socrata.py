@@ -56,6 +56,19 @@ def test_retries_transient_errors(client: SocrataClient) -> None:
 
 
 @respx.mock
+def test_retries_truncated_json_body(client: SocrataClient) -> None:
+    """Visto en producción: HTTP 200 con el JSON cortado a mitad de una página de 67 MB."""
+    route = respx.get(RESOURCE).mock(
+        side_effect=[
+            httpx.Response(200, content=b'[{":id": "row-1", "a": "trunc'),
+            httpx.Response(200, json=[{":id": "row-1", "a": "1"}]),
+        ]
+    )
+    assert client.query("abcd-1234", {}) == [{":id": "row-1", "a": "1"}]
+    assert route.call_count == 2
+
+
+@respx.mock
 def test_gives_up_after_max_retries(client: SocrataClient) -> None:
     respx.get(RESOURCE).mock(return_value=httpx.Response(503))
     with pytest.raises(SocrataError, match="3 intentos"):
