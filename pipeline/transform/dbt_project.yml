@@ -26,6 +26,7 @@ models:
 
 seeds:
   ekou:
-    +column_types:
-      cod_mpio: varchar
-      cod_dpto: varchar
+    alias_municipios:
+      +column_types: {cod_dpto: varchar, cod_mpio: varchar}
+    alias_departamentos:
+      +column_types: {cod_dpto: varchar}
