@@ -2,6 +2,8 @@
 
 📊 **Fuentes de datos:** ver [docs/fuentes-de-datos.md](docs/fuentes-de-datos.md)
 
+**Design:** [Visual direction and review rounds](docs/design/README.md).
+
 > Tarea: [TASK-01 Definir alcance de negocio del proyecto](https://github.com/EKOU-Solutions/EKOU-Elephants/issues/1)
 
 ## Objetivo del proyecto

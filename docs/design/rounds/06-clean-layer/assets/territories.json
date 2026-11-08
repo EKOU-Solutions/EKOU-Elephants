@@ -1,0 +1,233 @@
+[
+  {
+    "name": "Amazonas",
+    "id": "CO-AMA",
+    "available": 100,
+    "analyzed": 100,
+    "flagged": 0
+  },
+  {
+    "name": "Antioquia",
+    "id": "CO-ANT",
+    "available": 150,
+    "analyzed": 120,
+    "flagged": 36
+  },
+  {
+    "name": "Arauca",
+    "id": "CO-ARA",
+    "available": 120,
+    "analyzed": 120,
+    "flagged": 46
+  },
+  {
+    "name": "Archipiélago de San Andrés, Providencia y Santa Catalina",
+    "id": "CO-SAP",
+    "available": 130,
+    "analyzed": 130,
+    "flagged": 0
+  },
+  {
+    "name": "Atlántico",
+    "id": "CO-ATL",
+    "available": 140,
+    "analyzed": 140,
+    "flagged": 17
+  },
+  {
+    "name": "Bogotá, D. C.",
+    "id": "CO-DC",
+    "available": 150,
+    "analyzed": 150,
+    "flagged": 57
+  },
+  {
+    "name": "Bolívar",
+    "id": "CO-BOL",
+    "available": 160,
+    "analyzed": 160,
+    "flagged": 0
+  },
+  {
+    "name": "Boyacá",
+    "id": "CO-BOY",
+    "available": 170,
+    "analyzed": 170,
+    "flagged": 20
+  },
+  {
+    "name": "Caldas",
+    "id": "CO-CAL",
+    "available": 100,
+    "analyzed": 100,
+    "flagged": 25
+  },
+  {
+    "name": "Caquetá",
+    "id": "CO-CAQ",
+    "available": 190,
+    "analyzed": 190,
+    "flagged": 0
+  },
+  {
+    "name": "Casanare",
+    "id": "CO-CAS",
+    "available": 200,
+    "analyzed": 200,
+    "flagged": 24
+  },
+  {
+    "name": "Cauca",
+    "id": "CO-CAU",
+    "available": 210,
+    "analyzed": 210,
+    "flagged": 80
+  },
+  {
+    "name": "Cesar",
+    "id": "CO-CES",
+    "available": 220,
+    "analyzed": 220,
+    "flagged": 0
+  },
+  {
+    "name": "Chocó",
+    "id": "CO-CHO",
+    "available": 230,
+    "analyzed": 230,
+    "flagged": 28
+  },
+  {
+    "name": "Córdoba",
+    "id": "CO-COR",
+    "available": 240,
+    "analyzed": 240,
+    "flagged": 91
+  },
+  {
+    "name": "Cundinamarca",
+    "id": "CO-CUN",
+    "available": 250,
+    "analyzed": 250,
+    "flagged": 0
+  },
+  {
+    "name": "Guainía",
+    "id": "CO-GUA",
+    "available": 260,
+    "analyzed": 260,
+    "flagged": 31
+  },
+  {
+    "name": "Guaviare",
+    "id": "CO-GUV",
+    "available": 270,
+    "analyzed": 270,
+    "flagged": 103
+  },
+  {
+    "name": "Huila",
+    "id": "CO-HUI",
+    "available": 280,
+    "analyzed": 280,
+    "flagged": 0
+  },
+  {
+    "name": "La Guajira",
+    "id": "CO-LAG",
+    "available": 290,
+    "analyzed": 290,
+    "flagged": 35
+  },
+  {
+    "name": "Magdalena",
+    "id": "CO-MAG",
+    "available": 300,
+    "analyzed": 300,
+    "flagged": 114
+  },
+  {
+    "name": "Meta",
+    "id": "CO-MET",
+    "available": 310,
+    "analyzed": 310,
+    "flagged": 0
+  },
+  {
+    "name": "Nariño",
+    "id": "CO-NAR",
+    "available": 320,
+    "analyzed": 320,
+    "flagged": 38
+  },
+  {
+    "name": "Norte de Santander",
+    "id": "CO-NSA",
+    "available": 330,
+    "analyzed": 330,
+    "flagged": 125
+  },
+  {
+    "name": "Putumayo",
+    "id": "CO-PUT",
+    "available": 340,
+    "analyzed": 340,
+    "flagged": 0
+  },
+  {
+    "name": "Quindío",
+    "id": "CO-QUI",
+    "available": 350,
+    "analyzed": 350,
+    "flagged": 42
+  },
+  {
+    "name": "Risaralda",
+    "id": "CO-RIS",
+    "available": 360,
+    "analyzed": 360,
+    "flagged": 137
+  },
+  {
+    "name": "Santander",
+    "id": "CO-SAN",
+    "available": 370,
+    "analyzed": 370,
+    "flagged": 0
+  },
+  {
+    "name": "Sucre",
+    "id": "CO-SUC",
+    "available": 380,
+    "analyzed": 380,
+    "flagged": 46
+  },
+  {
+    "name": "Tolima",
+    "id": "CO-TOL",
+    "available": 390,
+    "analyzed": 390,
+    "flagged": 148
+  },
+  {
+    "name": "Valle del Cauca",
+    "id": "CO-VAC",
+    "available": 400,
+    "analyzed": 400,
+    "flagged": 0
+  },
+  {
+    "name": "Vaupés",
+    "id": "CO-VAU",
+    "available": 80,
+    "analyzed": 0,
+    "flagged": null
+  },
+  {
+    "name": "Vichada",
+    "id": "CO-VID",
+    "available": 420,
+    "analyzed": 420,
+    "flagged": 160
+  }
+]

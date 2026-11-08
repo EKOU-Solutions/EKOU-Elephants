@@ -1,0 +1,405 @@
+<!doctype html>
+<html lang="es" data-font="a">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Elephants · Sistema de diseño</title>
+<style>
+__FONTFACES__
+__TOKENS_CSS__
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:72px}
+body{margin:0;background:var(--el-color-surface);color:var(--el-color-text);font-family:var(--el-font-ui);font-size:16px;line-height:1.5;font-variant-numeric:var(--el-numbers)}
+h1,h2,h3,h4,p,ul,ol,figure,dl{margin:0}
+h1,h2{font-family:var(--el-font-display);font-weight:700;letter-spacing:-.01em;line-height:1.2}
+h1{font-size:30px}h2{font-size:26px}h3{font-size:18px;font-weight:700;line-height:1.3}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px}
+a{color:var(--el-color-action);text-underline-offset:3px}
+:is(a,button,input,select,summary):focus-visible{outline:var(--el-focus-width) solid var(--el-color-focus);outline-offset:var(--el-focus-offset)}
+[hidden]{display:none!important}
+
+/* Page frame */
+.top{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:12px 24px;background:var(--el-color-surface);border-bottom:var(--el-rule-strong) solid var(--el-color-line-strong)}
+.examples-link{font-weight:600;font-size:15px}.brand{font-weight:700;font-size:17px;margin-right:auto}.brand span{color:var(--el-color-action)}.brand small{font-weight:400;color:var(--el-color-text-muted);font-size:14px;margin-left:8px}
+.switch{display:flex;align-items:center;gap:8px;font-size:14px}.switch label{color:var(--el-color-text-muted)}
+.switch select{font:inherit;min-height:44px;padding:6px 10px;border:1px solid var(--el-color-control-border);border-radius:var(--el-control-radius);background:var(--el-color-surface);color:var(--el-color-text)}
+.layout{display:grid;grid-template-columns:240px minmax(0,1fr);max-width:1240px;margin:0 auto}
+.toc{position:sticky;top:69px;align-self:start;max-height:calc(100vh - 69px);overflow:auto;padding:24px 16px 24px 24px;border-right:1px solid var(--el-color-line);font-size:15px}
+.toc p{font-size:14px;font-weight:700;color:var(--el-color-text-muted);margin:16px 0 4px}.toc p:first-child{margin-top:0}
+.toc ul{list-style:none;padding:0}.toc a{display:block;padding:6px 0;color:var(--el-color-text);text-decoration:none}.toc a:hover{color:var(--el-color-action);text-decoration:underline}
+main{padding:32px 40px 64px;min-width:0}
+.intro{max-width:70ch;padding-bottom:32px;border-bottom:1px solid var(--el-color-line)}
+.intro h1{margin-bottom:12px}.intro p{color:var(--el-color-text-muted)}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.roles{display:grid;grid-template-columns:repeat(3,1fr);gap:16px 24px;margin-top:24px}
+.roles div{border-top:var(--el-rule-strong) solid var(--el-color-line-strong);padding-top:10px}.roles h3{font-size:16px;margin-bottom:4px}.roles p{font-size:14px}
+
+/* Section template: what, specimen, use, tokens, do/don't, code, a11y */
+.doc{padding:48px 0;border-bottom:1px solid var(--el-color-line)}
+.doc>header{max-width:70ch;margin-bottom:24px}.doc>header p{color:var(--el-color-text-muted);margin-top:6px}
+.kind{display:inline-block;font-size:14px;font-weight:600;color:var(--el-color-action);margin-bottom:4px}
+.specimen{border:1px solid var(--el-color-line);border-radius:var(--el-control-radius);padding:24px;margin-bottom:24px}
+.specimen-row{display:flex;flex-wrap:wrap;gap:24px 32px;align-items:flex-start}
+.cell{display:grid;gap:8px;justify-items:start;min-width:0}
+.cell>small{font-size:13px;color:var(--el-color-text-muted)}
+.facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px 40px}
+.facts h3{font-size:16px;margin-bottom:8px}.facts>div{min-width:0}.tokens code,.facts code,.roles code,.a11y code{overflow-wrap:anywhere}
+.facts ul{padding-left:18px;font-size:15px}.facts li+li{margin-top:4px}
+.tokens{width:100%;border-collapse:collapse;font-size:14px}
+.tokens th,.tokens td{text-align:left;padding:6px 8px 6px 0;border-bottom:1px solid var(--el-color-line);font-weight:400;vertical-align:top}
+.tokens th{color:var(--el-color-text-muted)}
+.dodont{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:24px}
+.dodont>div{padding:12px 16px;border-top:3px solid;font-size:15px}
+.dodont .do{border-color:var(--el-color-success)}.dodont .dont{border-color:var(--el-color-danger)}
+.dodont h3{font-size:15px;margin-bottom:4px;display:flex;gap:6px;align-items:center}
+.dodont h3 svg{width:18px;height:18px}
+.dodont .do h3{color:var(--el-color-success)}.dodont .dont h3{color:var(--el-color-danger)}
+.dodont ul{padding-left:18px}
+details.code{margin-top:20px;font-size:14px}
+details.code summary{min-height:44px;padding:10px 0;cursor:pointer;font-weight:600;color:var(--el-color-action)}
+details.code pre{margin:0;padding:16px;overflow:auto;background:var(--el-color-surface-subtle);border-radius:var(--el-control-radius);line-height:1.45}
+.callout{display:flex;gap:12px;align-items:flex-start;margin:0 0 24px;padding:14px 16px;background:var(--el-color-action-soft);border:1px solid var(--el-color-action);border-radius:var(--el-control-radius);font-size:15px}.callout svg{width:20px;height:20px;color:var(--el-color-action);flex-shrink:0;margin-top:2px}
+.a11y{margin-top:16px;font-size:14px;color:var(--el-color-text-muted);max-width:80ch}.a11y strong{color:var(--el-color-text)}
+
+/* Foundations */
+.swatches{width:100%;border-collapse:collapse;font-size:14px}
+.swatches th,.swatches td{padding:8px 12px 8px 0;border-bottom:1px solid var(--el-color-line);text-align:left;font-weight:400;vertical-align:middle}
+.swatches thead th{font-weight:700;border-bottom:var(--el-rule-strong) solid var(--el-color-line-strong)}
+.swatches tbody th{font-weight:600}.swatches tbody th code{display:block;font-weight:400;color:var(--el-color-text-muted)}
+.swatches .el-group th{padding-top:20px;font-weight:700;color:var(--el-color-text-muted);border-bottom:0}
+.swatches td{white-space:nowrap}.swatches td code{margin-left:10px}
+.el-swatch{display:inline-block;vertical-align:middle;width:56px;height:28px;border-radius:var(--el-mark-radius);background:var(--sw);box-shadow:inset 0 0 0 1px rgba(127,127,127,.35)}
+.el-swatch-hatch{background:repeating-linear-gradient(135deg,var(--sw-bg) 0 4px,var(--sw) 4px 5px)}
+.el-swatch-on-dark{outline:4px solid #121A21}
+.type-specimen{display:grid;gap:14px}
+.type-specimen>div{display:grid;grid-template-columns:150px minmax(0,1fr);gap:16px;align-items:baseline;padding-bottom:12px;border-bottom:1px solid var(--el-color-line)}
+.type-specimen small{font-size:13px;color:var(--el-color-text-muted)}
+.t-display{font-family:var(--el-font-display);font-size:40px;font-weight:700;line-height:1.1;letter-spacing:-.015em}
+.t-title{font-family:var(--el-font-display);font-size:30px;font-weight:700;line-height:1.2}
+.t-section{font-family:var(--el-font-display);font-size:22px;font-weight:700}
+.t-sub{font-size:18px;font-weight:700}.t-body{font-size:16px}.t-small{font-size:14px;color:var(--el-color-text-muted)}
+.t-figure{font-size:48px;font-weight:700;line-height:1.05;letter-spacing:-.02em}
+.digits{font-size:28px;font-weight:600;letter-spacing:.02em}
+.spacing{list-style:none;padding:0;display:flex;flex-wrap:wrap;gap:20px;align-items:flex-end}
+.spacing li{display:grid;justify-items:start;gap:6px;font-size:13px}.spacing li>span:first-child{display:block;background:var(--el-color-action)}.spacing li>span:last-child{color:var(--el-color-text-muted)}
+.icons{list-style:none;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:16px}
+.icons li{display:grid;gap:4px;font-size:14px}.icons svg{width:24px;height:24px}.icons code{color:var(--el-color-text-muted);font-size:12px}
+.voice{width:100%;border-collapse:collapse;font-size:15px}
+.voice th,.voice td{text-align:left;padding:10px 16px 10px 0;border-bottom:1px solid var(--el-color-line);vertical-align:top;font-weight:400}
+.voice thead th{font-weight:700;border-bottom:var(--el-rule-strong) solid var(--el-color-line-strong)}
+.voice tbody th{font-weight:600}.voice .no{color:var(--el-color-danger);text-decoration:line-through;text-decoration-thickness:1px}
+
+__COMPONENTS_CSS__
+@media(max-width:900px){
+  .layout{grid-template-columns:1fr}
+  .toc{position:static;max-height:none;border-right:0;border-bottom:1px solid var(--el-color-line);padding:16px 20px}
+  .toc ul{display:flex;flex-wrap:wrap;gap:0 16px}
+  main{padding:24px 20px 48px}
+  .roles,.facts,.dodont,.mapcard{grid-template-columns:1fr}
+  .top{padding:10px 16px}
+}
+@media(max-width:560px){
+  h1{font-size:26px}h2{font-size:23px}
+  .type-specimen>div{grid-template-columns:1fr;gap:4px}
+  .t-display{font-size:32px}.t-figure,.el-figure .value{font-variant-numeric:tabular-nums;font-size:40px}
+  .specimen{padding:16px}
+  .brand small{display:none}
+  .swatches td{white-space:normal}.swatches td code{display:block;margin:4px 0 0}.swatches .el-swatch{width:44px}
+}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<header class="top">
+  <span class="brand"><span>EKOU</span> Elephants <small>Sistema de diseño · Ronda 05</small></span>
+  <a class="examples-link" href="examples.html">Ver ejemplos reales</a>
+  <div class="switch"><label for="theme">Tema</label><select id="theme"><option value="">Según el dispositivo</option><option value="light">Claro</option><option value="dark">Oscuro</option></select></div>
+  <div class="switch"><label for="font">Tipografía</label><select id="font"><option value="a">A · Public Sans</option><option value="b">B · Source Sans 3 + Serif 4</option></select></div>
+</header>
+<div class="layout">
+<nav class="toc" aria-label="Contenido">
+  <p>Empezar</p><ul><li><a href="#uso">Cómo usar esta guía</a></li><li><a href="#principios">Principios</a></li></ul>
+  <p>Fundamentos</p><ul><li><a href="#color">Color</a></li><li><a href="#tipografia">Tipografía</a></li><li><a href="#espaciado">Espaciado y forma</a></li><li><a href="#iconos">Íconos</a></li><li><a href="#voz">Voz y tono</a></li></ul>
+  <p>Componentes</p><ul><li><a href="#boton">Botón</a></li><li><a href="#alerta">Alerta</a></li><li><a href="#campo">Campo de formulario</a></li><li><a href="#etiqueta">Etiqueta de riesgo</a></li><li><a href="#contador">Contador</a></li><li><a href="#filtro">Filtro activo</a></li><li><a href="#cifra">Cifra destacada</a></li><li><a href="#tabla">Tabla de datos</a></li><li><a href="#mapa">Mapa con leyenda</a></li></ul>
+</nav>
+<main>
+  <section class="intro" id="uso">
+    <h1>Sistema de diseño de Elephants</h1>
+    <p>La referencia para diseñar y construir Elephants. Cada pieza dice qué es, cuándo usarla, cómo se ve en cada estado, qué tokens usa y cómo se escribe en código. Todos los datos de esta página son ficticios.</p>
+    <h2 class="vh">Cómo usarla según tu rol</h2>
+    <div class="roles">
+      <div><h3>Si construyes (dev)</h3><p>Importa <code>tokens.css</code>. Usa solo variables <code>--el-*</code> (el = Elephants); nunca un hex suelto. Copia la estructura del bloque «Código» de cada componente.</p></div>
+      <div><h3>Si diseñas la experiencia (UX)</h3><p>Lee «Cuándo usarlo», «Hacer» y «Evitar». La sección Voz y tono define cómo hablamos de una señal.</p></div>
+      <div><h3>Si diseñas la interfaz (UI)</h3><p>Compón con estas piezas y tokens. Revisa cada pantalla en tema claro y oscuro, y en un celular primero.</p></div>
+    </div>
+  </section>
+
+  <section class="doc" id="principios" aria-labelledby="h-principios">
+    <header><span class="kind">Empezar</span><h2 id="h-principios">Principios</h2><p>Cinco reglas para decidir cuando una pieza no cubre tu caso.</p></header>
+    <table class="voice"><tbody>
+      <tr><th scope="row">El dato es lo primero</th><td>La interfaz es sobria para que el mapa y las cifras se lean primero. El color fuerte se reserva para los datos.</td></tr>
+      <tr><th scope="row">Una señal pide revisar</th><td>Decimos el hecho con fuerza y con su número, siempre con fuente, periodo y cobertura. No damos veredictos.</td></tr>
+      <tr><th scope="row">El color nunca va solo</th><td>Todo color lleva una etiqueta, una forma o una trama. La información también existe en texto o en una tabla.</td></tr>
+      <tr><th scope="row">Sin datos no es cero</th><td>Lo que no se analizó se muestra con trama gris y «Sin datos». Nunca como 0% ni como riesgo bajo.</td></tr>
+      <tr><th scope="row">Celular primero</th><td>Cada pieza funciona a 320 px, con controles de 44 px y sin depender del hover. Lo que se comparte en una captura se entiende solo.</td></tr>
+    </tbody></table>
+  </section>
+
+  <section class="doc" id="color" aria-labelledby="h-color">
+    <header><span class="kind">Fundamento</span><h2 id="h-color">Color</h2><p>Cada color tiene una sola función. El riesgo va de claro a oscuro (bajo → alto) para que el orden se lea incluso sin distinguir colores. Cambia el tema arriba para ver los valores en oscuro.</p></header>
+    <div class="table-wrap"><table class="swatches"><thead><tr><th scope="col">Rol y token</th><th scope="col">Claro</th><th scope="col">Oscuro</th></tr></thead><tbody>__SWATCH_ROWS__</tbody></table></div>
+    <div class="facts" style="margin-top:24px">
+      <div><h3>Cuándo usarlo</h3><ul><li>Riesgo bajo, intermedio y alto: solo para rellenos de datos (mapa, etiquetas, barras).</li><li>Acción: botones, enlaces y foco.</li><li>Mensajes: alertas de la interfaz, nunca para calificar un territorio.</li></ul></div>
+      <div><h3>Reglas</h3><ul><li>Los rangos de cada categoría se definen en TASK-07; no inventes umbrales.</li><li>El verde solo confirma una acción terminada; no existe «territorio seguro».</li><li>Los rellenos de riesgo no son colores de texto.</li></ul></div>
+    </div>
+    <details class="code"><summary>Ver contraste comprobado (claro / oscuro)</summary><div class="table-wrap"><table class="el-table"><thead><tr><th>Uso</th><th class="el-num">Claro</th><th class="el-num">Oscuro</th><th class="el-num">Mínimo</th></tr></thead><tbody>__CONTRAST_ROWS__</tbody></table></div><p class="a11y">«Relieve»: los rellenos del mapa no alcanzan 3:1 contra la superficie; por eso van siempre con borde entre territorios, leyenda, etiqueta y tabla equivalente.</p></details>
+  </section>
+
+  <section class="doc" id="tipografia" aria-labelledby="h-tipografia">
+    <header><span class="kind">Fundamento</span><h2 id="h-tipografia">Tipografía</h2><p>Dos propuestas descargables, con números claros y alineados. Cambia entre A y B arriba para compararlas. La fuente se aloja con la aplicación: se ve igual en todos los dispositivos.</p></header>
+    <div class="specimen">
+      <div class="type-specimen">
+        <div><small>Display · 40 px</small><span class="t-display">La plata pública, a la vista</span></div>
+        <div><small>Título · 30 / 26 px</small><span class="t-title">Contratos de Antioquia</span></div>
+        <div><small>Sección · 22 px</small><span class="t-section">Obras con retraso</span></div>
+        <div><small>Subtítulo · 18 px</small><span class="t-sub">Solo una empresa se presentó</span></div>
+        <div><small>Texto · 16 px</small><span class="t-body">Esta obra lleva 2 años detenida y ya costó 40% más de lo firmado.</span></div>
+        <div><small>Secundario · 14 px</small><span class="t-small">Fuente: SECOP II · periodo 2025 · actualizado el 31 dic 2025</span></div>
+        <div><small>Cifra · 48 / 40 px</small><span class="t-figure">30% · 0% · 1.000</span></div>
+        <div><small>Dígitos tabulares</small><span class="digits">0123456789 · $ 12.450.000.000</span></div>
+      </div>
+    </div>
+    <p class="callout"><i data-lucide="info" aria-hidden="true"></i><span><strong>Display: uno por página.</strong> Solo para el titular de una página de entrada, como el de la página del Mapa. Frase corta, arriba de todo, 32 px en el celular. Las vistas de detalle (un contrato, la tabla de un territorio) empiezan con Título.</span></p>
+    <div class="facts">
+      <div><h3>Propuesta A · Public Sans</h3><ul><li>Una sola familia para todo. Diseñada para servicios públicos digitales (USWDS).</li><li>Neutral, muy legible en tamaños pequeños; cero sin barra.</li><li>Licencia OFL 1.1 · 1 archivo variable (~27 KB).</li></ul></div>
+      <div><h3>Propuesta B · Source Sans 3 + Source Serif 4</h3><ul><li>Serif para títulos y cifras de portada, sans para la interfaz: el tono de un especial periodístico.</li><li>Ambas con números claros y tabulares; cero sin barra.</li><li>Licencia OFL 1.1 · 2 archivos variables (~80 KB).</li></ul></div>
+    </div>
+    <table class="tokens" style="margin-top:24px"><thead><tr><th>Token</th><th>Valor</th></tr></thead><tbody>
+      <tr><td><code>--el-font-ui</code> / <code>--el-font-display</code></td><td>Familia de interfaz / de títulos</td></tr>
+      <tr><td><code>--el-size-*</code></td><td>display 40 · title 30 (26 móvil) · section 22 · subsection 18 · body 16 · small 14 · figure 48 (40 móvil)</td></tr>
+      <tr><td><code>--el-weight-*</code></td><td>body 400 · emphasis 600 · heading 700</td></tr>
+      <tr><td><code>--el-numbers</code></td><td>tabular-nums lining-nums (cifras alineadas en tablas)</td></tr>
+    </tbody></table>
+  </section>
+
+  <section class="doc" id="espaciado" aria-labelledby="h-espaciado">
+    <header><span class="kind">Fundamento</span><h2 id="h-espaciado">Espaciado y forma</h2><p>Una sola escala para todo el espacio. Las líneas organizan; no usamos tarjetas ni sombras.</p></header>
+    <div class="specimen"><ul class="spacing">__SPACING__</ul></div>
+    <table class="tokens"><thead><tr><th>Uso</th><th>Valor</th></tr></thead><tbody>
+      <tr><td>Dentro de un control</td><td><code>--el-space-12</code>–<code>--el-space-16</code></td></tr>
+      <tr><td>Entre elementos relacionados</td><td><code>--el-space-8</code>–<code>--el-space-12</code></td></tr>
+      <tr><td>Entre grupos / secciones</td><td><code>--el-space-24</code>–<code>--el-space-32</code> / <code>--el-space-48</code></td></tr>
+      <tr><td>Esquinas: marcas de datos / controles</td><td><code>--el-mark-radius</code> 2 px / <code>--el-control-radius</code> 6 px</td></tr>
+      <tr><td>Altura mínima de control</td><td><code>--el-control-height</code> 44 px</td></tr>
+      <tr><td>Líneas: separador / inicio de bloque</td><td><code>--el-rule</code> 1 px / <code>--el-rule-strong</code> 2 px</td></tr>
+    </tbody></table>
+  </section>
+
+  <section class="doc" id="iconos" aria-labelledby="h-iconos">
+    <header><span class="kind">Fundamento</span><h2 id="h-iconos">Íconos</h2><p>Lucide 0.468.0, trazo de 2 px. 20 px junto a texto, 24 px en alertas. Cada ícono acompaña una palabra.</p></header>
+    <div class="specimen"><ul class="icons">__ICONS__</ul></div>
+    <div class="dodont"><div class="do"><h3><i data-lucide="check" aria-hidden="true"></i>Hacer</h3><ul><li>Ícono + texto visible.</li><li>Si va solo, nombre accesible y área de 44 × 44 px.</li></ul></div><div class="dont"><h3><i data-lucide="x" aria-hidden="true"></i>Evitar</h3><ul><li>Emojis, íconos rellenos o de otra familia.</li><li>Calaveras, sirenas o escudos de «seguro» para hablar de riesgo.</li></ul></div></div>
+  </section>
+
+  <section class="doc" id="voz" aria-labelledby="h-voz">
+    <header><span class="kind">Fundamento</span><h2 id="h-voz">Voz y tono</h2><p>Directo y movilizador. La fuerza viene del hecho y del número, no del adjetivo. Ejemplos con datos ficticios.</p></header>
+    <div class="table-wrap"><table class="voice"><thead><tr><th scope="col">Patrón</th><th scope="col">Así lo decimos</th><th scope="col">Nunca</th></tr></thead><tbody>
+      <tr><th scope="row">Un solo oferente</th><td>Solo una empresa se presentó. Nadie más compitió por este contrato de $ 2.300 millones.</td><td class="no">Contrato amañado</td></tr>
+      <tr><th scope="row">Contratación directa repetida</th><td>La misma empresa recibió 6 contratos directos de esta alcaldía en 2025.</td><td class="no">Favorecimiento</td></tr>
+      <tr><th scope="row">Sobrecosto</th><td>Este contrato ya cuesta 40% más de lo firmado.</td><td class="no">Robo</td></tr>
+      <tr><th scope="row">Obra sin terminar</th><td>Esta obra lleva 2 años detenida. Debía entregarse en marzo de 2024.</td><td class="no">Obra fantasma</td></tr>
+      <tr><th scope="row">Riesgo bajo</th><td>Pocas señales en los contratos que analizamos.</td><td class="no">Territorio limpio</td></tr>
+    </tbody></table></div>
+    <div class="facts" style="margin-top:24px"><div><h3>Reglas</h3><ul><li>Frase corta, verbo activo, número concreto.</li><li>Siempre fuente y fecha cerca del dato.</li><li>Tuteamos: «Revisa», «Consulta».</li></ul></div><div><h3>Nunca</h3><ul><li>«Corrupción», «robo», «sospechoso» ni nombres de personas naturales (TASK-08).</li><li>Jerga de contratación sin traducir.</li></ul></div></div>
+  </section>
+
+  <section class="doc" id="boton" aria-labelledby="h-boton">
+    <header><span class="kind">Componente</span><h2 id="h-boton">Botón</h2><p>Ejecuta una acción en la pantalla actual. Para ir a otra página usa un enlace.</p></header>
+    <div class="specimen"><div class="specimen-row">
+      <div class="cell"><button class="el-btn el-btn-primary" type="button"><i data-lucide="search" aria-hidden="true"></i>Consultar contratos</button><small>Principal</small></div>
+      <div class="cell"><button class="el-btn el-btn-secondary" type="button">Limpiar filtros</button><small>Secundario</small></div>
+      <div class="cell"><button class="el-btn el-btn-text" type="button">Cómo se calcula</button><small>Texto</small></div>
+      <div class="cell"><button class="el-btn el-btn-primary" type="button" disabled>Consultar contratos</button><small>Deshabilitado</small></div>
+      <div class="cell"><button class="el-btn el-btn-primary" type="button" disabled aria-busy="true"><i data-lucide="loader-circle" aria-hidden="true"></i>Consultando…</button><small>Cargando</small></div>
+    </div></div>
+    <div class="facts">
+      <div><h3>Cuándo usarlo</h3><ul><li>Principal: la acción más importante del grupo. Una sola.</li><li>Secundario: acompaña a la principal.</li><li>Texto: acciones de bajo peso, como abrir una explicación.</li></ul></div>
+      <div><h3>Tokens</h3><table class="tokens"><tbody><tr><td>Fondo / texto principal</td><td><code>--el-color-action</code> / <code>--el-color-on-action</code></td></tr><tr><td>Hover</td><td><code>--el-color-action-hover</code></td></tr><tr><td>Borde secundario</td><td><code>--el-color-control-border</code></td></tr><tr><td>Altura / radio</td><td><code>--el-control-height</code> / <code>--el-control-radius</code></td></tr></tbody></table></div>
+    </div>
+    <div class="dodont"><div class="do"><h3><i data-lucide="check" aria-hidden="true"></i>Hacer</h3><ul><li>Verbo concreto: «Consultar contratos».</li><li>Explicar cerca por qué está deshabilitado.</li></ul></div><div class="dont"><h3><i data-lucide="x" aria-hidden="true"></i>Evitar</h3><ul><li>Dos botones principales juntos.</li><li>«Enviar», «OK» o «Clic aquí».</li></ul></div></div>
+    <details class="code"><summary>Código</summary><pre><code>&lt;button class="el-btn el-btn-primary" type="button"&gt;
+  &lt;svg aria-hidden="true"&gt;…&lt;/svg&gt;Consultar contratos
+&lt;/button&gt;
+&lt;button class="el-btn el-btn-secondary" type="button"&gt;Limpiar filtros&lt;/button&gt;
+&lt;button class="el-btn el-btn-primary" type="button" disabled aria-busy="true"&gt;Consultando…&lt;/button&gt;</code></pre></details>
+    <p class="a11y"><strong>Accesibilidad:</strong> elemento <code>button</code> nativo; foco visible de 3 px; <code>disabled</code> real (no solo opacidad); <code>aria-busy</code> mientras carga para evitar dobles envíos.</p>
+  </section>
+
+  <section class="doc" id="alerta" aria-labelledby="h-alerta">
+    <header><span class="kind">Componente</span><h2 id="h-alerta">Alerta</h2><p>Avisa algo sobre la interfaz o la información: qué pasó y qué puede hacer la persona. Tres variantes según dónde aparece. El color está en el ícono y el borde; el texto queda en tinta para leerse bien. No califica territorios.</p></header>
+    <div class="specimen">
+      <div class="variant"><h3>Banner · arriba de una página o vista</h3>
+        <div class="el-banner el-alert-warning"><i data-lucide="triangle-alert" aria-hidden="true"></i><p class="msg"><strong>Faltan 30 contratos por analizar.</strong> Analizamos 120 de 150; las cifras pueden cambiar.</p><a href="#cifra">Ver cobertura</a></div>
+        <div class="el-banner el-alert-info"><i data-lucide="info" aria-hidden="true"></i><p class="msg"><strong>Estás viendo datos de ejemplo.</strong> Ningún contrato de esta guía es real.</p></div>
+      </div>
+      <div class="variant"><h3>En línea · dentro de una sección (por defecto)</h3>
+        <div class="el-alert el-alert-danger" role="alert"><span class="badge"><i data-lucide="circle-alert" aria-hidden="true"></i></span><strong>No cargaron los contratos</strong><p>Revisa tu conexión y vuelve a intentarlo. El mapa se mostrará cuando lleguen los datos.</p><div class="actions"><button class="el-btn el-btn-secondary" type="button">Volver a intentar</button><a href="#mapa">Ver estado del servicio</a></div></div>
+        <div class="el-alert el-alert-success"><span class="badge"><i data-lucide="circle-check" aria-hidden="true"></i></span><strong>Filtro aplicado: Antioquia</strong><p>Todo lo que ves ahora es de Antioquia.</p></div>
+        <div class="el-alert el-alert-info"><span class="badge"><i data-lucide="info" aria-hidden="true"></i></span><strong>Así contamos</strong><p>Un contrato con varias señales cuenta una sola vez.</p></div>
+      </div>
+      <div class="variant"><h3>Nota compacta · junto a un dato</h3>
+        <div class="specimen-row">
+          <div class="mini-figure"><span class="label">Contratos con señales</span><span class="v">30%</span><span class="el-inline-note el-alert-warning"><i data-lucide="triangle-alert" aria-hidden="true"></i>Cobertura parcial: 120 de 150</span></div>
+          <div class="mini-figure"><span class="label">Contratos con señales</span><span class="v">Sin datos</span><span class="el-inline-note el-alert-info"><i data-lucide="info" aria-hidden="true"></i>Aún no hay contratos analizados</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="facts">
+      <div><h3>Cuándo usar cada variante</h3><ul><li><strong>Banner:</strong> afecta toda la vista (datos parciales, datos de ejemplo). Uno a la vez, arriba.</li><li><strong>En línea:</strong> afecta una sección: error de carga, confirmación de una acción, explicación.</li><li><strong>Nota compacta:</strong> matiza una cifra concreta sin interrumpir la lectura.</li></ul></div>
+      <div><h3>Tokens</h3><table class="tokens"><tbody><tr><td>Tono (ícono, borde, nota)</td><td><code>--el-color-{action|warning|danger|success}</code></td></tr><tr><td>Fondo del banner</td><td><code>--el-color-{…}-soft</code></td></tr><tr><td>Texto</td><td><code>--el-color-text</code> / <code>--el-color-text-muted</code></td></tr><tr><td>Fondo en línea / borde</td><td><code>--el-color-surface</code> / <code>--el-color-line</code> (error: <code>--el-color-danger</code>)</td></tr></tbody></table></div>
+    </div>
+    <div class="dodont"><div class="do"><h3><i data-lucide="check" aria-hidden="true"></i>Hacer</h3><ul><li>Título que dice qué pasó; frase que dice qué hacer.</li><li>Una salida en cada error (reintentar o seguir).</li><li>Si falla la carga, ocultar el mapa en lugar de pintarlo vacío.</li></ul></div><div class="dont"><h3><i data-lucide="x" aria-hidden="true"></i>Evitar</h3><ul><li>Apilar varias alertas; agrupa o prioriza.</li><li>Pedir disculpas o culpar a la persona.</li><li>Usar el rojo de error para hablar del riesgo de un territorio.</li></ul></div></div>
+    <details class="code"><summary>Código</summary><pre><code>&lt;!-- Banner --&gt;
+&lt;div class="el-banner el-alert-warning"&gt;
+  &lt;svg aria-hidden="true"&gt;…&lt;/svg&gt;
+  &lt;p class="msg"&gt;&lt;strong&gt;Faltan 30 contratos por analizar.&lt;/strong&gt; Analizamos 120 de 150.&lt;/p&gt;
+  &lt;a href="…"&gt;Ver cobertura&lt;/a&gt;
+&lt;/div&gt;
+
+&lt;!-- En línea --&gt;
+&lt;div class="el-alert el-alert-danger" role="alert"&gt;
+  &lt;span class="badge"&gt;&lt;svg aria-hidden="true"&gt;…&lt;/svg&gt;&lt;/span&gt;
+  &lt;strong&gt;No cargaron los contratos&lt;/strong&gt;
+  &lt;p&gt;Revisa tu conexión y vuelve a intentarlo.&lt;/p&gt;
+  &lt;div class="actions"&gt;&lt;button class="el-btn el-btn-secondary"&gt;Volver a intentar&lt;/button&gt;&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;!-- Nota compacta --&gt;
+&lt;span class="el-inline-note el-alert-warning"&gt;&lt;svg aria-hidden="true"&gt;…&lt;/svg&gt;Cobertura parcial: 120 de 150&lt;/span&gt;</code></pre></details>
+    <p class="a11y"><strong>Accesibilidad:</strong> el significado está en el título y el ícono, no solo en el color. Error nuevo: <code>role="alert"</code>; información y confirmación: <code>aria-live="polite"</code>. No anunciar las alertas que ya estaban al cargar.</p>
+  </section>
+
+  <section class="doc" id="campo" aria-labelledby="h-campo">
+    <header><span class="kind">Componente</span><h2 id="h-campo">Campo de formulario</h2><p>Recoge un dato para filtrar o buscar. Siempre con etiqueta visible.</p></header>
+    <div class="specimen"><div class="specimen-row">
+      <div class="el-field"><label for="f-dep">Departamento</label><select id="f-dep"><option>Selecciona un departamento</option><option>Antioquia</option></select><span class="help">El filtro se aplica a toda la consulta.</span></div>
+      <div class="el-field"><label for="f-year">Año</label><input id="f-year" inputmode="numeric" value="20255" aria-invalid="true" aria-describedby="f-year-err"><span class="error" id="f-year-err"><i data-lucide="circle-alert" aria-hidden="true"></i>Escribe un año de 4 dígitos, por ejemplo 2025.</span></div>
+    </div></div>
+    <div class="facts">
+      <div><h3>Cuándo usarlo</h3><ul><li>Lista (<code>select</code>) cuando las opciones son conocidas y menos de ~15; buscador con sugerencias si son más (municipios).</li><li>Ayuda breve debajo; error en el mismo lugar.</li></ul></div>
+      <div><h3>Tokens</h3><table class="tokens"><tbody><tr><td>Borde / error</td><td><code>--el-color-control-border</code> / <code>--el-color-danger</code></td></tr><tr><td>Altura / radio</td><td><code>--el-control-height</code> / <code>--el-control-radius</code></td></tr></tbody></table></div>
+    </div>
+    <div class="dodont"><div class="do"><h3><i data-lucide="check" aria-hidden="true"></i>Hacer</h3><ul><li>El error dice cómo corregir.</li></ul></div><div class="dont"><h3><i data-lucide="x" aria-hidden="true"></i>Evitar</h3><ul><li>Usar el placeholder como etiqueta.</li><li>«Dato inválido» sin explicación.</li></ul></div></div>
+    <details class="code"><summary>Código</summary><pre><code>&lt;div class="el-field"&gt;
+  &lt;label for="year"&gt;Año&lt;/label&gt;
+  &lt;input id="year" inputmode="numeric" aria-invalid="true" aria-describedby="year-err"&gt;
+  &lt;span class="error" id="year-err"&gt;Escribe un año de 4 dígitos, por ejemplo 2025.&lt;/span&gt;
+&lt;/div&gt;</code></pre></details>
+    <p class="a11y"><strong>Accesibilidad:</strong> <code>label</code> asociado; <code>aria-invalid</code> y <code>aria-describedby</code> con el error; el borde de error es de 2 px y va con ícono y texto.</p>
+  </section>
+
+  <section class="doc" id="etiqueta" aria-labelledby="h-etiqueta">
+    <header><span class="kind">Componente</span><h2 id="h-etiqueta">Etiqueta de riesgo</h2><p>Nombra la categoría de un territorio, entidad o contrato. Va rellena con el color de riesgo para que se vea primero, y lleva un indicador de nivel (1, 2 o 3 barras) para que se entienda sin distinguir colores.</p></header>
+    <div class="specimen">
+      <div class="variant"><h3>Normal · listas, tablas y mapa</h3><div class="specimen-row">{{tag:low}}{{tag:medium}}{{tag:high}}{{tag:unknown}}</div></div>
+      <div class="variant"><h3>Grande · encabezado de una ficha</h3><div class="specimen-row">{{tag-lg:low}}{{tag-lg:medium}}{{tag-lg:high}}{{tag-lg:unknown}}</div></div>
+    </div>
+    <div class="facts">
+      <div><h3>Cuándo usarlo</h3><ul><li>Normal: junto al nombre en listas, tablas y paneles.</li><li>Grande: una sola vez, arriba de la ficha de un contrato, obra o territorio.</li><li>La categoría la calcula la metodología (TASK-07), nunca se elige a mano.</li></ul></div>
+      <div><h3>Tokens</h3><table class="tokens"><tbody><tr><td>Fondo</td><td><code>--el-color-risk-{low|medium|high}</code></td></tr><tr><td>Texto e indicador</td><td><code>--el-color-on-risk-{low|medium|high}</code></td></tr><tr><td>Sin datos</td><td>Borde <code>--el-color-control-border</code>, barras punteadas</td></tr><tr><td>Radio</td><td><code>--el-mark-radius</code></td></tr></tbody></table></div>
+    </div>
+    <div class="dodont"><div class="do"><h3><i data-lucide="check" aria-hidden="true"></i>Hacer</h3><ul><li>Texto siempre visible junto al color y al nivel.</li><li>Una etiqueta por elemento.</li></ul></div><div class="dont"><h3><i data-lucide="x" aria-hidden="true"></i>Evitar</h3><ul><li>Que parezca botón (no es interactiva).</li><li>«Seguro» o «Limpio» como etiqueta.</li></ul></div></div>
+    <details class="code"><summary>Código</summary><pre><code>&lt;span class="el-tag el-tag-high"&gt;
+  &lt;svg class="lvl" aria-hidden="true"&gt;…3 barras…&lt;/svg&gt;Riesgo alto
+&lt;/span&gt;
+&lt;span class="el-tag el-tag-high el-tag-lg"&gt;…&lt;/span&gt;</code></pre></details>
+    <p class="a11y"><strong>Accesibilidad:</strong> texto sobre relleno con contraste ≥ 4,5:1 en ambos temas (<code>on-risk</code>); el indicador de barras repite el nivel sin depender del color.</p>
+  </section>
+
+  <section class="doc" id="contador" aria-labelledby="h-contador">
+    <header><span class="kind">Componente</span><h2 id="h-contador">Contador</h2><p>Un número grande con su nombre debajo. Resume una consulta en una sola línea que se escanea rápido.</p></header>
+    <div class="specimen"><div class="el-counts"><div class="el-count"><strong>120</strong><span>Contratos analizados</span></div><div class="el-count el-count-risk"><strong>36</strong><span><span class="el-key el-key-flagged" aria-hidden="true" style="margin:0"></span>Con señales</span></div><div class="el-count"><strong>3</strong><span>Tipos de señal</span></div><div class="el-count"><strong>30</strong><span>Sin analizar</span></div></div></div>
+    <div class="dodont"><div class="do"><h3><i data-lucide="check" aria-hidden="true"></i>Hacer</h3><ul><li>Nombrar siempre lo que se cuenta.</li><li>Distinguir tipos de señal de contratos: un contrato puede tener varias.</li></ul></div><div class="dont"><h3><i data-lucide="x" aria-hidden="true"></i>Evitar</h3><ul><li>Un número suelto en un círculo de color.</li><li>Más de 4 contadores seguidos.</li></ul></div></div>
+    <details class="code"><summary>Código</summary><pre><code>&lt;div class="el-counts"&gt;
+  &lt;div class="el-count"&gt;&lt;strong&gt;120&lt;/strong&gt;&lt;span&gt;Contratos analizados&lt;/span&gt;&lt;/div&gt;
+  &lt;div class="el-count"&gt;&lt;strong&gt;36&lt;/strong&gt;&lt;span&gt;Con señales&lt;/span&gt;&lt;/div&gt;
+&lt;/div&gt;</code></pre></details>
+  </section>
+
+  <section class="doc" id="filtro" aria-labelledby="h-filtro">
+    <header><span class="kind">Componente</span><h2 id="h-filtro">Filtro activo</h2><p>Muestra un filtro aplicado y permite quitarlo con un toque.</p></header>
+    <div class="specimen"><div class="specimen-row"><button class="el-chip" type="button" aria-label="Quitar filtro: Antioquia">Antioquia<i data-lucide="x" aria-hidden="true"></i></button><button class="el-chip" type="button" aria-label="Quitar filtro: año 2025">2025<i data-lucide="x" aria-hidden="true"></i></button></div></div>
+    <div class="dodont"><div class="do"><h3><i data-lucide="check" aria-hidden="true"></i>Hacer</h3><ul><li>Nombre accesible que diga qué se quita.</li><li>Anunciar el cambio al quitarlo.</li></ul></div><div class="dont"><h3><i data-lucide="x" aria-hidden="true"></i>Evitar</h3><ul><li>Una «x» de menos de 44 px.</li></ul></div></div>
+    <details class="code"><summary>Código</summary><pre><code>&lt;button class="el-chip" type="button" aria-label="Quitar filtro: Antioquia"&gt;
+  Antioquia &lt;svg aria-hidden="true"&gt;…&lt;/svg&gt;
+&lt;/button&gt;</code></pre></details>
+  </section>
+
+  <section class="doc" id="cifra" aria-labelledby="h-cifra">
+    <header><span class="kind">Componente</span><h2 id="h-cifra">Cifra destacada</h2><p>Un número grande que se entiende solo, incluso en una captura compartida: qué mide, de cuánto, y de dónde sale.</p></header>
+    <div class="specimen"><div class="specimen-row">
+      <div class="el-figure"><p class="label">Contratos con señales</p><p class="value">__PERCENT__<span>%</span></p><p class="context">__FLAGGED__ de __ANALYZED__ contratos analizados tienen al menos una señal.</p><p class="source">SECOP II · 2025 · datos ficticios</p></div>
+      <div class="el-figure"><p class="label">Cobertura del análisis</p><p class="value">__COVERAGE__<span>%</span></p><p class="context">Analizamos __ANALYZED__ de __AVAILABLE__ contratos disponibles.</p><p class="source">SECOP II · 2025 · datos ficticios</p></div>
+    </div></div>
+    <div class="table-wrap"><table class="el-table"><caption>Formatos de número (es-CO)</caption><thead><tr><th>Tipo</th><th>Ejemplo</th><th>Regla</th></tr></thead><tbody>
+      <tr><th scope="row">Porcentaje</th><td class="el-num">12,5%</td><td>Máximo un decimal, coma decimal. Se calcula con los valores originales.</td></tr>
+      <tr><th scope="row">Conteo</th><td class="el-num">__COUNT__ contratos</td><td>Punto de miles, sin decimales, siempre con sustantivo.</td></tr>
+      <tr><th scope="row">Dinero</th><td class="el-num">$ __MILLIONS__ millones</td><td>Escala en palabras; aclarar si es contratado, pagado o presupuestado.</td></tr>
+      <tr><th scope="row">Cambio</th><td class="el-num">+__DELTA__ p. p.</td><td>De __PREVIOUS__% a __PERCENT__%: puntos porcentuales, no porcentaje relativo.</td></tr>
+      <tr><th scope="row">Fecha</th><td class="el-num">31 dic 2025</td><td>Fecha del dato, separada del periodo consultado.</td></tr>
+      <tr><th scope="row">Sin dato</th><td class="el-num">Sin datos</td><td>Si no hay contratos analizados. Nunca 0%.</td></tr>
+    </tbody></table></div>
+    <div class="dodont"><div class="do"><h3><i data-lucide="check" aria-hidden="true"></i>Hacer</h3><ul><li>Mostrar numerador y denominador («36 de 120»).</li><li>Fuente y periodo debajo de la cifra.</li></ul></div><div class="dont"><h3><i data-lucide="x" aria-hidden="true"></i>Evitar</h3><ul><li>Pintar la cifra con el color de riesgo.</li><li>Presentarla como probabilidad de corrupción.</li></ul></div></div>
+    <details class="code"><summary>Código</summary><pre><code>&lt;div class="el-figure"&gt;
+  &lt;p class="label"&gt;Contratos con señales&lt;/p&gt;
+  &lt;p class="value"&gt;30&lt;span&gt;%&lt;/span&gt;&lt;/p&gt;
+  &lt;p class="context"&gt;36 de 120 contratos analizados tienen al menos una señal.&lt;/p&gt;
+  &lt;p class="source"&gt;SECOP II · 2025&lt;/p&gt;
+&lt;/div&gt;</code></pre></details>
+  </section>
+
+  <section class="doc" id="tabla" aria-labelledby="h-tabla">
+    <header><span class="kind">Componente</span><h2 id="h-tabla">Tabla de datos</h2><p>Para comparar y verificar: el camino de periodistas y veedurías, y la alternativa accesible a cada mapa o gráfico.</p></header>
+    <div class="specimen"><div class="table-wrap"><table class="el-table"><caption>Departamentos con mayor proporción de contratos con señales · datos ficticios</caption><thead><tr><th scope="col">Departamento</th><th scope="col" class="el-num">Con señales</th><th scope="col" class="el-num">Contratos</th><th scope="col" class="el-num">Cobertura</th></tr></thead><tbody>__RANK_ROWS__</tbody></table></div></div>
+    <div class="dodont"><div class="do"><h3><i data-lucide="check" aria-hidden="true"></i>Hacer</h3><ul><li>Números a la derecha con dígitos tabulares.</li><li>Cuadro de categoría junto al nombre, no fondo de color en la fila.</li></ul></div><div class="dont"><h3><i data-lucide="x" aria-hidden="true"></i>Evitar</h3><ul><li>Encoger el texto para que quepa en el celular: desplaza la tabla o quita columnas opcionales.</li></ul></div></div>
+    <details class="code"><summary>Código</summary><pre><code>&lt;table class="el-table"&gt;
+  &lt;caption&gt;…&lt;/caption&gt;
+  &lt;thead&gt;&lt;tr&gt;&lt;th scope="col"&gt;Departamento&lt;/th&gt;&lt;th scope="col" class="el-num"&gt;Con señales&lt;/th&gt;…&lt;/tr&gt;&lt;/thead&gt;
+  &lt;tbody&gt;&lt;tr&gt;&lt;th scope="row"&gt;&lt;span class="el-key el-key-high"&gt;&lt;/span&gt;Arauca&lt;/th&gt;&lt;td class="el-num"&gt;38,3%&lt;/td&gt;…&lt;/tr&gt;&lt;/tbody&gt;
+&lt;/table&gt;</code></pre></details>
+  </section>
+
+  <section class="doc" id="mapa" aria-labelledby="h-mapa">
+    <header><span class="kind">Componente</span><h2 id="h-mapa">Mapa con leyenda</h2><p>Colorea cada territorio según la proporción de contratos con señales. La leyenda dice qué mide el color; la selección se marca con contorno y se detalla en una ficha.</p></header>
+    <div class="specimen"><div class="mapcard">
+      <figure>__MAP__</figure>
+      <div>
+        <div class="el-legend"><h3>Contratos analizados con al menos una señal</h3><ul><li><span class="el-key el-key-low" aria-hidden="true"></span>Riesgo bajo</li><li><span class="el-key el-key-medium" aria-hidden="true"></span>Riesgo intermedio</li><li><span class="el-key el-key-high" aria-hidden="true"></span>Riesgo alto</li><li><span class="el-key el-key-unknown" aria-hidden="true"></span>Sin datos suficientes</li></ul><p class="note">Rangos por definir (TASK-07). Reparto de ejemplo, datos ficticios.</p></div>
+        <dl class="readout"><div><dt>Seleccionado</dt><dd>Antioquia</dd></div><div><dt>Con señales</dt><dd class="el-num">__FLAGGED__ de __ANALYZED__ (__PERCENT__%)</dd></div><div><dt>Cobertura</dt><dd class="el-num">__ANALYZED__ de __AVAILABLE__ (__COVERAGE__%)</dd></div><div><dt>Fuente</dt><dd>SECOP II · 2025</dd></div></dl>
+        <p class="fictional">Una señal es motivo para revisar, no prueba de corrupción.</p>
+      </div>
+    </div></div>
+    <div class="facts">
+      <div><h3>Reglas</h3><ul><li>Bordes entre territorios del color de la superficie.</li><li>Selección: contorno de 2,5 px en color de texto; el relleno no cambia.</li><li>Sin análisis: trama gris de rayas diagonales.</li><li>Siempre una tabla equivalente y un selector de territorio.</li></ul></div>
+      <div><h3>Tokens</h3><table class="tokens"><tbody><tr><td>Rellenos</td><td><code>--el-color-risk-{low|medium|high}</code></td></tr><tr><td>Trama</td><td><code>--el-color-unknown</code> sobre <code>--el-color-unknown-surface</code></td></tr><tr><td>Borde / selección</td><td><code>--el-color-map-border</code> / <code>--el-color-text</code></td></tr></tbody></table></div>
+    </div>
+    <div class="dodont"><div class="do"><h3><i data-lucide="check" aria-hidden="true"></i>Hacer</h3><ul><li>Título de leyenda que nombra la medida.</li><li>Ficha con numerador, denominador, cobertura y fuente.</li></ul></div><div class="dont"><h3><i data-lucide="x" aria-hidden="true"></i>Evitar</h3><ul><li>Pintar en blanco o azul lo que no tiene datos.</li><li>Depender del hover para ver el valor.</li></ul></div></div>
+    <p class="a11y"><strong>Accesibilidad:</strong> el SVG tiene título descriptivo; los valores de cada territorio deben estar en la tabla y en un selector nativo. En oscuro, el orden claro→oscuro se invierte para que el riesgo alto sea el más visible.</p>
+  </section>
+</main>
+</div>
+<!--LUCIDE-->
+<script>
+(()=>{
+  const root=document.documentElement,theme=document.getElementById('theme'),font=document.getElementById('font');
+  const read=k=>{try{return localStorage.getItem(k)||''}catch(e){return ''}};
+  const save=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
+  function setTheme(v){if(v)root.dataset.theme=v;else delete root.dataset.theme;theme.value=v;save('el-theme',v);}
+  function setFont(v){root.dataset.font=v||'a';font.value=root.dataset.font;save('el-font',root.dataset.font);}
+  theme.addEventListener('change',()=>setTheme(theme.value));font.addEventListener('change',()=>setFont(font.value));
+  setTheme(read('el-theme'));setFont(read('el-font'));
+  if(window.lucide)window.lucide.createIcons({attrs:{'stroke-width':2}});
+})();
+</script>
+</body>
+</html>

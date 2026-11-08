@@ -1,0 +1,167 @@
+[
+  {
+    "name": "Amazonas",
+    "id": "CO-AMA",
+    "value": 0
+  },
+  {
+    "name": "Antioquia",
+    "id": "CO-ANT",
+    "value": 12.4
+  },
+  {
+    "name": "Arauca",
+    "id": "CO-ARA",
+    "value": 7
+  },
+  {
+    "name": "Archipiélago de San Andrés, Providencia y Santa Catalina",
+    "id": "CO-SAP",
+    "value": 11
+  },
+  {
+    "name": "Atlántico",
+    "id": "CO-ATL",
+    "value": 15
+  },
+  {
+    "name": "Bogota Capital District",
+    "id": "CO-DC",
+    "value": 19
+  },
+  {
+    "name": "Bolívar",
+    "id": "CO-BOL",
+    "value": 3
+  },
+  {
+    "name": "Boyacá",
+    "id": "CO-BOY",
+    "value": 7
+  },
+  {
+    "name": "Caldas",
+    "id": "CO-CAL",
+    "value": 10
+  },
+  {
+    "name": "Caquetá",
+    "id": "CO-CAQ",
+    "value": 14
+  },
+  {
+    "name": "Casanare",
+    "id": "CO-CAS",
+    "value": 18
+  },
+  {
+    "name": "Cauca",
+    "id": "CO-CAU",
+    "value": 2
+  },
+  {
+    "name": "Cesar",
+    "id": "CO-CES",
+    "value": 6
+  },
+  {
+    "name": "Chocó",
+    "id": "CO-CHO",
+    "value": 10
+  },
+  {
+    "name": "Córdoba",
+    "id": "CO-COR",
+    "value": 13
+  },
+  {
+    "name": "Cundinamarca",
+    "id": "CO-CUN",
+    "value": 17
+  },
+  {
+    "name": "Guainía",
+    "id": "CO-GUA",
+    "value": 1
+  },
+  {
+    "name": "Guaviare",
+    "id": "CO-GUV",
+    "value": 5
+  },
+  {
+    "name": "Huila",
+    "id": "CO-HUI",
+    "value": 9
+  },
+  {
+    "name": "La Guajira",
+    "id": "CO-LAG",
+    "value": 12
+  },
+  {
+    "name": "Magdalena",
+    "id": "CO-MAG",
+    "value": 16
+  },
+  {
+    "name": "Meta",
+    "id": "CO-MET",
+    "value": 1
+  },
+  {
+    "name": "Nariño",
+    "id": "CO-NAR",
+    "value": 4
+  },
+  {
+    "name": "Norte de Santander",
+    "id": "CO-NSA",
+    "value": 8
+  },
+  {
+    "name": "Putumayo",
+    "id": "CO-PUT",
+    "value": 12
+  },
+  {
+    "name": "Quindío",
+    "id": "CO-QUI",
+    "value": 15
+  },
+  {
+    "name": "Risaralda",
+    "id": "CO-RIS",
+    "value": 19
+  },
+  {
+    "name": "Santander",
+    "id": "CO-SAN",
+    "value": 3
+  },
+  {
+    "name": "Sucre",
+    "id": "CO-SUC",
+    "value": 7
+  },
+  {
+    "name": "Tolima",
+    "id": "CO-TOL",
+    "value": 11
+  },
+  {
+    "name": "Valle del Cauca",
+    "id": "CO-VAC",
+    "value": 15
+  },
+  {
+    "name": "Vaupés",
+    "id": "CO-VAU",
+    "value": null
+  },
+  {
+    "name": "Vichada",
+    "id": "CO-VID",
+    "value": 3
+  }
+]
