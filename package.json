@@ -1,0 +1,50 @@
+{
+  "name": "ekou-elephants",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "migrate": "node --env-file-if-exists=.env node_modules/node-pg-migrate/bin/node-pg-migrate.js --migrations-dir migrations --migration-file-language sql",
+    "db:seed": "node --env-file-if-exists=.env scripts/seed-dev.mjs",
+    "cf-typegen": "wrangler types",
+    "migrate:dev": "node --env-file=.env.dev node_modules/node-pg-migrate/bin/node-pg-migrate.js --migrations-dir migrations --migration-file-language sql --database-url-var DATABASE_URL_UNPOOLED",
+    "migrate:prod": "node --env-file=.env.production node_modules/node-pg-migrate/bin/node-pg-migrate.js --migrations-dir migrations --migration-file-language sql --database-url-var DATABASE_URL_UNPOOLED",
+    "seed:dev": "node --env-file=.env.dev scripts/seed-dev.mjs"
+  },
+  "dependencies": {
+    "@hono/zod-validator": "^0.9.1",
+    "@neon/config": "^1.13.0",
+    "@neon/env": "^2.1.0",
+    "hono": "^4.13.17",
+    "pg": "^8.23.1",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@cloudflare/vite-plugin": "^1.67.0",
+    "@hono/cli": "^0.1.11",
+    "@types/node": "^26.6.6",
+    "@types/pg": "^8.23.1",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.2.1",
+    "neon": "^9.2.0",
+    "node-pg-migrate": "^9.0.0",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.6",
+    "vitest": "^5.1.0",
+    "wrangler": "^4.158.0"
+  },
+  "overrides": {
+    "@hono/node-server": "^2.1.6"
+  }
+}

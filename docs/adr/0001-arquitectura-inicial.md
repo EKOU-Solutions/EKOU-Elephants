@@ -1,7 +1,7 @@
 # ADR-0001 · Arquitectura inicial
 
 - **Fecha:** 2026-11-07
-- **Estado:** arquitectura y stack aceptados; implementación y verificación del arquetipo pendientes.
+- **Estado:** arquitectura, stack y arquetipo implementados y verificados (local y Neon `dev`); pendiente de revisión y merge.
 - **Tarea:** [Arquitectura y arquetipo · #4](https://github.com/EKOU-Solutions/EKOU-Elephants/issues/4).
 
 ## Contexto
@@ -42,14 +42,16 @@ Se ejecutarán en Node.js local o desde CI, fuera de Workers. Las migraciones re
 
 ## DoD del arquetipo
 
-- [ ] Frontend y API arrancan localmente con instrucciones y configuración de ejemplo.
-- [ ] Una ruta de prueba verifica el flujo HTTP → caso de uso → adaptador PostgreSQL; dominio y aplicación no dependen de Hono ni Neon.
-- [ ] Migraciones reproducibles en PostgreSQL local y Neon, con historial para no reaplicar cambios y procedimiento de traslado de datos.
-- [ ] Entradas validadas, consultas parametrizadas, secretos solo en servidor y errores controlados.
-- [ ] Pruebas relevantes de casos de uso, integración y rutas/middleware; dependencias revisadas contra avisos vigentes.
-- [ ] Compilación y consumo del endpoint comprobados en Workers. Automatización de CI/CD y despliegues: tarea #5.
+- [x] Frontend y API arrancan localmente con instrucciones y configuración de ejemplo. *(build y runtime de Workers verificados; ver [desarrollo](../desarrollo.md))*
+- [x] Una ruta de prueba verifica el flujo HTTP → caso de uso → adaptador PostgreSQL; dominio y aplicación no dependen de Hono ni Neon.
+- [x] Migraciones reproducibles en PostgreSQL local y Neon (rama `dev`; verificado: up, idempotente, down, up), con historial para no reaplicar cambios y procedimiento de traslado de datos.
+- [x] Entradas validadas, consultas parametrizadas, secretos solo en servidor y errores controlados.
+- [x] Pruebas relevantes de casos de uso, integración y rutas/middleware; dependencias revisadas contra avisos vigentes.
+- [x] Compilación y consumo del endpoint comprobados en Workers *(workerd local contra PostgreSQL local y contra Neon `dev`)*. Automatización de CI/CD y despliegues: tarea #5.
 
 ## Scaffold propuesto
+
+Responsabilidades, dependencias y ejemplo del flujo implementado: [Arquitectura y organización del código](../arquitectura.md).
 
 ```text
 src/
@@ -65,7 +67,6 @@ src/
       http/mapa.routes.ts
       postgres/gasto-territorial.repository.ts
     ui/
-      mapa-interactivo.tsx
       resumen-territorial.tsx
   components/ui/
   server/
@@ -87,7 +88,7 @@ tsconfig.json
 package.json
 ```
 
-Los nombres del módulo son ilustrativos; sus reglas y contratos se definirán después. Los adaptadores de base de datos y secretos quedan fuera del bundle del cliente. Configuración de Cloudflare y de migraciones se añadirá al implementar.
+El módulo `mapa` y `gasto_territorial` son una demostración arquitectónica con cifras ficticias. Acordamos con Esteban refinar sus reglas, indicadores y esquema al abordar el módulo real y alinearlo con la ingesta. La conversión de importes a centavos exactos ya forma parte del arquetipo; no se aceptan pérdidas silenciosas de precisión. Los adaptadores de base de datos y secretos quedan fuera del bundle del cliente. Configuración de Cloudflare y de migraciones se añadirá al implementar.
 
 ## Referencias
 
@@ -118,3 +119,5 @@ Los nombres del módulo son ilustrativos; sus reglas y contratos se definirán d
 - [node-pg-migrate: migraciones PostgreSQL](https://salsita.github.io/node-pg-migrate/).
 - [Drizzle Kit: migraciones](https://orm.drizzle.team/docs/kit-overview) e [integración con Neon](https://orm.drizzle.team/docs/get-started/neon-new).
 - [Prisma: migraciones](https://www.prisma.io/docs/orm/prisma-migrate).
+
+- [Validación de enteros seguros](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/isSafeInteger), [BigInt](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt) y [NUMERIC en PostgreSQL](https://www.postgresql.org/docs/current/datatype-numeric.html).
