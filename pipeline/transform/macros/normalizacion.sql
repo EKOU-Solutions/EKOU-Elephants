@@ -34,7 +34,7 @@ cast(try_cast({{ columna }} as timestamp) as date)
 {#- Socrata entrega las URL como objeto {"url": "..."}; bronze las guarda como JSON. -#}
 {% macro url(columna) -%}
 case
-    when {{ columna }} like '{%' then json_extract_string({{ columna }}, '$.url')
+    when starts_with({{ columna }}, chr(123)) then json_extract_string({{ columna }}, '$.url')
     else {{ columna }}
 end
 {%- endmacro %}

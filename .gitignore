@@ -11,3 +11,4 @@ pipeline/data/
 uv.lock.bak
 pipeline/data_*
 .env
+pipeline/transform/.user.yml

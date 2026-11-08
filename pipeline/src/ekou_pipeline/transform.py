@@ -26,6 +26,10 @@ def dbt_args(settings: Settings, *, corte: str, select: str | None = None) -> li
         str(TRANSFORM_DIR),
         "--profiles-dir",
         str(TRANSFORM_DIR),
+        "--target-path",
+        (data_dir / "dbt" / "target").as_posix(),
+        "--log-path",
+        (data_dir / "dbt" / "logs").as_posix(),
         "--vars",
         json.dumps(variables),
     ]
@@ -39,6 +43,7 @@ def run_transform(settings: Settings, *, corte: str, select: str | None = None) 
 
     # profiles.yml ubica la base de DuckDB con esta variable.
     os.environ["EKOU_DATA_DIR"] = settings.data_dir.resolve().as_posix()
+    os.environ.setdefault("DBT_SEND_ANONYMOUS_USAGE_STATS", "false")
     args = dbt_args(settings, corte=corte, select=select)
     log.info("transform.inicio", corte=corte, select=select)
     result = dbtRunner().invoke(args)
