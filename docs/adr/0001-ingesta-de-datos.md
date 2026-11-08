@@ -4,29 +4,37 @@
 
 ## Contexto
 
+La evidencia detrás de este ADR (estabilidad de la API, significado de los campos, ubicación de los contratos, cobertura y datos personales) está en la [investigación de ingesta](../investigacion-ingesta.md).
+
 EKOU-Elephants necesita un **pipeline de datos de producción**, no un prototipo. Cada mes debe procesar a **escala nacional** la contratación, el presupuesto y el registro empresarial de Colombia, y publicarlos como dato abierto verificable. El primer consumidor es el **Mapa Interactivo**, pero el pipeline se diseña para todas las funcionalidades del [README](../../README.md).
 
 ### Escala objetivo (por corte mensual)
 
 | Fuente | Filas | Uso |
 |---|---|---|
-| SECOP II – Contratos | 5,7 M | Mapa, buscador, alertas |
-| SECOP II – Procesos | 9,4 M | Único oferente, licitación |
+| SECOP II – Contratos ① | 5,7 M | Mapa, buscador, alertas |
+| SECOP II – Procesos ① | 9,4 M | Valor inicial, único oferente, duración original |
+| SECOP II – Ubicaciones de ejecución ① | 6,5 M | Municipio donde se ejecuta cada contrato |
+| SECOP I – Procesos de compra ① | 7,0 M | Alcaldías que no contratan en SECOP II (278 municipios solo usan SECOP I) |
 | SECOP II – Adiciones | 8,5 M | Sobrecostos |
 | SECOP II – Ejecución de contratos | 7,7 M | Obras retrasadas |
 | SECOP II – Suspensiones | 0,9 M | Obras paralizadas |
 | CUIPO – Programación y ejecución de gastos | 19,5 M | Presupuesto por municipio |
 | RUES – Confecámaras | 9,5 M | Alertas de contratistas |
-| **Total** | **~61 M de filas** | |
+| **Total** | **~75 M de filas** | |
+
+① Primer corte: **~28,6 M de filas**. SECOP II Ofertas (~96,6 M filas en tres datasets) queda para una fase posterior.
 
 ### Mediciones de la API de origen (2026-11-07)
 
 | Medición | Resultado | Decisión que provoca |
 |---|---|---|
-| Página de 50.000 filas (15 columnas) | ~63 s → **~800 filas/s por conexión** | El límite es el servidor, no la red: hay que **extraer en paralelo** |
+| Página de 50.000 filas (15 columnas) | ~52-63 s → **~800-1.000 filas/s por conexión** | El límite es el servidor, no la red: hay que **extraer en paralelo** |
 | JSON frente a CSV (misma página) | 63 s frente a 67 s; el CSV pesa 15 % menos | El CSV no es más rápido y pierde los tipos de datos: **se usa JSON** |
 | Paginación por `$offset` en la fila 5 M | **12,9 s** solo para posicionarse | El offset se degrada con la profundidad: **no escala** |
-| Paginación *keyset* (`$where=:id > último`) | **0,66 s** | ~20 veces más rápida y constante: **es la que se usa** |
+| Paginación *keyset* (`$where=:id > último`) | **0,66 s** para posicionarse a cualquier profundidad (página de 3 filas) | Sin costo creciente con la profundidad: **es la que se usa**. El tiempo de una página completa lo pone el volumen, no la posición. |
+| Extracción nacional de SECOP II Contratos con keyset, 8 conexiones | 12 de 13 particiones (4.851.900 filas) idénticas a `count(*)`; una página de 67 MB llegó truncada con HTTP 200 | Páginas de 20.000 filas, validación del JSON y reintento desde el mismo cursor |
+| Reemplazo diario del dataset en origen | SECOP II Contratos se recrea completo hacia las 07:43 UTC y cambian sus `:id` | Detectar el reemplazo durante la extracción y rehacer la partición |
 | Agregación de 12 M de filas en el servidor (CUIPO) | Se agota por tiempo | **Las agregaciones se hacen localmente** |
 
 **Implicación:** en secuencia, una sola conexión tardaría ~2 h solo en SECOP II Contratos y más de 20 h en el corte completo. Con extracción en paralelo por partición (8 conexiones) y saltando las fuentes sin cambios, el corte completo debe caber en **menos de 3 h**, dentro del límite de 6 h de GitHub Actions.
@@ -45,9 +53,9 @@ EKOU-Elephants necesita un **pipeline de datos de producción**, no un prototipo
 
 | Restricción | Detalle |
 |---|---|
-| **Volumen** | ~61 M de filas por corte mensual (ver escala objetivo) |
+| **Volumen** | ~28,6 M de filas en el primer corte y ~75 M con todas las fuentes (ver escala objetivo) |
 | **API de origen** | Socrata: paginada, con límites de uso, y **las agregaciones grandes en el servidor se agotan por tiempo** (lo observamos con CUIPO en esta tarea) |
-| **Calidad** | SECOP trae valores atípicos (la suma de obras da $6.500 billones), nombres de municipio sin código DANE y alrededor del 12 % de registros con "No Definido" |
+| **Calidad** | SECOP trae valores atípicos por errores de magnitud (un contrato de $64 millones registrado por $6,45 × 10¹⁵), nombres de municipio sin código DANE, ciudad de la sede en vez del lugar de ejecución y 16 % de obras con ciudad "No Definido" |
 | **Frecuencia** | **Actualización mensual en producción.** SECOP se actualiza a diario y CUIPO cada trimestre en origen, pero el proyecto publica un corte mensual. |
 | **Proyecto productivo** | No es una demo de una sola vez: debe ejecutarse cada mes sin intervención manual, detectar sus propios fallos y conservar el histórico |
 | **Equipo** | Dos personas. Debe ser simple de operar y barato o gratuito. |
@@ -65,9 +73,9 @@ La ingesta se divide en **nueve decisiones**, y cada una se evalúa por separado
 |---|---|---|
 | **A. Consultar la API en vivo desde la app** | Sin infraestructura; datos siempre al día | Las agregaciones se agotan por tiempo; límites de uso; no hay forma de limpiar los datos; cada visita depende de un servicio externo |
 | **B. Extracción por lotes a un almacén propio (ELT)** ✅ | Controlamos la limpieza, los cruces y el rendimiento; la app no depende de datos.gov.co; se puede reproducir | Hay que operar un proceso periódico; los datos llegan con un rezago de horas |
-| **C. Descarga masiva de los archivos CSV completos** | Simple; no depende de la paginación | Archivos de varios GB; descarga lenta y frágil; se baja mucho más de lo que se usa |
+| **C. Descarga masiva de los archivos CSV completos** | Simple; no depende de la paginación; 5 a 7 veces más rápida por conexión que una página JSON | Archivos de varios GB; trae todas las columnas (incluidos datos personales); encabezados con nombres visibles, no técnicos |
 
-**Propuesta: B.** Se extrae cada dataset **completo a escala nacional**, solo con las columnas necesarias, usando paginación *keyset* y extracción en paralelo por partición. Las agregaciones se hacen localmente, no en el servidor de Socrata. La opción C queda como respaldo para cargas históricas completas.
+**Propuesta: B.** Se extrae cada dataset **completo a escala nacional**, solo con las columnas necesarias, usando paginación *keyset* y extracción en paralelo por partición. Las agregaciones se hacen localmente, no en el servidor de Socrata. La opción C queda como respaldo ante fallas repetidas de la API, **usando SODA3** (`/api/v3/views/{id}/export.csv`): el endpoint SODA1 `/api/views/{id}/rows.csv` se retira entre el 16 y el 22 de diciembre de 2026.
 
 ---
 
@@ -173,11 +181,13 @@ Cada mes se publica una **foto versionada** (`2026-11`, `2026-12`…) y no se so
 
 | Control | Qué hace |
 |---|---|
-| **Compuertas de calidad** | Si un corte cae fuera de lo esperado (por ejemplo, 30 % menos contratos que el mes anterior, o más del 20 % de municipios sin vincular), **no se publica** y se mantiene el corte anterior |
+| **Compuertas de calidad** | Si un corte cae fuera de lo esperado (por ejemplo, una partición con 0 filas o más de 1 % menos que el corte anterior, o más del 20 % de municipios sin vincular), **no se publica** y se mantiene el corte anterior. Caso real: las vistas de SECOP II Ofertas 2022 y 2023 quedaron vacías sin dar error. |
+| **Contrato de esquema** | Antes de extraer se comparan las columnas, sus tipos y el `tableId` de cada dataset con el corte anterior. Columnas que desaparecen o cambian de tipo detienen el corte; columnas nuevas solo generan aviso. |
+| **Cobertura de particiones** | Antes de extraer se verifica que las particiones sumen exactamente el `count(*)` del dataset, y al terminar, que cada partición tenga las filas esperadas |
 | **Validación de esquema** | Los archivos de salida se validan contra su `datapackage.json` antes de publicarse |
 | **Idempotencia** | Ejecutar dos veces el mismo mes produce el mismo resultado; se puede reprocesar sin efectos secundarios |
 | **Aviso de fallos** | Si la ejecución falla, se abre automáticamente un issue en el repo con el registro del error |
-| **Reintentos** | La extracción reintenta con espera creciente ante los errores y límites de la API de Socrata |
+| **Reintentos** | La extracción reintenta con espera creciente y aleatoria ante 429 (respetando `Retry-After`), 5xx, fallas de red, JSON truncado y peticiones que superan su tiempo máximo total |
 | **Secretos** | El App Token de Socrata y los tokens de Vercel se guardan en GitHub Secrets, nunca en el código |
 | **Registro de cambios** | Cada release incluye un resumen del corte: registros procesados, descartados y diferencias con el mes anterior |
 
@@ -232,10 +242,10 @@ Cómo se organizan los datos para que la extracción, la carga mensual y las con
 | Técnica | Qué gana |
 |---|---|
 | **`$select` solo con las columnas necesarias** | SECOP II Contratos tiene más de 90 columnas y el mapa usa unas 10: se descarga mucho menos |
-| **Paginación *keyset*** (`$order=:id` + `$where=:id > último`) con páginas de ~50.000 filas | Tiempo constante por página (0,66 s frente a 12,9 s del offset profundo); sin filas repetidas ni perdidas |
-| **Extracción en paralelo por partición** (por año de firma o por departamento), con un límite de concurrencia | Divide 23 M de filas en consultas pequeñas que no se agotan por tiempo; si una falla, solo se repite esa |
+| **Paginación *keyset*** (`$order=:id` + `$where=:id > último`) con páginas de 20.000 filas | Costo de posicionarse constante (0,66 s frente a 12,9 s del offset profundo); sin filas repetidas ni perdidas, verificado contra `count(*)` |
+| **Extracción en paralelo por partición** (por año de firma; por primer dígito de `id_contrato` en datasets sin fecha), con un límite de concurrencia | Divide decenas de millones de filas en consultas que no se agotan por tiempo; si una falla, solo se repite esa |
 | **Filtros simples en el servidor, agregaciones en local** | Socrata filtra bien pero se agota al agregar millones de filas (lo observamos con CUIPO) |
-| **Formato de descarga (CSV o JSON)** | A evaluar en la POC: el CSV suele ser más liviano |
+| **JSON con gzip** | Medido: el CSV no fue más rápido por página y pierde los tipos; gzip reduce la transferencia |
 
 ### 7.2 Archivos Parquet (bronze, silver y gold)
 
@@ -392,7 +402,9 @@ flowchart LR
 ## Pendiente de decidir con el equipo
 
 - [ ] Validar la propuesta de cada decisión (1 a 9)
-- [ ] Agregar el Marco Geoestadístico Nacional (MGN) del DANE al inventario de fuentes para los polígonos del mapa
+- [ ] Agregar el Marco Geoestadístico Nacional (MGN) del DANE al inventario de fuentes para los polígonos del mapa (verificar vigencia, formato y licencia en el geoportal)
+- [ ] Registrar el App Token de datos.gov.co como secreto `EKOU_SOCRATA_APP_TOKEN`
+- [ ] Confirmar con TASK-07 (#8) y TASK-08 (#9) las reglas de silver que afectan alertas y datos personales
 - [ ] Medir en la POC los tiempos de extracción y consulta con y sin partición y orden, para confirmar las técnicas de la decisión 7
 - [ ] Definir la ventana de análisis (¿últimos 5 años?) y los umbrales de las compuertas de calidad
 - [ ] Confirmar con TASK-03 (#4) que la app consume los archivos estáticos publicados en Vercel
