@@ -54,30 +54,44 @@ end
 
 {#- S06: fecha de fin original = inicio + duración pactada. -#}
 {% macro fin_original(inicio, duracion, unidad) -%}
-case
+cast(case
     when {{ inicio }} is null or {{ duracion }} is null or {{ duracion }} <= 0 then null
+    -- SECOP II trae duraciones imposibles (hasta 915 M de días) que sacan la fecha del
+    -- rango de DuckDB. Más de 100 años no es un plazo real: la fecha queda sin calcular.
+    when ({{ unidad }} like 'DIA%' or {{ unidad }} = 'D') and {{ duracion }} > 36525 then null
+    when ({{ unidad }} like 'SEMANA%' or {{ unidad }} = 'S') and {{ duracion }} > 5218 then null
+    when ({{ unidad }} like 'MES%' or {{ unidad }} = 'M') and {{ duracion }} > 1200 then null
+    when ({{ unidad }} like 'ANO%' or {{ unidad }} = 'A') and {{ duracion }} > 100 then null
     when {{ unidad }} like 'DIA%' or {{ unidad }} = 'D'
         then {{ inicio }} + to_days(cast(round({{ duracion }}) as integer))
     when {{ unidad }} like 'SEMANA%' or {{ unidad }} = 'S'
         then {{ inicio }} + to_days(cast(round({{ duracion }} * 7) as integer))
     when {{ unidad }} like 'MES%' or {{ unidad }} = 'M'
-        then cast({{ inicio }} + to_months(cast(round({{ duracion }}) as integer)) as date)
+        then {{ inicio }} + to_months(cast(round({{ duracion }}) as integer))
     when {{ unidad }} like 'ANO%' or {{ unidad }} = 'A'
-        then cast({{ inicio }} + to_years(cast(round({{ duracion }}) as integer)) as date)
-end
+        then {{ inicio }} + to_years(cast(round({{ duracion }}) as integer))
+end as date)
 {%- endmacro %}
 
 
 {#- S04: valores atípicos por magnitud (reglas A1 a A4). Se marcan, nunca se borran. -#}
 {% macro alerta_valor(valor_actual, valor_inicial, modalidad, smmlv) -%}
 case
+    -- A0: ningún contrato público colombiano llega a $50 billones (el Metro de Bogotá ronda
+    -- los $20). Hace falta aunque el valor inicial coincida: el proceso trae el mismo error.
+    when {{ valor_actual }} > 5e13 then 'error_magnitud'
     when {{ valor_inicial }} > 0 and {{ valor_actual }} / {{ valor_inicial }} > 100
         then 'error_magnitud'
     when {{ valor_actual }} > 2e12
         and ({{ valor_inicial }} is null or {{ valor_actual }} / {{ valor_inicial }} > 1.5)
         then 'revisar_magnitud'
+    -- A3b: más de 10 veces el tope legal ya no es una mínima cuantía; el valor o la
+    -- modalidad están mal y no se puede saber cuál, así que no entra a las sumas.
     when {{ normalizar(modalidad) }} like '%MINIMA CUANTIA%'
-        and {{ valor_actual }} > 150 * {{ smmlv }}
+        and {{ valor_actual }} > 1500 * cast({{ smmlv }} as bigint)
+        then 'revisar_magnitud'
+    when {{ normalizar(modalidad) }} like '%MINIMA CUANTIA%'
+        and {{ valor_actual }} > 150 * cast({{ smmlv }} as bigint)
         then 'supera_tope_minima_cuantia'
 end
 {%- endmacro %}

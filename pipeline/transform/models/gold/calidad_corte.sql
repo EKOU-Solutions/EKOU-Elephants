@@ -36,7 +36,7 @@ select
     count(*) filter (where tipo_persona_contratista = 'sin_documento') as contratos_sin_documento,
 
     -- Fechas
-    count(*) filter (where fecha_firma > current_date) as contratos_firma_futura,
+    count(*) filter (where fecha_firma > last_day({{ fecha_corte() }})) as contratos_firma_futura,
     count(*) filter (where mes_provisional) as contratos_mes_provisional
 from {{ ref('contratos') }}
 group by fuente

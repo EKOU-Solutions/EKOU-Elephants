@@ -80,6 +80,8 @@ El total absurdo de $6.454 billones en obras de mínima cuantía es **un solo co
 | A3 | Mínima cuantía por encima de 150 SMMLV del año de firma (100 SMMLV + 50 % de adición) | `supera_tope_minima_cuantia` (5 a 33 contratos por año) |
 | A4 | Valor > $2 × 10¹² sin valor inicial que lo respalde | `revisar_magnitud` |
 | A5 | En las métricas | Mediana y p99; sumas sin las filas marcadas, indicando cuántas se excluyeron |
+| A6 | Valor > $50 billones, aunque el valor inicial coincida | `error_magnitud`. Ningún contrato público colombiano llega a esa cifra (el Metro de Bogotá ronda los $20 billones). En el corte 2026-11 son 7 contratos que sumaban $61.177 billones; su proceso trae el mismo error, por eso A1 y A4 no los detectaban |
+| A7 | Mínima cuantía por encima de 1.500 SMMLV (10 veces el tope legal) | `revisar_magnitud`: el valor o la modalidad están mal y no se puede saber cuál, así que no entra a las sumas. En el corte 2026-11 son 112 contratos, entre ellos uno de $25 billones cuyo objeto es "PRUEBA" |
 
 ## 3. Dónde se ejecuta cada contrato
 

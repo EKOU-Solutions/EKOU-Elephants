@@ -62,6 +62,39 @@ FILAS: dict[str, list[dict[str, str]]] = {
             "proveedor_adjudicado": "JUAN PEREZ",
             "valor_del_contrato": "6453840000000000",
         },
+        {  # su proceso declara una duración imposible, tomada del corte real
+            "id_contrato": "CO1.PCCNTR.3",
+            "proceso_de_compra": "CO1.BDOS.3",
+            "nombre_entidad": "MUNICIPIO DE MEDELLIN",
+            "nit_entidad": "890905211",
+            "departamento": "Antioquia",
+            "ciudad": "Medellín",
+            "tipo_de_contrato": "Suministro",
+            "modalidad_de_contratacion": "Selección abreviada de menor cuantía",
+            "estado_contrato": "En ejecución",
+            "fecha_de_firma": "2025-04-01T00:00:00.000",
+            "fecha_de_inicio_del_contrato": "2025-04-02T00:00:00.000",
+            "tipodocproveedor": "NIT",
+            "documento_proveedor": "900654321",
+            "proveedor_adjudicado": "SUMINISTROS S.A.S.",
+            "valor_del_contrato": "20000000",
+        },
+        {  # $39.251 billones, respaldados por un proceso con el mismo error de origen
+            "id_contrato": "CO1.PCCNTR.4",
+            "proceso_de_compra": "CO1.BDOS.4",
+            "nombre_entidad": "MUNICIPIO DE MEDELLIN",
+            "nit_entidad": "890905211",
+            "departamento": "Antioquia",
+            "ciudad": "Medellín",
+            "tipo_de_contrato": "Otro",
+            "modalidad_de_contratacion": "Contratación directa",
+            "estado_contrato": "En ejecución",
+            "fecha_de_firma": "2021-06-01T00:00:00.000",
+            "tipodocproveedor": "NIT",
+            "documento_proveedor": "900777888",
+            "proveedor_adjudicado": "OPERADOR S.A.S.",
+            "valor_del_contrato": "39251534400000000",
+        },
     ],
     "secop_procesos": [
         {
@@ -75,6 +108,16 @@ FILAS: dict[str, list[dict[str, str]]] = {
             "id_del_portafolio": "CO1.BDOS.2",
             "valor_total_adjudicacion": "0",
             "precio_base": "64538400",
+        },
+        {
+            "id_del_portafolio": "CO1.BDOS.3",
+            "valor_total_adjudicacion": "20000000",
+            "duracion": "915430000",
+            "unidad_de_duracion": "Dia(s)",
+        },
+        {
+            "id_del_portafolio": "CO1.BDOS.4",
+            "precio_base": "39251534400000000",
         },
     ],
     "secop_ubicaciones": [
@@ -94,6 +137,19 @@ FILAS: dict[str, list[dict[str, str]]] = {
             "cuantia_contrato": "10000000",
             "valor_contrato_con_adiciones": "10000000",
             "ultima_actualizacion": "2025-06-01T00:00:00.000",
+        },
+        {  # fecha de firma digitada mal en origen
+            "uid": "99-12-1",
+            "nombre_entidad": "MUNICIPIO DE MEDELLIN",
+            "departamento_entidad": "Antioquia",
+            "municipio_entidad": "Medellín",
+            "municipios_ejecucion": "Medellín",
+            "tipo_de_contrato": "Obra",
+            "fecha_de_firma_del_contrato": "2099-05-01T00:00:00.000",
+            "tipo_identifi_del_contratista": "NIT",
+            "identificacion_del_contratista": "900111222",
+            "cuantia_contrato": "5000000",
+            "valor_contrato_con_adiciones": "5000000",
         },
         {
             "uid": "25-12-1",
@@ -197,8 +253,38 @@ def test_magnitude_error_is_flagged_not_deleted(warehouse: duckdb.DuckDBPyConnec
     assert persona["valor_corregido_propuesto"] == 64_538_400
 
 
+def test_impossible_value_is_excluded_even_if_the_process_matches(
+    warehouse: duckdb.DuckDBPyConnection,
+) -> None:
+    contrato = _contrato(warehouse, "CO1.PCCNTR.4")
+    assert contrato["valor_inicial"] == contrato["valor_actual"]
+    assert contrato["alerta_valor"] == "error_magnitud"
+    assert contrato["valor_confiable"] is False
+
+
+def test_original_end_date_from_declared_duration(warehouse: duckdb.DuckDBPyConnection) -> None:
+    assert str(_contrato(warehouse, "CO1.PCCNTR.1")["fecha_fin_original"]) == "2025-09-10"
+
+
+def test_impossible_duration_leaves_no_end_date(warehouse: duckdb.DuckDBPyConnection) -> None:
+    # 915 M de días sacaban la fecha del rango de DuckDB y tumbaban todo el corte.
+    assert _contrato(warehouse, "CO1.PCCNTR.3")["fecha_fin_original"] is None
+
+
 def test_source_duplicates_are_removed(warehouse: duckdb.DuckDBPyConnection) -> None:
-    row = warehouse.execute("select count(*) from contratos where fuente = 'secop_i'").fetchone()
+    sql = "select count(*) from contratos where id_contrato = '25-12-1'"
+    row = warehouse.execute(sql).fetchone()
+    assert row == (1,)
+
+
+def test_future_signing_dates_stay_out_of_the_map(warehouse: duckdb.DuckDBPyConnection) -> None:
+    # El contrato se conserva en silver y se cuenta en calidad, pero no llega al mapa.
+    assert _contrato(warehouse, "99-12-1")["anio_firma"] == 2099
+    anios = warehouse.execute("select distinct anio_firma from mapa_municipios").fetchall()
+    assert (2099,) not in anios
+    row = warehouse.execute(
+        "select contratos_firma_futura from calidad_corte where fuente = 'secop_i'"
+    ).fetchone()
     assert row == (1,)
 
 

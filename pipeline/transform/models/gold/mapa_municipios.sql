@@ -8,6 +8,8 @@ with territorializados as (
         and confianza_ubicacion in ('alta', 'media_alta', 'media')
         and estado_ejecucion not in ('antes_de_firma', 'cancelado')
         and anio_firma is not null
+        -- Fechas de firma posteriores al corte son errores de digitación en origen (hasta 2099).
+        and fecha_firma <= last_day({{ fecha_corte() }})
 )
 
 select
