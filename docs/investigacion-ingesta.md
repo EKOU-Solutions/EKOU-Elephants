@@ -1,6 +1,6 @@
 # Investigación de ingesta: qué tan confiables son los datos y cómo tratarlos
 
-> Tarea: [TASK-06 · Ingesta de datos (#7)](https://github.com/EKOU-Solutions/EKOU-Elephants/issues/7) · Decisión: [ADR 0001](adr/0001-ingesta-de-datos.md) · Fuentes: [fuentes de datos](fuentes-de-datos.md)
+> Tarea: [TASK-06 · Ingesta de datos (#7)](https://github.com/EKOU-Solutions/EKOU-Elephants/issues/7) · Decisión: [ADR 0002](adr/0002-ingesta-de-datos.md) · Fuentes: [fuentes de datos](fuentes-de-datos.md)
 >
 > Medido contra la API de datos.gov.co el **7 de noviembre de 2026**. Las cifras cambian con cada corte; las reglas se derivan de ellas y se revisan en cada corte con el reporte de calidad.
 

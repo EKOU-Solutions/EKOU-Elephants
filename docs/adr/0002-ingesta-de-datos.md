@@ -1,6 +1,6 @@
-# ADR 0001: Ingesta de datos
+# ADR 0002: Ingesta de datos
 
-> Tarea: [TASK-06 Establecer ingesta de datos: ADR y POC](https://github.com/EKOU-Solutions/EKOU-Elephants/issues/7) · Estado: **Propuesto** (pendiente de revisión del equipo) · Fecha: 2026-11-07 · Diagramas: [arquitectura](../arquitectura.md) · Resultados: [POC del corte 2026-11](../resultados-poc.md)
+> Tarea: [TASK-06 Establecer ingesta de datos: ADR y POC](https://github.com/EKOU-Solutions/EKOU-Elephants/issues/7) · Estado: **Propuesto** (pendiente de revisión del equipo) · Fecha: 2026-11-07 · Diagramas: [arquitectura de datos](../arquitectura-datos.md) · Resultados: [POC del corte 2026-11](../resultados-poc.md)
 
 ## Contexto
 

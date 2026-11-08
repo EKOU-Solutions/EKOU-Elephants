@@ -1,6 +1,6 @@
 # Resultados de la POC de ingesta (corte 2026-11)
 
-> Tarea: [TASK-06 · Ingesta de datos (#7)](https://github.com/EKOU-Solutions/EKOU-Elephants/issues/7) · Decisión: [ADR 0001](adr/0001-ingesta-de-datos.md) · Reglas de limpieza: [investigación de ingesta](investigacion-ingesta.md) · Cómo correrlo: [pipeline/README.md](../pipeline/README.md)
+> Tarea: [TASK-06 · Ingesta de datos (#7)](https://github.com/EKOU-Solutions/EKOU-Elephants/issues/7) · Decisión: [ADR 0002](adr/0002-ingesta-de-datos.md) · Reglas de limpieza: [investigación de ingesta](investigacion-ingesta.md) · Cómo correrlo: [pipeline/README.md](../pipeline/README.md)
 >
 > Ejecutado el **7 de noviembre de 2026** sobre el universo nacional completo, en un portátil con Windows 11, 32 GB de RAM y sin App Token de datos.gov.co.
 
@@ -38,7 +38,7 @@ datos.gov.co ──extract──▶ bronze ──transform (dbt + DuckDB)──�
 | **silver** | `contratos`: SECOP I y II con las mismas 51 columnas, tipos de dato, municipio de ejecución, alertas de valor y seudónimos | DuckDB |
 | **gold** | `mapa_municipios` (indicadores por municipio y año) y `calidad_corte` (qué se pudo usar y qué no) | DuckDB |
 
-El diagrama completo está en [arquitectura](arquitectura.md).
+El diagrama completo está en [arquitectura de datos](arquitectura-datos.md).
 
 **Tiempos medidos**
 

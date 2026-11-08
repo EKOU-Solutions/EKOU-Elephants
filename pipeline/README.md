@@ -8,7 +8,7 @@ datos.gov.co ──extract──▶ bronze (Parquet, tal como llega) ──trans
 
 Los resultados del corte 2026-11 (volúmenes, tiempos, calidad y limitaciones) están en [resultados de la POC](../docs/resultados-poc.md).
 
-Las decisiones de diseño, alternativas y mediciones están en el [ADR 0001](../docs/adr/0001-ingesta-de-datos.md). La evidencia sobre la calidad de cada fuente y las reglas de limpieza están en la [investigación de ingesta](../docs/investigacion-ingesta.md). Las fuentes están descritas en [fuentes de datos](../docs/fuentes-de-datos.md).
+Las decisiones de diseño, alternativas y mediciones están en el [ADR 0002](../docs/adr/0002-ingesta-de-datos.md). La evidencia sobre la calidad de cada fuente y las reglas de limpieza están en la [investigación de ingesta](../docs/investigacion-ingesta.md). Las fuentes están descritas en [fuentes de datos](../docs/fuentes-de-datos.md).
 
 ## Fuentes del primer corte
 

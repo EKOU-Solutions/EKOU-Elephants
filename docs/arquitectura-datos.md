@@ -1,6 +1,6 @@
 # Arquitectura de datos
 
-> Cómo viajan los datos desde datos.gov.co hasta el mapa. Decisiones y alternativas: [ADR 0001](adr/0001-ingesta-de-datos.md) · Evidencia: [investigación de ingesta](investigacion-ingesta.md) · Fuentes: [fuentes de datos](fuentes-de-datos.md)
+> Cómo viajan los datos desde datos.gov.co hasta el mapa. Decisiones y alternativas: [ADR 0002](adr/0002-ingesta-de-datos.md) · Evidencia: [investigación de ingesta](investigacion-ingesta.md) · Fuentes: [fuentes de datos](fuentes-de-datos.md)
 
 ## En 30 segundos
 

@@ -1,6 +1,6 @@
 """Cliente de la API Socrata (SODA 2.1) de datos.gov.co.
 
-Decisiones de diseño (ver ADR 0001 y ``docs/investigacion-ingesta.md``):
+Decisiones de diseño (ver ADR 0002 y ``docs/investigacion-ingesta.md``):
 
 - **Paginación keyset** (``:id > último`` con ``$order=:id``), recomendada por Socrata. El
   ``$offset`` se degrada con la profundidad: ~13 s solo para posicionarse en la fila 5 M.
