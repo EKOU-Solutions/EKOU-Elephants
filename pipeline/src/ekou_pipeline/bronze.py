@@ -7,7 +7,8 @@ Estructura en disco::
 
 - **Paralelo por partición:** cada año se extrae en su propio hilo, con paginación keyset.
 - **Reanudable e idempotente:** una partición con ``_SUCCESS.json`` se salta; una partición
-  incompleta (una ejecución que falló a mitad) se borra y se vuelve a extraer.
+  incompleta (una ejecución que falló a mitad) o extraída con otras columnas se borra y se
+  vuelve a extraer.
 - **Verificable:** cada partición registra cuántas filas esperaba según el origen y cuántas
   extrajo, para que las compuertas de calidad puedan comparar.
 - **Consistente:** si el origen se reemplaza durante el recorrido (SECOP se reconstruye a diario
@@ -27,13 +28,14 @@ import pyarrow.parquet as pq
 import structlog
 
 from ekou_pipeline.catalog import DatasetSpec
-from ekou_pipeline.socrata import DatasetReplacedError, Row, SocrataClient
+from ekou_pipeline.socrata import DatasetReplacedError, Row, SocrataClient, SocrataError
 
 log = structlog.get_logger(__name__)
 
 SUCCESS_MARKER = "_SUCCESS.json"
 NO_DATE_PARTITION = "sin_fecha"
 SINGLE_PARTITION = "todo"
+OUT_OF_RANGE_PARTITION = "fuera_de_rango"
 MAX_REPLACEMENT_RESTARTS = 2
 
 
@@ -79,11 +81,40 @@ def dataset_dir(data_dir: Path, corte: str, spec: DatasetSpec) -> Path:
     return data_dir / "bronze" / f"corte={corte}" / f"fuente={spec.key}"
 
 
-def plan_partitions(client: SocrataClient, spec: DatasetSpec) -> list[Partition]:
-    """Divide el dataset por año de la columna de fecha, con el conteo esperado de cada año."""
-    column = spec.year_partition_column
-    if column is None:
+def plan_partitions(client: SocrataClient, spec: DatasetSpec, corte: str) -> list[Partition]:
+    """Divide el dataset en particiones independientes, con el conteo esperado de cada una."""
+    if spec.explicit_partitions:
+        return _plan_explicit(client, spec)
+    if spec.year_partition_column is None:
         return [Partition(SINGLE_PARTITION, None, None)]
+    return _plan_by_year(client, spec, spec.year_partition_column, corte)
+
+
+def _count(client: SocrataClient, spec: DatasetSpec, where: str | None = None) -> int:
+    params = {"$select": "count(*) AS filas"}
+    if where:
+        params["$where"] = where
+    return int(client.query(spec.socrata_id, params)[0]["filas"])
+
+
+def _plan_explicit(client: SocrataClient, spec: DatasetSpec) -> list[Partition]:
+    with ThreadPoolExecutor(max_workers=len(spec.explicit_partitions)) as pool:
+        counts = list(pool.map(lambda p: _count(client, spec, p[1]), spec.explicit_partitions))
+    total = _count(client, spec)
+    if sum(counts) != total:
+        raise SocrataError(
+            f"{spec.socrata_id}: las particiones cubren {sum(counts)} filas de {total}; "
+            "revisar las condiciones de partición del catálogo"
+        )
+    return [
+        Partition(name, where, expected)
+        for (name, where), expected in zip(spec.explicit_partitions, counts, strict=True)
+    ]
+
+
+def _plan_by_year(
+    client: SocrataClient, spec: DatasetSpec, column: str, corte: str
+) -> list[Partition]:
     counts = client.query(
         spec.socrata_id,
         {
@@ -92,16 +123,30 @@ def plan_partitions(client: SocrataClient, spec: DatasetSpec) -> list[Partition]
             "$order": "anio",
         },
     )
+    min_year = spec.min_year
+    max_year = int(corte[:4]) + 1
     partitions = []
+    out_of_range = 0
     for row in counts:
         expected = int(row["filas"])
         if row.get("anio") is None:
             partitions.append(Partition(NO_DATE_PARTITION, f"{column} IS NULL", expected))
             continue
         year = int(row["anio"])
-        where = f"{column} >= '{year}-01-01T00:00:00' AND {column} < '{year + 1}-01-01T00:00:00'"
-        partitions.append(Partition(str(year), where, expected))
+        if min_year is not None and not min_year <= year <= max_year:
+            out_of_range += expected
+            continue
+        partitions.append(Partition(str(year), _year_range(column, year, year + 1), expected))
+    if out_of_range:
+        where = (
+            f"{column} < '{min_year}-01-01T00:00:00' OR {column} >= '{max_year + 1}-01-01T00:00:00'"
+        )
+        partitions.append(Partition(OUT_OF_RANGE_PARTITION, where, out_of_range))
     return partitions
+
+
+def _year_range(column: str, start: int, end: int) -> str:
+    return f"{column} >= '{start}-01-01T00:00:00' AND {column} < '{end}-01-01T00:00:00'"
 
 
 def extract_dataset(
@@ -114,7 +159,7 @@ def extract_dataset(
 ) -> ExtractionReport:
     start = time.perf_counter()
     target = dataset_dir(data_dir, corte, spec)
-    partitions = plan_partitions(client, spec)
+    partitions = plan_partitions(client, spec, corte)
     log.info("bronze.inicio", fuente=spec.key, corte=corte, particiones=len(partitions))
 
     # Las particiones grandes primero: el tiempo total queda limitado por la más lenta.
@@ -151,8 +196,10 @@ def _extract_partition(
     marker = path / SUCCESS_MARKER
     if marker.exists():
         done = json.loads(marker.read_text(encoding="utf-8"))
-        log.info("bronze.particion_en_cache", fuente=spec.key, particion=partition.name)
-        return PartitionResult(**{**done, "skipped": True})
+        if done.pop("esquema", None) == spec.schema_fingerprint:
+            log.info("bronze.particion_en_cache", fuente=spec.key, particion=partition.name)
+            return PartitionResult(**{**done, "skipped": True})
+        log.info("bronze.particion_con_otro_esquema", fuente=spec.key, particion=partition.name)
 
     for restart in range(MAX_REPLACEMENT_RESTARTS + 1):
         if path.exists():  # quedó a medias en una ejecución o intento anterior
@@ -180,7 +227,8 @@ def _extract_partition(
         seconds=time.perf_counter() - start,
         skipped=False,
     )
-    marker.write_text(json.dumps(asdict(result), ensure_ascii=False), encoding="utf-8")
+    payload = {**asdict(result), "esquema": spec.schema_fingerprint}
+    marker.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
     log.info(
         "bronze.particion_lista",
         fuente=spec.key,

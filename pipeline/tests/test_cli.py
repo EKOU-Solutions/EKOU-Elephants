@@ -35,3 +35,14 @@ def test_extract_command(
     report = json.loads(capsys.readouterr().out)
     assert report[0]["dataset"] == "divipola"
     assert report[0]["rows"] == 1
+
+
+def test_catalog_partitions_and_privacy() -> None:
+    """Las fuentes nuevas no deben traer datos bancarios ni de representantes legales."""
+    from ekou_pipeline.catalog import CATALOG
+
+    forbidden = ("cuenta", "banco", "representante", "represen", "domicilio", "supervisor")
+    for spec in CATALOG.values():
+        assert not [c for c in spec.columns if any(f in c for f in forbidden)], spec.key
+        assert len(spec.schema_fingerprint) == 16
+    assert len(CATALOG["secop_ubicaciones"].explicit_partitions) == 9

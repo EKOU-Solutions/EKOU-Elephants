@@ -1,8 +1,20 @@
 # ekou-pipeline
 
-Pipeline de datos abiertos de EKOU-Elephants. Extrae cada mes la contratación pública de Colombia (SECOP II), el presupuesto territorial (CUIPO) y el registro empresarial (RUES) desde [datos.gov.co](https://www.datos.gov.co), a escala nacional.
+Pipeline de datos abiertos de EKOU-Elephants. Extrae cada mes la contratación pública de Colombia (SECOP I y SECOP II) desde [datos.gov.co](https://www.datos.gov.co), a escala nacional.
 
-Las decisiones de diseño, alternativas y mediciones están en el [ADR 0001](../docs/adr/0001-ingesta-de-datos.md). Las fuentes están descritas en [fuentes de datos](../docs/fuentes-de-datos.md).
+Las decisiones de diseño, alternativas y mediciones están en el [ADR 0001](../docs/adr/0001-ingesta-de-datos.md). La evidencia sobre la calidad de cada fuente y las reglas de limpieza están en la [investigación de ingesta](../docs/investigacion-ingesta.md). Las fuentes están descritas en [fuentes de datos](../docs/fuentes-de-datos.md).
+
+## Fuentes del primer corte
+
+| Clave | Dataset | Filas (nov. 2026) | Partición |
+|---|---|---|---|
+| `secop_contratos` | SECOP II – Contratos (`jbjy-vk9h`) | 5,7 M | Año de firma |
+| `secop_procesos` | SECOP II – Procesos (`p6dx-8zbt`) | 9,4 M | Año de publicación |
+| `secop_ubicaciones` | SECOP II – Ubicaciones de ejecución (`gra4-pcp2`) | 6,5 M | Primer dígito de `id_contrato` (9 bloques) |
+| `secop_i` | SECOP I – Procesos de compra (`f789-7hwg`) | 7,0 M | Año de firma; fechas antes de 2014 o futuras en `fuera_de_rango` |
+| `divipola` | DANE – Municipios (`gdxc-w37w`) | 1.122 | Única |
+
+El catálogo excluye desde la extracción las cuentas bancarias, los domicilios y los datos de representantes legales, supervisores y ordenadores del gasto.
 
 ## Requisitos
 
@@ -16,12 +28,14 @@ cd pipeline
 uv sync
 
 # Extrae SECOP II Contratos y DIVIPOLA a la capa bronze, para el corte 2026-11
-uv run ekou-pipeline extract secop_contratos divipola --corte 2026-11
+uv run ekou-pipeline extract secop_contratos secop_procesos secop_ubicaciones secop_i divipola --corte 2026-11
 ```
 
 Los datos quedan en `data/bronze/corte=2026-11/fuente=<fuente>/particion=<año>/`. Al terminar, el comando imprime un reporte JSON con filas extraídas, filas esperadas y tiempos por partición.
 
-Si la ejecución se interrumpe, al volver a lanzarla **solo se extraen las particiones que faltan**.
+Si la ejecución se interrumpe, al volver a lanzarla **solo se extraen las particiones que faltan**. Si cambian las columnas de una fuente en el catálogo, sus particiones se vuelven a extraer.
+
+Antes de extraer, el pipeline verifica que las particiones cubran exactamente el `count(*)` del dataset.
 
 Varios datasets de SECOP se reconstruyen completos a diario en origen (SECOP II Contratos hacia las 02:43, hora de Colombia). Si eso ocurre en medio de una partición, el pipeline lo detecta con la cabecera `X-SODA2-Truth-Last-Modified` y vuelve a extraer la partición completa, para no mezclar dos versiones del dataset.
 

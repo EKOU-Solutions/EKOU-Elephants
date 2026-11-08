@@ -7,7 +7,7 @@ import respx
 
 from ekou_pipeline.bronze import SUCCESS_MARKER, dataset_dir, extract_dataset
 from ekou_pipeline.catalog import DatasetSpec
-from ekou_pipeline.socrata import VERSION_HEADER, DatasetReplacedError, SocrataClient
+from ekou_pipeline.socrata import VERSION_HEADER, DatasetReplacedError, SocrataClient, SocrataError
 
 from .conftest import BASE
 
@@ -129,3 +129,74 @@ def test_gives_up_when_source_keeps_changing(client: SocrataClient, tmp_path: Pa
     respx.get(RESOURCE).mock(side_effect=api)
     with pytest.raises(DatasetReplacedError):
         extract_dataset(client, SPEC, data_dir=tmp_path, corte="2026-11", max_workers=1)
+
+
+@respx.mock
+def test_reextracts_partitions_when_columns_change(client: SocrataClient, tmp_path: Path) -> None:
+    route = respx.get(RESOURCE).mock(side_effect=_fake_api)
+    extract_dataset(client, SPEC, data_dir=tmp_path, corte="2026-11", max_workers=1)
+
+    wider = DatasetSpec(
+        key=SPEC.key,
+        socrata_id=SPEC.socrata_id,
+        columns=(*SPEC.columns, "nueva"),
+        year_partition_column="fecha",
+    )
+    calls = route.call_count
+    report = extract_dataset(client, wider, data_dir=tmp_path, corte="2026-11", max_workers=1)
+
+    assert not any(p.skipped for p in report.partitions)
+    assert route.call_count > calls + 1
+    table = pq.read_table(dataset_dir(tmp_path, "2026-11", wider) / "particion=2024")
+    assert "nueva" in table.column_names
+
+
+@respx.mock
+def test_out_of_range_years_go_to_one_partition(client: SocrataClient, tmp_path: Path) -> None:
+    spec = DatasetSpec(
+        key="rango",
+        socrata_id="abcd-1234",
+        columns=("nombre",),
+        year_partition_column="fecha",
+        min_year=2014,
+    )
+    years = [("2001", "4"), ("2024", "3"), ("2099", "2")]
+
+    def api(request: httpx.Request) -> httpx.Response:
+        if "$group" in request.url.params:
+            return httpx.Response(200, json=[{"anio": y, "filas": n} for y, n in years])
+        return httpx.Response(200, json=[{":id": "row-1"}])
+
+    respx.get(RESOURCE).mock(side_effect=api)
+    report = extract_dataset(client, spec, data_dir=tmp_path, corte="2026-11", max_workers=1)
+
+    by_name = {p.name: p for p in report.partitions}
+    assert set(by_name) == {"2024", "fuera_de_rango"}
+    assert by_name["fuera_de_rango"].expected_rows == 6
+
+
+@respx.mock
+def test_explicit_partitions_must_cover_the_dataset(client: SocrataClient, tmp_path: Path) -> None:
+    spec = DatasetSpec(
+        key="explicita",
+        socrata_id="abcd-1234",
+        columns=("id",),
+        explicit_partitions=(("a", "starts_with(id, 'A')"), ("b", "starts_with(id, 'B')")),
+    )
+    counts = {"starts_with(id, 'A')": "2", "starts_with(id, 'B')": "1"}
+    total = {"value": "3"}
+
+    def api(request: httpx.Request) -> httpx.Response:
+        params = request.url.params
+        if params.get("$select") == "count(*) AS filas":
+            where = params.get("$where")
+            return httpx.Response(200, json=[{"filas": counts[where] if where else total["value"]}])
+        return httpx.Response(200, json=[{":id": "row-1", "id": "A1"}])
+
+    respx.get(RESOURCE).mock(side_effect=api)
+    report = extract_dataset(client, spec, data_dir=tmp_path, corte="2026-11", max_workers=2)
+    assert {p.name: p.expected_rows for p in report.partitions} == {"a": 2, "b": 1}
+
+    total["value"] = "4"  # una fila que ninguna partición cubre
+    with pytest.raises(SocrataError, match="cubren 3 filas de 4"):
+        extract_dataset(client, spec, data_dir=tmp_path / "otra", corte="2026-11", max_workers=1)
