@@ -110,7 +110,7 @@ Su debilidad: cuando una entidad nacional o departamental deja la sede como ubic
 
 Cada contrato guarda `cod_mpio_ejecucion`, `cod_dpto_ejecucion`, `fuente_ubicacion`, `confianza` y `n_municipios`, y aparte `cod_mpio_sede_entidad`: "quién contrata" frente a "dónde se ejecuta".
 
-**SECOP I** trae `municipios_ejecucion` propio, que entra en la cascada al mismo nivel que `gra4-pcp2`.
+**SECOP I** trae `municipios_ejecucion` propio, que entra en la cascada al mismo nivel que `gra4-pcp2`. Trae solo el nombre del municipio, sin departamento: los homónimos se resuelven con `departamento_entidad`, y necesita sus propios alias ("San Andres de Tumaco", "Bogotá D.C.").
 
 ### Normalización de nombres a DIVIPOLA
 
@@ -195,7 +195,7 @@ Que el dato sea público en datos.gov.co no exime a EKOU de la Ley 1581 de 2012:
 
 | ID | Tema | Regla |
 |---|---|---|
-| S01 | Unicidad | Deduplicar SECOP II por `id_contrato` y SECOP I por `uid`; conservar la `ultima_actualizacion` más reciente; alertar si quedan duplicados no idénticos |
+| S01 | Unicidad | Deduplicar SECOP II por `id_contrato` (272 filas repetidas) y SECOP I por `uid` (6.480.545 filas para 6.279.022 `uid`: ~200 mil repetidas que inflarían las sumas); conservar la `ultima_actualizacion` más reciente; alertar si quedan duplicados no idénticos |
 | S02 | Llaves | Contrato ↔ proceso por `proceso_de_compra = id_del_portafolio`; elegir la fila adjudicada |
 | S03 | Valor | `valor_actual`; `valor_inicial` según modalidad; `ratio` y `pct_sobrecosto`; `adicion_supera_50pct`; `sobrecosto_no_calculable` |
 | S04 | Atípicos | Reglas A1 a A5 |

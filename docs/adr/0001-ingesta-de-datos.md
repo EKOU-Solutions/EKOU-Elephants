@@ -15,15 +15,15 @@ EKOU-Elephants necesita un **pipeline de datos de producción**, no un prototipo
 | SECOP II – Contratos ① | 5,7 M | Mapa, buscador, alertas |
 | SECOP II – Procesos ① | 9,4 M | Valor inicial, único oferente, duración original |
 | SECOP II – Ubicaciones de ejecución ① | 6,5 M | Municipio donde se ejecuta cada contrato |
-| SECOP I – Procesos de compra ① | 7,0 M | Alcaldías que no contratan en SECOP II (278 municipios solo usan SECOP I) |
+| SECOP I – Procesos de compra ① | 6,5 M | Alcaldías que no contratan en SECOP II (278 municipios solo usan SECOP I) |
 | SECOP II – Adiciones | 8,5 M | Sobrecostos |
 | SECOP II – Ejecución de contratos | 7,7 M | Obras retrasadas |
 | SECOP II – Suspensiones | 0,9 M | Obras paralizadas |
 | CUIPO – Programación y ejecución de gastos | 19,5 M | Presupuesto por municipio |
 | RUES – Confecámaras | 9,5 M | Alertas de contratistas |
-| **Total** | **~75 M de filas** | |
+| **Total** | **~74 M de filas** | |
 
-① Primer corte: **~28,6 M de filas**. SECOP II Ofertas (~96,6 M filas en tres datasets) queda para una fase posterior.
+① Primer corte: **~28,1 M de filas**. SECOP II Ofertas (~96,6 M filas en tres datasets) queda para una fase posterior.
 
 ### Mediciones de la API de origen (2026-11-07)
 
@@ -53,7 +53,7 @@ EKOU-Elephants necesita un **pipeline de datos de producción**, no un prototipo
 
 | Restricción | Detalle |
 |---|---|
-| **Volumen** | ~28,6 M de filas en el primer corte y ~75 M con todas las fuentes (ver escala objetivo) |
+| **Volumen** | ~28,1 M de filas en el primer corte y ~74 M con todas las fuentes (ver escala objetivo) |
 | **API de origen** | Socrata: paginada, con límites de uso, y **las agregaciones grandes en el servidor se agotan por tiempo** (lo observamos con CUIPO en esta tarea) |
 | **Calidad** | SECOP trae valores atípicos por errores de magnitud (un contrato de $64 millones registrado por $6,45 × 10¹⁵), nombres de municipio sin código DANE, ciudad de la sede en vez del lugar de ejecución y 16 % de obras con ciudad "No Definido" |
 | **Frecuencia** | **Actualización mensual en producción.** SECOP se actualiza a diario y CUIPO cada trimestre en origen, pero el proyecto publica un corte mensual. |

@@ -11,7 +11,7 @@ Las decisiones de diseño, alternativas y mediciones están en el [ADR 0001](../
 | `secop_contratos` | SECOP II – Contratos (`jbjy-vk9h`) | 5,7 M | Año de firma |
 | `secop_procesos` | SECOP II – Procesos (`p6dx-8zbt`) | 9,4 M | Año de publicación |
 | `secop_ubicaciones` | SECOP II – Ubicaciones de ejecución (`gra4-pcp2`) | 6,5 M | Primer dígito de `id_contrato` (9 bloques) |
-| `secop_i` | SECOP I – Procesos de compra (`f789-7hwg`) | 7,0 M | Año de firma; fechas antes de 2014 o futuras en `fuera_de_rango` |
+| `secop_i` | SECOP I – Procesos de compra (`f789-7hwg`) | 6,5 M | Año de firma; fechas antes de 2014 o futuras en `fuera_de_rango` |
 | `divipola` | DANE – Municipios (`gdxc-w37w`) | 1.122 | Única |
 
 El catálogo excluye desde la extracción las cuentas bancarias, los domicilios y los datos de representantes legales, supervisores y ordenadores del gasto.
