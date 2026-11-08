@@ -3,6 +3,11 @@ import type { ResumenTerritorial as Resumen } from '../domain/resumen-territoria
 
 type Estado = { tipo: 'cargando' } | { tipo: 'vacio' } | { tipo: 'error' } | { tipo: 'ok'; resumen: Resumen };
 
+function formatearCentavos(valor: number): string {
+  const centavos = BigInt(valor);
+  return `${(centavos / 100n).toLocaleString('es-CO')},${(centavos % 100n).toString().padStart(2, '0')} COP`;
+}
+
 export function ResumenTerritorial({ codigo }: { codigo: string }) {
   const [estado, setEstado] = useState<Estado>({ tipo: 'cargando' });
 
@@ -22,11 +27,11 @@ export function ResumenTerritorial({ codigo }: { codigo: string }) {
   if (estado.tipo === 'cargando') return <p>Cargando…</p>;
   if (estado.tipo === 'vacio') return <p>Aún no hay datos para este territorio.</p>;
   if (estado.tipo === 'error') return <p role="alert">No pudimos cargar la información.</p>;
-  const { nombre, presupuestoAsignado, gastoActual, totalObras, obrasConRetraso } = estado.resumen;
+  const { nombre, presupuestoAsignadoCentavos, gastoActualCentavos, totalObras, obrasConRetraso } = estado.resumen;
   return (
     <section>
       <h2>{nombre}</h2>
-      <p>Presupuesto: {presupuestoAsignado.toLocaleString('es-CO')} · Gasto: {gastoActual.toLocaleString('es-CO')}</p>
+      <p>Presupuesto: {formatearCentavos(presupuestoAsignadoCentavos)} · Gasto: {formatearCentavos(gastoActualCentavos)}</p>
       <p>Obras: {totalObras} ({obrasConRetraso} con señales de retraso)</p>
     </section>
   );

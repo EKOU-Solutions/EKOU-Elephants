@@ -2,8 +2,9 @@ export interface ResumenTerritorial {
   /** DIVIPOLA code: 2 digits (departamento) or 5 digits (municipio). */
   codigo: string;
   nombre: string;
-  presupuestoAsignado: number;
-  gastoActual: number;
+  /** COP cents, always a non-negative safe integer. */
+  presupuestoAsignadoCentavos: number;
+  gastoActualCentavos: number;
   totalObras: number;
   obrasConRetraso: number;
 }

@@ -67,7 +67,6 @@ src/
       http/mapa.routes.ts
       postgres/gasto-territorial.repository.ts
     ui/
-      mapa-interactivo.tsx
       resumen-territorial.tsx
   components/ui/
   server/
@@ -89,7 +88,7 @@ tsconfig.json
 package.json
 ```
 
-Los nombres del módulo son ilustrativos; sus reglas y contratos se definirán después. Los adaptadores de base de datos y secretos quedan fuera del bundle del cliente. Configuración de Cloudflare y de migraciones se añadirá al implementar.
+El módulo `mapa` y `gasto_territorial` son una demostración arquitectónica con cifras ficticias. Acordamos con Esteban refinar sus reglas, indicadores y esquema al abordar el módulo real y alinearlo con la ingesta. La conversión de importes a centavos exactos ya forma parte del arquetipo; no se aceptan pérdidas silenciosas de precisión. Los adaptadores de base de datos y secretos quedan fuera del bundle del cliente. Configuración de Cloudflare y de migraciones se añadirá al implementar.
 
 ## Referencias
 
@@ -120,3 +119,5 @@ Los nombres del módulo son ilustrativos; sus reglas y contratos se definirán d
 - [node-pg-migrate: migraciones PostgreSQL](https://salsita.github.io/node-pg-migrate/).
 - [Drizzle Kit: migraciones](https://orm.drizzle.team/docs/kit-overview) e [integración con Neon](https://orm.drizzle.team/docs/get-started/neon-new).
 - [Prisma: migraciones](https://www.prisma.io/docs/orm/prisma-migrate).
+
+- [Validación de enteros seguros](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/isSafeInteger), [BigInt](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt) y [NUMERIC en PostgreSQL](https://www.postgresql.org/docs/current/datatype-numeric.html).

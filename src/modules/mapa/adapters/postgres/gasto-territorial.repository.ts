@@ -1,3 +1,4 @@
+import { importeACentavos } from './importe';
 import type { Queryable } from '../../../../server/db';
 import type { ConsultarGastoTerritorial } from '../../application/ports/consultar-gasto-territorial';
 
@@ -22,9 +23,9 @@ export function gastoTerritorialRepository(db: Queryable): ConsultarGastoTerrito
       return {
         codigo: fila.codigo,
         nombre: fila.nombre,
-        // NUMERIC arrives as string; COP amounts stay well below 2^53.
-        presupuestoAsignado: Number(fila.presupuesto_asignado),
-        gastoActual: Number(fila.gasto_actual),
+        // Parse NUMERIC text exactly before converting to safe integer COP cents.
+        presupuestoAsignadoCentavos: importeACentavos(fila.presupuesto_asignado),
+        gastoActualCentavos: importeACentavos(fila.gasto_actual),
         totalObras: fila.total_obras,
         obrasConRetraso: fila.obras_con_retraso,
       };

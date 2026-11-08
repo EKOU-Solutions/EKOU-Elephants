@@ -5,8 +5,8 @@ import { obtenerResumenTerritorial } from './obtener-resumen-territorial';
 const antioquia: ResumenTerritorial = {
   codigo: '05',
   nombre: 'Antioquia',
-  presupuestoAsignado: 1000,
-  gastoActual: 400,
+  presupuestoAsignadoCentavos: 100000,
+  gastoActualCentavos: 40000,
   totalObras: 10,
   obrasConRetraso: 2,
 };

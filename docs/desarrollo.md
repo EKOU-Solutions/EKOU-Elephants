@@ -23,7 +23,9 @@ npm run dev                       # web + API en http://localhost:5173
 | `npx hono request -P /api/salud scripts/cli-app.ts` | Prueba una ruta con el [Hono CLI](https://hono.dev/docs/agents/cli), sin servidor ni base de datos (datos en memoria). |
 | `npm run cf-typegen` | Regenera `worker-configuration.d.ts` tras cambiar `wrangler.jsonc`. |
 
-Ruta de prueba: `GET /api/mapa/territorios/05/resumen` (código DIVIPOLA de 2 o 5 dígitos).
+Ruta de prueba: `GET /api/mapa/territorios/05/resumen` (código DIVIPOLA de 2 o 5 dígitos). Es una demostración arquitectónica con cifras ficticias; al tomar el módulo del mapa, se refinarán con Esteban las reglas y el contrato con la ingesta.
+
+La API devuelve los importes como `presupuestoAsignadoCentavos` y `gastoActualCentavos`: enteros exactos, no pesos decimales.
 
 ## Entornos y bases de datos
 
@@ -39,15 +41,33 @@ Ruta de prueba: `GET /api/mapa/territorios/05/resumen` (código DIVIPOLA de 2 o 
 - Rama dev: `npx neon checkout dev --create` y copiar las URLs de `npx neon connection-string dev` a `.env.dev`.
 - Las migraciones de producción deberían salir de CI (tarea #5) y no de un portátil.
 
-## Agentes y plugin de Neon
+## Agentes y plugin de Neon (opcional)
 
-El plugin `neon-postgres` (skills y MCP de Neon) está declarado solo para este proyecto en `.claude/settings.json`; Claude Code pedirá confirmarlo al abrirlo. No está instalado a nivel de usuario. `neon init` y `neon plugins` lo instalan para todos tus proyectos: evitar esos comandos o revertirlos con `claude plugin uninstall neon-postgres@neon --scope user`.
+No se requiere Claude Code ni el plugin de Neon para contribuir. La configuración compartida no habilita marketplaces ni plugins de terceros.
+
+Quien quiera usar `neon-postgres` puede configurarlo en `.claude/settings.local.json`, ignorado por Git. Por ejemplo:
+
+```json
+{
+  "extraKnownMarketplaces": {
+    "neon": { "source": { "source": "github", "repo": "neondatabase/agent-skills" } }
+  },
+  "enabledPlugins": { "neon-postgres@neon": true }
+}
+```
+
+Si el archivo ya existe, integrar estas claves conservando las preferencias locales. El resto de colaboradores no recibe esta configuración.
 
 ## Reglas del arquetipo
 
 - `domain` y `application` no importan Hono, `pg` ni Neon; solo `adapters` y `server/composition` los conocen.
 - `DATABASE_URL` solo existe en el servidor (`.dev.vars` / secreto de Workers); nunca en el bundle del cliente.
+- Los importes del ejemplo se convierten a centavos exactos y se rechazan si su formato o rango es inválido; ver [arquitectura](arquitectura.md#importes-exactitud-y-rechazo-de-datos-incorrectos).
 - Consultas siempre parametrizadas; entradas validadas con zod; errores inesperados devuelven un 500 genérico sin detalles.
+
+## Migraciones del ejemplo
+
+La migración territorial original se conserva intacta porque ya se aplicó en bases de desarrollo. La siguiente añade restricciones para que los importes de `gasto_territorial` se representen sin pérdida como centavos enteros. Ejecutar las pendientes normalmente. Si hay importes fuera de rango, la migración falla y deben revisarse; no se redondean ni corrigen automáticamente. El esquema y las reglas definitivos del mapa se refinarán al abordar el módulo.
 
 ## Traslado de datos entre bases
 

@@ -7,3 +7,4 @@ dist
 !.env.example
 *.log
 .neon
+.claude/settings.local.json
