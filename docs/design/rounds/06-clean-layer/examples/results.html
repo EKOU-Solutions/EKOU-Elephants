@@ -1,0 +1,17 @@
+{{appbar:Buscar}}
+<main class="page">
+  <header class="hero">
+    <h1>Buscar contratos y obras</h1>
+    <form class="search" role="search" onsubmit="return false"><label for="q" hidden>Buscar</label><input id="q" value="puente"><button class="el-btn el-btn-primary" type="submit"><i data-lucide="search" aria-hidden="true"></i><span>Buscar</span></button></form>
+    <div class="row"><button class="el-chip" type="button" aria-label="Quitar filtro: Antioquia">Antioquia<i data-lucide="x" aria-hidden="true"></i></button><button class="el-chip" type="button" aria-label="Quitar filtro: 2025">2025<i data-lucide="x" aria-hidden="true"></i></button></div>
+  </header>
+  <div class="sortbar"><div class="el-counts" role="group" aria-label="Resumen"><div class="el-count"><strong>48</strong><span>Resultados</span></div><div class="el-count el-count-risk"><strong>17</strong><span><span class="el-key el-key-flagged" aria-hidden="true" style="margin:0"></span>Con señales</span></div><div class="el-count"><strong>3</strong><span>Sin datos</span></div></div><label class="row"><span class="lbl">Ordenar</span> <select><option>Más señales primero</option><option>Mayor valor</option></select></label></div>
+  <section class="el-card results" aria-labelledby="r-h"><h2 id="r-h" class="vh">Resultados</h2>
+    <article class="result"><div class="tagcell">{{tag:high}}</div><h3><a href="#">Construcción del puente vehicular El Ejemplo</a></h3><p class="amount"><span class="nw">$ 4.800 M</span></p><p class="why"><strong>Lleva 2 años detenida.</strong> Solo una empresa se presentó.</p><p class="meta">Obra · Gobernación de Ejemplo · 2023</p></article>
+    <article class="result"><div class="tagcell">{{tag:high}}</div><h3><a href="#">Reparación del puente peatonal La Quebrada</a></h3><p class="amount"><span class="nw">$ 610 M</span></p><p class="why"><strong>Ya cuesta 55% más</strong> de lo firmado.</p><p class="meta">Contrato · Alcaldía de Ejemplo · 2025</p></article>
+    <article class="result"><div class="tagcell">{{tag:medium}}</div><h3><a href="#">Interventoría puente sobre el río Ejemplo</a></h3><p class="amount"><span class="nw">$ 320 M</span></p><p class="why"><strong>Contratación directa</strong> con la misma empresa por tercera vez.</p><p class="meta">Contrato · Alcaldía de Ejemplo · 2025</p></article>
+    <article class="result"><div class="tagcell">{{tag:low}}</div><h3><a href="#">Mantenimiento de puentes rurales, zona norte</a></h3><p class="amount"><span class="nw">$ 1.150 M</span></p><p class="why">Pocas señales en lo analizado.</p><p class="meta">Contrato · Gobernación de Ejemplo · 2025</p></article>
+    <article class="result"><div class="tagcell">{{tag:unknown}}</div><h3><a href="#">Estudios para puente vereda Alto Ejemplo</a></h3><p class="amount"><span class="nw">$ 95 M</span></p><p class="why">Aún no analizado: faltan documentos en SECOP.</p><p class="meta">Contrato · Alcaldía de Ejemplo · 2025</p></article>
+  </section>
+  <p class="source">Mostrando 5 de 48 · Fuente: SECOP II y DNP · resultados ficticios</p>
+</main>

@@ -1,0 +1,16 @@
+{{appbar:Buscar}}
+<main class="page stack-16">
+  <h1>Buscar contratos y obras</h1>
+  <form class="search" role="search" onsubmit="return false"><label class="sr" for="q" hidden>Buscar</label><input id="q" value="puente"><button class="el-btn el-btn-primary" type="submit"><i data-lucide="search" aria-hidden="true"></i><span>Buscar</span></button></form>
+  <div class="row"><button class="el-chip" type="button" aria-label="Quitar filtro: Antioquia">Antioquia<i data-lucide="x" aria-hidden="true"></i></button><button class="el-chip" type="button" aria-label="Quitar filtro: 2025">2025<i data-lucide="x" aria-hidden="true"></i></button></div>
+  <div class="el-counts"><div class="el-count"><strong>48</strong><span>Resultados</span></div><div class="el-count el-count-risk"><strong>17</strong><span><span class="el-key el-key-flagged" aria-hidden="true" style="margin:0"></span>Con señales</span></div><div class="el-count"><strong>3</strong><span>Sin datos</span></div></div>
+  <div>
+    <div class="sortbar"><span class="muted">Mostrando 5 de 48</span><label class="row"><span class="lbl">Ordenar</span> <select><option>Más señales primero</option><option>Mayor valor</option></select></label></div>
+    <article class="result"><div class="tagcell">{{tag:high}}</div><h3><a href="#">Construcción del puente vehicular El Ejemplo</a></h3><p class="amount">$ 4.800 M</p><p class="why">Lleva 2 años detenida · solo una empresa se presentó</p><p class="meta">Gobernación de Ejemplo · obra · 2023</p></article>
+    <article class="result"><div class="tagcell">{{tag:high}}</div><h3><a href="#">Reparación del puente peatonal La Quebrada</a></h3><p class="amount">$ 610 M</p><p class="why">Ya cuesta 55% más de lo firmado</p><p class="meta">Alcaldía de Ejemplo · contrato · 2025</p></article>
+    <article class="result"><div class="tagcell">{{tag:medium}}</div><h3><a href="#">Interventoría puente sobre el río Ejemplo</a></h3><p class="amount">$ 320 M</p><p class="why">Contratación directa con la misma empresa por tercera vez</p><p class="meta">Alcaldía de Ejemplo · contrato · 2025</p></article>
+    <article class="result"><div class="tagcell">{{tag:low}}</div><h3><a href="#">Mantenimiento de puentes rurales, zona norte</a></h3><p class="amount">$ 1.150 M</p><p class="why muted">Pocas señales en lo analizado</p><p class="meta">Gobernación de Ejemplo · contrato · 2025</p></article>
+    <article class="result"><div class="tagcell">{{tag:unknown}}</div><h3><a href="#">Estudios para puente vereda Alto Ejemplo</a></h3><p class="amount">$ 95 M</p><p class="why muted">Aún no analizado: faltan documentos en SECOP</p><p class="meta">Alcaldía de Ejemplo · contrato · 2025</p></article>
+  </div>
+  <p class="source">Fuente: SECOP II · resultados ficticios</p>
+</main>

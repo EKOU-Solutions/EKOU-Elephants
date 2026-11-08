@@ -4,6 +4,8 @@
 
 🧭 **Arquitectura de datos:** ver [docs/arquitectura-datos.md](docs/arquitectura-datos.md)
 
+🎨 **Diseño:** [dirección visual, guía del sistema de diseño y rondas de revisión](docs/design/README.md)
+
 > Tarea: [TASK-01 Definir alcance de negocio del proyecto](https://github.com/EKOU-Solutions/EKOU-Elephants/issues/1)
 
 ## Objetivo del proyecto
