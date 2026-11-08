@@ -4,7 +4,7 @@ Output: `docs/design/discovery/brief.md`. It becomes the yardstick for audits an
 
 ## Before asking
 
-Read the project `README.md`, `docs/fuentes-de-datos.md`, `docs/design/visual-direction.md`, the selected round and any existing brief. Draft answers from them. Only ask what they leave open or what may have changed.
+Read the project `README.md`, `docs/fuentes-de-datos.md`, `docs/design/visual-direction.md`, the accepted guide (`docs/design/guide/README.md`) and any existing brief. Draft answers from them. Only ask what they leave open or what may have changed.
 
 ## Ask
 
