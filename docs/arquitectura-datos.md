@@ -11,7 +11,7 @@ flowchart LR
     SRC["🏛️ datos.gov.co<br/>SECOP I · SECOP II · DANE<br/>~28 M filas"]
     PIPE["⚙️ Pipeline mensual<br/>GitHub Actions<br/>Python · DuckDB · dbt"]
     PUB["📦 Corte publicado<br/>Parquet · GeoJSON · CSV<br/>+ reporte de calidad"]
-    APP["🗺️ App EKOU<br/>Vercel"]
+    APP["🗺️ App EKOU"]
     CIU["👥 Ciudadanía"]
 
     SRC -->|"API SODA<br/>keyset paralelo"| PIPE
@@ -38,7 +38,7 @@ flowchart LR
 
     subgraph BRONZE["🥉 Bronze · privado"]
         direction TB
-        B["Parquet tal como llega<br/>todo como texto<br/>particionado por corte, fuente y año"]
+        B["Paquete tal como llega<br/>todo como texto<br/>particionado por corte, fuente y año"]
     end
 
     subgraph SILVER["🥈 Silver · público"]
