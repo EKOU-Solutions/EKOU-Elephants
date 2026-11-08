@@ -1,0 +1,19 @@
+version: 2
+
+models:
+  - name: stg_divipola
+    columns:
+      - name: cod_mpio
+        data_tests: [unique, not_null]
+  - name: stg_secop_contratos
+    columns:
+      - name: id_contrato
+        data_tests: [unique, not_null]
+  - name: stg_secop_procesos
+    columns:
+      - name: id_del_portafolio
+        data_tests: [unique]
+  - name: stg_secop_i
+    columns:
+      - name: uid
+        data_tests: [unique, not_null]

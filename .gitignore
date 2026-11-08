@@ -1,3 +1,18 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+ingesta/data/
+*.duckdb
+.pytest_tmp/
+.coverage
+pipeline/data/
+uv.lock.bak
+pipeline/data_*
+.env
+pipeline/transform/.user.yml
+
 # Impeccable engine binaries (downloaded per machine by the installer, ~17 MB each)
 .claude/skills/impeccable/scripts/bin/
 .agents/skills/impeccable/scripts/bin/

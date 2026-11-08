@@ -1,0 +1,55 @@
+version: 2
+
+models:
+  - name: contratos
+    description: >
+      Un contrato por fila, de SECOP I y SECOP II, con tipos de dato, municipio de ejecución,
+      reglas de calidad y sin datos personales en claro. Reglas S01 a S14 de
+      docs/investigacion-ingesta.md.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [fuente, id_contrato]
+    columns:
+      - name: fuente
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [secop_i, secop_ii]
+      - name: id_contrato
+        data_tests: [not_null]
+      - name: cod_mpio_ejecucion
+        description: Código DANE del municipio donde se ejecuta el contrato (regla S08).
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('stg_divipola')
+                field: cod_mpio
+      - name: confianza_ubicacion
+        description: >
+          alta, media_alta y media se pintan en el mapa municipal; departamental y baja solo
+          en el departamental; ninguna no se territorializa.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [alta, media_alta, media, departamental, baja, ninguna]
+      - name: estado_ejecucion
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  [antes_de_firma, cancelado, terminado, suspendido, sin_iniciar,
+                   vencido_sin_cierre, activo]
+      - name: tipo_persona_contratista
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [juridica, natural, sin_documento]
+      - name: alerta_valor
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [error_magnitud, revisar_magnitud, supera_tope_minima_cuantia]
