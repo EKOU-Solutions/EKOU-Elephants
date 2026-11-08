@@ -1,0 +1,57 @@
+[project]
+name = "ekou-pipeline"
+version = "0.1.0"
+description = "Pipeline de datos abiertos de EKOU-Elephants: contratación y presupuesto público de Colombia."
+readme = "README.md"
+requires-python = ">=3.12"
+license = "Apache-2.0"
+dependencies = [
+    "dbt-core>=1.12.6",
+    "dbt-duckdb>=1.11.1",
+    "duckdb>=2.0.0",
+    "httpx>=0.28",
+    "numpy>=2.5.4",
+    "pyarrow>=18",
+    "pydantic-settings>=2.6",
+    "structlog>=24.4",
+]
+
+[project.scripts]
+ekou-pipeline = "ekou_pipeline.cli:main"
+
+[dependency-groups]
+dev = [
+    "mypy>=1.13",
+    "pytest>=8.3",
+    "pytest-cov>=6.0",
+    "respx>=0.22",
+    "ruff>=0.8",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "B", "SIM", "RUF", "PTH", "S", "T20"]
+ignore = ["RUF001", "RUF002", "RUF003"]  # el código y la documentación están en español
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101"]
+
+[tool.mypy]
+strict = true
+python_version = "3.12"
+mypy_path = "src"
+
+[[tool.mypy.overrides]]
+module = ["pyarrow", "pyarrow.*", "dbt", "dbt.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--basetemp=.pytest_tmp --cov=ekou_pipeline --cov-report=term-missing --cov-fail-under=80"
