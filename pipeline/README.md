@@ -1,6 +1,12 @@
 # ekou-pipeline
 
-Pipeline de datos abiertos de EKOU-Elephants. Extrae cada mes la contratación pública de Colombia (SECOP I y SECOP II) desde [datos.gov.co](https://www.datos.gov.co), a escala nacional.
+Pipeline de datos abiertos de EKOU-Elephants. Extrae cada mes la contratación pública de Colombia (SECOP I y SECOP II) desde [datos.gov.co](https://www.datos.gov.co), a escala nacional, y la convierte en tablas consultables para el mapa.
+
+```
+datos.gov.co ──extract──▶ bronze (Parquet, tal como llega) ──transform (dbt + DuckDB)──▶ silver: contratos ──▶ gold: mapa_municipios, calidad_corte
+```
+
+Los resultados del corte 2026-11 (volúmenes, tiempos, calidad y limitaciones) están en [resultados de la POC](../docs/resultados-poc.md).
 
 Las decisiones de diseño, alternativas y mediciones están en el [ADR 0001](../docs/adr/0001-ingesta-de-datos.md). La evidencia sobre la calidad de cada fuente y las reglas de limpieza están en la [investigación de ingesta](../docs/investigacion-ingesta.md). Las fuentes están descritas en [fuentes de datos](../docs/fuentes-de-datos.md).
 
@@ -20,6 +26,8 @@ El catálogo excluye desde la extracción las cuentas bancarias, los domicilios 
 
 - Python 3.12+
 - [uv](https://docs.astral.sh/uv/)
+- Para el corte nacional completo: 16 GB de RAM y ~35 GB libres en disco (3 GB de bronze, 7 GB de base DuckDB y hasta 20 GB de temporales durante `transform`). Las pruebas no necesitan nada de esto: usan un bronze de ejemplo.
+- `EKOU_PSEUDONYM_KEY`: clave de al menos 32 caracteres para seudonimizar las cédulas de personas naturales. Para probar localmente sirve cualquier valor; la del corte publicado es un secreto del repositorio.
 
 ## Uso
 
@@ -37,6 +45,20 @@ Si la ejecución se interrumpe, al volver a lanzarla **solo se extraen las parti
 
 Antes de extraer, el pipeline verifica que las particiones cubran exactamente el `count(*)` del dataset.
 
+Después de extraer, `transform` construye silver y gold y ejecuta las pruebas de datos:
+
+```bash
+uv run ekou-pipeline transform --corte 2026-11
+```
+
+El resultado queda en `data/ekou.duckdb` y se consulta con cualquier cliente de DuckDB:
+
+```bash
+uv run python -c "import duckdb; print(duckdb.connect('data/ekou.duckdb', read_only=True).sql('select * from calidad_corte'))"
+```
+
+Si una prueba de datos falla (por ejemplo, una cédula sin seudonimizar o un contrato que se pierde entre capas), el comando termina con código 1 y el corte no se publica.
+
 Varios datasets de SECOP se reconstruyen completos a diario en origen (SECOP II Contratos hacia las 02:43, hora de Colombia). Si eso ocurre en medio de una partición, el pipeline lo detecta con la cabecera `X-SODA2-Truth-Last-Modified` y vuelve a extraer la partición completa, para no mezclar dos versiones del dataset.
 
 ## Configuración
@@ -51,6 +73,8 @@ Variables de entorno (o archivo `.env`):
 | `EKOU_PAGE_SIZE` | `20000` | Filas por página. Páginas más grandes tardan más y el servidor llegó a cortarlas a mitad |
 | `EKOU_REQUEST_TIMEOUT_S` | `120` | Espera máxima de cada lectura de red |
 | `EKOU_MAX_REQUEST_S` | `300` | Duración máxima total de una petición; si se supera, se reintenta |
+| `EKOU_DUCKDB_MEMORY` | `6GB` | Memoria máxima de DuckDB en `transform`. Lo que no cabe se escribe en `data/ekou.duckdb.tmp` |
+| `EKOU_DUCKDB_TEMP` | `20GiB` | Espacio máximo de esos temporales |
 | `EKOU_MAX_RETRIES` | `6` | Reintentos ante errores transitorios: 429 (respeta `Retry-After`), 5xx, fallas de red, JSON truncado y peticiones demasiado lentas |
 
 ## Desarrollo
@@ -73,5 +97,16 @@ src/ekou_pipeline/
 ├── bronze.py      # extracción paralela por partición, reanudable, a Parquet
 ├── config.py      # configuración validada (pydantic-settings)
 ├── log_config.py  # logs estructurados en JSON
+├── transform.py   # ejecuta dbt para un corte
+├── seudonimo.py   # HMAC-SHA256 de los documentos de personas naturales
+├── dbt_plugin.py  # expone ekou_seudonimo() dentro de DuckDB
 └── cli.py         # comando ekou-pipeline
+
+transform/                 # proyecto dbt
+├── models/staging/        # tipos de dato y una fila por llave de negocio
+├── models/intermediate/   # ubicación, cruces y reglas por fuente
+├── models/silver/         # contratos: SECOP I y II con las mismas columnas
+├── models/gold/           # mapa_municipios y calidad_corte
+├── tests/                 # pruebas de datos del corte
+└── seeds/                 # alias de municipios y departamentos, SMMLV
 ```

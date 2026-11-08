@@ -1,6 +1,6 @@
 # ADR 0001: Ingesta de datos
 
-> Tarea: [TASK-06 Establecer ingesta de datos: ADR y POC](https://github.com/EKOU-Solutions/EKOU-Elephants/issues/7) · Estado: **Propuesto** (pendiente de revisión del equipo) · Fecha: 2026-11-07 · Diagramas: [arquitectura](../arquitectura.md)
+> Tarea: [TASK-06 Establecer ingesta de datos: ADR y POC](https://github.com/EKOU-Solutions/EKOU-Elephants/issues/7) · Estado: **Propuesto** (pendiente de revisión del equipo) · Fecha: 2026-11-07 · Diagramas: [arquitectura](../arquitectura.md) · Resultados: [POC del corte 2026-11](../resultados-poc.md)
 
 ## Contexto
 
@@ -405,6 +405,6 @@ flowchart LR
 - [ ] Agregar el Marco Geoestadístico Nacional (MGN) del DANE al inventario de fuentes para los polígonos del mapa (verificar vigencia, formato y licencia en el geoportal)
 - [ ] Registrar el App Token de datos.gov.co como secreto `EKOU_SOCRATA_APP_TOKEN`
 - [ ] Confirmar con TASK-07 (#8) y TASK-08 (#9) las reglas de silver que afectan alertas y datos personales
-- [ ] Medir en la POC los tiempos de extracción y consulta con y sin partición y orden, para confirmar las técnicas de la decisión 7
+- [x] Medir en la POC los tiempos de extracción y transformación del corte nacional ([resultados](../resultados-poc.md#2-flujo-de-la-fuente-a-una-salida-consultable))
 - [ ] Definir la ventana de análisis (¿últimos 5 años?) y los umbrales de las compuertas de calidad
 - [ ] Confirmar con TASK-03 (#4) que la app consume los archivos estáticos publicados en Vercel
