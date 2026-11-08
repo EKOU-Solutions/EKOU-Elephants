@@ -17,6 +17,10 @@ class Settings(BaseSettings):
     socrata_app_token: SecretStr | None = None
     """App Token de datos.gov.co. Opcional, pero sin él la API aplica límites más estrictos."""
 
+    pseudonym_key: SecretStr | None = None
+    """Clave HMAC para seudonimizar documentos de personas naturales. Obligatoria para
+    transformar; nunca se publica ni se versiona."""
+
     data_dir: Path = Path("data")
     """Raíz de las capas de datos (bronze, silver, gold)."""
 

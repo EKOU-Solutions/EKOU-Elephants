@@ -46,3 +46,24 @@ def test_catalog_partitions_and_privacy() -> None:
         assert not [c for c in spec.columns if any(f in c for f in forbidden)], spec.key
         assert len(spec.schema_fingerprint) == 16
     assert len(CATALOG["secop_ubicaciones"].explicit_partitions) == 9
+
+
+def test_transform_command_builds_dbt_args(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    import ekou_pipeline.cli as cli
+    from ekou_pipeline.config import Settings
+    from ekou_pipeline.transform import TRANSFORM_DIR, dbt_args
+
+    args = dbt_args(Settings(data_dir=tmp_path), corte="2026-11", select="contratos+")
+    assert args[0] == "build"
+    assert str(TRANSFORM_DIR) in args
+    assert json.loads(args[args.index("--vars") + 1]) == {
+        "corte": "2026-11",
+        "data_dir": tmp_path.resolve().as_posix(),
+    }
+    assert args[-2:] == ["--select", "contratos+"]
+    assert (TRANSFORM_DIR / "dbt_project.yml").exists()
+
+    calls: list[str] = []
+    monkeypatch.setattr(cli, "run_transform", lambda _s, corte, select: calls.append(corte))
+    assert cli.main(["transform", "--corte", "2026-11"]) == 1
+    assert calls == ["2026-11"]

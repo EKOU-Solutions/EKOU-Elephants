@@ -1,0 +1,35 @@
+name: ekou
+version: "0.1.0"
+config-version: 2
+profile: ekou
+
+model-paths: ["models"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+test-paths: ["tests"]
+target-path: "../data/dbt/target"
+log-path: "../data/dbt/logs"
+packages-install-path: "../data/dbt/packages"
+clean-targets: ["../data/dbt/target"]
+
+vars:
+  # Los fija el comando `ekou-pipeline transform`; estos valores solo sirven para desarrollo.
+  corte: "2026-11"
+  data_dir: "data"
+
+models:
+  ekou:
+    staging:
+      +materialized: view
+    intermediate:
+      +materialized: table
+    silver:
+      +materialized: table
+    gold:
+      +materialized: table
+
+seeds:
+  ekou:
+    +column_types:
+      cod_mpio: varchar
+      cod_dpto: varchar

@@ -6,7 +6,11 @@ readme = "README.md"
 requires-python = ">=3.12"
 license = "Apache-2.0"
 dependencies = [
+    "dbt-core>=1.12.6",
+    "dbt-duckdb>=1.11.1",
+    "duckdb>=2.0.0",
     "httpx>=0.28",
+    "numpy>=2.5.4",
     "pyarrow>=18",
     "pydantic-settings>=2.6",
     "structlog>=24.4",
@@ -45,7 +49,7 @@ python_version = "3.12"
 mypy_path = "src"
 
 [[tool.mypy.overrides]]
-module = ["pyarrow", "pyarrow.*"]
+module = ["pyarrow", "pyarrow.*", "dbt", "dbt.*"]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]

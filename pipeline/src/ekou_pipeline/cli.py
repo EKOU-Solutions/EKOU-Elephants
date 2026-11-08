@@ -3,6 +3,7 @@
 Ejemplo::
 
     ekou-pipeline extract secop_contratos --corte 2026-11
+    ekou-pipeline transform --corte 2026-11
 """
 
 import argparse
@@ -18,6 +19,7 @@ from ekou_pipeline.catalog import CATALOG
 from ekou_pipeline.config import Settings
 from ekou_pipeline.log_config import configure_logging
 from ekou_pipeline.socrata import SocrataClient
+from ekou_pipeline.transform import run_transform
 
 _CORTE = re.compile(r"^\d{4}-(0[1-9]|1[0-2])$")
 
@@ -36,13 +38,25 @@ def build_parser() -> argparse.ArgumentParser:
 
     extract = commands.add_parser("extract", help="extrae fuentes a la capa bronze")
     extract.add_argument("datasets", nargs="+", choices=sorted(CATALOG))
-    extract.add_argument(
+    _add_corte(extract)
+
+    transform = commands.add_parser(
+        "transform", help="construye las capas silver y gold con dbt y corre sus pruebas"
+    )
+    _add_corte(transform)
+    transform.add_argument(
+        "--select", help="modelos de dbt a construir (sintaxis de dbt; por defecto, todos)"
+    )
+    return parser
+
+
+def _add_corte(command: argparse.ArgumentParser) -> None:
+    command.add_argument(
         "--corte",
         type=_corte,
         default=datetime.now(tz=UTC).strftime("%Y-%m"),
         help="corte mensual AAAA-MM (por defecto, el mes actual)",
     )
-    return parser
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -66,7 +80,9 @@ def main(argv: Sequence[str] | None = None) -> int:
                 )
         json.dump(reports, sys.stdout, ensure_ascii=False, indent=2)
         sys.stdout.write("\n")
-    return 0
+        return 0
+
+    return 0 if run_transform(settings, corte=args.corte, select=args.select) else 1
 
 
 if __name__ == "__main__":
