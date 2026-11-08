@@ -1,0 +1,43 @@
+version: 2
+
+seeds:
+  - name: alias_departamentos
+    description: >
+      Nombres de departamento que usan las fuentes y que no coinciden con DIVIPOLA después de
+      normalizar (mayúsculas, sin tildes ni puntuación).
+    columns:
+      - name: dpto_fuente
+        data_tests: [unique, not_null]
+      - name: cod_dpto
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_divipola')
+                field: cod_dpto
+
+  - name: alias_municipios
+    description: >
+      Nombres de municipio de SECOP que no coinciden con DIVIPOLA después de normalizar.
+      Fuente: investigación de ingesta, sección 3. Se agregan alias cuando el reporte de
+      calidad muestra nombres sin vincular.
+    columns:
+      - name: cod_mpio
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_divipola')
+                field: cod_mpio
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [cod_dpto, mpio_fuente]
+
+  - name: smmlv
+    description: >
+      Salario mínimo mensual legal vigente por año, en pesos. Se usa para el tope de la
+      mínima cuantía (regla A3). 2026: Decreto 1469 de 2025.
+    columns:
+      - name: anio
+        data_tests: [unique, not_null]

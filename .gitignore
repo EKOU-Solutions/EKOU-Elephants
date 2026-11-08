@@ -1,0 +1,14 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+ingesta/data/
+*.duckdb
+.pytest_tmp/
+.coverage
+pipeline/data/
+uv.lock.bak
+pipeline/data_*
+.env
+pipeline/transform/.user.yml
