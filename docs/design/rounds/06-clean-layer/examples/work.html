@@ -1,0 +1,57 @@
+{{appbar:Obras}}
+<main class="page">
+  <header class="hero">
+    <p class="crumbs"><a href="#">Antioquia</a> › <a href="#">Gobernación de Ejemplo</a></p>
+    <div class="row">{{tag-lg:high}}<span class="el-status"><i data-lucide="circle-pause" aria-hidden="true"></i>Suspendida</span></div>
+    <h1>Construcción del puente vehicular El Ejemplo</h1>
+    <p class="el-lead"><strong>Debía estar lista en marzo de 2024.</strong> Lleva 2 años detenida y ya se pagó la mayor parte del dinero.</p>
+  </header>
+
+  <section class="el-card" aria-labelledby="w-main">
+    <h2 id="w-main" class="card-head">Lo principal</h2>
+    <div class="kfs" style="grid-template-columns:repeat(2,minmax(0,1fr))">
+      <div class="stat"><p class="v">35<small>%</small></p><p class="l">de la obra construida</p></div>
+      <div class="stat stat-alert"><p class="v">81<small>%</small></p><p class="l">del dinero ya pagado</p></div>
+    </div>
+  </section>
+
+  <div class="two-col">
+    <div class="stack-12">
+      <section class="el-card stack-16" aria-labelledby="w-av">
+        <h2 id="w-av">Avance</h2>
+        <p class="el-lead"><strong>35% construido.</strong> A esta fecha debía estar terminada.</p>
+        <div>
+          <div class="el-progress" role="img" aria-label="Avance real 35 por ciento; esperado 100 por ciento"><div class="done" style="width:35%"></div><span class="expected" style="left:calc(100% - 3px)"></span></div>
+          <div class="row small muted" style="justify-content:space-between;margin-top:10px"><span>Real 35%</span><span>Esperado 100%</span></div>
+        </div>
+      </section>
+      <section class="el-card stack-16" aria-labelledby="w-di">
+        <h2 id="w-di">Dinero</h2>
+        <div class="money">
+          <div><div class="row2"><span>Presupuestado</span><strong><span class="nw">$ 4.800 M</span></strong></div><div class="track"><i style="width:100%"></i></div></div>
+          <div><div class="row2"><span>Pagado</span><strong><span class="nw">$ 3.900 M</span></strong></div><div class="track"><i class="over" style="width:81%"></i></div></div>
+        </div>
+        <p class="el-lead"><strong>Se ha pagado el 81% del dinero</strong> por el 35% de la obra.</p>
+      </section>
+    </div>
+    <div class="stack-12">
+      <section class="el-card" aria-labelledby="w-co">
+        <div class="card-head"><h2 id="w-co">Contratos de esta obra</h2><span class="muted small">2</span></div>
+        <a class="link-row" href="#"><strong>Construcción del puente</strong><i data-lucide="chevron-right" aria-hidden="true"></i><span class="meta">Consorcio Ejemplo 2023 (ficticio) · <span class="nw">$ 4.750 M</span></span><span class="row" style="margin-top:4px">{{tag:high}}<span class="meta">Solo una empresa se presentó</span></span></a>
+        <a class="link-row" href="#"><strong>Interventoría de la obra</strong><i data-lucide="chevron-right" aria-hidden="true"></i><span class="meta">Interventores Ejemplo S.A.S. (ficticio) · <span class="nw">$ 410 M</span></span><span class="row" style="margin-top:4px">{{tag:low}}</span></a>
+      </section>
+      <section class="el-card" aria-labelledby="w-cr">
+        <h2 id="w-cr" class="card-head">Cronología</h2>
+        <ol class="timeline">
+          <li><time>Mar 2023</time><span>Se firma el contrato</span></li>
+          <li><time>Mar 2024</time><span>Fecha de entrega prevista</span></li>
+          <li class="late"><time>Nov 2024</time><span>La obra se suspende</span></li>
+          <li class="late"><time>Hoy</time><span>2 años detenida</span></li>
+        </ol>
+      </section>
+    </div>
+  </div>
+
+  <div class="actions" style="padding:8px 0"><button class="el-btn el-btn-primary" type="button">Cómo denunciar</button><button class="el-btn el-btn-secondary" type="button"><i data-lucide="share" aria-hidden="true"></i>Compartir</button></div>
+  <p class="source">Obra · BPIN 2023000000000 (ficticio) · Fuentes: DNP y SECOP II · actualizado el 31 dic 2025. Una señal pide revisar, no prueba corrupción.</p>
+</main>

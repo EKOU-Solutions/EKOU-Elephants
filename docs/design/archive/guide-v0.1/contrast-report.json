@@ -1,0 +1,82 @@
+[
+  {
+    "usage": "Texto principal / blanco",
+    "foreground": "#192C3C",
+    "background": "#FFFFFF",
+    "ratio": 14.316,
+    "minimum": 4.5,
+    "passes": true
+  },
+  {
+    "usage": "Texto secundario / fondo suave",
+    "foreground": "#52626D",
+    "background": "#F5F7F9",
+    "ratio": 5.878,
+    "minimum": 4.5,
+    "passes": true
+  },
+  {
+    "usage": "Botón principal",
+    "foreground": "#FFFFFF",
+    "background": "#245B78",
+    "ratio": 7.387,
+    "minimum": 4.5,
+    "passes": true
+  },
+  {
+    "usage": "Botón principal al pasar el cursor",
+    "foreground": "#FFFFFF",
+    "background": "#19415A",
+    "ratio": 10.796,
+    "minimum": 4.5,
+    "passes": true
+  },
+  {
+    "usage": "Aviso informativo",
+    "foreground": "#245B78",
+    "background": "#EFF6FA",
+    "ratio": 6.766,
+    "minimum": 4.5,
+    "passes": true
+  },
+  {
+    "usage": "Aviso de advertencia",
+    "foreground": "#825500",
+    "background": "#FFF8E8",
+    "ratio": 6.109,
+    "minimum": 4.5,
+    "passes": true
+  },
+  {
+    "usage": "Aviso de error",
+    "foreground": "#A83E35",
+    "background": "#FFF7F6",
+    "ratio": 5.84,
+    "minimum": 4.5,
+    "passes": true
+  },
+  {
+    "usage": "Confirmación de éxito",
+    "foreground": "#23654A",
+    "background": "#F0F8F3",
+    "ratio": 6.407,
+    "minimum": 4.5,
+    "passes": true
+  },
+  {
+    "usage": "Borde de control / blanco",
+    "foreground": "#71818F",
+    "background": "#FFFFFF",
+    "ratio": 4.008,
+    "minimum": 3,
+    "passes": true
+  },
+  {
+    "usage": "Foco / blanco",
+    "foreground": "#245B78",
+    "background": "#FFFFFF",
+    "ratio": 7.387,
+    "minimum": 3,
+    "passes": true
+  }
+]

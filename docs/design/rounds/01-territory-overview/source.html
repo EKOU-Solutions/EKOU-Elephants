@@ -1,0 +1,69 @@
+<div id="elephants-round-one">
+  <div class="review-bar" aria-label="Prototype review controls"><span>ROUND 01 · VISUAL EXPLORATION</span><label>Preview state <select id="review-state"><option value="ready">Ready</option><option value="loading">Loading</option><option value="error">Error</option><option value="empty">No data</option></select></label></div>
+  <div class="product">
+    <header class="brand"><div><span class="brand-mark" aria-hidden="true">E</span><strong>EKOU <span>Elephants</span></strong></div><span class="prototype">Illustrative prototype</span></header>
+    <main>
+      <div class="intro"><p class="eyebrow">PUBLIC MONEY, IN VIEW</p><h1>Explore public contracting</h1><p>See how much was contracted in each department.</p></div>
+      <div class="demo-note"><strong>Fictional data.</strong> Values and dates below are for design review. They do not describe real public spending.</div>
+      <div class="context"><div><span class="field-label">Metric</span><strong>Total contracted amount</strong></div><div><span class="field-label">Illustrative period</span><strong>January–December 2025</strong></div></div>
+      <div class="workspace">
+        <section class="geography" aria-label="Contracted amounts by department">
+          <div class="map-heading"><h2>Colombia</h2><span>Departments</span></div>
+          <div id="map-stage"><svg class="map" viewBox="0 0 600 560" role="img" aria-labelledby="map-title map-desc"><title id="map-title">Illustrative contracted amounts by department in Colombia</title><desc id="map-desc">Darker blue means a larger amount, not higher risk. Use the department selector to access every territory and its exact value. Hatched areas have no data.</desc><defs><pattern id="no-data-hatch" width="7" height="7" patternUnits="userSpaceOnUse"><rect width="7" height="7" fill="#f1f5f9"/><path d="M0 7L7 0" stroke="#64748b" stroke-width="1"/></pattern></defs><g class="regions">__MAP_PATHS__</g></svg></div>
+          <div class="legend" aria-label="Contracted amount legend"><p><strong>Contracted amount</strong> · COP trillion</p><div class="legend-items"><span><i style="background:#dcebf4"></i>0–&lt;2</span><span><i style="background:#82b7d1"></i>2–&lt;8</span><span><i style="background:#286183"></i>8–20</span><span><i class="hatched"></i>No data</span></div><p class="small">Colour shows amount, not risk. Selection uses a separate outline.</p></div>
+        </section>
+        <aside class="detail" aria-label="Selected department details"><label class="field-label" for="territory">Department</label><select id="territory">__OPTIONS__</select><div id="detail-content" aria-live="polite" aria-atomic="true"><p class="eyebrow">SELECTED DEPARTMENT</p><h2 id="region-name">Antioquia</h2><p class="value-label">Total contracted amount</p><p class="amount" id="region-value">COP 12.4 trillion</p><p id="region-range" class="range">Range: COP 8–20 trillion</p><hr><h3>What this figure means</h3><p id="region-explanation">The combined value of contracts in this illustrative period. It is not the amount paid or a measure of corruption.</p><dl><div><dt>Data source</dt><dd>Fictional review dataset</dd></div><div><dt>Example update date</dt><dd>31 December 2025</dd></div></dl></div></aside>
+      </div>
+      <section id="status-panel" class="status-panel" aria-live="polite" hidden><h2 id="status-title"></h2><p id="status-message"></p><button id="retry" type="button" hidden>Try again</button></section>
+      <footer>Geography: geoBoundaries / OpenStreetMap contributors · ODbL 1.0 · Simplified boundaries, 2017. Not an official boundary reference.</footer>
+    </main>
+  </div>
+</div>
+<style>
+#elephants-round-one{font-family:ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#142439;font-size:16px;line-height:1.5;--brand:#0b6373;--line:#d8e1e8;--quiet:#526174;--radius:12px;color-scheme:light}
+#elephants-round-one *{box-sizing:border-box}#elephants-round-one [hidden]{display:none!important}
+#elephants-round-one .review-bar{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;padding:12px 0 16px;color:#526174;font-size:14px}
+#elephants-round-one .review-bar label{display:flex;align-items:center;gap:8px}#elephants-round-one .review-bar select{width:auto;min-height:44px}
+#elephants-round-one .product{background:#f5f7f9;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+#elephants-round-one .brand{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:20px 32px;background:#fff;border-bottom:1px solid var(--line)}
+#elephants-round-one .brand>div{display:flex;align-items:center;gap:12px}#elephants-round-one .brand strong{font-size:18px;letter-spacing:-.4px}#elephants-round-one .brand strong span{font-weight:400}#elephants-round-one .brand-mark{display:grid;place-items:center;width:32px;height:32px;border-radius:8px;background:#0b6373;color:white;font-weight:700}#elephants-round-one .prototype{font-size:14px;color:var(--quiet)}
+#elephants-round-one main{padding:32px}#elephants-round-one p,#elephants-round-one h1,#elephants-round-one h2,#elephants-round-one h3{margin:0}#elephants-round-one .eyebrow{font-size:14px;font-weight:600;letter-spacing:1.2px;color:var(--brand)}#elephants-round-one h1{font-size:30px;line-height:1.2;letter-spacing:-.8px;margin:8px 0 12px;font-weight:650}#elephants-round-one .intro>p:last-child{color:var(--quiet)}
+#elephants-round-one .demo-note{margin:24px 0;padding:12px 16px;background:#edf3f6;border-left:3px solid #738a9b;font-size:14px;color:#33475a}
+#elephants-round-one .context{display:flex;gap:32px;flex-wrap:wrap;margin-bottom:24px}#elephants-round-one .context>div{display:grid;gap:4px}#elephants-round-one .field-label{display:block;font-size:14px;color:var(--quiet);margin-bottom:4px}#elephants-round-one .context strong{font-weight:550}
+#elephants-round-one .workspace{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(250px,1fr);align-items:start;gap:24px}
+#elephants-round-one .geography{min-width:0}#elephants-round-one .map-heading{display:flex;justify-content:space-between;align-items:center;padding:0 0 8px}#elephants-round-one h2{font-size:22px;font-weight:600;letter-spacing:-.4px}#elephants-round-one .map-heading span{font-size:14px;color:var(--quiet)}#elephants-round-one .map{display:block;width:100%;height:auto;max-height:480px;background:#f5f7f9}
+#elephants-round-one .regions path{stroke:#f5f7f9;stroke-width:.8;vector-effect:non-scaling-stroke;cursor:pointer}#elephants-round-one .regions path[data-selected=true]{stroke:#142439;stroke-width:2.5;paint-order:stroke fill}
+#elephants-round-one .legend{margin-top:16px;font-size:14px}#elephants-round-one .legend-items{display:flex;gap:12px;flex-wrap:wrap;margin:8px 0}#elephants-round-one .legend-items span{display:flex;align-items:center;gap:6px}#elephants-round-one .legend i{display:inline-block;width:22px;height:14px}#elephants-round-one .hatched{background:repeating-linear-gradient(135deg,#f1f5f9 0 4px,#64748b 4px 5px)}#elephants-round-one .small{color:var(--quiet);font-size:14px}
+#elephants-round-one .detail{background:white;border:1px solid var(--line);border-radius:var(--radius);padding:24px;min-width:0}#elephants-round-one select,#elephants-round-one button{font:inherit;border:1px solid #8b9aab;border-radius:8px;padding:10px 12px;background:white;color:#142439;width:100%;min-height:44px}#elephants-round-one select:focus-visible,#elephants-round-one button:focus-visible{outline:3px solid #0b6373;outline-offset:3px}#elephants-round-one select{margin-bottom:24px}#elephants-round-one .review-bar select{margin:0}
+#elephants-round-one .detail .eyebrow{font-size:14px;margin-bottom:4px}#elephants-round-one .value-label{margin-top:24px;color:var(--quiet);font-size:14px}#elephants-round-one .amount{font-size:30px;font-weight:600;letter-spacing:-.7px;font-variant-numeric:tabular-nums;line-height:1.2;margin:8px 0;overflow-wrap:anywhere}#elephants-round-one .range{font-size:14px;color:var(--quiet)}#elephants-round-one hr{border:0;border-top:1px solid var(--line);margin:24px 0}#elephants-round-one h3{font-size:16px;font-weight:600;margin-bottom:8px}#elephants-round-one #region-explanation{font-size:14px;color:#33475a}#elephants-round-one dl{margin:24px 0 0;font-size:14px}#elephants-round-one dl>div+div{margin-top:12px}#elephants-round-one dt{color:var(--quiet)}#elephants-round-one dd{margin:4px 0 0}
+#elephants-round-one .status-panel{padding:32px;background:#fff;border:1px solid var(--line);border-radius:var(--radius)}#elephants-round-one .status-panel p{margin-top:8px;color:var(--quiet)}#elephants-round-one .status-panel button{margin-top:24px;width:auto;background:#0b6373;color:white;border-color:#0b6373}
+#elephants-round-one footer{font-size:14px;color:var(--quiet);border-top:1px solid var(--line);margin-top:32px;padding-top:16px}
+@media(max-width:700px){#elephants-round-one main{padding:20px}#elephants-round-one .brand{padding:16px 20px}#elephants-round-one .workspace{grid-template-columns:1fr}#elephants-round-one .detail{padding:20px}#elephants-round-one h1{font-size:26px}#elephants-round-one .context{gap:16px}#elephants-round-one .map{max-height:420px}#elephants-round-one .review-bar{align-items:flex-start}#elephants-round-one .review-bar label{flex-wrap:wrap}#elephants-round-one .amount{font-size:28px}}
+</style>
+<script>
+(()=>{
+const root=document.getElementById('elephants-round-one');
+const regions=__TERRITORIES__;
+const select=root.querySelector('#territory'), state=root.querySelector('#review-state');
+const paths=[...root.querySelectorAll('[data-region]')];
+const get=id=>root.querySelector('#'+id);
+function renderSelection(){
+ const region=regions.find(r=>r.id===select.value)||regions.find(r=>r.id==='CO-ANT');
+ select.value=region.id;
+ paths.forEach(p=>{const r=regions.find(x=>x.id===p.dataset.region);p.setAttribute('fill',r.value===null?'url(#no-data-hatch)':r.value<2?'#dcebf4':r.value<8?'#82b7d1':'#286183');p.dataset.selected=String(r.id===region.id);p.querySelector('title').textContent=`${r.name}: ${r.value===null?'no data':`COP ${r.value.toFixed(1)} trillion`}`;});
+ get('region-name').textContent=region.name;
+ get('region-value').textContent=region.value===null?'No data':`COP ${region.value.toFixed(1)} trillion`;
+ get('region-range').textContent=region.value===null?'Unavailable does not mean zero.':`Range: COP ${region.value<2?'0–<2':region.value<8?'2–<8':'8–20'} trillion`;
+ get('region-explanation').textContent=region.value===null?'This fictional dataset has no amount for this department. No comparison or risk conclusion can be drawn.':'The combined value of contracts in this illustrative period. It is not the amount paid or a measure of corruption.';
+}
+function renderState(){
+ const s=state.value;root.querySelector('.workspace').hidden=s!=='ready';get('status-panel').hidden=s==='ready';get('retry').hidden=s!=='error';
+ const messages={loading:['Loading contracted amounts','The selected period is being prepared.'],error:['We could not load the data','Try again. An unavailable result does not mean zero contracting.'],empty:['No data for this period','There are no available amounts to display. No comparison or risk conclusion can be drawn.']};
+ if(messages[s]){get('status-title').textContent=messages[s][0];get('status-message').textContent=messages[s][1];}get('status-panel').setAttribute('aria-busy',String(s==='loading'));
+}
+select.addEventListener('change',renderSelection);
+paths.forEach(p=>p.addEventListener('click',()=>{select.value=p.dataset.region;renderSelection();}));
+state.addEventListener('change',renderState);get('retry').addEventListener('click',()=>{state.value='ready';renderState();});
+select.value='CO-ANT';renderSelection();renderState();
+})();
+</script>
