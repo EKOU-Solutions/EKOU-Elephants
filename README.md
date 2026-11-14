@@ -1,6 +1,6 @@
 # EKOU-Elephants
 
-MVP scope: [Explore Colombia, municipal contracts and base suspicious patterns](docs/mvp-options.md).
+Alcance del MVP: [Explorar Colombia, contratos municipales y patrones sospechosos base](docs/mvp-options.md).
 
 📊 **Fuentes de datos:** ver [docs/fuentes-de-datos.md](docs/fuentes-de-datos.md)
 
