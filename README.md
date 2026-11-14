@@ -1,5 +1,7 @@
 # EKOU-Elephants
 
+MVP scope: [Explore Colombia, municipal contracts and base suspicious patterns](docs/mvp-options.md).
+
 📊 **Fuentes de datos:** ver [docs/fuentes-de-datos.md](docs/fuentes-de-datos.md)
 
 🧭 **Arquitectura de datos:** ver [docs/arquitectura-datos.md](docs/arquitectura-datos.md)
