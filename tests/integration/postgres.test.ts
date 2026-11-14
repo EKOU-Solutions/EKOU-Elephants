@@ -1,4 +1,4 @@
-import { execFileSync } from 'node:child_process';
+import { runner } from 'node-pg-migrate';
 import pg from 'pg';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { crearApp } from '../../src/server/app';
@@ -8,21 +8,24 @@ const url = process.env.TEST_DATABASE_URL;
 
 // Needs a disposable database: it runs migrations up/down against it.
 describe.skipIf(!url)('HTTP → caso de uso → PostgreSQL', () => {
-  const migrate = (...args: string[]) =>
-    execFileSync('npx', ['node-pg-migrate', ...args, '--migrations-dir', 'migrations', '--no-verbose'], {
-      env: { ...process.env, DATABASE_URL: url! },
-      stdio: 'pipe',
-    });
+  // Programmatic API: same SQL loader and table as `npm run migrate`, with no child process,
+  // so it behaves the same on Windows (npx.cmd), macOS and Linux.
+  const migrarArriba = () =>
+    runner({ databaseUrl: url!, dir: 'migrations', direction: 'up', migrationsTable: 'pgmigrations', log: () => {} });
   const client = new pg.Client({ connectionString: url });
+  let conectado = false;
 
   beforeAll(async () => {
-    migrate('up');
+    await migrarArriba();
     await client.connect();
+    conectado = true;
     await client.query(
       `INSERT INTO gasto_territorial VALUES ('98','Territorio de prueba',1000.50,400,10,2) ON CONFLICT DO NOTHING`,
     );
   });
   afterAll(async () => {
+    // If beforeAll failed, report that error instead of hanging on a client that never connected.
+    if (!conectado) return;
     await client.query(`DELETE FROM gasto_territorial WHERE codigo IN ('98', '96')`);
     await client.end();
   });
@@ -57,7 +60,7 @@ describe.skipIf(!url)('HTTP → caso de uso → PostgreSQL', () => {
     )).rejects.toMatchObject({ code: '23514' });
   });
 
-  it('no reaplica migraciones ya ejecutadas', () => {
-    expect(migrate('up').toString()).toContain('No migrations to run');
+  it('no reaplica migraciones ya ejecutadas', async () => {
+    expect(await migrarArriba()).toEqual([]);
   });
 });

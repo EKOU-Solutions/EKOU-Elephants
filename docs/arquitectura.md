@@ -1,6 +1,26 @@
 # Arquitectura y organización del código
 
-Decisiones: [ADR-0001](adr/0001-arquitectura-inicial.md). Comandos: [Desarrollo local](desarrollo.md).
+> Cómo se organiza y ejecuta el código de la app. Decisiones: [ADR-0001](adr/0001-arquitectura-inicial.md) · Comandos: [desarrollo local](desarrollo.md) · Datos: [arquitectura de datos](arquitectura-datos.md)
+
+## En 30 segundos
+
+Un solo Worker de Cloudflare sirve la interfaz React como archivos estáticos y responde la API REST con Hono. La API consulta PostgreSQL en Neon. Las migraciones se ejecutan con Node.js, fuera del Worker.
+
+```mermaid
+flowchart LR
+    CIU["👥 Ciudadanía"]
+    WEB["🖥️ Navegador<br/>React + Vite<br/>archivos estáticos"]
+    API["⚙️ API REST<br/>Hono · Cloudflare Workers<br/>/api/*"]
+    DB[("🐘 PostgreSQL<br/>Neon · local con Docker")]
+    MIG["🧱 Migraciones SQL<br/>node-pg-migrate<br/>Node.js local o CI"]
+
+    CIU --> WEB
+    WEB -->|"HTTP / JSON"| API
+    API -->|"SQL parametrizado"| DB
+    MIG -.->|"up / down"| DB
+```
+
+El mismo Worker atiende las dos rutas: `/api/*` llega primero a Hono y el resto devuelve la SPA (`wrangler.jsonc`).
 
 ## Alcance del ejemplo y refinamiento del mapa
 
@@ -12,26 +32,38 @@ El módulo `mapa` y la tabla `gasto_territorial` son una demostración del recor
 
 Cada capacidad agrupa su interfaz, reglas, casos de uso y adaptadores en `src/modules/<modulo>/`. Una entrega vertical recorre UI → API → caso de uso → persistencia → pruebas y produce un resultado usable. No implica otro repositorio ni otro despliegue.
 
-```text
-src/
-  client/                         # Arranque de React y composición de pantallas
-  modules/mapa/
-    domain/                       # ResumenTerritorial y errores de negocio
-    application/
-      ports/                      # ConsultarGastoTerritorial
-      obtener-resumen-territorial.ts
-    adapters/
-      http/                       # Rutas Hono
-      postgres/                   # SQL, mapeo y validación de importes
-    ui/                           # Componentes React de la funcionalidad
-  server/
-    index.ts                      # Entrada del Worker y entorno
-    app.ts                        # Rutas, cabeceras y errores HTTP
-    db.ts                         # Acceso técnico a PostgreSQL
-    composition/mapa.ts            # Construcción y conexión de dependencias
-migrations/                       # Historial SQL común
-tests/integration/                # Pruebas con PostgreSQL real
+### Dónde vive cada cosa
+
+```mermaid
+flowchart TB
+    subgraph REPO["Repositorio EKOU-Elephants"]
+        direction LR
+        subgraph CLI["src/client"]
+            MAIN["main.tsx · App.tsx<br/>arranque de React<br/>composición de pantallas"]
+        end
+        subgraph MOD["src/modules/mapa"]
+            DOM["domain/<br/>ResumenTerritorial<br/>errores de negocio"]
+            APP["application/<br/>caso de uso<br/>ports/ ConsultarGastoTerritorial"]
+            ADP["adapters/<br/>http/ rutas Hono<br/>postgres/ SQL · importes"]
+            UIM["ui/<br/>componentes React"]
+        end
+        subgraph SRV["src/server"]
+            IDX["index.ts<br/>entrada del Worker · entorno"]
+            APPS["app.ts<br/>rutas · cabeceras · errores"]
+            DBT["db.ts<br/>conexión PostgreSQL"]
+            CMP["composition/mapa.ts<br/>conecta dependencias"]
+        end
+        subgraph DATA["Esquema y pruebas"]
+            MIGS["migrations/<br/>historial SQL común"]
+            INTG["tests/integration/<br/>PostgreSQL real"]
+        end
+    end
+    SECRETS[("Variables de entorno<br/>DATABASE_URL<br/>TEST_DATABASE_URL")]
+    SECRETS -.-> SRV
+    SECRETS -.-> DATA
 ```
+
+Las pruebas unitarias viven junto al código (`*.test.ts`).
 
 ## Puertos y adaptadores
 
@@ -48,23 +80,36 @@ Las flechas sólidas muestran dependencias; la punteada representa la llamada HT
 
 ```mermaid
 flowchart LR
-  subgraph MODULO["Módulo mapa"]
-    UI["UI React"]
-    HTTP["Adaptador HTTP / Hono"]
-    CASO["Caso de uso"]
-    DOMINIO["Dominio"]
-    PUERTO["Puerto ConsultarGastoTerritorial"]
-    PG["Adaptador PostgreSQL"]
+    subgraph ENTRADA["Entrada"]
+        direction TB
+        UI["🖥️ UI React<br/>carga · vacío · resultado · error"]
+        HTTP["🌐 Adaptador HTTP<br/>Hono · valida con zod"]
+    end
+
+    subgraph CENTRO["Centro · sin dependencias técnicas"]
+        direction TB
+        CASO["🎯 Caso de uso<br/>obtenerResumenTerritorial"]
+        DOMINIO["📐 Dominio<br/>ResumenTerritorial · errores"]
+        PUERTO["🔌 Puerto<br/>ConsultarGastoTerritorial"]
+        CASO --> DOMINIO
+        CASO --> PUERTO
+    end
+
+    subgraph SALIDA["Salida"]
+        direction TB
+        PG["🗄️ Adaptador PostgreSQL<br/>SQL · centavos exactos"]
+    end
+
+    COMPOSICION["🧩 server/composition<br/>crea y conecta"]
+    DB[("🐘 PostgreSQL")]
+
     UI -.->|"HTTP / JSON"| HTTP
     HTTP --> CASO
-    CASO --> DOMINIO
-    CASO --> PUERTO
     PG -->|"implementa"| PUERTO
-  end
-  COMPOSICION["server/composition"] --> HTTP
-  COMPOSICION --> CASO
-  COMPOSICION --> PG
-  PG --> DB["PostgreSQL"]
+    PG --> DB
+    COMPOSICION --> HTTP
+    COMPOSICION --> CASO
+    COMPOSICION --> PG
 ```
 
 ### Reglas de dependencias
@@ -84,22 +129,36 @@ Un caso de uso puede ser una función. No hace falta una clase o interfaz por ar
 
 ```mermaid
 sequenceDiagram
-  autonumber
-  participant UI as React
-  participant HTTP as Hono
-  participant CASO as Caso de uso
-  participant REPO as Adaptador PostgreSQL
-  participant DB as gasto_territorial
-  UI->>HTTP: GET /api/mapa/territorios/05/resumen
-  HTTP->>HTTP: Validar código DIVIPOLA
-  HTTP->>CASO: obtenerResumenTerritorial(codigo)
-  CASO->>REPO: puerto.porCodigo(codigo)
-  REPO->>DB: SELECT parametrizado
-  DB-->>REPO: Fila con importes decimales como texto
-  REPO->>REPO: Validar y convertir a centavos exactos
-  REPO-->>CASO: ResumenTerritorial
-  CASO-->>HTTP: Resultado
-  HTTP-->>UI: 200 JSON
+    autonumber
+    participant UI as React
+    participant HTTP as Hono
+    participant CASO as Caso de uso
+    participant REPO as Adaptador PostgreSQL
+    participant DB as gasto_territorial
+
+    UI->>HTTP: GET /api/mapa/territorios/05/resumen
+    HTTP->>HTTP: validar código DIVIPOLA
+    alt código inválido
+        HTTP-->>UI: 400, sin consultar la base
+    else código válido
+        HTTP->>CASO: obtenerResumenTerritorial(codigo)
+        CASO->>REPO: puerto.porCodigo(codigo)
+        REPO->>DB: SELECT parametrizado
+        DB-->>REPO: fila con importes decimales como texto
+        alt no hay fila
+            REPO-->>CASO: null
+            CASO-->>HTTP: TerritorioNoEncontrado
+            HTTP-->>UI: 404
+        else importe inválido o error inesperado
+            Note over REPO,HTTP: se registra el tipo de error,<br/>nunca el valor ni las credenciales
+            HTTP-->>UI: 500 genérico
+        else fila válida
+            REPO->>REPO: convertir a centavos exactos (BigInt)
+            REPO-->>CASO: ResumenTerritorial
+            CASO-->>HTTP: resultado
+            HTTP-->>UI: 200 JSON
+        end
+    end
 ```
 
 Este es el orden de ejecución. El caso de uso solo importa el puerto; la composición decide qué implementación recibe:
