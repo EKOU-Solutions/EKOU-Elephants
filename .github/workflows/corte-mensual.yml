@@ -94,13 +94,31 @@ jobs:
 
       - run: uv sync --locked --no-dev
 
+      # El bronze trae cédulas en claro tal como llegan de SECOP. En un repositorio público, un PR
+      # desde un fork puede leer las cachés de main, así que se guarda cifrado con un secreto, que
+      # esos PR no reciben (docs/datos-personales.md).
       - name: restaurar bronze del corte
         # Si un intento anterior del mismo corte se cortó, solo se extraen las particiones que faltan.
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
-          path: pipeline/data/bronze/corte=${{ steps.corte.outputs.corte }}
+          path: pipeline/.cache/bronze.tar.enc
           key: bronze-${{ steps.corte.outputs.corte }}-${{ github.run_id }}-${{ github.run_attempt }}
           restore-keys: bronze-${{ steps.corte.outputs.corte }}-
+
+      - name: descifrar bronze del corte
+        env:
+          CORTE: ${{ steps.corte.outputs.corte }}
+        run: |
+          mkdir -p data/bronze
+          if [[ ! -f .cache/bronze.tar.enc ]]; then
+            echo "Sin caché: se extrae el corte completo."
+            exit 0
+          fi
+          if ! openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 -pass env:EKOU_PSEUDONYM_KEY               -in .cache/bronze.tar.enc | tar -xf - -C data/bronze; then
+            echo "::warning::no se pudo descifrar la caché del bronze: se extrae el corte completo"
+            rm -rf "data/bronze/corte=$CORTE"
+          fi
+          rm -f .cache/bronze.tar.enc
 
       - name: extraer
         id: extraer
@@ -111,11 +129,25 @@ jobs:
           uv run ekou-pipeline extract $FUENTES --corte "${{ steps.corte.outputs.corte }}" \
             > data/reporte-extraccion.json
 
-      - name: guardar bronze del corte
+      - name: cifrar bronze del corte
+        id: cifrar
         if: always() && steps.extraer.outcome != 'skipped'
+        env:
+          CORTE: ${{ steps.corte.outputs.corte }}
+        run: |
+          if [[ ! -d "data/bronze/corte=$CORTE" ]]; then
+            echo "Nada que guardar."
+            exit 0
+          fi
+          mkdir -p .cache
+          tar -cf - -C data/bronze "corte=$CORTE"             | openssl enc -aes-256-cbc -pbkdf2 -iter 200000 -salt -pass env:EKOU_PSEUDONYM_KEY               -out .cache/bronze.tar.enc
+          echo "listo=true" >> "$GITHUB_OUTPUT"
+
+      - name: guardar bronze del corte
+        if: always() && steps.cifrar.outputs.listo == 'true'
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
-          path: pipeline/data/bronze/corte=${{ steps.corte.outputs.corte }}
+          path: pipeline/.cache/bronze.tar.enc
           key: bronze-${{ steps.corte.outputs.corte }}-${{ github.run_id }}-${{ github.run_attempt }}
 
       - name: transformar y probar

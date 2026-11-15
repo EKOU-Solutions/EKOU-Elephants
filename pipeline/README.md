@@ -95,7 +95,7 @@ Reprocesar un mes viejo no mueve `latest.json` hacia atrás.
 
 **Operación**
 
-- **Reintentar o reprocesar un mes:** Actions → *corte-mensual* → *Run workflow*, con el corte `AAAA-MM` (vacío = mes actual). Lo ya extraído se guarda en la caché de Actions, así que un reintento solo baja las particiones que faltan. Si el Release ya existe, se reemplazan sus archivos.
+- **Reintentar o reprocesar un mes:** Actions → *corte-mensual* → *Run workflow*, con el corte `AAAA-MM` (vacío = mes actual). Lo ya extraído se guarda en la caché de Actions, **cifrado** con `EKOU_PSEUDONYM_KEY` porque trae cédulas en claro y en un repositorio público un PR desde un fork puede leer las cachés. Así un reintento solo baja las particiones que faltan. Si el Release ya existe, se reemplazan sus archivos.
 - **Si falla** la extracción, una prueba de datos o una compuerta: no se publica nada y se mantiene el corte anterior. La tabla de compuertas queda en el resumen de la ejecución y, si la ejecución era programada, se abre (o se comenta) un issue `Falló el corte mensual AAAA-MM` con el enlace. Los logs de dbt y el reporte de extracción quedan como artefacto durante 90 días.
 - Solo se publica desde `main`; desde otra rama la ejecución sirve de ensayo.
 
