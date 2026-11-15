@@ -19,7 +19,7 @@ Registro de la decisión: [dirección visual](visual-direction.md#selección-fin
 
 La [guía del sistema de diseño v1.0](guide/README.md) sigue siendo la fuente de verdad que Storybook importa:
 - tokens (`tokens.json` es la fuente de verdad; `tokens.css` se genera);
-- componentes (`components.css` y `components.json`);
+- componentes (`components.json`; los del núcleo son React en `src/components/ui/` con sus propios estilos, y los candidatos siguen como especificación en `components.css`);
 - [reglas para desarrollo y agentes de IA](guide/design-system.md).
 
 Su página HTML de referencia y las pantallas de ejemplo en simuladores de celular y portátil (`preview.html`, `examples.html`) quedan como seguimiento histórico, igual que las rondas. La [guía v0.1](archive/guide-v0.1/README.md) anterior está archivada.

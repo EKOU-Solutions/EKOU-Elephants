@@ -15,14 +15,14 @@ Anuncia en una línea: «Ruta: Ajuste — motivo».
 
 ## 2. Revisar contra el sistema
 
-- Identifica qué se toca: historia de Storybook, componente React en `src/`, `components.css`, `tokens.json` o una página de `.storybook/docs/`.
-- Comprueba que el resultado use solo tokens `--el-*` y clases del catálogo, y que respete las reglas no negociables (`design-system.md`): color nunca solo, «Sin datos» no es cero, señal y no veredicto, celular primero, dos temas.
+- Identifica qué se toca: historia de Storybook, componente React en `src/` (con su `.module.css`), un candidato en `components.css`, `tokens.json` o una página de `.storybook/docs/`.
+- Comprueba que el resultado use solo tokens `--el-*`, que cada componente siga con sus propios estilos (sin clases compartidas), y que respete las reglas no negociables (`design-system.md`): color nunca solo, «Sin datos» no es cero, señal y no veredicto, celular primero, dos temas.
 - Si toca textos, revisa el tono (`design:ux-copy`): frase corta, verbo activo, número concreto, fuente y fecha cerca del dato.
 
 ## 3. Aplicar
 
 - Haz el cambio mínimo en la fuente de verdad, nunca en un archivo generado (`tokens.css`, `preview.html`).
-- Si cambia `tokens.json`, `components.css` o `components.json`: ejecuta `python3 docs/design/guide/build.py` (falla si el contraste o el catálogo no cuadran), sube la versión de parche o menor y anota el cambio en `docs/design/guide/README.md`.
+- Si cambia `tokens.json`, `components.css`, `components.json` o el CSS Module de un componente: ejecuta `python3 docs/design/guide/build.py` (falla si el contraste o el catálogo no cuadran), sube la versión de parche o menor y anota el cambio en `docs/design/guide/README.md`.
 - Actualiza la historia de Storybook afectada (o créala si faltaba) y la página MDX si cambia una regla.
 
 ## 4. Validar

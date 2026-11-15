@@ -1,6 +1,6 @@
 # Sistema de diseño de Elephants v1.0: reglas para desarrollo y agentes de IA
 
-Aceptado el 2026-11-08: la dirección editorial de la [Ronda 05](../rounds/05-system-reference/README.md) con **Public Sans**. Este archivo es la versión corta y normativa de la guía. La referencia visual viva es Storybook (`npm run storybook`), que importa `tokens.css` y `components.css` de esta carpeta y muestra las mismas reglas con ejemplos interactivos. Si este archivo y Storybook no coinciden, repórtalo; no elijas uno en silencio.
+Aceptado el 2026-11-08: la dirección editorial de la [Ronda 05](../rounds/05-system-reference/README.md) con **Public Sans**. Este archivo es la versión corta y normativa de la guía. La referencia visual viva es Storybook (`npm run storybook`), que carga los mismos tokens que la app y muestra las mismas reglas con ejemplos interactivos. Si este archivo y Storybook no coinciden, repórtalo; no elijas uno en silencio.
 
 Todo cambio de diseño pasa por la skill `elephants-design` (regla global de `AGENTS.md`). Cada componente nuevo o modificado se documenta con su historia en Storybook. La página HTML `preview.html` queda como seguimiento histórico de la v1.0.
 
@@ -9,13 +9,13 @@ Todo cambio de diseño pasa por la skill `elephants-design` (regla global de `AG
 | Archivo | Rol | ¿Se edita? |
 | --- | --- | --- |
 | `tokens.json` | **Fuente de verdad** de colores (claro y oscuro), tipografía, espaciado y geometría | Sí, solo mediante un cambio (ver abajo) |
-| `tokens.css` | Propiedades personalizadas de CSS generadas a partir de `tokens.json`. La app y Storybook importan este archivo | No, se genera |
+| `tokens.css` | Propiedades personalizadas de CSS generadas a partir de `tokens.json`. `build.py` también la copia, con la fuente, a `src/styles/`, de donde la importan la app y Storybook | No, se genera |
 | `tokens.md` | Tabla de tokens generada para lectura | No, se genera |
 | `contrast-report.json` | Contraste de cada par de texto, control, foco, trama y etiqueta de riesgo, en ambos temas | No, se genera |
-| `components.css` | Clases de componentes (`.el-*`) | Sí, solo mediante un cambio |
-| `components.json` | Catálogo legible por máquinas: clases, estado, variantes, tokens, notas de accesibilidad | Sí, junto con `components.css` |
+| `components.css` | Clases `.el-*` de la v1.0. Hoy solo las usan los **candidatos** (especificación) y la referencia HTML histórica; la app no lo importa | Solo para candidatos; se vacía a medida que se implementan |
+| `components.json` | Catálogo legible por máquinas: estado, variantes, tokens, accesibilidad y, para los componentes React, su archivo (`component`) y sus estilos (`styles`) | Sí |
 | `source.html`, `examples.source.html`, `examples/` | Fuentes de la página de referencia histórica y de las pantallas de ejemplo (textos del producto en español) | Solo para correcciones; no se amplían |
-| `build.py` | Regenera todo; falla si el contraste no pasa o si `components.json` nombra una clase o un token que no existe | Sí |
+| `build.py` | Regenera todo; falla si el contraste no pasa, si `components.json` nombra un archivo, una clase o un token que no existe, o si un componente React declara clases compartidas | Sí |
 | `preview.html`, `examples.html`, `screens/` | Generados, sin conexión, ignorados en git | No |
 
 ```sh
@@ -85,6 +85,8 @@ Un contrato con varias señales cuenta una sola vez en el numerador. Nunca se cl
 
 `components.json` es la lista completa y Storybook los documenta uno por uno. **Núcleo** (aceptados con la Ronda 05): Botón, Alerta (bloque, banner, nota en línea), Campo de formulario, Etiqueta de riesgo, Contador, Filtro activo, Cifra destacada, Tabla de datos. **Candidatos** (pendientes de confirmación por una página real): Mapa con leyenda, Estado, Barra de cobertura, Desglose en barras, Avance frente a lo esperado, Señal. El Mapa con leyenda entró al núcleo con la Ronda 05 y pasó a candidato el 2026-11-15 por decisión de Jouler: lo confirma o lo ajusta la página del Mapa.
 
+Cada componente React trae **sus propios estilos** en `Component.module.css` (CSS Modules) junto al componente. No hay hojas de estilo compartidas entre componentes: lo único global son los tokens `--el-*`, la fuente y la base del documento (`src/styles/global.css`). Si un componente necesita el aspecto de otro, lo usa (composición); no copia ni comparte sus clases.
+
 La página de cada componente en Storybook da su propósito, sus estados, qué hacer y qué evitar, los tokens que usa, su accesibilidad y el marcado para copiar.
 
 ## Línea base de accesibilidad
@@ -99,5 +101,5 @@ La página de cada componente en Storybook da su propósito, sus estados, qué h
 La guía tiene versión (`tokens.json` → `version`). Todo cambio pasa por la skill `elephants-design`.
 
 - **Correcciones que mantienen la dirección visual** (un arreglo de contraste, un error, un componente candidato confirmado): ruta *Ajuste* de la skill. Se edita aquí, se regenera, se actualiza Storybook, se registra el cambio en `README.md` y se sube la versión menor o de parche.
-- **Componentes o tokens nuevos** salen de una página que los necesita (Construir una página, paso 3). Cada uno necesita la aprobación del equipo antes de entrar en `components.css`, `components.json` y Storybook.
+- **Componentes o tokens nuevos** salen de una página que los necesita (Construir una página, paso 3). Cada uno necesita la aprobación del equipo antes de entrar en `components.json` y Storybook, y se implementa como componente React con su propio CSS Module.
 - **Un cambio de dirección** (paleta, tipografía, lenguaje visual) es una ronda nueva en `docs/design/rounds/`. Si el equipo la acepta, se convierte en la siguiente versión mayor.

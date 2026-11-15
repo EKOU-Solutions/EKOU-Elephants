@@ -1,4 +1,5 @@
 import { formatNumber } from '../format';
+import styles from './KeyFigure.module.css';
 
 type Props = {
   /** Qué mide. */
@@ -17,20 +18,20 @@ type Props = {
 export function KeyFigure({ label, part, total, context, source }: Props) {
   const noData = total === 0;
   return (
-    <div className="el-figure">
-      <p className="label">{label}</p>
-      <p className="value">
+    <div className={styles.figure}>
+      <p className={styles.label}>{label}</p>
+      <p className={styles.value}>
         {noData ? (
           'Sin datos'
         ) : (
           <>
             {formatNumber((100 * part) / total)}
-            <span>%</span>
+            <span className={styles.unit}>%</span>
           </>
         )}
       </p>
-      <p className="context">{context.replace('{part}', String(part)).replace('{total}', String(total))}</p>
-      <p className="source">{source}</p>
+      <p className={styles.context}>{context.replace('{part}', String(part)).replace('{total}', String(total))}</p>
+      <p className={styles.source}>{source}</p>
     </div>
   );
 }

@@ -69,7 +69,7 @@ Las pruebas unitarias viven junto al código (`*.test.ts`).
 
 - `src/components/ui/<Component>/`: componentes puros y transversales (botón, alerta, campo, etiqueta de riesgo). No conocen ninguna página ni piden datos.
 - `src/modules/<módulo>/ui/<Component>/`: componentes de la página del módulo, incluidos los grandes, y la pantalla completa (`<Page>Page/`).
-- Cada carpeta trae su historia de Storybook al lado (`<Component>.stories.tsx`) con una historia por estado. Detalle en Storybook, página «Cómo trabajamos».
+- Cada carpeta trae sus estilos (`<Component>.module.css`, CSS Modules) y su historia de Storybook (`<Component>.stories.tsx`) con una historia por estado. No hay hojas compartidas entre componentes; lo global es solo `src/styles/global.css` (tokens `--el-*`, fuente y base), generado en parte por `docs/design/guide/build.py`. Detalle en Storybook, página «Cómo trabajamos».
 
 ## Puertos y adaptadores
 

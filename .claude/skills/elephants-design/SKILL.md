@@ -54,6 +54,7 @@ Storybook es la referencia visual viva; la guía HTML (`preview.html`, `examples
   - **UI**, puro y transversal: `src/components/ui/<Component>/`, título `Componentes/UI/<Nombre>`.
   - **De página**, incluidos los grandes: `src/modules/<módulo>/ui/<Component>/`, título `Componentes/<Página>/<Nombre>`.
   - **Pantalla completa**: `src/modules/<módulo>/ui/<Page>Page/`, título `Pantallas/<Página>`.
+- Cada componente trae sus propios estilos en `ComponentName.module.css`; no hay hojas compartidas entre componentes. Lo único global son los tokens `--el-*`, la fuente y la base (`src/styles/global.css`).
 - La historia va al lado: `ComponentName.stories.tsx`, con `tags: ['autodocs']`. El código va en inglés (componente, props, variables, archivos); el título, el `name` de las historias y las descripciones van en español. Si reemplaza una especificación de `.storybook/catalog/`, se retira esa especificación.
 - Un cambio de tokens, principios o reglas se refleja en la página MDX correspondiente de `.storybook/docs/`.
 - Validación mínima: `npm run build-storybook` sin errores, panel de accesibilidad sin fallas en claro y oscuro, y sin desbordamiento horizontal a 320 px.

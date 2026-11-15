@@ -109,7 +109,7 @@ const A11Y_NOTES: Record<string, string> = {
 };
 
 /**
- * Docs parameters for a catalog component: its plain-language purpose plus the status, classes, tokens and
+ * Docs parameters for a catalog component: its plain-language purpose plus the status, styles, tokens and
  * accessibility notes read from components.json, so they are never duplicated. `folder` is the React component's
  * folder once it lives in `src/`; without it the story is still a v1.0 markup spec.
  */
@@ -123,11 +123,13 @@ export function componentDocs(name: string, purpose: string, folder?: string) {
   const text = [
     purpose,
     status,
-    `**Clases:** ${c.classes.map((x) => `\`${x}\``).join(', ')}`,
+    'styles' in c
+      ? `**Estilos:** \`${c.styles}\` (CSS Module propio)`
+      : `**Clases:** ${c.classes.map((x) => `\`${x}\``).join(', ')}`,
     `**Tokens:** ${c.tokens.map((x) => `\`${x}\``).join(', ')}`,
     `**Accesibilidad:** ${A11Y_NOTES[name] ?? 'ver Accesibilidad.'}`,
     folder
-      ? `_Componente React de la app: \`${folder}\`. Usa solo clases \`el-*\` y tokens \`--el-*\`._`
+      ? `_Componente React de la app: \`${folder}\`. Trae sus propios estilos y solo usa tokens \`--el-*\`._`
       : '_Especificación v1.0: marcado y clases `el-*`. Todavía no es un componente React de la app; cuando se implemente con el flujo `elephants-design`, su historia vivirá junto al componente en `src/`._',
   ].join('\n\n');
   return { docs: { description: { component: text } } };

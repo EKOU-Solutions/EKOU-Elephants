@@ -25,7 +25,7 @@ open docs/design/guide/preview.html docs/design/guide/examples.html
 - La **maquetación editorial** de la Ronda 05: superficie neutra, líneas en lugar de tarjetas, el dato primero.
 - **Una sola tipografía: Public Sans 5.3.0**, alojada con la aplicación. Se quitaron el selector A/B de tipografía y los archivos de Source Sans 3 / Source Serif 4.
 - Tema claro y oscuro. Los 17 pares de contraste pasan en ambos.
-- 8 componentes del núcleo y 6 candidatos (ver `components.json`). Al aceptarse eran 9 y 5; ver «Cambios después de la aceptación».
+- 9 componentes del núcleo (React, en `src/components/ui/`) y 6 candidatos (ver `components.json`). Al aceptarse eran 9 y 5; ver «Cambios después de la aceptación».
 - Tres pantallas de ejemplo (detalle de contrato, lista de resultados, mapa con panel de territorio) dentro de simuladores de iPhone y MacBook.
 
 Qué cambió frente a la Ronda 05, y por qué:
@@ -45,6 +45,7 @@ Qué cambió frente a la Ronda 05, y por qué:
 | Versión | Fecha | Cambio | Decisión |
 | --- | --- | --- | --- |
 | 1.0.1 | 2026-11-15 | El Mapa con leyenda pasa de núcleo a candidato: la página del Mapa lo confirma o lo ajusta | Jouler |
+| 1.1.0 | 2026-11-16 | Los componentes del núcleo son React en `src/components/ui/`, cada uno con su CSS Module; sale la Clave de leyenda (antes la clase `.el-key`). Sin cambios visuales: capturas idénticas antes y después | Jouler |
 
 ## Archivos
 

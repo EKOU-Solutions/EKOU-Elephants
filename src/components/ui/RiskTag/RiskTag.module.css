@@ -1,0 +1,51 @@
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px 4px 8px;
+  border-radius: var(--el-mark-radius);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.3;
+  white-space: nowrap;
+  border: 1px solid transparent;
+}
+
+.glyph {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+.low {
+  background: var(--el-color-risk-low);
+  color: var(--el-color-on-risk-low);
+}
+
+.medium {
+  background: var(--el-color-risk-medium);
+  color: var(--el-color-on-risk-medium);
+}
+
+.high {
+  background: var(--el-color-risk-high);
+  color: var(--el-color-on-risk-high);
+}
+
+/* «Sin datos» is never a lighter «low»: neutral surface, outlined. */
+.unknown {
+  background: var(--el-color-surface);
+  color: var(--el-color-text);
+  border-color: var(--el-color-control-border);
+}
+
+.large {
+  font-size: 16px;
+  padding: 7px 14px 7px 12px;
+  gap: 8px;
+}
+
+.large .glyph {
+  width: 16px;
+  height: 16px;
+}

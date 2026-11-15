@@ -1,5 +1,4 @@
-import '../docs/design/guide/tokens.css';
-import '../docs/design/guide/components.css';
+import '../src/styles/global.css';
 import './styles.css';
 
 import { DocsContainer, type DocsContainerProps } from '@storybook/addon-docs/blocks';

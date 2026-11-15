@@ -1,0 +1,41 @@
+.counts {
+  display: flex;
+  flex-wrap: wrap;
+  border-top: 1px solid var(--el-color-line);
+  border-bottom: 1px solid var(--el-color-line);
+}
+
+.count {
+  display: grid;
+  gap: 2px;
+  padding: 10px 20px 10px 0;
+  margin-right: 20px;
+  border-right: 1px solid var(--el-color-line);
+}
+
+.count:last-child {
+  border-right: 0;
+  margin-right: 0;
+}
+
+.value {
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.label {
+  font-size: 14px;
+  color: var(--el-color-text-muted);
+}
+
+.withKey .value {
+  color: var(--el-color-text);
+}
+
+.withKey .label {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}

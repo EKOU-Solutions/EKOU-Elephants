@@ -1,3 +1,5 @@
+import styles from './RiskTag.module.css';
+
 export type Level = 'low' | 'medium' | 'high' | 'unknown';
 
 export const LEVELS: Level[] = ['low', 'medium', 'high', 'unknown'];
@@ -14,7 +16,7 @@ const FILLED_BARS: Record<Level, number> = { low: 1, medium: 2, high: 3, unknown
 /** Three rising bars: the filled ones encode the level, so the tag reads without color. */
 export function LevelGlyph({ level }: { level: Level }) {
   return (
-    <svg className="lvl" viewBox="0 0 16 16" aria-hidden="true">
+    <svg className={styles.glyph} viewBox="0 0 16 16" aria-hidden="true">
       {(
         [
           [1, 6],
@@ -61,7 +63,7 @@ type Props = {
 /** Nombra la categoría de riesgo de un territorio, entidad o contrato. */
 export function RiskTag({ level, large = false }: Props) {
   return (
-    <span className={`el-tag el-tag-${level}${large ? ' el-tag-lg' : ''}`}>
+    <span className={`${styles.tag} ${styles[level]}${large ? ` ${styles.large}` : ''}`}>
       <LevelGlyph level={level} />
       {LEVEL_LABEL[level]}
     </span>

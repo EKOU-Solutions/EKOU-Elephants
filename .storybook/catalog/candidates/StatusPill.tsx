@@ -1,3 +1,6 @@
+// Candidate spec: still the v1.0 markup with the shared el-* classes. When a page confirms it, it becomes a
+// React component with its own CSS Module and this import goes away.
+import '../../../docs/design/guide/components.css';
 import { Clock } from 'lucide-react';
 
 type Props = {

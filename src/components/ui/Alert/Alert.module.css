@@ -1,0 +1,117 @@
+/* Each tone sets --tone / --tone-soft; the variants read them. */
+.info {
+  --tone: var(--el-color-action);
+  --tone-soft: var(--el-color-action-soft);
+}
+
+.warning {
+  --tone: var(--el-color-warning);
+  --tone-soft: var(--el-color-warning-soft);
+}
+
+.danger {
+  --tone: var(--el-color-danger);
+  --tone-soft: var(--el-color-danger-soft);
+}
+
+.success {
+  --tone: var(--el-color-success);
+  --tone-soft: var(--el-color-success-soft);
+}
+
+/* Inline: affects one section. */
+.alert {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 4px 12px;
+  align-items: start;
+  padding: 14px 16px;
+  background: var(--el-color-surface);
+  border: 1px solid var(--el-color-line);
+  border-radius: var(--el-control-radius);
+  font-size: 15px;
+  color: var(--el-color-text);
+  max-width: 640px;
+  width: 100%;
+}
+
+.alert.danger {
+  border-color: var(--el-color-danger);
+}
+
+.badge {
+  grid-row: span 3;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--el-control-radius);
+  background: var(--tone);
+  color: var(--el-color-surface);
+}
+
+.badge svg {
+  width: 18px;
+  height: 18px;
+}
+
+.alert strong {
+  font-weight: 700;
+}
+
+.alert p {
+  color: var(--el-color-text-muted);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  align-items: center;
+  margin-top: 8px;
+}
+
+/* Banner: affects the whole view. */
+.banner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  align-items: center;
+  padding: 12px 16px;
+  background: var(--tone-soft);
+  border-top: 1px solid var(--tone);
+  border-bottom: 1px solid var(--tone);
+  color: var(--el-color-text);
+  font-size: 15px;
+  width: 100%;
+}
+
+.banner > svg {
+  width: 20px;
+  height: 20px;
+  color: var(--tone);
+  flex-shrink: 0;
+}
+
+.message {
+  flex: 1 1 260px;
+}
+
+.message strong {
+  font-weight: 700;
+}
+
+/* Note: qualifies a figure. */
+.note {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--tone);
+}
+
+.note svg {
+  width: 16px;
+  height: 16px;
+}

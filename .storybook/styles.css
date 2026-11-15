@@ -1,39 +1,5 @@
-/* Storybook base: same as the v1.0 guide (self-hosted font, body, focus). */
-@font-face {
-  font-family: 'Public Sans';
-  font-weight: 200 900;
-  font-style: normal;
-  font-display: swap;
-  src: url('../docs/design/guide/assets/fonts/public-sans-5.3.0-latin-wght.woff2') format('woff2');
-}
-
-body {
-  background: var(--el-color-surface);
-  color: var(--el-color-text);
-  font-family: var(--el-font-ui);
-  font-size: var(--el-size-body);
-  line-height: var(--el-line-body);
-  font-variant-numeric: var(--el-numbers);
-}
-
-.sb-show-main *,
-.sb-el * {
-  box-sizing: border-box;
-}
-
-.sb-show-main :where(h1, h2, h3, p, ul, ol, dl, figure),
-.sb-el :where(h1, h2, h3, p, ul, ol, dl, figure) {
-  margin: 0;
-}
-
-:is(a, button, input, select, summary, .sb-el-scroll, .el-table-scroll):focus-visible {
-  outline: var(--el-focus-width) solid var(--el-color-focus);
-  outline-offset: var(--el-focus-offset);
-}
-
-a {
-  color: var(--el-color-action);
-}
+/* Storybook-only styles: documentation blocks (.storybook/blocks) and docs-page fixes.
+   The app base (tokens, font, body, focus) comes from src/styles/global.css, imported in preview.tsx. */
 
 /* Documentation blocks (.storybook/blocks). They use the same tokens as the app. */
 .sb-el {

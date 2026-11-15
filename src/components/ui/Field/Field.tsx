@@ -1,5 +1,6 @@
 import { CircleAlert } from 'lucide-react';
 import { useId } from 'react';
+import styles from './Field.module.css';
 
 type Props = {
   /** Etiqueta siempre visible; el placeholder nunca reemplaza la etiqueta. */
@@ -19,16 +20,19 @@ export function Field({ label, kind, value, options = [], help, error }: Props) 
   const id = useId();
   const errorId = `${id}-error`;
   return (
-    <div className="el-field">
-      <label htmlFor={id}>{label}</label>
+    <div className={styles.field}>
+      <label className={styles.label} htmlFor={id}>
+        {label}
+      </label>
       {kind === 'select' ? (
-        <select id={id} defaultValue={value}>
+        <select className={styles.control} id={id} defaultValue={value}>
           {options.map((o) => (
             <option key={o}>{o}</option>
           ))}
         </select>
       ) : (
         <input
+          className={styles.control}
           id={id}
           inputMode="numeric"
           defaultValue={value}
@@ -37,12 +41,12 @@ export function Field({ label, kind, value, options = [], help, error }: Props) 
         />
       )}
       {error ? (
-        <span className="error" id={errorId}>
+        <span className={styles.error} id={errorId}>
           <CircleAlert aria-hidden="true" />
           {error}
         </span>
       ) : help ? (
-        <span className="help">{help}</span>
+        <span className={styles.help}>{help}</span>
       ) : null}
     </div>
   );

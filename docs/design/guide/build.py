@@ -93,6 +93,14 @@ tokens_css = (
 )
 (folder / 'tokens.css').write_text(tokens_css)
 
+# --- app copies: the React app imports tokens and the self-hosted font from src/styles/ ---
+repo = folder.parents[2]
+app_styles = repo / 'src/styles'
+(app_styles / 'fonts').mkdir(parents=True, exist_ok=True)
+(app_styles / 'tokens.css').write_text(tokens_css)
+for src in (folder / 'assets/fonts').iterdir():
+    (app_styles / 'fonts' / src.name).write_bytes(src.read_bytes())
+
 # --- fonts ------------------------------------------------------------------------
 faces = {t['family']['name']: t['family']['file']}
 font_faces = ''.join(
@@ -322,14 +330,21 @@ document.querySelector('iframe').src=/^[a-z]+$/.test(n)?n+'.html':'contract.html
 # --- components.json must match components.css and tokens ----------------------
 manifest = json.loads((folder / 'components.json').read_text())
 defined = set(re.findall(r'\.(el-[a-z0-9-]+)', components_css))
+module_css = ''
 for item in manifest['components']:
-    for cls in item['classes']:
-        assert cls in defined, (item['name'], cls)
     for tok in item.get('tokens', []):
         assert tok in tokens_css, (item['name'], tok)
-    if 'component' in item:  # React component in the app, relative to the repository root
-        assert (folder.parents[2] / item['component']).is_file(), (item['name'], item['component'])
-used = set(re.findall(r'var\((--el-[a-z0-9-]+)\)', components_css))
+    if 'component' in item:
+        # React component in the app (paths relative to the repository root): it owns its styles (CSS Module)
+        # and never uses the shared el-* classes.
+        component, styles = repo / item['component'], repo / item['styles']
+        assert component.is_file() and styles.is_file(), (item['name'], item['component'], item['styles'])
+        assert 'classes' not in item, (item['name'], 'implemented components own their styles')
+        module_css += styles.read_text()
+    else:
+        for cls in item['classes']:
+            assert cls in defined, (item['name'], cls)
+used = set(re.findall(r'var\((--el-[a-z0-9-]+)\)', components_css + module_css))
 missing = sorted(v for v in used if v + ':' not in tokens_css)
 assert not missing, missing
 
@@ -348,4 +363,4 @@ lines += [f'| `--{p}-{k}` | {v} px |' for k, v in tokens['geometry'].items()]
 lines += ['', '## Contraste', '', 'Todos los pares de texto, controles, foco, trama y etiquetas de riesgo pasan en ambos temas; ver `contrast-report.json`.', '']
 (folder / 'tokens.md').write_text('\n'.join(lines))
 sizes['examples.html'] = finish((folder / 'examples.source.html').read_text(), 'examples.html')
-print('Built guide v1.0: ' + ', '.join(f'{k} ({v} KB)' for k, v in sizes.items()) + '; tokens.css; contrast pairs pass in light and dark.')
+print(f'Built guide v{manifest["version"]}: ' + ', '.join(f'{k} ({v} KB)' for k, v in sizes.items()) + '; tokens.css; contrast pairs pass in light and dark.')

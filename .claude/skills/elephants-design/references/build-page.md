@@ -83,17 +83,17 @@ Cada fila debe rastrearse hasta un campo del contrato o una regla fija. Lo que n
 Para cada fila de la especificación:
 
 1. Usa un **componente del catálogo**. El catálogo está en Storybook (`npm run storybook`, sección Componentes) y su fuente es la [guía del sistema de diseño v1.0](../../../../docs/design/guide/README.md): `components.json` lista cada componente y `design-system.md` reúne las reglas.
-2. Los componentes con `"status": "candidate"` (estado, barra de cobertura, desglose en barras, avance frente a lo esperado, señal) se aprueban o se descartan aquí, la primera vez que una página real los necesita. Si se aprueban, pásalos a `core`; si se descartan, elimínalos.
+2. Los componentes con `"status": "candidate"` (mapa con leyenda, estado, barra de cobertura, desglose en barras, avance frente a lo esperado, señal) se aprueban o se descartan aquí, la primera vez que una página real los necesita. Si se aprueban, se implementan como componentes React con su CSS Module, pasan a `core` y se retira su especificación de `.storybook/catalog/` y sus clases de `components.css`; si se descartan, se eliminan.
 3. Si ninguno sirve, propone un **componente nuevo**:
    - propósito, anatomía, variantes, estados, tokens, accesibilidad, hacer / evitar;
    - una historia en Storybook con sus estados (ver `.storybook/docs/HowWeWork.mdx`). La página HTML `source.html` es histórica y ya no se amplía.
 
-   Itera hasta que el equipo lo apruebe. Luego agrégalo a la guía:
-   - `components.css`;
-   - `components.json`;
+   Itera hasta que el equipo lo apruebe. Luego impleméntalo y regístralo:
+   - el componente React con sus propios estilos (`ComponentName.module.css`); nada de clases compartidas entre componentes;
+   - `components.json`, con `component` y `styles`;
    - su historia en Storybook, al lado del componente: en `src/components/ui/<Component>/` si es puro y transversal, o en `src/modules/<módulo>/ui/<Component>/` si es de la página (también los grandes); `.storybook/catalog/` solo mientras sea especificación. Ver «Dónde vive un componente» en `.storybook/docs/HowWeWork.mdx`.
 
-   Después ejecuta `build.py`, que falla si `components.json` no cuadra con el CSS o los tokens. Sube la versión menor de la guía y anota el cambio en su README. Nunca uses un componente en una página antes de que esté en el catálogo.
+   Después ejecuta `build.py`, que falla si `components.json` no cuadra con los archivos o los tokens. Sube la versión menor de la guía y anota el cambio en su README. Nunca uses un componente en una página antes de que esté en el catálogo.
 4. Un token nuevo sigue el mismo camino: entra en `tokens.json` y `build.py` regenera `tokens.css` y comprueba el contraste. Nunca uses un hex suelto.
 5. Un cambio de dirección (paleta, tipografía, lenguaje visual) no se hace aquí. Es una [ronda](round.md).
 

@@ -286,7 +286,7 @@ export function CatalogTable() {
             <tr>
               <th scope="col">Componente</th>
               <th scope="col">Estado</th>
-              <th scope="col">Clases</th>
+              <th scope="col">Dónde vive</th>
             </tr>
           </thead>
           <tbody>
@@ -302,7 +302,7 @@ export function CatalogTable() {
                   </span>
                 </td>
                 <td>
-                  <code>{c.classes.join(' · ')}</code>
+                  <code>{'styles' in c ? c.styles : `components.css · ${c.classes.join(' · ')}`}</code>
                 </td>
               </tr>
             ))}

@@ -39,7 +39,8 @@ npm run storybook          # http://localhost:6006
 
 - Configuración y lineamientos: `.storybook/` (páginas MDX en `.storybook/docs/`, especificación de los candidatos en `.storybook/catalog/`). Los componentes del núcleo viven en `src/components/ui/`.
 - Los componentes React reales llevan su historia al lado: `src/**/ComponentName.stories.tsx`.
-- Los tokens y el catálogo siguen saliendo de `docs/design/guide/` (`tokens.json` → `build.py` → `tokens.css`); Storybook los importa, no los redefine.
+- Los tokens salen de `docs/design/guide/tokens.json`: `build.py` genera `tokens.css` y lo copia, con la fuente, a `src/styles/`. La app (`src/client/main.tsx`) y Storybook importan `src/styles/global.css`; no se edita a mano.
+- Cada componente de `src/components/ui/` trae su `Component.module.css` (CSS Modules de Vite); no hay hojas compartidas entre componentes.
 - Todo cambio de diseño pasa por la skill `elephants-design` (regla en `AGENTS.md`). Cómo entra un componente nuevo: página *Cómo trabajamos* dentro de Storybook.
 - Storybook quita el plugin de Cloudflare de `vite.config.ts` (`.storybook/main.ts`): solo carga el cliente React, no el Worker.
 

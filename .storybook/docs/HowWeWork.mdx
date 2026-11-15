@@ -36,18 +36,22 @@ Cada componente tiene su carpeta, con el componente y su historia al lado. Hay d
 ```text
 src/components/ui/RiskTag/
   RiskTag.tsx
+  RiskTag.module.css
   RiskTag.stories.tsx
 src/modules/mapa/ui/TerritoryPanel/
   TerritoryPanel.tsx
+  TerritoryPanel.module.css
   TerritoryPanel.stories.tsx
 ```
+
+Cada componente React trae **sus propios estilos** en `Component.module.css` (CSS Modules) junto al componente. No hay hojas de estilo compartidas entre componentes: lo único global son los tokens `--el-*`, la fuente y la base del documento (`src/styles/global.css`). Si un componente necesita el aspecto de otro, lo usa (composición); no copia ni comparte sus clases.
 
 Un componente de página que otra página necesita se mueve a `src/components/ui/` solo si queda puro: recibe todo por props y no sabe de qué página viene.
 
 ## Cómo entra un componente a Storybook
 
 1. Nace en el flujo **Construir una página** y se aprueba.
-2. Se implementa como componente React en su carpeta (ver la tabla de arriba) usando solo tokens `--el-*` y clases del catálogo.
+2. Se implementa como componente React en su carpeta (ver la tabla de arriba), con **sus propios estilos** en `ComponentName.module.css` y usando solo tokens `--el-*`.
 3. Se escribe su historia **al lado** del componente: `ComponentName.stories.tsx`, con `tags: ['autodocs']`. El código va en inglés (nombre del componente, props, variables y archivos); lo que lee una persona va en español: el título (`Componentes/UI/…`, `Componentes/<Página>/…` o `Pantallas/<Página>`), el `name` de cada historia, la descripción de las props y los textos de la interfaz. Lleva una historia por estado: normal, vacío o «Sin datos», error, carga, y el caso de 320 px si aplica.
 4. Se documenta en lenguaje claro: para qué sirve, cuándo usarlo, qué evitar y la accesibilidad.
 5. Se actualiza `components.json` y, si existía, se retira la historia de especificación de `.storybook/catalog/`.

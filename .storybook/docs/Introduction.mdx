@@ -15,7 +15,7 @@ Todos los datos que ves aquí son **ficticios**.
 
 | Si… | Empieza por |
 | --- | --- |
-| **Construyes (desarrollo)** | [Cómo trabajamos](?path=/docs/cómo-trabajamos--docs), luego cada componente en **Componentes**. Importa `tokens.css`, usa solo variables `--el-*` (el = Elephants) y copia el marcado de la pestaña *Show code*. |
+| **Construyes (desarrollo)** | [Cómo trabajamos](?path=/docs/cómo-trabajamos--docs), luego cada componente en **Componentes**. Usa los componentes de `src/components/ui/`; cada uno trae sus estilos. En CSS nuevo usa solo variables `--el-*` (el = Elephants). |
 | **Diseñas la experiencia (UX)** | [Principios](?path=/docs/principios--docs) y [Voz y tono](?path=/docs/fundamentos-voz-y-tono--docs): cómo hablamos de una señal y qué nunca decimos. |
 | **Diseñas la interfaz (UI)** | **Fundamentos** (color, tipografía, espacio, íconos) y los componentes. Revisa todo en claro y oscuro, y primero en celular. |
 | **Eres un agente de IA** | Lo mismo que desarrollo, y además la regla de `AGENTS.md`: todo cambio de diseño pasa por la skill `elephants-design`. |
@@ -49,8 +49,8 @@ npm run build-storybook    # versión estática en storybook-static/
 
 Storybook **muestra** el sistema; no lo redefine. Los valores salen de estos archivos:
 
-- `docs/design/guide/tokens.json` → `tokens.css` (generado por `build.py`, que también comprueba el contraste).
-- `docs/design/guide/components.css` y `components.json` (catálogo).
+- `docs/design/guide/tokens.json` → `tokens.css` (generado por `build.py`, que también comprueba el contraste y lo copia a `src/styles/`).
+- `docs/design/guide/components.json` (catálogo) y los componentes de `src/components/ui/`, cada uno con su CSS Module.
 - `docs/design/visual-direction.md` (decisiones aceptadas).
 
 Si Storybook y esos archivos no coinciden, repórtalo; no elijas uno en silencio.

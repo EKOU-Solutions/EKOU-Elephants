@@ -1,3 +1,6 @@
+// Candidate spec: still the v1.0 markup with the shared el-* classes. When a page confirms it, it becomes a
+// React component with its own CSS Module and this import goes away.
+import '../../../docs/design/guide/components.css';
 type Props = {
   /** Pocos conteos, de mayor a menor. El valor va en texto; la barra es decorativa. */
   items: { label: string; value: number }[];

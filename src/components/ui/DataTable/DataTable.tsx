@@ -1,4 +1,6 @@
+import { LegendKey } from '../LegendKey/LegendKey';
 import type { Level } from '../RiskTag/RiskTag';
+import styles from './DataTable.module.css';
 
 export type DataTableColumn = {
   /** Encabezado visible de la columna. */
@@ -31,14 +33,14 @@ export function DataTable({ caption, columns, rows }: Props) {
   const [headerColumn, ...valueColumns] = columns;
   return (
     // A scrollable region must be focusable so keyboard users can scroll it (WCAG 2.1.1).
-    <div role="region" aria-label={caption} tabIndex={0} className="el-table-scroll" style={{ overflowX: 'auto' }}>
-      <table className="el-table">
-        <caption>{caption}</caption>
+    <div role="region" aria-label={caption} tabIndex={0} className={styles.scroll}>
+      <table className={styles.table}>
+        <caption className={styles.caption}>{caption}</caption>
         <thead>
           <tr>
             <th scope="col">{headerColumn?.label}</th>
             {valueColumns.map((c) => (
-              <th key={c.label} scope="col" className={c.numeric ? 'el-num' : undefined}>
+              <th key={c.label} scope="col" className={c.numeric ? styles.numeric : undefined}>
                 {c.label}
               </th>
             ))}
@@ -48,11 +50,11 @@ export function DataTable({ caption, columns, rows }: Props) {
           {rows.map((row) => (
             <tr key={row.id}>
               <th scope="row">
-                {row.level ? <span className={`el-key el-key-${row.level}`} aria-hidden="true" /> : null}
+                {row.level ? <LegendKey kind={row.level} className={styles.key} /> : null}
                 {row.header}
               </th>
               {row.cells.map((value, i) => (
-                <td key={valueColumns[i]?.label ?? i} className={valueColumns[i]?.numeric ? 'el-num' : undefined}>
+                <td key={valueColumns[i]?.label ?? i} className={valueColumns[i]?.numeric ? styles.numeric : undefined}>
                   {value}
                 </td>
               ))}

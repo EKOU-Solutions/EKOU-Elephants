@@ -1,0 +1,44 @@
+.field {
+  display: grid;
+  gap: 6px;
+  max-width: 320px;
+  width: 100%;
+}
+
+.label {
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.control {
+  font: inherit;
+  min-height: var(--el-control-height);
+  padding: 10px 12px;
+  border: 1px solid var(--el-color-control-border);
+  border-radius: var(--el-control-radius);
+  background: var(--el-color-surface);
+  color: var(--el-color-text);
+  width: 100%;
+}
+
+.control[aria-invalid='true'] {
+  border: 2px solid var(--el-color-danger);
+}
+
+.help {
+  font-size: 14px;
+  color: var(--el-color-text-muted);
+}
+
+.error {
+  font-size: 14px;
+  color: var(--el-color-danger);
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.error svg {
+  width: 16px;
+  height: 16px;
+}

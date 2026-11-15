@@ -44,6 +44,7 @@ export const CoverageBanner: Story = {
     title: 'Faltan 30 contratos por analizar.',
     message: 'Analizamos 120 de 150; las cifras pueden cambiar.',
     action: 'Ver cobertura',
+    actionHref: '#cobertura',
   },
 };
 export const SampleDataBanner: Story = {

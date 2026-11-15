@@ -1,3 +1,6 @@
+import { LegendKey } from '../LegendKey/LegendKey';
+import styles from './Counter.module.css';
+
 type Count = { value: number; label: string; withKey?: boolean };
 type Props = {
   /** Máximo 4 contadores seguidos. Nombra siempre lo que se cuenta. */
@@ -7,12 +10,12 @@ type Props = {
 /** Un número grande con su nombre debajo. Resume una consulta en una sola línea. */
 export function Counter({ counts }: Props) {
   return (
-    <div className="el-counts">
+    <div className={styles.counts}>
       {counts.map((c) => (
-        <div key={c.label} className={`el-count${c.withKey ? ' el-count-risk' : ''}`}>
-          <strong>{new Intl.NumberFormat('es-CO').format(c.value)}</strong>
-          <span>
-            {c.withKey ? <span className="el-key el-key-flagged" aria-hidden="true" style={{ margin: 0 }} /> : null}
+        <div key={c.label} className={`${styles.count}${c.withKey ? ` ${styles.withKey}` : ''}`}>
+          <strong className={styles.value}>{new Intl.NumberFormat('es-CO').format(c.value)}</strong>
+          <span className={styles.label}>
+            {c.withKey ? <LegendKey kind="flagged" /> : null}
             {c.label}
           </span>
         </div>
