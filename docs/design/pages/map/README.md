@@ -20,4 +20,4 @@
 
 ## Open questions
 
-Spec: [spec.md → Open questions](spec.md#8-open-questions). Contract decisions: [contract.md → Decisions](contract.md#decisions-2026-11-15).
+Spec questions answered: [spec.md → Decisions](spec.md#8-decisions-2026-11-15); the spec as a whole awaits Approval 1. Contract decisions: [contract.md → Decisions](contract.md#decisions-2026-11-15).

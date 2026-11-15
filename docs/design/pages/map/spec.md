@@ -113,9 +113,11 @@ Direct tone, figures with unit, window, source and date. No «corrupción», «r
 | Key figure | core | Used as is, plus the «Sin datos» value variant (hatch swatch + text) that the guide already defines for unknowns |
 | Data table, Alert, Button, Counter | core | Used as is |
 
-## 8. Open questions
+## 8. Decisions (2026-11-15)
 
-1. **Headline with the national total.** «6,8 millones de contratos públicos, municipio por municipio» says something and passes the shared-screenshot test, but it is a total of *located* contracts, not of all contracts (91%). Keep it, or use a headline without a figure («Contratación pública, municipio por municipio»)?
-2. **Method link target.** «Cómo lo calculamos» needs a public page. Proposal: link to the location section of `docs/investigacion-ingesta.md` on GitHub for now, and a methods page later. OK?
-3. **Hover label on desktop.** Proposed as a convenience. Keep it, or click only (simpler, same on every device)?
-4. **Neutral fill colour.** Proposed `--el-color-line` (light grey-blue; no new token). The alternative is a dedicated `--el-color-map-neutral` token, which is a token change through the guide's process.
+| # | Question | Decision |
+| --- | --- | --- |
+| 1 | Headline with the national total | **Keep the figure**: «6,8 millones de contratos públicos, municipio por municipio»; the dek says they are the located contracts of 2021–2026 |
+| 2 | Method link target | **Location section of `docs/investigacion-ingesta.md` on GitHub** until a methods page exists |
+| 3 | Hover label on desktop | **Yes, as a convenience**; everything stays reachable by click, search and table |
+| 4 | Neutral fill colour | **Existing token `--el-color-line`**; no change to `tokens.json` |
