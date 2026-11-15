@@ -17,7 +17,15 @@
     "cf-typegen": "wrangler types",
     "migrate:dev": "node --env-file=.env.dev node_modules/node-pg-migrate/bin/node-pg-migrate.js --migrations-dir migrations --migration-file-language sql --database-url-var DATABASE_URL_UNPOOLED",
     "migrate:prod": "node --env-file=.env.production node_modules/node-pg-migrate/bin/node-pg-migrate.js --migrations-dir migrations --migration-file-language sql --database-url-var DATABASE_URL_UNPOOLED",
-    "seed:dev": "node --env-file=.env.dev scripts/seed-dev.mjs"
+    "seed:dev": "node --env-file=.env.dev scripts/seed-dev.mjs",
+    "lint": "biome lint --error-on-warnings .",
+    "format:check": "biome format .",
+    "format": "biome format --write .",
+    "check": "npm run lint && npm run format:check && npm run typecheck && npm test && npm run build",
+    "deploy:dry-run": "wrangler deploy --dry-run",
+    "datos:corte": "node scripts/datos.mjs corte",
+    "datos:descargar": "node scripts/datos.mjs descargar",
+    "datos:preview": "node scripts/datos.mjs preview"
   },
   "dependencies": {
     "@hono/zod-validator": "^0.9.1",
@@ -30,6 +38,7 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.6.8",
     "@cloudflare/vite-plugin": "^1.67.0",
     "@hono/cli": "^0.1.11",
     "@types/node": "^26.6.6",

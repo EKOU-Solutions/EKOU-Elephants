@@ -3,8 +3,12 @@ import { crearApp } from './app';
 import type { Queryable } from './db';
 
 const fila = {
-  codigo: '05', nombre: 'Antioquia', presupuesto_asignado: '1000.50', gasto_actual: '400',
-  total_obras: 10, obras_con_retraso: 2,
+  codigo: '05',
+  nombre: 'Antioquia',
+  presupuesto_asignado: '1000.50',
+  gasto_actual: '400',
+  total_obras: 10,
+  obras_con_retraso: 2,
 };
 
 function app(rows: Record<string, unknown>[] | Error) {
@@ -25,8 +29,12 @@ describe('GET /api/mapa/territorios/:codigo/resumen', () => {
     const res = await a.request('/api/mapa/territorios/05/resumen');
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({
-      codigo: '05', nombre: 'Antioquia', presupuestoAsignadoCentavos: 100050, gastoActualCentavos: 40000,
-      totalObras: 10, obrasConRetraso: 2,
+      codigo: '05',
+      nombre: 'Antioquia',
+      presupuestoAsignadoCentavos: 100050,
+      gastoActualCentavos: 40000,
+      totalObras: 10,
+      obrasConRetraso: 2,
     });
     expect(llamadas[0]?.params).toEqual(['05']);
     expect(llamadas[0]?.text).not.toContain('05');
@@ -54,21 +62,28 @@ describe('GET /api/mapa/territorios/:codigo/resumen', () => {
   });
 
   it.each([
-    ['presupuesto_asignado', '90071992547409.92'], ['gasto_actual', '90071992547409.92'],
-    ['presupuesto_asignado', '100.005'], ['gasto_actual', '100.005'],
-    ['presupuesto_asignado', 'NaN'], ['gasto_actual', 'NaN'],
+    ['presupuesto_asignado', '90071992547409.92'],
+    ['gasto_actual', '90071992547409.92'],
+    ['presupuesto_asignado', '100.005'],
+    ['gasto_actual', '100.005'],
+    ['presupuesto_asignado', 'NaN'],
+    ['gasto_actual', 'NaN'],
   ])('rechaza %s inválido sin devolver importes redondeados', async (campo, valor) => {
-    const res = await app([{ ...fila, [campo]: valor }]).app.request('/api/mapa/territorios/05/resumen');
+    const res = await app([{ ...fila, [campo]: valor }]).app.request(
+      '/api/mapa/territorios/05/resumen',
+    );
     expect(res.status).toBe(500);
     expect(await res.json()).toEqual({ error: 'error_interno' });
   });
 
   it('conserva el centavo final del máximo permitido en ambos importes', async () => {
-    const res = await app([{ ...fila, presupuesto_asignado: '90071992547409.91', gasto_actual: '90071992547409.91' }])
-      .app.request('/api/mapa/territorios/05/resumen');
+    const res = await app([
+      { ...fila, presupuesto_asignado: '90071992547409.91', gasto_actual: '90071992547409.91' },
+    ]).app.request('/api/mapa/territorios/05/resumen');
     expect(res.status).toBe(200);
     expect(await res.json()).toMatchObject({
-      presupuestoAsignadoCentavos: Number.MAX_SAFE_INTEGER, gastoActualCentavos: Number.MAX_SAFE_INTEGER,
+      presupuestoAsignadoCentavos: Number.MAX_SAFE_INTEGER,
+      gastoActualCentavos: Number.MAX_SAFE_INTEGER,
     });
   });
 
