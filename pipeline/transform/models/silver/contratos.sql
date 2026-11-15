@@ -1,9 +1,23 @@
 -- Capa silver: un contrato por fila, de SECOP I y SECOP II, limpio y sin datos personales.
 -- Reglas: docs/investigacion-ingesta.md, sección "Reglas de silver".
 with unidos as (
-    select * from {{ ref('int_contratos_secop_ii') }}
-    union all by name
-    select * from {{ ref('int_contratos_secop_i') }}
+    -- S08: un municipio que se llama igual que su departamento ("Arauca»Arauca") es ambiguo,
+    -- salvo cuando lo declara la alcaldía de ese mismo municipio: entonces es el municipio.
+    -- El nivel se calcula del nombre: en SECOP I, nivel_entidad trae el valor de origen
+    -- ("TERRITORIAL", "NACIONAL") y el nombre lleva el departamento como prefijo
+    -- ("SUCRE - ALCALDÍA MUNICIPIO DE SUCRE").
+    select * replace (
+        ubicacion_ambigua
+        and not (
+            {{ nivel_entidad("regexp_replace(nombre_entidad, '^[^-]+ - ', '')") }} = 'municipal'
+            and cod_mpio_ubicacion = cod_mpio_sede
+        ) as ubicacion_ambigua
+    )
+    from (
+        select * from {{ ref('int_contratos_secop_ii') }}
+        union all by name
+        select * from {{ ref('int_contratos_secop_i') }}
+    )
 ),
 
 con_reglas as (

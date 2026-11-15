@@ -30,3 +30,5 @@ seeds:
       +column_types: {cod_dpto: varchar, cod_mpio: varchar}
     alias_departamentos:
       +column_types: {cod_dpto: varchar}
+    departamentos_iso:
+      +column_types: {cod_dpto: varchar}

@@ -1,0 +1,23 @@
+version: 2
+
+models:
+  - name: mapa_municipios_corte
+    description: >
+      Una fila por municipio de DIVIPOLA para el mapa (TASK-09). Contrato de la API:
+      docs/design/pages/map/contract.md.
+    columns:
+      - name: cod_mpio
+        data_tests: [unique, not_null]
+      - name: tipo
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [municipio, area_no_municipalizada, isla]
+      - name: iso_3166_2
+        description: Todo departamento de DIVIPOLA debe tener su código ISO 3166-2.
+        data_tests: [not_null]
+      - name: contratos_ubicados
+        description: Null cuando no hay contratos ubicados en la ventana; nunca 0.
+        data_tests:
+          - mayor_que_cero

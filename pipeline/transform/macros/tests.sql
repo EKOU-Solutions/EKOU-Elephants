@@ -5,3 +5,11 @@ from {{ model }}
 group by {{ columns | join(', ') }}
 having count(*) > 1
 {% endtest %}
+
+
+{#- Falla si alguna fila tiene la columna en 0 o negativa: la ausencia de datos va como null. -#}
+{% test mayor_que_cero(model, column_name) %}
+select {{ column_name }}
+from {{ model }}
+where {{ column_name }} <= 0
+{% endtest %}

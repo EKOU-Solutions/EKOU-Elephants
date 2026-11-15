@@ -18,7 +18,7 @@ docs/design/pages/<page>/
 
 | Page | Status | Contract |
 | --- | --- | --- |
-| — | No page started yet | — |
+| [Map](map/README.md) | *Exploring* (contract approved 2026-11-15) | [contract.md](map/contract.md) |
 
 Statuses: *Blocked — no contract* · *Exploring* · *Spec awaiting approval* · *Mockup in review* · *Approved*.
 

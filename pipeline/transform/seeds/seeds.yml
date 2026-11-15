@@ -41,3 +41,13 @@ seeds:
     columns:
       - name: anio
         data_tests: [unique, not_null]
+
+  - name: departamentos_iso
+    description: >
+      Código ISO 3166-2:CO de cada departamento (ADR 0002, decisión 9), para que el mapa y
+      los datos abiertos identifiquen los departamentos con el estándar internacional.
+    columns:
+      - name: cod_dpto
+        data_tests: [unique, not_null]
+      - name: iso_3166_2
+        data_tests: [unique, not_null]

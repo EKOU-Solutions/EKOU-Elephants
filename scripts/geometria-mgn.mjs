@@ -1,0 +1,84 @@
+// Builds the map geometry (TASK-09) from DANE's MGN 2025 municipalities.
+//
+//   node scripts/geometria-mgn.mjs <MGN_ADM_MPIO_GRAFICO.geojson> [datos-dir]
+//
+// Source: https://geoportal.dane.gov.co/descargas/mgn_2025/MGN2025_ADM_MPIO_GRAFICO_(geojson).zip
+// (CC BY 4.0, "Departamento Administrativo Nacional de Estadística - DANE: www.dane.gov.co").
+// Writes <datos-dir>/geometria/mgn-2025.topojson (default datos-dir: pipeline/data/r2/datos) with
+// two objects, both carrying only `codigo`: `municipios` (1,122) and `departamentos` (33, dissolved
+// from the municipalities so borders match exactly). Fails if the size budget is exceeded or if the
+// codes do not match the municipalities of the exported cut. Contract:
+// docs/design/pages/map/contract.md.
+import { execFileSync } from 'node:child_process';
+import { existsSync, mkdirSync, readdirSync, readFileSync } from 'node:fs';
+import { join, resolve } from 'node:path';
+import { brotliCompressSync } from 'node:zlib';
+
+const VERSION = 'mgn-2025';
+// Visvalingam (weighted) keeping 0.4% of vertices, and ~95 m quantisation: fits the budget while
+// small municipalities keep their shape when zoomed (see contract.md, "Size budget").
+const SIMPLIFICACION = '0.4%';
+const CUANTIZACION = '20000';
+const PRESUPUESTO = { crudo: 350_000, brotli: 100_000 };
+const ESPERADO = { municipios: 1122, departamentos: 33 };
+
+const [entrada, datosArg] = process.argv.slice(2);
+if (!entrada || !existsSync(entrada)) {
+  console.error('Uso: node scripts/geometria-mgn.mjs <MGN_ADM_MPIO_GRAFICO.geojson> [datos-dir]');
+  process.exit(1);
+}
+const datos = resolve(datosArg ?? 'pipeline/data/r2/datos');
+const salida = join(datos, 'geometria', `${VERSION}.topojson`);
+mkdirSync(join(datos, 'geometria'), { recursive: true });
+
+execFileSync(
+  process.execPath,
+  [
+    '--max-old-space-size=8192',
+    resolve('node_modules', 'mapshaper', 'bin', 'mapshaper'),
+    '-i', entrada, 'name=municipios',
+    '-filter-fields', 'mpio_cdpmp',
+    '-rename-fields', 'codigo=mpio_cdpmp',
+    '-simplify', 'visvalingam', 'weighted', SIMPLIFICACION, 'keep-shapes',
+    '-clean',
+    '-each', 'dpto=codigo.slice(0,2)',
+    '-dissolve', 'dpto', '+', 'name=departamentos',
+    '-rename-fields', 'codigo=dpto', 'target=departamentos',
+    '-filter-fields', 'codigo', 'target=municipios',
+    '-o', 'format=topojson', `quantization=${CUANTIZACION}`, 'target=municipios,departamentos', salida,
+  ],
+  { stdio: ['ignore', 'ignore', 'inherit'] },
+);
+
+const errores = [];
+const bytes = readFileSync(salida);
+const brotli = brotliCompressSync(bytes).length;
+if (bytes.length > PRESUPUESTO.crudo) errores.push(`pesa ${bytes.length} B (máximo ${PRESUPUESTO.crudo})`);
+if (brotli > PRESUPUESTO.brotli) errores.push(`pesa ${brotli} B con Brotli (máximo ${PRESUPUESTO.brotli})`);
+
+const topologia = JSON.parse(bytes.toString('utf-8'));
+for (const [objeto, total] of Object.entries(ESPERADO)) {
+  const geometrias = topologia.objects[objeto]?.geometries ?? [];
+  if (geometrias.length !== total) errores.push(`${objeto}: ${geometrias.length} formas (esperadas ${total})`);
+  if (geometrias.some((g) => g.type == null)) errores.push(`${objeto}: hay formas vacías`);
+}
+
+// Join check: the shapes must match the municipalities of every exported cut, code by code.
+const codigosMgn = new Set(topologia.objects.municipios.geometries.map((g) => g.properties.codigo));
+const cortes = readdirSync(datos).filter((d) => /^\d{4}-\d{2}$/.test(d));
+for (const corte of cortes) {
+  const archivo = join(datos, corte, 'mapa', 'municipios.json');
+  if (!existsSync(archivo)) continue;
+  const codigos = new Set(JSON.parse(readFileSync(archivo, 'utf-8')).municipios.map((m) => m.codigo));
+  const sinForma = [...codigos].filter((c) => !codigosMgn.has(c));
+  const sobrantes = [...codigosMgn].filter((c) => !codigos.has(c));
+  if (sinForma.length || sobrantes.length) {
+    errores.push(`corte ${corte}: sin forma ${sinForma.join(',') || '-'}; formas sin municipio ${sobrantes.join(',') || '-'}`);
+  }
+}
+
+if (errores.length) {
+  console.error(`✗ ${salida}\n  - ${errores.join('\n  - ')}`);
+  process.exit(1);
+}
+console.log(`✓ ${salida}: ${bytes.length} B, ${brotli} B con Brotli; cruce con ${cortes.length} corte(s) correcto`);
