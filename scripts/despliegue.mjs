@@ -85,6 +85,16 @@ export function apuntarDatos(destino, servicio, raiz = process.cwd()) {
 
 const datosActivos = (env) => env.DATOS_CORTE_ENABLED === 'true';
 
+/**
+ * Wrangler puede escribir avisos antes del JSON (por ejemplo, «Using redirected Wrangler
+ * configuration» cuando despliega la configuración que genera el build).
+ */
+export function leerJsonDeWrangler(salida) {
+  const inicio = salida.search(/^\{/m);
+  if (inicio === -1) throw new Error('Wrangler no devolvió JSON.');
+  return JSON.parse(salida.slice(inicio));
+}
+
 function exigir(env, nombres) {
   const faltantes = nombres.filter((n) => !env[n]?.trim());
   if (faltantes.length) throw new Error(`Falta configuración: ${faltantes.join(', ')}`);
@@ -175,7 +185,7 @@ export async function desplegarPreview({
     }
   });
 
-  const direccion = JSON.parse(salida).preview_urls?.[0];
+  const direccion = leerJsonDeWrangler(salida).preview_urls?.[0];
   if (typeof direccion !== 'string' || !direccion) {
     throw new Error('Cloudflare no devolvió la URL del preview.');
   }

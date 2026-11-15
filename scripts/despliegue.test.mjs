@@ -15,6 +15,7 @@ import {
   desplegarPreview,
   desplegarProduccion,
   existeWorker,
+  leerJsonDeWrangler,
   verificar,
 } from './despliegue.mjs';
 
@@ -99,6 +100,14 @@ describe('desplegarPreview', () => {
       'Falló el despliegue',
     );
     expect(existsSync(archivo)).toBe(false);
+  });
+});
+
+describe('leerJsonDeWrangler', () => {
+  it('ignora los avisos que Wrangler escribe antes del JSON', () => {
+    const salida = `Using redirected Wrangler configuration.\n - Configuration being used: "dist/x/wrangler.json"\n{\n  "preview_urls": ["a.dev"]\n}\n`;
+    expect(leerJsonDeWrangler(salida)).toEqual({ preview_urls: ['a.dev'] });
+    expect(() => leerJsonDeWrangler('sin json')).toThrow('JSON');
   });
 });
 
