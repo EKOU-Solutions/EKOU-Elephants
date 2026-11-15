@@ -18,8 +18,15 @@ const VERSION = 'mgn-2025';
 // Visvalingam (weighted) keeping 0.4% of vertices, and ~95 m quantisation: fits the budget while
 // small municipalities keep their shape when zoomed (see contract.md, "Size budget").
 const SIMPLIFICACION = '0.4%';
+// The archipelago (department 88) is drawn alone in an inset at ~40x the scale of the mainland. At
+// 0.4% each island collapses to a 6-point polygon, so it keeps 10% (135 points for San Andrés instead of 6; about 1.6 KB more).
+const SIMPLIFICACION_ISLAS = process.env.EKOU_SIMPLIFICACION_ISLAS ?? '10%';
+// Municipalities with several parts (sea and river islands: Islas del Rosario and San Bernardo,
+// Isla Fuerte, Bahía Málaga…) keep 5%. At 0.4% the islands disappeared from the map; at 5% every
+// island of 0.1 km² or more in the source survives. The map must not drop territory.
+const SIMPLIFICACION_PARTES = process.env.EKOU_SIMPLIFICACION_PARTES ?? '5%';
 const CUANTIZACION = '20000';
-const PRESUPUESTO = { crudo: 350_000, brotli: 100_000 };
+const PRESUPUESTO = { crudo: 380_000, brotli: 100_000 };
 const ESPERADO = { municipios: 1122, departamentos: 33 };
 
 const [entrada, datosArg] = process.argv.slice(2);
@@ -39,7 +46,8 @@ execFileSync(
     '-i', entrada, 'name=municipios',
     '-filter-fields', 'mpio_cdpmp',
     '-rename-fields', 'codigo=mpio_cdpmp',
-    '-simplify', 'visvalingam', 'weighted', SIMPLIFICACION, 'keep-shapes',
+    '-simplify', 'visvalingam', 'weighted', 'keep-shapes', 'variable',
+    `percentage = codigo.slice(0, 2) === '88' ? '${SIMPLIFICACION_ISLAS}' : this.partCount > 1 ? '${SIMPLIFICACION_PARTES}' : '${SIMPLIFICACION}'`,
     '-clean',
     '-each', 'dpto=codigo.slice(0,2)',
     '-dissolve', 'dpto', '+', 'name=departamentos',
