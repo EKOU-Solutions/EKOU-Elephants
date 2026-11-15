@@ -59,6 +59,21 @@ uv run python -c "import duckdb; print(duckdb.connect('data/ekou.duckdb', read_o
 
 Si una prueba de datos falla (por ejemplo, una cédula sin seudonimizar o un contrato que se pierde entre capas), el comando termina con código 1 y el corte no se publica.
 
+Por último, `export` escribe los archivos abiertos del corte en `data/publicacion/<corte>/`: `contratos.parquet`, `mapa_municipios` y `calidad_corte` en Parquet y CSV, y un `resumen.md` con el reporte de calidad. Antes de exportar comprueba que la base contenga ese mismo corte.
+
+```bash
+uv run ekou-pipeline export --corte 2026-11
+```
+
+## Ejecución mensual
+
+El workflow [`corte-mensual`](../.github/workflows/corte-mensual.yml) corre el día 1 de cada mes a las 11:17 UTC en GitHub Actions: extrae las cinco fuentes, transforma, exporta y publica el Release `corte-AAAA-MM` con los archivos y el reporte de calidad.
+
+- **Reintentar o reprocesar un mes:** Actions → *corte-mensual* → *Run workflow*, con el corte `AAAA-MM` (vacío = mes actual). Lo ya extraído se guarda en la caché de Actions, así que un reintento solo baja las particiones que faltan. Si el Release ya existe, se reemplazan sus archivos.
+- **Si falla:** no se publica nada, se mantiene el corte anterior y se abre (o se comenta) un issue `Falló el corte mensual AAAA-MM` con el enlace a la ejecución. Los logs de dbt y el reporte de extracción quedan como artefacto de la ejecución durante 90 días.
+- **Secretos del repositorio:** `EKOU_PSEUDONYM_KEY` (obligatorio) y `EKOU_SOCRATA_APP_TOKEN` (recomendado).
+- Solo se publica desde `main`; desde otra rama la ejecución sirve de ensayo.
+
 Varios datasets de SECOP se reconstruyen completos a diario en origen (SECOP II Contratos hacia las 02:43, hora de Colombia). Si eso ocurre en medio de una partición, el pipeline lo detecta con la cabecera `X-SODA2-Truth-Last-Modified` y vuelve a extraer la partición completa, para no mezclar dos versiones del dataset.
 
 ## Configuración
@@ -98,6 +113,7 @@ src/ekou_pipeline/
 ├── config.py      # configuración validada (pydantic-settings)
 ├── log_config.py  # logs estructurados en JSON
 ├── transform.py   # ejecuta dbt para un corte
+├── publish.py     # exporta el corte a Parquet y CSV para publicarlo
 ├── seudonimo.py   # HMAC-SHA256 de los documentos de personas naturales
 ├── dbt_plugin.py  # expone ekou_seudonimo() dentro de DuckDB
 └── cli.py         # comando ekou-pipeline
