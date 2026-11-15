@@ -10,10 +10,9 @@ La estructura replica las rutas del bucket R2, así un mismo directorio sirve pa
 R2 local (``wrangler``) y el de producción.
 """
 
-import calendar
 import json
 import re
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
@@ -23,6 +22,8 @@ import structlog
 log = structlog.get_logger(__name__)
 
 GEOMETRIA = "mgn-2025"
+# Hora de Colombia (UTC-5, sin horario de verano): la fecha que ve la ciudadanía.
+COLOMBIA = timezone(timedelta(hours=-5))
 
 FUENTES: tuple[dict[str, str], ...] = (
     {
@@ -83,16 +84,36 @@ def nombre_visible(nombre: str) -> str:
     return _PALABRA.sub(reemplazo, texto)
 
 
-def fecha_corte(corte: str) -> str:
-    """Último día incluido en el corte ``AAAA-MM``."""
-    anio, mes = (int(p) for p in corte.split("-"))
-    return f"{corte}-{calendar.monthrange(anio, mes)[1]:02d}"
+def fecha_de_los_datos(conn: duckdb.DuckDBPyConnection, bronze_dir: Path, corte: str) -> date:
+    """Día (hora de Colombia) en que se extrajo la fuente menos reciente del corte.
+
+    Es la fecha hasta la que los datos están al día: no el último día del mes, que puede
+    no haber llegado todavía.
+    """
+    patron = (bronze_dir / f"corte={corte}" / "*" / "*" / "*.parquet").as_posix()
+    try:
+        fila = conn.execute(
+            """
+            select min(extraido_en) from (
+                select fuente, max(cast(_extraido_en as timestamptz)) as extraido_en
+                from read_parquet(?, hive_partitioning = true)
+                group by fuente
+            )
+            """,
+            [patron],
+        ).fetchone()
+    except duckdb.IOException as error:
+        raise ValueError(f"no hay datos de bronze para el corte {corte}") from error
+    if fila is None or fila[0] is None:
+        raise ValueError(f"no hay datos de bronze para el corte {corte}")
+    extraido: datetime = fila[0]
+    return extraido.astimezone(COLOMBIA).date()
 
 
-def corte_vigente(corte: str, publicado_en: datetime) -> dict[str, Any]:
+def corte_vigente(corte: str, fecha_datos: date, publicado_en: datetime) -> dict[str, Any]:
     return {
         "corte": corte,
-        "fechaCorte": fecha_corte(corte),
+        "fechaCorte": fecha_datos.isoformat(),
         "publicadoEn": publicado_en.astimezone(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "geometria": GEOMETRIA,
         "fuentes": list(FUENTES),
@@ -137,6 +158,7 @@ def export_mapa(
     conn: duckdb.DuckDBPyConnection,
     *,
     corte: str,
+    fecha_datos: date,
     out_dir: Path,
     publicado_en: datetime | None = None,
 ) -> list[Path]:
@@ -144,7 +166,7 @@ def export_mapa(
     publicado_en = publicado_en or datetime.now(tz=UTC)
     archivos = {
         out_dir / corte / "mapa" / "municipios.json": municipios_del_corte(conn, corte),
-        out_dir / corte / "corte.json": corte_vigente(corte, publicado_en),
+        out_dir / corte / "corte.json": corte_vigente(corte, fecha_datos, publicado_en),
         # El puntero va de último: solo apunta al corte cuando sus archivos ya existen.
         out_dir / "latest.json": {"corte": corte},
     }

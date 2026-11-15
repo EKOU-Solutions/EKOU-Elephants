@@ -22,7 +22,7 @@ from ekou_pipeline.bronze import extract_dataset
 from ekou_pipeline.catalog import CATALOG
 from ekou_pipeline.config import Settings
 from ekou_pipeline.log_config import configure_logging
-from ekou_pipeline.mapa import export_mapa
+from ekou_pipeline.mapa import export_mapa, fecha_de_los_datos
 from ekou_pipeline.socrata import SocrataClient
 from ekou_pipeline.transform import run_transform
 
@@ -98,7 +98,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.command == "export-mapa":
         out_dir = args.out or settings.data_dir / "r2" / "datos"
         with duckdb.connect(str(settings.data_dir / "ekou.duckdb"), read_only=True) as conn:
-            paths = export_mapa(conn, corte=args.corte, out_dir=out_dir)
+            fecha = fecha_de_los_datos(conn, settings.data_dir / "bronze", args.corte)
+            paths = export_mapa(conn, corte=args.corte, fecha_datos=fecha, out_dir=out_dir)
         sys.stdout.write("".join(f"{p.as_posix()}\n" for p in paths))
         return 0
 

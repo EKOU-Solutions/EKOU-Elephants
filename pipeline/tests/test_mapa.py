@@ -1,12 +1,14 @@
 import json
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from pathlib import Path
 
 import duckdb
+import pyarrow as pa
+import pyarrow.parquet as pq
 import pytest
 
 from ekou_pipeline.cli import main
-from ekou_pipeline.mapa import export_mapa, fecha_corte, nombre_visible
+from ekou_pipeline.mapa import export_mapa, fecha_de_los_datos, nombre_visible
 
 
 @pytest.mark.parametrize(
@@ -30,9 +32,31 @@ def test_official_names_become_readable(oficial: str, visible: str) -> None:
     assert nombre_visible(oficial) == visible
 
 
-def test_cut_date_is_the_last_day_of_the_month() -> None:
-    assert fecha_corte("2026-11") == "2026-11-30"
-    assert fecha_corte("2028-02") == "2028-02-29"
+def _bronze(data_dir: Path, extracciones: dict[str, str], corte: str = "2026-11") -> None:
+    for fuente, extraido_en in extracciones.items():
+        ruta = data_dir / "bronze" / f"corte={corte}" / f"fuente={fuente}" / "particion=todo"
+        ruta.mkdir(parents=True)
+        pq.write_table(pa.table({"_extraido_en": [extraido_en]}), ruta / "part-00000.parquet")
+
+
+def test_data_date_is_the_oldest_extraction_in_colombian_time(tmp_path: Path) -> None:
+    # 00:30 UTC del 8 de noviembre son las 19:30 del 7 de noviembre en Colombia.
+    _bronze(
+        tmp_path,
+        {
+            "divipola": "2026-11-08T00:30:35+00:00",
+            "secop_contratos": "2026-11-08T00:49:03+00:00",
+            "secop_i": "2026-11-09T15:00:00+00:00",
+        },
+    )
+    with duckdb.connect() as conn:
+        assert fecha_de_los_datos(conn, tmp_path / "bronze", "2026-11") == date(2026, 11, 7)
+
+
+def test_data_date_requires_bronze(tmp_path: Path) -> None:
+    _bronze(tmp_path, {"divipola": "2026-10-02T00:00:00+00:00"}, corte="2026-10")
+    with duckdb.connect() as conn, pytest.raises(ValueError, match="2026-11"):
+        fecha_de_los_datos(conn, tmp_path / "bronze", "2026-11")
 
 
 def _warehouse(path: Path, corte: str = "2026-11") -> None:
@@ -57,7 +81,11 @@ def test_export_writes_the_contract_shape(tmp_path: Path) -> None:
     out = tmp_path / "r2"
     with duckdb.connect(str(database), read_only=True) as conn:
         paths = export_mapa(
-            conn, corte="2026-11", out_dir=out, publicado_en=datetime(2026, 11, 7, tzinfo=UTC)
+            conn,
+            corte="2026-11",
+            fecha_datos=date(2026, 11, 7),
+            out_dir=out,
+            publicado_en=datetime(2026, 11, 8, 2, tzinfo=UTC),
         )
 
     assert [p.relative_to(out).as_posix() for p in paths] == [
@@ -78,8 +106,8 @@ def test_export_writes_the_contract_shape(tmp_path: Path) -> None:
     assert municipios["municipios"][1]["contratosUbicados"] is None
 
     corte = json.loads((out / "2026-11/corte.json").read_text("utf-8"))
-    assert corte["fechaCorte"] == "2026-11-30"
-    assert corte["publicadoEn"] == "2026-11-07T00:00:00Z"
+    assert corte["fechaCorte"] == "2026-11-07"
+    assert corte["publicadoEn"] == "2026-11-08T02:00:00Z"
     assert corte["geometria"] == "mgn-2025"
     assert {f["id"] for f in corte["fuentes"]} >= {"jbjy-vk9h", "gdxc-w37w", "mgn-2025"}
     assert json.loads((out / "latest.json").read_text("utf-8")) == {"corte": "2026-11"}
@@ -92,7 +120,7 @@ def test_export_refuses_another_cut(tmp_path: Path) -> None:
         duckdb.connect(str(database), read_only=True) as conn,
         pytest.raises(ValueError, match="2026-10"),
     ):
-        export_mapa(conn, corte="2026-11", out_dir=tmp_path / "r2")
+        export_mapa(conn, corte="2026-11", fecha_datos=date(2026, 11, 7), out_dir=tmp_path / "r2")
     assert not (tmp_path / "r2").exists()
 
 
@@ -100,7 +128,9 @@ def test_cli_exports_to_the_local_bucket(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
     _warehouse(tmp_path / "ekou.duckdb")
+    _bronze(tmp_path, {"divipola": "2026-11-08T00:30:35+00:00"})
     monkeypatch.setenv("EKOU_DATA_DIR", str(tmp_path))
     assert main(["export-mapa", "--corte", "2026-11"]) == 0
-    assert (tmp_path / "r2/datos/latest.json").exists()
+    corte = json.loads((tmp_path / "r2/datos/2026-11/corte.json").read_text("utf-8"))
+    assert corte["fechaCorte"] == "2026-11-07"
     assert len(capsys.readouterr().out.splitlines()) == 3

@@ -12,7 +12,7 @@ export interface Fuente {
 export interface CorteVigente {
   /** Monthly cut, "AAAA-MM". */
   corte: string;
-  /** Last day included, ISO date. */
+  /** Date the data is current to (Colombian time), ISO date. */
   fechaCorte: string;
   /** ISO datetime (UTC) when the pipeline published the cut. */
   publicadoEn: string;

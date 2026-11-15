@@ -6,7 +6,7 @@ import type { Queryable } from './db';
 // Real values from cut 2026-11 (docs/design/pages/map/contract.md).
 const corte = {
   corte: '2026-11',
-  fechaCorte: '2026-11-30',
+  fechaCorte: '2026-11-07',
   publicadoEn: '2026-11-15T17:43:18Z',
   geometria: 'mgn-2025',
   fuentes: [

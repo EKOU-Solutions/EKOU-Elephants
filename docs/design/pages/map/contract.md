@@ -25,7 +25,7 @@ DANE MGN 2025 + DIVIPOLA + SECOP (ekou.duckdb) → pipeline export → R2 (local
 | Field names | Spanish camelCase, as in the existing API (`presupuestoAsignadoCentavos`) | Project convention |
 | Municipality ID | DIVIPOLA 5-digit string, with its leading zero (`"05001"`) | DANE DIVIPOLA |
 | Department ID | DIVIPOLA 2-digit string, plus ISO 3166-2 (`"CO-ANT"`) | ISO 3166-2:CO (ADR 0002, decision 9) |
-| Dates | ISO 8601 (`"2026-11-30"`, `"2026-11-15T12:00:00Z"`) | ISO 8601 |
+| Dates | ISO 8601 (`"2026-11-07"`, `"2026-11-15T12:00:00Z"`) | ISO 8601 |
 | Cut | `AAAA-MM` | ADR 0002 |
 | Geometry | TopoJSON, WGS 84 lon/lat, shared borders, quantised. Simplified only for display, with source and licence attributed | TopoJSON spec; RFC 7946 coordinate order; DANE CC BY 4.0 |
 | Missing data | `null`, never `0`. The UI shows "Sin datos" with the grey hatch | `visual-direction.md` |
@@ -40,7 +40,7 @@ Answers "which data am I looking at?". Every screen shows its source and date fr
 ```ts
 interface CorteVigente {
   corte: string;              // "2026-11"
-  fechaCorte: string;         // last day included, ISO date: "2026-11-30"
+  fechaCorte: string;         // date the data is current to (Colombian time), ISO date: "2026-11-07"
   publicadoEn: string;        // ISO datetime UTC when the pipeline published it
   geometria: string;          // geometry version to request: "mgn-2025"
   fuentes: Fuente[];          // every source the map uses, in display order
@@ -130,7 +130,8 @@ interface MunicipioSeleccionado extends MunicipioDelMapa {
 
 | Field | Origin | Phase |
 | --- | --- | --- |
-| `corte`, `fechaCorte`, `publicadoEn` | Pipeline publication (`latest.json`, workflow `corte-mensual`) | MVP |
+| `corte`, `publicadoEn` | Pipeline publication (`latest.json`, workflow `corte-mensual`) | MVP |
+| `fechaCorte` | Day (Colombian time) the least recent source of the cut was extracted (bronze `_extraido_en`). Changed 2026-11-15: the approved draft said "last day of the month", which shows a future date while the month runs | MVP |
 | `fuentes[]` | Pipeline catalogue (`docs/fuentes-de-datos.md`) | MVP |
 | `geometria` (shapes) | DANE MGN 2025, `MGN2025_ADM_MPIO_GRAFICO_(geojson).zip` from the [geoportal](https://geoportal.dane.gov.co/servicios/descarga-y-metadatos/datos-geoestadisticos/), CC BY 4.0, last modified 2026-04-15; `MPIO_CDPMP` → `codigo` | MVP |
 | `codigo`, `nombre`, `departamento.codigo`, `departamento.nombre` | DIVIPOLA `gdxc-w37w` (`cod_mpio`, `nom_mpio`, `cod_dpto`, `dpto`) | MVP |
@@ -149,7 +150,7 @@ interface MunicipioSeleccionado extends MunicipioDelMapa {
 ```json
 {
   "corte": "2026-11",
-  "fechaCorte": "2026-11-30",
+  "fechaCorte": "2026-11-07",
   "publicadoEn": "2026-11-07T22:43:00Z",
   "geometria": "mgn-2025",
   "fuentes": [
