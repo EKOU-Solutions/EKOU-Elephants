@@ -3,10 +3,13 @@ import { componentDocs, levelOf, TERRITORIES } from '../../../../.storybook/cata
 import { formatNumber } from '../format';
 import { DataTable, type DataTableRow } from './DataTable';
 
-const percent = (part: number, total: number, decimals = 1) => `${formatNumber((100 * part) / total, decimals)}%`;
+const percent = (part: number, total: number, decimals = 1) =>
+  `${formatNumber((100 * part) / total, decimals)}%`;
 
 /** Fictional ranking: departments with the highest share of flagged contracts. */
-const analyzed = TERRITORIES.flatMap((t) => (t.analyzed && t.flagged !== null ? [{ ...t, flagged: t.flagged }] : []));
+const analyzed = TERRITORIES.flatMap((t) =>
+  t.analyzed && t.flagged !== null ? [{ ...t, flagged: t.flagged }] : [],
+);
 
 const rankingRows = (count: number): DataTableRow[] =>
   analyzed
@@ -16,7 +19,11 @@ const rankingRows = (count: number): DataTableRow[] =>
       id: t.id,
       header: t.name,
       level: levelOf(t),
-      cells: [percent(t.flagged, t.analyzed), `${t.flagged} de ${t.analyzed}`, percent(t.analyzed, t.available, 0)],
+      cells: [
+        percent(t.flagged, t.analyzed),
+        `${t.flagged} de ${t.analyzed}`,
+        percent(t.analyzed, t.available, 0),
+      ],
     }));
 
 const meta = {
@@ -50,7 +57,12 @@ export const WithUnknown: Story = {
     caption: 'Departamentos seleccionados · datos ficticios',
     rows: [
       ...rankingRows(2),
-      { id: 'CO-VAU', header: 'Vaupés', level: 'unknown', cells: ['Sin datos', '0 analizados', '0% de 80'] },
+      {
+        id: 'CO-VAU',
+        header: 'Vaupés',
+        level: 'unknown',
+        cells: ['Sin datos', '0 analizados', '0% de 80'],
+      },
     ],
   },
 };

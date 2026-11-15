@@ -32,8 +32,10 @@ type Props = {
 export function DataTable({ caption, columns, rows }: Props) {
   const [headerColumn, ...valueColumns] = columns;
   return (
-    // A scrollable region must be focusable so keyboard users can scroll it (WCAG 2.1.1).
-    <div role="region" aria-label={caption} tabIndex={0} className={styles.scroll}>
+    // A labelled <section> is a region landmark. It must be focusable so keyboard users can
+    // scroll it horizontally (WCAG 2.1.1, axe scrollable-region-focusable).
+    // biome-ignore lint/a11y/noNoninteractiveTabindex: scrollable region needs keyboard focus.
+    <section aria-label={caption} tabIndex={0} className={styles.scroll}>
       <table className={styles.table}>
         <caption className={styles.caption}>{caption}</caption>
         <thead>
@@ -54,7 +56,10 @@ export function DataTable({ caption, columns, rows }: Props) {
                 {row.header}
               </th>
               {row.cells.map((value, i) => (
-                <td key={valueColumns[i]?.label ?? i} className={valueColumns[i]?.numeric ? styles.numeric : undefined}>
+                <td
+                  key={valueColumns[i]?.label ?? i}
+                  className={valueColumns[i]?.numeric ? styles.numeric : undefined}
+                >
                   {value}
                 </td>
               ))}
@@ -62,6 +67,6 @@ export function DataTable({ caption, columns, rows }: Props) {
           ))}
         </tbody>
       </table>
-    </div>
+    </section>
   );
 }

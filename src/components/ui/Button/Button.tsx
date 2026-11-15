@@ -26,7 +26,11 @@ export function Button({ variant, label, withIcon, disabled, loading, onClick }:
       aria-busy={loading || undefined}
       onClick={onClick}
     >
-      {loading ? <LoaderCircle aria-hidden="true" /> : withIcon ? <Search aria-hidden="true" /> : null}
+      {loading ? (
+        <LoaderCircle aria-hidden="true" />
+      ) : withIcon ? (
+        <Search aria-hidden="true" />
+      ) : null}
       {loading ? 'Consultando…' : label}
     </button>
   );

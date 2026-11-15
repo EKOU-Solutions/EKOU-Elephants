@@ -6,7 +6,11 @@ const meta = {
   title: 'Componentes/UI/Campo de formulario',
   component: Field,
   tags: ['autodocs'],
-  parameters: componentDocs('Field', 'Recoge un dato para filtrar o buscar. Siempre con etiqueta visible. Evita «Dato inválido» sin explicación.', 'src/components/ui/Field/'),
+  parameters: componentDocs(
+    'Field',
+    'Recoge un dato para filtrar o buscar. Siempre con etiqueta visible. Evita «Dato inválido» sin explicación.',
+    'src/components/ui/Field/',
+  ),
   args: {
     label: 'Departamento',
     kind: 'select',
@@ -22,5 +26,11 @@ type Story = StoryObj<typeof meta>;
 export const SelectWithHelp: Story = { name: 'Lista con ayuda' };
 export const WithError: Story = {
   name: 'Con error',
-  args: { label: 'Año', kind: 'input', value: '20255', help: undefined, error: 'Escribe un año de 4 dígitos, por ejemplo 2025.' },
+  args: {
+    label: 'Año',
+    kind: 'input',
+    value: '20255',
+    help: undefined,
+    error: 'Escribe un año de 4 dígitos, por ejemplo 2025.',
+  },
 };

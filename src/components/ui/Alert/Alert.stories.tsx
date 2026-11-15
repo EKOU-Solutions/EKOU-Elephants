@@ -15,7 +15,8 @@ const meta = {
     variant: 'inline',
     tone: 'danger',
     title: 'No cargaron los contratos',
-    message: 'Revisa tu conexión y vuelve a intentarlo. El mapa se mostrará cuando lleguen los datos.',
+    message:
+      'Revisa tu conexión y vuelve a intentarlo. El mapa se mostrará cuando lleguen los datos.',
     action: 'Volver a intentar',
   },
   argTypes: {
@@ -30,11 +31,21 @@ type Story = StoryObj<typeof meta>;
 export const InlineError: Story = { name: 'En línea · error' };
 export const InlineSuccess: Story = {
   name: 'En línea · confirmación',
-  args: { tone: 'success', title: 'Filtro aplicado: Antioquia', message: 'Todo lo que ves ahora es de Antioquia.', action: undefined },
+  args: {
+    tone: 'success',
+    title: 'Filtro aplicado: Antioquia',
+    message: 'Todo lo que ves ahora es de Antioquia.',
+    action: undefined,
+  },
 };
 export const InlineInfo: Story = {
   name: 'En línea · explicación',
-  args: { tone: 'info', title: 'Así contamos', message: 'Un contrato con varias señales cuenta una sola vez.', action: undefined },
+  args: {
+    tone: 'info',
+    title: 'Así contamos',
+    message: 'Un contrato con varias señales cuenta una sola vez.',
+    action: undefined,
+  },
 };
 export const CoverageBanner: Story = {
   name: 'Banner · cobertura parcial',
@@ -59,5 +70,11 @@ export const SampleDataBanner: Story = {
 };
 export const Note: Story = {
   name: 'Nota compacta',
-  args: { variant: 'note', tone: 'warning', title: 'Cobertura parcial: 120 de 150', message: undefined, action: undefined },
+  args: {
+    variant: 'note',
+    tone: 'warning',
+    title: 'Cobertura parcial: 120 de 150',
+    message: undefined,
+    action: undefined,
+  },
 };

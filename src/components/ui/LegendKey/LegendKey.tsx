@@ -12,5 +12,10 @@ type Props = {
 
 /** Cuadro de color de una leyenda. Es decorativo: el texto que lo acompaña lleva el significado. */
 export function LegendKey({ kind, className }: Props) {
-  return <span className={`${styles.key} ${styles[kind]}${className ? ` ${className}` : ''}`} aria-hidden="true" />;
+  return (
+    <span
+      className={`${styles.key} ${styles[kind]}${className ? ` ${className}` : ''}`}
+      aria-hidden="true"
+    />
+  );
 }

@@ -21,7 +21,7 @@
   width: 100%;
 }
 
-.control[aria-invalid='true'] {
+.control[aria-invalid="true"] {
   border: 2px solid var(--el-color-danger);
 }
 

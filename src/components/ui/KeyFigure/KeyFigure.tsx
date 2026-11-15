@@ -30,7 +30,9 @@ export function KeyFigure({ label, part, total, context, source }: Props) {
           </>
         )}
       </p>
-      <p className={styles.context}>{context.replace('{part}', String(part)).replace('{total}', String(total))}</p>
+      <p className={styles.context}>
+        {context.replace('{part}', String(part)).replace('{total}', String(total))}
+      </p>
       <p className={styles.source}>{source}</p>
     </div>
   );

@@ -3,7 +3,12 @@ import { Button } from '../Button/Button';
 import styles from './Alert.module.css';
 
 type Tone = 'info' | 'warning' | 'danger' | 'success';
-const ICON = { info: Info, warning: TriangleAlert, danger: CircleAlert, success: CircleCheck } as const;
+const ICON = {
+  info: Info,
+  warning: TriangleAlert,
+  danger: CircleAlert,
+  success: CircleCheck,
+} as const;
 
 type Props = {
   /** Banner: afecta toda la vista (uno a la vez, arriba). En línea: afecta una sección. Nota: matiza una cifra. */
@@ -45,7 +50,10 @@ export function Alert({ variant, tone, title, message, action, actionHref, onAct
     );
   }
   return (
-    <div className={`${styles.alert} ${styles[tone]}`} role={tone === 'danger' ? 'alert' : undefined}>
+    <div
+      className={`${styles.alert} ${styles[tone]}`}
+      role={tone === 'danger' ? 'alert' : undefined}
+    >
       <span className={styles.badge}>
         <Icon aria-hidden="true" />
       </span>

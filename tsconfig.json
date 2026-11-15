@@ -14,5 +14,12 @@
     "resolveJsonModule": true,
     "types": ["vite/client", "node"]
   },
-  "include": [".storybook", "worker-configuration.d.ts", "scripts/cli-app.ts", "src", "tests", "vite.config.ts"]
+  "include": [
+    ".storybook",
+    "worker-configuration.d.ts",
+    "scripts/cli-app.ts",
+    "src",
+    "tests",
+    "vite.config.ts"
+  ]
 }

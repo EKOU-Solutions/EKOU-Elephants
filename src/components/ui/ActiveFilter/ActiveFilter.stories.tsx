@@ -6,7 +6,11 @@ const meta = {
   title: 'Componentes/UI/Filtro activo',
   component: ActiveFilter,
   tags: ['autodocs'],
-  parameters: componentDocs('Active filter', 'Muestra un filtro aplicado y permite quitarlo con un toque. Anuncia el cambio al quitarlo.', 'src/components/ui/ActiveFilter/'),
+  parameters: componentDocs(
+    'Active filter',
+    'Muestra un filtro aplicado y permite quitarlo con un toque. Anuncia el cambio al quitarlo.',
+    'src/components/ui/ActiveFilter/',
+  ),
   args: { value: 'Antioquia' },
 } satisfies Meta<typeof ActiveFilter>;
 
