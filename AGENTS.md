@@ -13,3 +13,10 @@ Todo el contenido de EKOU Elephants debe escribirse en español, ya que el produ
 ## Fuente compartida de instrucciones
 
 `AGENTS.md` es la fuente de estas instrucciones para Codex. `CLAUDE.md` debe ser un enlace simbólico relativo a `AGENTS.md` para que Claude use las mismas reglas sin mantener copias separadas.
+
+## Revisión de código y trabajo con agentes
+
+- Al revisar un PR o implementar una tarea, sigue las [guías de revisión](docs/guias-revision.md): comenta solo correctitud, seguridad, pruebas faltantes y violaciones de reglas del repositorio.
+- Trabaja con el flujo de Git de [desarrollo](docs/desarrollo.md#flujo-de-git): ramas `feature/TASK-<nn>-<descripcion>` o `fix/TASK-<nn>-<descripcion>` desde `main` y PR con `Closes #<issue>`.
+- Antes de entregar, ejecuta `npm run check` (y las pruebas del pipeline si lo tocas) y reporta el resultado.
+- No modifiques `.github/workflows/` ni secretos. Cómo se activa cada agente: [agentes de IA](docs/agentes-ia.md).
