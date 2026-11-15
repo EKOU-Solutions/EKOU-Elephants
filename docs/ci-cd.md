@@ -8,7 +8,7 @@ Implementa [TASK-04 · Configurar CI y CD (#5)](https://github.com/EKOU-Solution
 flowchart LR
   pr[PR abierto o actualizado] --> ci[app-ci: Biome, tipos, pruebas, build]
   ci --> prev[app-preview: Worker de preview en Cloudflare]
-  prev --> com[Comentario fijado: URL, base y datos]
+  prev --> com[Comentario del preview: URL, base y datos]
   com -- marcar casillas --> prev
   merge[Merge a main] --> ci2[app-ci] --> dev[Migraciones en Neon dev] --> aprob{Aprobación manual} --> prod[Producción: migraciones + Worker]
   cerrar[PR cerrado] --> limpiar[Borrar preview y rama de Neon]
@@ -17,7 +17,7 @@ flowchart LR
 | Workflow | Cuándo | Qué hace |
 | --- | --- | --- |
 | `app-ci.yml` | Lo llaman los otros dos; también manual | Lint y formato con Biome, tipos, pruebas (incluida integración con PostgreSQL 17 desechable), build y validación del paquete de Wrangler. No usa secretos, así que también corre en PRs desde forks. |
-| `app-preview.yml` | PR abierto, actualizado, reabierto o cerrado; edición del comentario de control | Despliega el preview del PR, publica y actualiza el comentario fijado y limpia al cerrar. |
+| `app-preview.yml` | PR abierto, actualizado, reabierto o cerrado; edición del comentario de control | Despliega el preview del PR, publica y actualiza el comentario del preview y limpia al cerrar. |
 | `app-deploy.yml` | Push a `main` | CI, migraciones en la base compartida `dev` y despliegue a producción tras la aprobación. |
 
 ## Comprobaciones locales
@@ -36,9 +36,9 @@ Biome es la única herramienta de lint y formato de la app. Su alcance es `src/`
 
 ## Preview por PR
 
-Cada PR desde una rama de este repositorio (no forks ni Dependabot) despliega un **Preview de Cloudflare Workers** llamado `pr-<número>`, con la app y la API juntas. Al terminar, el workflow publica en el PR un comentario **«Preview de este PR»** e intenta fijarlo.
+Cada PR desde una rama de este repositorio (no forks ni Dependabot) despliega un **Preview de Cloudflare Workers** llamado `pr-<número>`, con la app y la API juntas. Al terminar, el workflow publica en el PR un comentario **«Preview de este PR»**. Es uno solo por PR y se actualiza en su lugar en cada despliegue.
 
-> Fijar comentarios está documentado para issues (GitHub, febrero de 2026). En PRs no está verificado. Si la API lo rechaza, el comentario queda sin fijar y el log lo avisa.
+> GitHub no permite fijar comentarios en PRs: solo en issues (la API responde «issue cannot be a pull request», verificado el 2026-11-15).
 
 El comentario muestra la URL, el commit desplegado, la base de datos y los datos del corte que usa el preview. También tiene dos casillas. Al marcar o desmarcar una, se vuelve a desplegar el último commit del PR con esa configuración:
 
@@ -102,5 +102,4 @@ Verificado el 2026-11-15 con Biome 2.6.8 y Wrangler 4.158.0 instalados, actionli
 - [Secretos de Workers subidos con el código](https://developers.cloudflare.com/workers/configuration/secrets/)
 - [Permisos de Wrangler](https://developers.cloudflare.com/workers/authorization/workers/#wrangler)
 - [Environments y revisores en GitHub](https://docs.github.com/en/actions/how-tos/deploy/configure-and-manage-deployments/manage-environments)
-- [Comentarios fijados en issues (changelog de GitHub, 2026-02-05)](https://github.blog/changelog/2026-02-05-pinned-comments-on-github-issues/)
 - [neondatabase/create-branch-action](https://github.com/neondatabase/create-branch-action)
