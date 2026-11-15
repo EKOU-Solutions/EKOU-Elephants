@@ -50,7 +50,11 @@ Anuncia la ruta elegida en una línea antes de empezar, con el motivo.
 Storybook es la referencia visual viva; la guía HTML (`preview.html`, `examples.html`) y las rondas son seguimiento histórico y no se amplían.
 
 - Todo componente que se crea o se modifica con esta skill termina con su historia en Storybook, en español y entendible para personas: para qué sirve, cuándo usarlo, qué evitar, accesibilidad, y una historia por estado (normal, «Sin datos» o vacío, error, carga, y 320 px si aplica).
-- Componente React real: la historia va al lado, `src/**/ComponentName.stories.tsx`, con `tags: ['autodocs']`. El código va en inglés (componente, props, variables, archivos); el título (`Componentes/Núcleo/…` o `Componentes/Candidatos/…`), el `name` de las historias y las descripciones van en español. Si reemplaza una especificación de `.storybook/catalog/`, se retira esa especificación.
+- Dónde vive cada componente React (una carpeta por componente, con su historia al lado):
+  - **UI**, puro y transversal: `src/components/ui/<Component>/`, título `Componentes/UI/<Nombre>`.
+  - **De página**, incluidos los grandes: `src/modules/<módulo>/ui/<Component>/`, título `Componentes/<Página>/<Nombre>`.
+  - **Pantalla completa**: `src/modules/<módulo>/ui/<Page>Page/`, título `Pantallas/<Página>`.
+- La historia va al lado: `ComponentName.stories.tsx`, con `tags: ['autodocs']`. El código va en inglés (componente, props, variables, archivos); el título, el `name` de las historias y las descripciones van en español. Si reemplaza una especificación de `.storybook/catalog/`, se retira esa especificación.
 - Un cambio de tokens, principios o reglas se refleja en la página MDX correspondiente de `.storybook/docs/`.
 - Validación mínima: `npm run build-storybook` sin errores, panel de accesibilidad sin fallas en claro y oscuro, y sin desbordamiento horizontal a 320 px.
 

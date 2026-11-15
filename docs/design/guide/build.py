@@ -327,6 +327,8 @@ for item in manifest['components']:
         assert cls in defined, (item['name'], cls)
     for tok in item.get('tokens', []):
         assert tok in tokens_css, (item['name'], tok)
+    if 'component' in item:  # React component in the app, relative to the repository root
+        assert (folder.parents[2] / item['component']).is_file(), (item['name'], item['component'])
 used = set(re.findall(r'var\((--el-[a-z0-9-]+)\)', components_css))
 missing = sorted(v for v in used if v + ':' not in tokens_css)
 assert not missing, missing

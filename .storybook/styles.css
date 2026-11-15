@@ -26,7 +26,7 @@ body {
   margin: 0;
 }
 
-:is(a, button, input, select, summary):focus-visible {
+:is(a, button, input, select, summary, .sb-el-scroll, .el-table-scroll):focus-visible {
   outline: var(--el-focus-width) solid var(--el-color-focus);
   outline-offset: var(--el-focus-offset);
 }
@@ -50,6 +50,12 @@ a {
 
 .sb-el code {
   font-size: 13px;
+  background: transparent;
+  border: 0;
+}
+
+.sb-el-scroll {
+  overflow-x: auto;
 }
 
 .sb-el-row {
@@ -168,7 +174,7 @@ a {
 
 .sb-el-spacing li {
   display: grid;
-  grid-template-columns: 56px 160px auto;
+  grid-template-columns: 56px minmax(0, 1fr) auto;
   align-items: center;
   gap: 12px;
 }
@@ -268,4 +274,35 @@ a {
     grid-template-columns: 1fr;
     gap: 4px;
   }
+}
+
+/* Docs pages at 320 px: inline code, prompt examples and table cells wrap instead of overflowing. */
+.sbdocs-content :not(pre) > code {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.sbdocs-content pre,
+.sbdocs-content pre code,
+.sbdocs-content pre span,
+.sbdocs-content [class*='language-'] {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.sbdocs-content table:not(.sb-el-table, .el-table, .docblock-argstable) :is(th, td) {
+  overflow-wrap: anywhere;
+}
+
+/* Storybook's dark docs theme stripes every other table row (#454c54); our muted text and links fail on it.
+   Rows keep the page surface, whose pairs are checked by build.py. */
+.sbdocs-content table:not(.docblock-argstable) tr:nth-of-type(n) {
+  background-color: transparent;
+}
+
+/* The props table (ArgsTable) scrolls inside its own box at 320 px; it holds focusable controls. */
+.sbdocs-content table.docblock-argstable {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
 }

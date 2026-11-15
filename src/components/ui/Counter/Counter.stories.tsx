@@ -1,14 +1,15 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { componentDocs } from '../shared';
+import { componentDocs } from '../../../../.storybook/catalog/shared';
 import { Counter } from './Counter';
 
 const meta = {
-  title: 'Componentes/Núcleo/Contador',
+  title: 'Componentes/UI/Contador',
   component: Counter,
   tags: ['autodocs'],
   parameters: componentDocs(
     'Counter',
     'Un número grande con su nombre debajo. Distingue tipos de señal de contratos: un contrato puede tener varias. Evita un número suelto en un círculo de color. Datos ficticios.',
+    'src/components/ui/Counter/',
   ),
   args: {
     counts: [

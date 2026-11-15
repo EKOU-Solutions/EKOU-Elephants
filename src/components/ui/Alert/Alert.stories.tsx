@@ -1,14 +1,15 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { componentDocs } from '../shared';
+import { componentDocs } from '../../../../.storybook/catalog/shared';
 import { Alert } from './Alert';
 
 const meta = {
-  title: 'Componentes/Núcleo/Alerta',
+  title: 'Componentes/UI/Alerta',
   component: Alert,
   tags: ['autodocs'],
   parameters: componentDocs(
     'Alert',
     'Avisa algo sobre la interfaz o la información: qué pasó y qué puede hacer la persona. El color está en el ícono y el borde; el texto queda en tinta. **No califica territorios.** Título que dice qué pasó y frase que dice qué hacer; no apiles alertas, no pidas disculpas ni culpes a la persona.',
+    'src/components/ui/Alert/',
   ),
   args: {
     variant: 'inline',

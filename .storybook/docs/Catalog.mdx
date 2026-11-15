@@ -7,11 +7,11 @@ import { CatalogTable } from '../blocks';
 
 Arma las pantallas solo con estas piezas. Cada componente tiene su página con propósito, controles, estados y accesibilidad.
 
-- **Núcleo**: aceptado con la Ronda 05 (guía v1.0).
-- **Candidato**: salió de las pantallas de ejemplo; se puede usar, pero la primera página que lo necesite lo confirma o lo descarta.
+- **Núcleo**: aceptado con la Ronda 05 (guía v1.0). Ya son componentes React de la app, en `src/components/ui/`, y se ven en **Componentes › UI**.
+- **Candidato**: se puede usar, pero la primera página que lo necesite lo confirma o lo descarta. Por ahora es una especificación (marcado y clases `el-*`) en **Componentes › Candidatos**.
 
 <CatalogTable />
 
-Hoy estas historias son la **especificación v1.0** (marcado y clases `el-*`), todavía no componentes React de la app. Cuando un componente se implementa con el flujo `elephants-design`, su historia pasa a vivir junto al componente en `src/` (ver [Cómo trabajamos](?path=/docs/cómo-trabajamos--docs)).
+Cuando una página confirma un candidato, se implementa como componente React con el flujo `elephants-design` y su historia pasa a vivir junto al componente: en `src/components/ui/` si es transversal, o en el módulo de la página si es propio de ella (ver [Cómo trabajamos](?path=/docs/cómo-trabajamos--docs)).
 
 ¿Ninguno sirve? No improvises: propón uno nuevo con la skill `elephants-design` (ruta *Construir una página*).

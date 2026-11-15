@@ -1,13 +1,15 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { componentDocs, LEVELS, RiskTag } from '../shared';
+import { componentDocs } from '../../../../.storybook/catalog/shared';
+import { LEVELS, RiskTag } from './RiskTag';
 
 const meta = {
-  title: 'Componentes/Núcleo/Etiqueta de riesgo',
+  title: 'Componentes/UI/Etiqueta de riesgo',
   component: RiskTag,
   tags: ['autodocs'],
   parameters: componentDocs(
     'Risk tag',
     'Nombra la categoría de un territorio, entidad o contrato. Va rellena con el color de riesgo y lleva un indicador de nivel (1, 2 o 3 barras) para que se entienda sin distinguir colores. **La categoría la calcula la metodología (TASK-07), nunca se elige a mano.** Normal: junto al nombre en listas, tablas y paneles. Grande: una sola vez, arriba de una ficha. Nunca «Seguro» ni «Limpio»; no debe parecer un botón.',
+    'src/components/ui/RiskTag/',
   ),
   args: { level: 'high', large: false },
   argTypes: { level: { control: 'inline-radio', options: LEVELS } },

@@ -3,8 +3,9 @@ import remarkGfm from 'remark-gfm';
 
 // Storybook is the living reference of the design system (guide v1.0 onwards).
 // - `.storybook/docs`: human-facing guidelines in Spanish (principles, foundations, workflow, history).
-// - `.storybook/catalog`: spec of the components accepted in guide v1.0 (markup + `el-*` classes).
-// - `src/**`: real React components; each one ships its `*.stories.tsx` next to it (`elephants-design` flow).
+// - `.storybook/catalog`: markup spec (`el-*` classes) of the candidate components that are not React components yet.
+// - `src/**`: real React components (`src/components/ui/` and each module's `ui/`); each one ships its
+//   `*.stories.tsx` next to it (`elephants-design` flow).
 const config: StorybookConfig = {
   stories: [
     '../.storybook/docs/**/*.mdx',

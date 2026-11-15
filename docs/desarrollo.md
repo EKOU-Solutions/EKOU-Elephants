@@ -37,7 +37,7 @@ Storybook es la referencia viva del sistema de diseño: lineamientos para person
 npm run storybook          # http://localhost:6006
 ```
 
-- Configuración y lineamientos: `.storybook/` (páginas MDX en `.storybook/docs/`, especificación del catálogo v1.0 en `.storybook/catalog/`).
+- Configuración y lineamientos: `.storybook/` (páginas MDX en `.storybook/docs/`, especificación de los candidatos en `.storybook/catalog/`). Los componentes del núcleo viven en `src/components/ui/`.
 - Los componentes React reales llevan su historia al lado: `src/**/ComponentName.stories.tsx`.
 - Los tokens y el catálogo siguen saliendo de `docs/design/guide/` (`tokens.json` → `build.py` → `tokens.css`); Storybook los importa, no los redefine.
 - Todo cambio de diseño pasa por la skill `elephants-design` (regla en `AGENTS.md`). Cómo entra un componente nuevo: página *Cómo trabajamos* dentro de Storybook.

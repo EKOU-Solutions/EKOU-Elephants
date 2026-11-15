@@ -65,6 +65,12 @@ flowchart TB
 
 Las pruebas unitarias viven junto al código (`*.test.ts`).
 
+### Componentes de la interfaz
+
+- `src/components/ui/<Component>/`: componentes puros y transversales (botón, alerta, campo, etiqueta de riesgo). No conocen ninguna página ni piden datos.
+- `src/modules/<módulo>/ui/<Component>/`: componentes de la página del módulo, incluidos los grandes, y la pantalla completa (`<Page>Page/`).
+- Cada carpeta trae su historia de Storybook al lado (`<Component>.stories.tsx`) con una historia por estado. Detalle en Storybook, página «Cómo trabajamos».
+
 ## Puertos y adaptadores
 
 | Parte | Responsabilidad | Ejemplo |

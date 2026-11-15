@@ -91,7 +91,7 @@ Para cada fila de la especificación:
    Itera hasta que el equipo lo apruebe. Luego agrégalo a la guía:
    - `components.css`;
    - `components.json`;
-   - su historia en Storybook: junto al componente en `src/` si ya es React, o en `.storybook/catalog/` mientras sea solo especificación.
+   - su historia en Storybook, al lado del componente: en `src/components/ui/<Component>/` si es puro y transversal, o en `src/modules/<módulo>/ui/<Component>/` si es de la página (también los grandes); `.storybook/catalog/` solo mientras sea especificación. Ver «Dónde vive un componente» en `.storybook/docs/HowWeWork.mdx`.
 
    Después ejecuta `build.py`, que falla si `components.json` no cuadra con el CSS o los tokens. Sube la versión menor de la guía y anota el cambio en su README. Nunca uses un componente en una página antes de que esté en el catálogo.
 4. Un token nuevo sigue el mismo camino: entra en `tokens.json` y `build.py` regenera `tokens.css` y comprueba el contraste. Nunca uses un hex suelto.

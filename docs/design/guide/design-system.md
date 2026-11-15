@@ -83,7 +83,7 @@ Un contrato con varias señales cuenta una sola vez en el numerador. Nunca se cl
 
 ## Componentes
 
-`components.json` es la lista completa y Storybook los documenta uno por uno. **Núcleo** (aceptados con la Ronda 05): Botón, Alerta (bloque, banner, nota en línea), Campo de formulario, Etiqueta de riesgo, Contador, Filtro activo, Cifra destacada, Tabla de datos, Mapa con leyenda. **Candidatos** (introducidos por las pantallas de ejemplo, pendientes de confirmación por una página real): Estado, Barra de cobertura, Desglose en barras, Avance frente a lo esperado, Señal.
+`components.json` es la lista completa y Storybook los documenta uno por uno. **Núcleo** (aceptados con la Ronda 05): Botón, Alerta (bloque, banner, nota en línea), Campo de formulario, Etiqueta de riesgo, Contador, Filtro activo, Cifra destacada, Tabla de datos. **Candidatos** (pendientes de confirmación por una página real): Mapa con leyenda, Estado, Barra de cobertura, Desglose en barras, Avance frente a lo esperado, Señal. El Mapa con leyenda entró al núcleo con la Ronda 05 y pasó a candidato el 2026-11-15 por decisión de Jouler: lo confirma o lo ajusta la página del Mapa.
 
 La página de cada componente en Storybook da su propósito, sus estados, qué hacer y qué evitar, los tokens que usa, su accesibilidad y el marcado para copiar.
 

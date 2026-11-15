@@ -23,11 +23,32 @@ La skill clasifica el pedido y elige la ruta más corta que es segura:
 
 Ninguna ruta publica, hace commit ni marca algo como aceptado sin la instrucción de una persona del equipo.
 
+## Dónde vive un componente
+
+Cada componente tiene su carpeta, con el componente y su historia al lado. Hay dos lugares, según quién lo usa:
+
+| Tipo | Carpeta | Título en Storybook | Ejemplos |
+| --- | --- | --- | --- |
+| **UI**: puro y transversal; no conoce ninguna página ni pide datos | `src/components/ui/<Component>/` | `Componentes/UI/<Nombre>` | Botón, Alerta, Campo, Etiqueta de riesgo, Contador |
+| **De página**: nace en una página, incluidos los grandes (paneles, secciones, el mapa) | `src/modules/<módulo>/ui/<Component>/` | `Componentes/<Página>/<Nombre>` | `src/modules/mapa/ui/TerritoryPanel/` → `Componentes/Mapa/Panel del territorio` |
+| **Pantalla**: la página completa, armada con los anteriores | `src/modules/<módulo>/ui/<Page>Page/` | `Pantallas/<Página>` | `Pantallas/Mapa` |
+
+```text
+src/components/ui/RiskTag/
+  RiskTag.tsx
+  RiskTag.stories.tsx
+src/modules/mapa/ui/TerritoryPanel/
+  TerritoryPanel.tsx
+  TerritoryPanel.stories.tsx
+```
+
+Un componente de página que otra página necesita se mueve a `src/components/ui/` solo si queda puro: recibe todo por props y no sabe de qué página viene.
+
 ## Cómo entra un componente a Storybook
 
 1. Nace en el flujo **Construir una página** y se aprueba.
-2. Se implementa como componente React en `src/` (por ejemplo, `src/ui/risk-tag/`) usando solo tokens `--el-*` y clases del catálogo.
-3. Se escribe su historia **al lado** del componente: `ComponentName.stories.tsx`, con `tags: ['autodocs']`. El código va en inglés (nombre del componente, props, variables y archivos); lo que lee una persona va en español: el título (`Componentes/Núcleo/…` o `Componentes/Candidatos/…`), el `name` de cada historia, la descripción de las props y los textos de la interfaz. Lleva una historia por estado: normal, vacío o «Sin datos», error, carga, y el caso de 320 px si aplica.
+2. Se implementa como componente React en su carpeta (ver la tabla de arriba) usando solo tokens `--el-*` y clases del catálogo.
+3. Se escribe su historia **al lado** del componente: `ComponentName.stories.tsx`, con `tags: ['autodocs']`. El código va en inglés (nombre del componente, props, variables y archivos); lo que lee una persona va en español: el título (`Componentes/UI/…`, `Componentes/<Página>/…` o `Pantallas/<Página>`), el `name` de cada historia, la descripción de las props y los textos de la interfaz. Lleva una historia por estado: normal, vacío o «Sin datos», error, carga, y el caso de 320 px si aplica.
 4. Se documenta en lenguaje claro: para qué sirve, cuándo usarlo, qué evitar y la accesibilidad.
 5. Se actualiza `components.json` y, si existía, se retira la historia de especificación de `.storybook/catalog/`.
 6. Se valida: `npm run build-storybook`, panel de accesibilidad sin fallas, tema claro y oscuro, 320 px.
@@ -39,7 +60,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { RiskTag } from './RiskTag';
 
 const meta = {
-  title: 'Componentes/Núcleo/Etiqueta de riesgo',
+  title: 'Componentes/UI/Etiqueta de riesgo',
   component: RiskTag,
   tags: ['autodocs'],
   parameters: {
@@ -60,8 +81,9 @@ export const Unknown: Story = { name: 'Sin datos', args: { level: 'unknown' } };
 | --- | --- |
 | Configuración de Storybook | `.storybook/main.ts`, `.storybook/preview.tsx` |
 | Lineamientos (estas páginas) | `.storybook/docs/*.mdx` |
-| Especificación del catálogo v1.0 | `.storybook/catalog/` |
-| Componentes reales y sus historias | `src/**/*.stories.tsx` |
+| Especificación de los candidatos (aún no son React) | `.storybook/catalog/candidates/` |
+| Componentes UI transversales | `src/components/ui/<Component>/` |
+| Componentes y pantallas de cada página | `src/modules/<módulo>/ui/<Component>/` |
 | Tokens y catálogo (fuente de verdad) | `docs/design/guide/` |
 | Flujo de la skill | `.claude/skills/elephants-design/` (enlazada para Codex y Antigravity en `.agents/skills/`) |
 | Historial de rondas | `docs/design/rounds/` |

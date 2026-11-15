@@ -1,14 +1,15 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { componentDocs, FIXTURE } from '../shared';
+import { componentDocs, FIXTURE } from '../../../../.storybook/catalog/shared';
 import { KeyFigure } from './KeyFigure';
 
 const meta = {
-  title: 'Componentes/Núcleo/Cifra destacada',
+  title: 'Componentes/UI/Cifra destacada',
   component: KeyFigure,
   tags: ['autodocs'],
   parameters: componentDocs(
     'Key figure',
     'Un número grande que se entiende solo: qué mide, de cuánto y de dónde sale. Muestra numerador y denominador («36 de 120») y la fuente debajo. No se pinta con el color de riesgo ni se presenta como probabilidad de corrupción. Las reglas de formato están en **Fundamentos › Formato de datos**.',
+    'src/components/ui/KeyFigure/',
   ),
   args: {
     label: 'Contratos con señales',

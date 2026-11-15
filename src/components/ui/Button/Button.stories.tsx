@@ -1,12 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { componentDocs } from '../shared';
+import { componentDocs } from '../../../../.storybook/catalog/shared';
 import { Button } from './Button';
 
 const meta = {
-  title: 'Componentes/Núcleo/Botón',
+  title: 'Componentes/UI/Botón',
   component: Button,
   tags: ['autodocs'],
-  parameters: componentDocs('Button', 'Ejecuta una acción en la pantalla actual. Para ir a otra página usa un enlace.'),
+  parameters: componentDocs('Button', 'Ejecuta una acción en la pantalla actual. Para ir a otra página usa un enlace.', 'src/components/ui/Button/'),
   args: { variant: 'primary', label: 'Consultar contratos', withIcon: true },
   argTypes: { variant: { control: 'inline-radio', options: ['primary', 'secondary', 'text'] } },
 } satisfies Meta<typeof Button>;

@@ -1,12 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { componentDocs } from '../shared';
+import { componentDocs } from '../../../../.storybook/catalog/shared';
 import { Field } from './Field';
 
 const meta = {
-  title: 'Componentes/Núcleo/Campo de formulario',
+  title: 'Componentes/UI/Campo de formulario',
   component: Field,
   tags: ['autodocs'],
-  parameters: componentDocs('Field', 'Recoge un dato para filtrar o buscar. Siempre con etiqueta visible. Evita «Dato inválido» sin explicación.'),
+  parameters: componentDocs('Field', 'Recoge un dato para filtrar o buscar. Siempre con etiqueta visible. Evita «Dato inválido» sin explicación.', 'src/components/ui/Field/'),
   args: {
     label: 'Departamento',
     kind: 'select',

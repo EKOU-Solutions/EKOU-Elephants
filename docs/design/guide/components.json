@@ -1,6 +1,6 @@
 {
-  "version": "1.0.0",
-  "about": "Catálogo legible por máquina de los componentes de Elephants. build.py comprueba que cada clase exista en components.css y cada token en tokens.css. 'core' = revisado y aceptado en la Ronda 05; 'candidate' = salió de las pantallas de ejemplo, se puede usar, pero lo debe confirmar la primera página que lo necesite (ver .claude/skills/elephants-design/references/build-page.md).",
+  "version": "1.0.1",
+  "about": "Catálogo legible por máquina de los componentes de Elephants. build.py comprueba que cada clase exista en components.css y cada token en tokens.css. 'core' = revisado y aceptado en la Ronda 05; 'candidate' = salió de las pantallas de ejemplo, se puede usar, pero lo debe confirmar la primera página que lo necesite (ver .claude/skills/elephants-design/references/build-page.md). 'component' = archivo del componente React, cuando ya existe.",
   "components": [
     {
       "name": "Button",
@@ -33,7 +33,8 @@
         "<button> nativo; mínimo 44 px de alto",
         "Un botón solo con ícono necesita aria-label",
         "Anillo de foco visible con --el-color-focus"
-      ]
+      ],
+      "component": "src/components/ui/Button/Button.tsx"
     },
     {
       "name": "Alert",
@@ -68,7 +69,8 @@
       "a11y": [
         "El color va en el ícono y el borde; el texto queda en --el-color-text",
         "Las alertas dinámicas usan role=status (información) o role=alert (error)"
-      ]
+      ],
+      "component": "src/components/ui/Alert/Alert.tsx"
     },
     {
       "name": "Field",
@@ -95,7 +97,8 @@
         "<label for>",
         "Error: aria-invalid=true + aria-describedby apuntando al mensaje",
         "El texto del error dice cómo corregirlo"
-      ]
+      ],
+      "component": "src/components/ui/Field/Field.tsx"
     },
     {
       "name": "Risk tag",
@@ -137,7 +140,8 @@
       "a11y": [
         "Siempre lleva etiqueta de texto; el glifo de 1/2/3 barras indica el nivel sin color",
         "«Sin datos» va con trama o barras punteadas, nunca como un «bajo» más claro"
-      ]
+      ],
+      "component": "src/components/ui/RiskTag/RiskTag.tsx"
     },
     {
       "name": "Counter",
@@ -161,7 +165,8 @@
       ],
       "a11y": [
         "Número y etiqueta en el mismo elemento para que se lean juntos"
-      ]
+      ],
+      "component": "src/components/ui/Counter/Counter.tsx"
     },
     {
       "name": "Active filter",
@@ -184,7 +189,8 @@
       ],
       "a11y": [
         "<button> con aria-label «Quitar filtro: <valor>»"
-      ]
+      ],
+      "component": "src/components/ui/ActiveFilter/ActiveFilter.tsx"
     },
     {
       "name": "Key figure",
@@ -207,7 +213,8 @@
       "a11y": [
         "Unidad y denominador en texto, no solo visuales",
         "La línea de fuente siempre está presente"
-      ]
+      ],
+      "component": "src/components/ui/KeyFigure/KeyFigure.tsx"
     },
     {
       "name": "Data table",
@@ -232,12 +239,13 @@
       "a11y": [
         "<caption>, <th scope>",
         "En pantallas pequeñas, dentro de un elemento con overflow-x:auto"
-      ]
+      ],
+      "component": "src/components/ui/DataTable/DataTable.tsx"
     },
     {
       "name": "Map with legend",
       "label_es": "Mapa con leyenda",
-      "status": "core",
+      "status": "candidate",
       "reference": "preview.html#mapa",
       "classes": [
         "el-map",

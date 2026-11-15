@@ -11,6 +11,16 @@ type Mode = 'light' | 'dark';
 type Palette = Record<string, string>;
 const palettes = tokens.colors as Record<Mode, Palette>;
 
+/** Horizontal scroll box that keyboard users can reach (tab stop) and screen readers can name. */
+function ScrollRegion({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    // A scrollable region must be focusable so keyboard users can scroll it (WCAG 2.1.1).
+    <div className="sb-el-scroll" role="region" aria-label={label} tabIndex={0}>
+      {children}
+    </div>
+  );
+}
+
 export function Block({ children }: { children: ReactNode }) {
   return <div className="sb-el">{children}</div>;
 }
@@ -93,7 +103,7 @@ function Swatch({ mode, token }: { mode: Mode; token: string }) {
 export function Swatches() {
   return (
     <Block>
-      <div style={{ overflowX: 'auto' }}>
+      <ScrollRegion label="Tabla de colores por rol">
         <table className="sb-el-table">
           <thead>
             <tr>
@@ -122,7 +132,7 @@ export function Swatches() {
             ])}
           </tbody>
         </table>
-      </div>
+      </ScrollRegion>
     </Block>
   );
 }
@@ -135,7 +145,7 @@ export function ContrastTable() {
   const dark = contrast.dark as Pair[];
   return (
     <Block>
-      <div style={{ overflowX: 'auto' }}>
+      <ScrollRegion label="Tabla de contraste comprobado">
         <table className="sb-el-table">
           <thead>
             <tr>
@@ -162,7 +172,7 @@ export function ContrastTable() {
             ))}
           </tbody>
         </table>
-      </div>
+      </ScrollRegion>
     </Block>
   );
 }
@@ -270,7 +280,7 @@ type CatalogEntry = (typeof catalog.components)[number];
 export function CatalogTable() {
   return (
     <Block>
-      <div style={{ overflowX: 'auto' }}>
+      <ScrollRegion label="Tabla del catálogo de componentes">
         <table className="sb-el-table">
           <thead>
             <tr>
@@ -298,7 +308,7 @@ export function CatalogTable() {
             ))}
           </tbody>
         </table>
-      </div>
+      </ScrollRegion>
     </Block>
   );
 }

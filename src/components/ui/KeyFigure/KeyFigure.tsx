@@ -1,4 +1,4 @@
-import { formatNumber } from '../shared';
+import { formatNumber } from '../format';
 
 type Props = {
   /** Qué mide. */

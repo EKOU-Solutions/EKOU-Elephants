@@ -20,19 +20,10 @@ import catalog from '../../docs/design/guide/components.json';
 import mapSvg from '../../docs/design/guide/assets/map-paths.svg?raw';
 import territories from '../../docs/design/guide/assets/territories.json';
 import tokens from '../../docs/design/guide/tokens.json';
+import type { Level } from '../../src/components/ui/RiskTag/RiskTag';
 
-export type Level = 'low' | 'medium' | 'high' | 'unknown';
-
-export const LEVELS: Level[] = ['low', 'medium', 'high', 'unknown'];
-
-export const LEVEL_LABEL: Record<Level, string> = {
-  low: 'Riesgo bajo',
-  medium: 'Riesgo intermedio',
-  high: 'Riesgo alto',
-  unknown: 'Sin datos',
-};
-
-const FILLED_BARS: Record<Level, number> = { low: 1, medium: 2, high: 3, unknown: 0 };
+export { formatNumber } from '../../src/components/ui/format';
+export { LEVEL_LABEL, LEVELS, type Level, RiskTag } from '../../src/components/ui/RiskTag/RiskTag';
 
 /** [icon, Spanish label, Lucide name] for the icon grid. */
 export const ICONS: [LucideIcon, string, string][] = [
@@ -51,68 +42,6 @@ export const ICONS: [LucideIcon, string, string][] = [
   [Check, 'Hecho', 'check'],
 ];
 
-/** Three rising bars: the filled ones encode the level, so the tag reads without color. */
-export function LevelGlyph({ level }: { level: Level }) {
-  return (
-    <svg className="lvl" viewBox="0 0 16 16" aria-hidden="true">
-      {(
-        [
-          [1, 6],
-          [6, 10],
-          [11, 14],
-        ] as const
-      ).map(([x, h], i) =>
-        level === 'unknown' ? (
-          <rect
-            key={x}
-            x={x + 0.5}
-            y={15 - h + 0.5}
-            width={3}
-            height={h - 1}
-            rx={0.5}
-            fill="none"
-            stroke="currentColor"
-            strokeDasharray="2 1.5"
-          />
-        ) : (
-          <rect
-            key={x}
-            x={x}
-            y={15 - h}
-            width={4}
-            height={h}
-            rx={1}
-            fill="currentColor"
-            opacity={i < FILLED_BARS[level] ? undefined : 0.35}
-          />
-        ),
-      )}
-    </svg>
-  );
-}
-
-type RiskTagProps = {
-  /** Nivel calculado por la metodología (TASK-07); nunca se elige a mano. */
-  level: Level;
-  /** Grande: una sola vez, arriba de una ficha. */
-  large?: boolean;
-};
-
-/** Nombra la categoría de riesgo de un territorio, entidad o contrato. */
-export function RiskTag({ level, large = false }: RiskTagProps) {
-  return (
-    <span className={`el-tag el-tag-${level}${large ? ' el-tag-lg' : ''}`}>
-      <LevelGlyph level={level} />
-      {LEVEL_LABEL[level]}
-    </span>
-  );
-}
-
-/** es-CO number format: dot for thousands, comma for decimals, at most `decimals` decimals. */
-export function formatNumber(value: number, decimals = 1): string {
-  return new Intl.NumberFormat('es-CO', { maximumFractionDigits: decimals }).format(value);
-}
-
 export const FIXTURE = tokens.fixture;
 
 // --- Map (fictional data; illustrative split, NOT agreed thresholds: see TASK-07) ---
@@ -120,7 +49,7 @@ export type Territory = (typeof territories)[number];
 export const TERRITORIES: Territory[] = territories;
 
 export function levelOf(t: Territory): Level {
-  if (!t.analyzed) return 'unknown';
+  if (!t.analyzed || t.flagged === null) return 'unknown';
   const share = (100 * t.flagged) / t.analyzed;
   return share <= 12 ? 'low' : share <= 30 ? 'medium' : 'high';
 }
@@ -180,23 +109,26 @@ const A11Y_NOTES: Record<string, string> = {
 };
 
 /**
- * Docs parameters for a v1.0 catalog component: its plain-language purpose plus the status, classes, tokens and
- * accessibility notes read from components.json, so they are never duplicated.
+ * Docs parameters for a catalog component: its plain-language purpose plus the status, classes, tokens and
+ * accessibility notes read from components.json, so they are never duplicated. `folder` is the React component's
+ * folder once it lives in `src/`; without it the story is still a v1.0 markup spec.
  */
-export function componentDocs(name: string, purpose: string) {
+export function componentDocs(name: string, purpose: string, folder?: string) {
   const c = catalog.components.find((x) => x.name === name);
   if (!c) throw new Error(`"${name}" is not in components.json`);
   const status =
     c.status === 'core'
       ? '**Núcleo**: aceptado con la Ronda 05 (guía v1.0).'
-      : '**Candidato**: salió de las pantallas de ejemplo; la primera página que lo necesite lo confirma o lo descarta.';
+      : '**Candidato**: se puede usar, pero la primera página que lo necesite lo confirma o lo descarta.';
   const text = [
     purpose,
     status,
     `**Clases:** ${c.classes.map((x) => `\`${x}\``).join(', ')}`,
     `**Tokens:** ${c.tokens.map((x) => `\`${x}\``).join(', ')}`,
     `**Accesibilidad:** ${A11Y_NOTES[name] ?? 'ver Accesibilidad.'}`,
-    '_Especificación v1.0: marcado y clases `el-*`. Todavía no es un componente React de la app; cuando se implemente con el flujo `elephants-design`, su historia vivirá junto al componente en `src/`._',
+    folder
+      ? `_Componente React de la app: \`${folder}\`. Usa solo clases \`el-*\` y tokens \`--el-*\`._`
+      : '_Especificación v1.0: marcado y clases `el-*`. Todavía no es un componente React de la app; cuando se implemente con el flujo `elephants-design`, su historia vivirá junto al componente en `src/`._',
   ].join('\n\n');
   return { docs: { description: { component: text } } };
 }
