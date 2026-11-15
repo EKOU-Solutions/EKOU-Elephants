@@ -44,7 +44,7 @@ Row 1 is seen first. "Computed" means the page derives it from contract fields w
 | 6a | **Panel, Colombia**: national total as key figure; the three levels as a counter row | `nacional.*`, `ventana`, `corte.fechaCorte`, `corte.fuentes` | Key figure (`el-figure`) + Counter (`el-counts`) | `--el-rule-strong`, `--el-size-figure(-mobile)`, `--el-numbers`, `--el-color-text-muted` | All measured | MVP |
 | 6b | **Panel, department**: key figure = its municipalities + its department level; counter row with both parts; count of its municipalities with «Sin datos», if any (computed) | `departamentos[codigo]`, `municipios[]` of that department | Key figure + Counter | as 6a | A part with 0 shows «0» (measured; guide "true zero") | MVP |
 | 6c | **Panel, municipality**: name, «Departamento de …», type when not *municipio*, key figure = located contracts, line with the department-level contracts | `MunicipioSeleccionado`, `departamentos[codigo].contratosSoloDepartamento` | Key figure + readout line | as 6a | `null` → «Sin datos» with the hatch swatch and the sentence in §6; never 0 | MVP |
-| 7 | **Method note** under the figure: what "ubicado" and "solo en el departamento" mean, with a link | fixed rule (data.md, surprises 4 and 7) | Alert, inline note (`el-inline-note`, info tone) | `--el-color-action` | Always shown with the figure | MVP |
+| 7 | **Data help** next to the label it explains (revised 2026-11-15 after review: it was a separate note under the figure): what "ubicado" and "solo en el departamento" mean, with a link to the method. Text adapted to the level (country breakdown, department figure, municipality figure) | fixed rule (data.md, surprises 4 and 7) | **Data help (new, toggletip)** | `--el-color-action` | Closed by default; opens on tap, click or Enter | MVP |
 | 8 | **Table alternative** in `<details>`: at Colombia level the 33 departments with both parts; at department level its municipalities. Each row links to its territory | `departamentos[]`, `municipios[]` | Data table (`el-table`, `el-num`) | `--el-color-line`, `--el-rule-strong` | `null` → «Sin datos» in the cell; ordered by DIVIPOLA code | MVP |
 | 9 | **Sources and licences**: every `fuente` with entity, link and licence; DANE attribution; data and publication dates | `corte.fuentes[]`, `corte.fechaCorte`, `corte.publicadoEn` | Plain list (type scale only) | `--el-size-small`, `--el-color-text-muted`, `--el-color-action` | If `/corte` fails, the 503 state (§4) | MVP |
 
@@ -74,7 +74,7 @@ Every row traces to a contract field or a fixed rule. Nothing ranks or compares 
 1. Headline + dek.
 2. Search (full width; sticky under the header after scrolling past it).
 3. Breadcrumb.
-4. Map, full width, aspect about 4:5; zoom controls (+, −, «Ver todo el país») as 44 px buttons in the top-right corner; San Andrés y Providencia inset in the top-left corner, labelled.
+4. Map, full width, aspect about 4:5. Controls go **under** the map, never over the shapes (revised 2026-11-15 after the mockup review): «Ver todo el país» on the left, only at department level; − and + as one group of two 44 px buttons on the right. San Andrés y Providencia is shown **at its own scale, outside the map** (user decision, 2026-11-15, after trying an inset over the map and the real position). It is a 44 px control in the tools row, in the place «Ver todo el país» takes at department level. The control shows both islands side by side at the same scale, is labelled «San Andrés y Providencia · Ver las islas», and opens the department. The country hint «Elige un departamento en el mapa para ver sus municipios» is the map caption. At department level the two islands are drawn side by side at the same scale with their names; the caption says they are about 100 km apart in reality.
 5. Legend in one row under the map (wraps to two).
 6. Panel (6a, 6b or 6c).
 7. Table in `<details>`, closed.
@@ -90,7 +90,7 @@ Direct tone, figures with unit, window, source and date. No «corrupción», «r
 
 | Element | Copy |
 | --- | --- |
-| Headline (h1) | «7,5 millones de contratos públicos: dónde se ejecutan» |
+| Headline (h1) | «7,5 millones de contratos públicos: dónde quedaron» (revised 2026-11-15, user: data.md surprise 4 forbids «ejecutados») |
 | Dek | «Contratos firmados entre 2021 y 2026 por entidades nacionales, departamentales y municipales, ubicados en el mapa. Datos de SECOP al 7 de noviembre de 2026.» |
 | Search | label «Busca un departamento o municipio» · placeholder «Por ejemplo: Arauca, Ubaté» |
 | Suggestions | «Arauca · Departamento» · «Arauca · Arauca» · «La Unión · Nariño» |
@@ -102,7 +102,7 @@ Direct tone, figures with unit, window, source and date. No «corrupción», «r
 | Panel Colombia, counters | «6.771.167 · en un municipio» · «626.277 · solo en un departamento» · «59.305 · sin lugar registrado» |
 | Panel department, heading | «Arauca» · «Departamento» |
 | Panel department, figure | «46.131» · «contratos ubicados en Arauca, firmados entre 2021 y 2026» |
-| Panel department, counters | «19.268 · en sus municipios» · «26.863 · del departamento, sin un solo municipio» |
+| Panel department, counters | «19.268 · en sus municipios» · «26.863 · Sin municipio asignado» (revised 2026-11-15, user) |
 | Panel department, Sin datos line (only if any) | Guainía: «5 de 8 municipios y áreas sin datos» |
 | Panel municipality, heading | «Arauca» · «Departamento de Arauca» (Bogotá: «Distrito Capital») |
 | Type line (only when not *municipio*) | «Área no municipalizada» · «Isla» |
@@ -115,6 +115,8 @@ Direct tone, figures with unit, window, source and date. No «corrupción», «r
 | Sources | heading «Fuentes y licencias» · geometry «Límites: Marco Geoestadístico Nacional 2025, DANE (www.dane.gov.co), CC BY 4.0. Simplificados para mostrarlos en pantalla.» · «Datos al 7 nov 2026 · publicado el 15 nov 2026» |
 
 All figures are real values from the local API (cut 2026-11).
+
+> **Revision (2026-11-15, user):** the table caption no longer repeats the source and date. The figure carries the source and the footer the licences (iteration 5 of validation.md).
 
 ## 7. Accessibility
 
@@ -143,3 +145,7 @@ All figures are real values from the local API (cut 2026-11).
 | 3 | Hover label on desktop | **Yes, as a convenience**; everything stays reachable by click, search, breadcrumb and table |
 | 4 | Neutral fill colour | **Existing token `--el-color-line`**; no change to `tokens.json` |
 | 5 | Nation, departments, municipalities | **Two zoom levels** (contract decision 5) |
+| 6 | Headline wording (raised by the review) | **«…: dónde quedaron»**: the location is often the entity's seat, not the place of execution |
+| 7 | Label for department-level contracts | **«Sin municipio asignado»** |
+| 8 | San Andrés control | Own scale, outside the map, secondary line **«Ver las islas»** |
+| 9 | Islands missing from the MGN municipal layer (Malpelo, Gorgona, northern cays) | **Research an official source now**; proposal before applying |

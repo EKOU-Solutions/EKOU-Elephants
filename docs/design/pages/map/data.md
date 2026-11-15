@@ -7,7 +7,7 @@
 | Endpoint | Rows | Size |
 | --- | --- | --- |
 | `GET /api/mapa/municipios` | 1,122 municipalities | 169,576 B (JSON) |
-| `GET /api/mapa/geometria/mgn-2025` | 1,122 municipal shapes + 33 departments, 3,331 shared arcs | 340,615 B; 73,510 B with Brotli |
+| `GET /api/mapa/geometria/mgn-2025` | 1,122 municipal shapes + 33 departments, 3,331 shared arcs | 368,596 B; 80,029 B with Brotli (islands kept, see contract) |
 | `GET /api/mapa/municipios/:codigo` | 1 | < 300 B |
 | `GET /api/mapa/corte` | 1 cut, 4 sources | < 1 KB |
 

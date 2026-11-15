@@ -7,176 +7,691 @@
       "label_es": "Botón",
       "status": "core",
       "reference": "preview.html#boton",
-      "classes": ["el-btn", "el-btn-primary", "el-btn-secondary", "el-btn-text"],
+      "classes": [
+        "el-btn",
+        "el-btn-primary",
+        "el-btn-secondary",
+        "el-btn-text"
+      ],
       "use": "Runs an action on the current screen. To go to another page use a link.",
-      "variants": ["primary (one per view)", "secondary", "text", "disabled"],
-      "tokens": ["--el-color-action", "--el-color-action-hover", "--el-color-on-action", "--el-color-action-soft", "--el-color-control-border", "--el-control-height", "--el-control-radius"],
-      "a11y": ["Native <button>; min height 44 px", "Icon-only buttons need aria-label", "Visible focus ring from --el-color-focus"]
+      "variants": [
+        "primary (one per view)",
+        "secondary",
+        "text",
+        "disabled"
+      ],
+      "tokens": [
+        "--el-color-action",
+        "--el-color-action-hover",
+        "--el-color-on-action",
+        "--el-color-action-soft",
+        "--el-color-control-border",
+        "--el-control-height",
+        "--el-control-radius"
+      ],
+      "a11y": [
+        "Native <button>; min height 44 px",
+        "Icon-only buttons need aria-label",
+        "Visible focus ring from --el-color-focus"
+      ]
     },
     {
       "name": "Alert",
       "label_es": "Alerta",
       "status": "core",
       "reference": "preview.html#alerta",
-      "classes": ["el-alert", "el-alert-info", "el-alert-warning", "el-alert-danger", "el-alert-success", "el-banner", "el-inline-note"],
+      "classes": [
+        "el-alert",
+        "el-alert-info",
+        "el-alert-warning",
+        "el-alert-danger",
+        "el-alert-success",
+        "el-banner",
+        "el-inline-note"
+      ],
       "use": "Tells something about the interface or the information: what happened and what the person can do. Never rates a territory or contract.",
-      "variants": ["block (el-alert)", "page banner (el-banner)", "inline note (el-inline-note)", "tones: info, warning, danger, success"],
-      "tokens": ["--el-color-warning", "--el-color-warning-soft", "--el-color-danger", "--el-color-danger-soft", "--el-color-success", "--el-color-success-soft", "--el-color-line"],
-      "a11y": ["Colour lives in the icon and border; text stays in --el-color-text", "Dynamic alerts use role=status (info) or role=alert (error)"]
+      "variants": [
+        "block (el-alert)",
+        "page banner (el-banner)",
+        "inline note (el-inline-note)",
+        "tones: info, warning, danger, success"
+      ],
+      "tokens": [
+        "--el-color-warning",
+        "--el-color-warning-soft",
+        "--el-color-danger",
+        "--el-color-danger-soft",
+        "--el-color-success",
+        "--el-color-success-soft",
+        "--el-color-line"
+      ],
+      "a11y": [
+        "Colour lives in the icon and border; text stays in --el-color-text",
+        "Dynamic alerts use role=status (info) or role=alert (error)"
+      ]
     },
     {
       "name": "Field",
       "label_es": "Campo de formulario",
       "status": "core",
       "reference": "preview.html#campo",
-      "classes": ["el-field"],
+      "classes": [
+        "el-field"
+      ],
       "use": "Collects a value to filter or search. Always with a visible label.",
-      "variants": ["input", "select", "with help text", "error"],
-      "tokens": ["--el-color-control-border", "--el-color-danger", "--el-control-height", "--el-control-radius"],
-      "a11y": ["<label for>", "Error: aria-invalid=true + aria-describedby pointing to the message", "Error text says how to fix it"]
+      "variants": [
+        "input",
+        "select",
+        "with help text",
+        "error"
+      ],
+      "tokens": [
+        "--el-color-control-border",
+        "--el-color-danger",
+        "--el-control-height",
+        "--el-control-radius"
+      ],
+      "a11y": [
+        "<label for>",
+        "Error: aria-invalid=true + aria-describedby pointing to the message",
+        "Error text says how to fix it"
+      ]
     },
     {
       "name": "Risk tag",
       "label_es": "Etiqueta de riesgo",
       "status": "core",
       "reference": "preview.html#etiqueta",
-      "classes": ["el-tag", "el-tag-low", "el-tag-medium", "el-tag-high", "el-tag-unknown", "el-tag-lg", "el-key", "el-key-low", "el-key-medium", "el-key-high", "el-key-unknown"],
+      "classes": [
+        "el-tag",
+        "el-tag-low",
+        "el-tag-medium",
+        "el-tag-high",
+        "el-tag-unknown",
+        "el-tag-lg",
+        "el-key",
+        "el-key-low",
+        "el-key-medium",
+        "el-key-high",
+        "el-key-unknown"
+      ],
       "use": "Names the risk category of a territory, entity or contract. The category comes from the methodology (TASK-07), never chosen by hand.",
-      "variants": ["low", "medium", "high", "unknown (no data)", "large (once, at the top of a detail page)"],
-      "tokens": ["--el-color-risk-low", "--el-color-risk-medium", "--el-color-risk-high", "--el-color-on-risk-low", "--el-color-on-risk-medium", "--el-color-on-risk-high", "--el-color-unknown", "--el-color-unknown-surface", "--el-mark-radius"],
-      "a11y": ["Text label always present; 1/2/3-bar glyph encodes level without colour", "Unknown is hatched/dashed, never a lighter 'low'"]
+      "variants": [
+        "low",
+        "medium",
+        "high",
+        "unknown (no data)",
+        "large (once, at the top of a detail page)"
+      ],
+      "tokens": [
+        "--el-color-risk-low",
+        "--el-color-risk-medium",
+        "--el-color-risk-high",
+        "--el-color-on-risk-low",
+        "--el-color-on-risk-medium",
+        "--el-color-on-risk-high",
+        "--el-color-unknown",
+        "--el-color-unknown-surface",
+        "--el-mark-radius"
+      ],
+      "a11y": [
+        "Text label always present; 1/2/3-bar glyph encodes level without colour",
+        "Unknown is hatched/dashed, never a lighter 'low'"
+      ]
     },
     {
       "name": "Counter",
       "label_es": "Contador",
       "status": "core",
       "reference": "preview.html#contador",
-      "classes": ["el-counts", "el-count", "el-count-risk"],
+      "classes": [
+        "el-counts",
+        "el-count",
+        "el-count-risk"
+      ],
       "use": "A large number with its name below; summarises a query in one scannable row.",
-      "variants": ["plain", "with risk key"],
-      "tokens": ["--el-color-line", "--el-color-text", "--el-color-text-muted"],
-      "a11y": ["Number and label in the same element so they are read together"]
+      "variants": [
+        "plain",
+        "with risk key"
+      ],
+      "tokens": [
+        "--el-color-line",
+        "--el-color-text",
+        "--el-color-text-muted"
+      ],
+      "a11y": [
+        "Number and label in the same element so they are read together"
+      ]
     },
     {
       "name": "Active filter",
       "label_es": "Filtro activo",
       "status": "core",
       "reference": "preview.html#filtro",
-      "classes": ["el-chip"],
+      "classes": [
+        "el-chip"
+      ],
       "use": "Shows an applied filter and removes it in one tap.",
-      "variants": ["default"],
-      "tokens": ["--el-color-control-border", "--el-color-action", "--el-color-action-soft", "--el-control-height", "--el-control-radius"],
-      "a11y": ["<button> with aria-label 'Quitar filtro: <value>'"]
+      "variants": [
+        "default"
+      ],
+      "tokens": [
+        "--el-color-control-border",
+        "--el-color-action",
+        "--el-color-action-soft",
+        "--el-control-height",
+        "--el-control-radius"
+      ],
+      "a11y": [
+        "<button> with aria-label 'Quitar filtro: <value>'"
+      ]
     },
     {
       "name": "Key figure",
       "label_es": "Cifra destacada",
       "status": "core",
       "reference": "preview.html#cifra",
-      "classes": ["el-figure"],
+      "classes": [
+        "el-figure"
+      ],
       "use": "A big number that stands on its own, even in a shared screenshot: what it measures, out of how many, and where it comes from.",
-      "variants": ["with comparison", "with source"],
-      "tokens": ["--el-rule-strong", "--el-color-line-strong", "--el-color-text-muted"],
-      "a11y": ["Unit and denominator in text, not only visual", "Source line always present"]
+      "variants": [
+        "with comparison",
+        "with source"
+      ],
+      "tokens": [
+        "--el-rule-strong",
+        "--el-color-line-strong",
+        "--el-color-text-muted"
+      ],
+      "a11y": [
+        "Unit and denominator in text, not only visual",
+        "Source line always present"
+      ]
     },
     {
       "name": "Data table",
       "label_es": "Tabla de datos",
       "status": "core",
       "reference": "preview.html#tabla",
-      "classes": ["el-table", "el-num"],
+      "classes": [
+        "el-table",
+        "el-num"
+      ],
       "use": "To compare and verify; the accessible alternative to every map or chart.",
-      "variants": ["default", "numeric columns right-aligned (el-num)"],
-      "tokens": ["--el-color-line", "--el-color-line-strong", "--el-rule-strong", "--el-color-text-muted"],
-      "a11y": ["<caption>, <th scope>", "Wrap in an element with overflow-x:auto on small screens"]
+      "variants": [
+        "default",
+        "numeric columns right-aligned (el-num)"
+      ],
+      "tokens": [
+        "--el-color-line",
+        "--el-color-line-strong",
+        "--el-rule-strong",
+        "--el-color-text-muted"
+      ],
+      "a11y": [
+        "<caption>, <th scope>",
+        "Wrap in an element with overflow-x:auto on small screens"
+      ]
     },
     {
       "name": "Map with legend",
       "label_es": "Mapa con leyenda",
       "status": "core",
       "reference": "preview.html#mapa",
-      "classes": ["el-map", "el-fill-low", "el-fill-medium", "el-fill-high", "el-fill-unknown", "el-hatch-bg", "el-hatch-line", "el-legend", "el-fill-neutral", "el-fill-context", "el-dpto", "el-key-neutral", "el-key-selected", "el-map-frame", "el-map-zoom", "el-map-inset", "el-map-status"],
+      "classes": [
+        "el-map",
+        "el-fill-low",
+        "el-fill-medium",
+        "el-fill-high",
+        "el-fill-unknown",
+        "el-hatch-bg",
+        "el-hatch-line",
+        "el-legend",
+        "el-fill-neutral",
+        "el-fill-context",
+        "el-dpto",
+        "el-key-neutral",
+        "el-key-selected",
+        "el-map-frame",
+        "el-map-zoom",
+        "el-map-inset",
+        "el-map-status"
+      ],
       "use": "Shows territories on a map. With a metric, colours each territory by the share of contracts with signals; with no metric yet (neutral variant), only shows where data exists. The legend says what colour measures; selection is an outline plus a detail panel.",
-      "variants": ["default (risk fills)", "neutral (no metric yet; v1.1, map page)", "selected territory", "context (territories outside the current level, faded)", "with zoom controls and San Andrés inset"],
-      "tokens": ["--el-color-risk-low", "--el-color-risk-medium", "--el-color-risk-high", "--el-color-unknown", "--el-color-unknown-surface", "--el-color-map-border", "--el-color-line", "--el-color-surface-subtle", "--el-color-line-strong", "--el-color-control-border"],
-      "a11y": ["<svg role=img> with <title>", "A data table with the same values is always reachable", "Selection never by colour alone", "Zoom controls are native buttons with aria-label, 44 px", "Shapes are not tab stops; keyboard users reach every territory through the search, breadcrumb and table"]
+      "variants": [
+        "default (risk fills)",
+        "neutral (no metric yet; v1.1, map page)",
+        "selected territory",
+        "context (territories outside the current level, faded)",
+        "with zoom controls and San Andrés inset"
+      ],
+      "tokens": [
+        "--el-color-risk-low",
+        "--el-color-risk-medium",
+        "--el-color-risk-high",
+        "--el-color-unknown",
+        "--el-color-unknown-surface",
+        "--el-color-map-border",
+        "--el-color-line",
+        "--el-color-surface-subtle",
+        "--el-color-line-strong",
+        "--el-color-control-border"
+      ],
+      "a11y": [
+        "<svg role=img> with <title>",
+        "A data table with the same values is always reachable",
+        "Selection never by colour alone",
+        "Zoom controls are native buttons with aria-label, 44 px",
+        "Shapes are not tab stops; keyboard users reach every territory through the search, breadcrumb and table"
+      ]
     },
     {
       "name": "Territory search",
       "label_es": "Búsqueda de lugar",
       "status": "core",
       "reference": "preview.html#busqueda",
-      "classes": ["el-search", "el-search-list"],
+      "classes": [
+        "el-search",
+        "el-search-list"
+      ],
       "use": "Finds a department or municipality by name and selects it. The equal way in to a map for small territories, keyboards and screen readers.",
-      "variants": ["empty", "typing with suggestions (up to 8, departments first)", "no results (help text)", "disabled while data loads"],
-      "tokens": ["--el-color-control-border", "--el-color-action-soft", "--el-color-text-muted", "--el-control-height", "--el-control-radius", "--el-size-small"],
-      "a11y": ["WAI-ARIA APG combobox: input role=combobox, aria-expanded, aria-controls, aria-activedescendant; list role=listbox", "Keys: ↑ ↓ move, Enter selects, Esc closes", "Matches ignore accents and case", "Every suggestion shows name · department, because 66 municipality names repeat"]
+      "variants": [
+        "empty",
+        "typing with suggestions (up to 8, departments first)",
+        "no results (help text)",
+        "disabled while data loads"
+      ],
+      "tokens": [
+        "--el-color-control-border",
+        "--el-color-action-soft",
+        "--el-color-text-muted",
+        "--el-control-height",
+        "--el-control-radius",
+        "--el-size-small"
+      ],
+      "a11y": [
+        "WAI-ARIA APG combobox: input role=combobox, aria-expanded, aria-controls, aria-activedescendant; list role=listbox",
+        "Keys: ↑ ↓ move, Enter selects, Esc closes",
+        "Matches ignore accents and case",
+        "Every suggestion shows name · department, because 66 municipality names repeat"
+      ]
     },
     {
       "name": "Breadcrumb",
       "label_es": "Ruta de navegación",
       "status": "core",
       "reference": "preview.html#ruta",
-      "classes": ["el-breadcrumb"],
+      "classes": [
+        "el-breadcrumb"
+      ],
       "use": "Shows the territorial level on screen (Colombia › departamento › municipio) and links back to each level.",
-      "variants": ["one level", "two levels", "three levels"],
-      "tokens": ["--el-color-action", "--el-color-text", "--el-color-text-muted", "--el-control-height", "--el-size-small"],
-      "a11y": ["<nav aria-label=\"Ubicación\"> with an ordered list", "Current level: aria-current=page, not a link", "44 px tap height"]
+      "variants": [
+        "one level",
+        "two levels",
+        "three levels"
+      ],
+      "tokens": [
+        "--el-color-action",
+        "--el-color-text",
+        "--el-color-text-muted",
+        "--el-control-height",
+        "--el-size-small"
+      ],
+      "a11y": [
+        "<nav aria-label=\"Ubicación\"> with an ordered list",
+        "Current level: aria-current=page, not a link",
+        "44 px tap height"
+      ]
+    },
+    {
+      "name": "Data help",
+      "label_es": "Ayuda del dato",
+      "status": "candidate",
+      "reference": "preview.html#ayuda",
+      "classes": [
+        "el-toggletip-btn",
+        "el-toggletip"
+      ],
+      "use": "Explains how one figure is calculated, right next to its label. Opens on tap, click or Enter; closes with Esc or a second tap. Never depends on hover.",
+      "variants": [
+        "closed",
+        "open"
+      ],
+      "tokens": [
+        "--el-color-action",
+        "--el-color-line-strong",
+        "--el-rule-strong",
+        "--el-control-height",
+        "--el-color-focus",
+        "--el-focus-offset",
+        "--el-size-small"
+      ],
+      "a11y": [
+        "Toggletip: <button aria-expanded aria-controls> with an aria-label",
+        "The text appears in a role=status region, so it is announced",
+        "44 px target; Esc returns focus to the button"
+      ]
+    },
+    {
+      "name": "Text link",
+      "label_es": "Enlace de texto",
+      "status": "candidate",
+      "reference": "preview.html#ayuda",
+      "classes": [],
+      "use": "Base style for every link inside text, tables and footers (any <a> without a class): action colour, underlined, same colour when visited, thicker underline on hover, visible focus ring.",
+      "variants": [
+        "default",
+        "hover",
+        "focus"
+      ],
+      "tokens": [
+        "--el-color-action",
+        "--el-color-action-hover",
+        "--el-color-focus",
+        "--el-focus-width",
+        "--el-focus-offset",
+        "--el-rule",
+        "--el-rule-strong"
+      ],
+      "a11y": [
+        "Underlined, so it is not identified by colour alone",
+        "Visited links keep the action colour: a civic tool is re-read, not browsed once"
+      ]
+    },
+    {
+      "name": "Map canvas, tools and selection",
+      "label_es": "Lienzo, controles y selección del mapa",
+      "status": "candidate",
+      "reference": "../pages/map/mockup.html",
+      "classes": [
+        "el-map-canvas",
+        "el-map-canvas-crop",
+        "el-map-tools",
+        "el-map-back",
+        "el-map-hint",
+        "el-map-label",
+        "el-map-label-on",
+        "el-map-label-below",
+        "el-map-label-context",
+        "el-sel",
+        "el-sel-halo",
+        "el-search-box"
+      ],
+      "use": "Map page (TASK-09): the map in a box with its exact proportion, controls under it, the selected territory outlined with a surface halo and named on the map.",
+      "variants": [
+        "country",
+        "department (cropped, framed)",
+        "selected",
+        "label inside or below a small shape"
+      ],
+      "tokens": [
+        "--el-color-text",
+        "--el-color-surface",
+        "--el-color-line",
+        "--el-color-text-muted",
+        "--el-space-4",
+        "--el-space-8",
+        "--el-size-small",
+        "--el-weight-emphasis",
+        "--el-line-heading",
+        "--el-mark-radius"
+      ],
+      "a11y": [
+        "The map svg has a <title> and a <desc> naming the selection",
+        "Names on the map are aria-hidden: the panel heading carries the name"
+      ]
+    },
+    {
+      "name": "Counter rows",
+      "label_es": "Contador en filas",
+      "status": "candidate",
+      "reference": "../pages/map/mockup.html",
+      "classes": [
+        "el-counts-rows"
+      ],
+      "use": "Counter variant: one row per part with its share of the total. The whole list switches to label-above-number below 340 px.",
+      "variants": [
+        "one line",
+        "stacked (narrow)"
+      ],
+      "tokens": [
+        "--el-color-line",
+        "--el-color-text",
+        "--el-color-text-muted",
+        "--el-size-section",
+        "--el-size-small",
+        "--el-space-4",
+        "--el-space-8",
+        "--el-space-12"
+      ],
+      "a11y": [
+        "Numbers keep tabular figures; share in text, never colour only"
+      ]
+    },
+    {
+      "name": "Table toggle",
+      "label_es": "Tabla desplegable",
+      "status": "candidate",
+      "reference": "../pages/map/mockup.html",
+      "classes": [
+        "el-disclosure",
+        "el-table-scroll"
+      ],
+      "use": "Native <details> that holds the table alternative to a map; the table scrolls sideways when it does not fit.",
+      "variants": [
+        "closed",
+        "open",
+        "scrolling at 320 px"
+      ],
+      "tokens": [
+        "--el-color-action",
+        "--el-control-height",
+        "--el-space-8",
+        "--el-weight-emphasis"
+      ],
+      "a11y": [
+        "Native details/summary",
+        "Chevron turns when open; no motion with prefers-reduced-motion"
+      ]
+    },
+    {
+      "name": "Page heading",
+      "label_es": "Encabezado de página",
+      "status": "candidate",
+      "reference": "../pages/map/mockup.html",
+      "classes": [
+        "el-page-head"
+      ],
+      "use": "h1 and dek of a page.",
+      "variants": [
+        "mobile",
+        "900 px and wider"
+      ],
+      "tokens": [
+        "--el-size-title",
+        "--el-size-title-mobile",
+        "--el-weight-heading",
+        "--el-line-heading",
+        "--el-line-body",
+        "--el-color-text-muted",
+        "--el-space-8"
+      ],
+      "a11y": [
+        "One h1 per page"
+      ]
+    },
+    {
+      "name": "Territory panel",
+      "label_es": "Panel del territorio",
+      "status": "candidate",
+      "reference": "../pages/map/mockup.html",
+      "classes": [
+        "el-panel",
+        "el-panel-kind",
+        "el-panel-subtitle",
+        "el-panel-note",
+        "el-sr-only"
+      ],
+      "use": "Detail of the selected territory: name (h2), kind line, key figure, breakdown and notes.",
+      "variants": [
+        "country",
+        "department",
+        "municipality",
+        "sin datos"
+      ],
+      "tokens": [
+        "--el-size-section",
+        "--el-size-body",
+        "--el-size-small",
+        "--el-weight-heading",
+        "--el-weight-emphasis",
+        "--el-line-heading",
+        "--el-line-body",
+        "--el-color-text-muted",
+        "--el-space-8",
+        "--el-space-12"
+      ],
+      "a11y": [
+        "h2 takes focus on level change",
+        "One short role=status sentence (el-sr-only) instead of aria-live on the whole panel"
+      ]
+    },
+    {
+      "name": "Sources list",
+      "label_es": "Fuentes y licencias",
+      "status": "candidate",
+      "reference": "../pages/map/mockup.html",
+      "classes": [
+        "el-sources"
+      ],
+      "use": "Footer with every source once, its entity and licence, the data date and the publication date.",
+      "variants": [
+        "default"
+      ],
+      "tokens": [
+        "--el-color-line",
+        "--el-color-text",
+        "--el-color-text-muted",
+        "--el-size-small",
+        "--el-line-body",
+        "--el-space-8",
+        "--el-space-16",
+        "--el-rule"
+      ],
+      "a11y": [
+        "Plain list of links; link text is the dataset name"
+      ]
     },
     {
       "name": "Status pill",
       "label_es": "Estado",
       "status": "candidate",
       "reference": "examples.html#contrato",
-      "classes": ["el-status"],
+      "classes": [
+        "el-status"
+      ],
       "use": "Neutral process state of a contract (e.g. 'En ejecución'). Not a risk level.",
-      "variants": ["default"],
-      "tokens": ["--el-color-control-border", "--el-color-text"],
-      "a11y": ["Text label; icon is decorative"]
+      "variants": [
+        "default"
+      ],
+      "tokens": [
+        "--el-color-control-border",
+        "--el-color-text"
+      ],
+      "a11y": [
+        "Text label; icon is decorative"
+      ]
     },
     {
       "name": "Coverage bar",
       "label_es": "Barra de cobertura",
       "status": "candidate",
       "reference": "examples.html#mapa",
-      "classes": ["el-coverage", "el-coverage-legend", "el-key-flagged", "el-key-clean"],
+      "classes": [
+        "el-coverage",
+        "el-coverage-legend",
+        "el-key-flagged",
+        "el-key-clean"
+      ],
       "use": "Shows flagged / analysed without signals / not analysed out of the total, so missing data is visible.",
-      "variants": ["default"],
-      "tokens": ["--el-color-text", "--el-color-line", "--el-color-unknown", "--el-color-unknown-surface"],
-      "a11y": ["Legend with numbers in text next to the bar"]
+      "variants": [
+        "default"
+      ],
+      "tokens": [
+        "--el-color-text",
+        "--el-color-line",
+        "--el-color-unknown",
+        "--el-color-unknown-surface"
+      ],
+      "a11y": [
+        "Legend with numbers in text next to the bar"
+      ]
     },
     {
       "name": "Breakdown bars",
       "label_es": "Desglose en barras",
       "status": "candidate",
       "reference": "examples.html#mapa",
-      "classes": ["el-bars"],
+      "classes": [
+        "el-bars"
+      ],
       "use": "Ranks a few counts (e.g. signals by type) inside a panel.",
-      "variants": ["default"],
-      "tokens": ["--el-color-line", "--el-color-text", "--el-mark-radius"],
-      "a11y": ["Values written as text; bars are decorative"]
+      "variants": [
+        "default"
+      ],
+      "tokens": [
+        "--el-color-line",
+        "--el-color-text",
+        "--el-mark-radius"
+      ],
+      "a11y": [
+        "Values written as text; bars are decorative"
+      ]
     },
     {
       "name": "Progress vs expected",
       "label_es": "Avance frente a lo esperado",
       "status": "candidate",
       "reference": "examples.html#contrato",
-      "classes": ["el-progress"],
+      "classes": [
+        "el-progress"
+      ],
       "use": "Paid or executed share against the expected mark. The red mark is kept as an alert cue (decided Round 05 review).",
-      "variants": ["default"],
-      "tokens": ["--el-color-line", "--el-color-text", "--el-color-risk-high", "--el-mark-radius"],
-      "a11y": ["Both percentages written as text"]
+      "variants": [
+        "default"
+      ],
+      "tokens": [
+        "--el-color-line",
+        "--el-color-text",
+        "--el-color-risk-high",
+        "--el-mark-radius"
+      ],
+      "a11y": [
+        "Both percentages written as text"
+      ]
     },
     {
       "name": "Signal item",
       "label_es": "Señal",
       "status": "candidate",
       "reference": "examples.html#contrato",
-      "classes": ["el-signal"],
+      "classes": [
+        "el-signal"
+      ],
       "use": "One numbered signal with a short title and the fact behind it. A signal, not a verdict.",
-      "variants": ["default"],
-      "tokens": ["--el-color-line", "--el-color-risk-high", "--el-color-on-risk-high", "--el-color-text-muted"],
-      "a11y": ["Use an ordered list; the number is not colour-only"]
+      "variants": [
+        "default"
+      ],
+      "tokens": [
+        "--el-color-line",
+        "--el-color-risk-high",
+        "--el-color-on-risk-high",
+        "--el-color-text-muted"
+      ],
+      "a11y": [
+        "Use an ordered list; the number is not colour-only"
+      ]
     }
   ]
 }
