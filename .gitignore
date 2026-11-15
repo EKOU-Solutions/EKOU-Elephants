@@ -31,3 +31,5 @@ pipeline/.cache/
 .worktrees/
 # Datos del corte descargados para probar en un preview (npm run datos:descargar)
 datos-locales/
+# Publicación que el corte mensual arma para el Worker de datos
+pipeline/worker-datos/publicacion/

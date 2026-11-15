@@ -1,8 +1,9 @@
 name: corte-mensual
 
 # Extrae, transforma y publica el corte mensual de contratación pública (ADR 0002, decisión 4).
-# extract → transform (pruebas de dbt) → compuertas de calidad → export → R2 + Release.
-# Cada ejecución queda pública en la pestaña Actions; cada corte aprobado, en R2 y en un Release.
+# extract → transform (pruebas de dbt) → compuertas de calidad → export → Release → Worker de datos.
+# Cada ejecución queda pública en la pestaña Actions; cada corte aprobado, en un Release y en el
+# Worker `ekou-elephants-datos`, que la API lee por el binding DATOS (docs/ci-cd.md).
 
 on:
   schedule:
@@ -16,7 +17,7 @@ on:
         required: false
         default: ""
       publicar:
-        description: "Publicar el Release del corte (solo desde main)"
+        description: "Publicar el corte: Release y Worker de datos (solo desde main)"
         type: boolean
         default: true
 
@@ -40,7 +41,10 @@ jobs:
     timeout-minutes: 340
     permissions:
       contents: write # crear el Release del corte
-      issues: write # abrir un issue si el corte falla
+    outputs:
+      corte: ${{ steps.corte.outputs.corte }}
+      cortes: ${{ steps.desplegar.outputs.cortes }}
+      vigente: ${{ steps.desplegar.outputs.vigente }}
     env:
       EKOU_PSEUDONYM_KEY: ${{ secrets.EKOU_PSEUDONYM_KEY }}
       # Runner estándar: 4 CPU, 16 GB de RAM. Lo que no cabe en memoria va a disco temporal.
@@ -187,51 +191,6 @@ jobs:
           ls -lh "data/publicacion/${{ steps.corte.outputs.corte }}"
           cat "data/publicacion/${{ steps.corte.outputs.corte }}/resumen.md" >> "$GITHUB_STEP_SUMMARY"
 
-      - name: publicar en R2
-        # Lo que consume la app: rutas versionadas inmutables y un puntero latest.json con caché
-        # corta (ADR 0002, decisión 6.2).
-        if: github.ref == 'refs/heads/main' && (github.event_name == 'schedule' || inputs.publicar)
-        env:
-          CORTE: ${{ steps.corte.outputs.corte }}
-          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
-          R2_BUCKET: ${{ secrets.R2_BUCKET }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: auto
-          # R2 no acepta las sumas de verificación que la CLI de AWS envía por defecto.
-          AWS_REQUEST_CHECKSUM_CALCULATION: when_required
-          AWS_RESPONSE_CHECKSUM_VALIDATION: when_required
-        run: |
-          if [[ -z "$R2_ACCOUNT_ID" || -z "$R2_BUCKET" || -z "$AWS_ACCESS_KEY_ID" ]]; then
-            echo "::warning::R2 sin configurar (secretos R2_*): el corte solo se publica en el Release"
-            exit 0
-          fi
-          s3() { aws s3 --endpoint-url "https://$R2_ACCOUNT_ID.r2.cloudflarestorage.com" "$@"; }
-          dir="data/publicacion/$CORTE"
-          for archivo in mapa_municipios.json calidad_corte.json; do
-            s3 cp "$dir/$archivo" "s3://$R2_BUCKET/datos/$CORTE/$archivo" \
-              --content-type application/json \
-              --cache-control "public, max-age=31536000, immutable"
-          done
-
-          # Reprocesar un mes viejo no debe mover el puntero hacia atrás.
-          vigente=$(s3 cp "s3://$R2_BUCKET/datos/latest.json" - 2>/dev/null | jq -r '.corte // ""' || true)
-          if [[ -n "$vigente" && "$vigente" > "$CORTE" ]]; then
-            echo "latest.json se queda en $vigente (más reciente que $CORTE)."
-            exit 0
-          fi
-          jq -n --arg corte "$CORTE" --arg publicado "$(date -u +%Y-%m-%dT%H:%M:%SZ)" '{
-            corte: $corte,
-            publicado: $publicado,
-            archivos: {
-              mapa_municipios: "datos/\($corte)/mapa_municipios.json",
-              calidad_corte: "datos/\($corte)/calidad_corte.json"
-            }
-          }' > latest.json
-          s3 cp latest.json "s3://$R2_BUCKET/datos/latest.json" \
-            --content-type application/json \
-            --cache-control "public, max-age=300, stale-while-revalidate=86400"
-
       - name: publicar Release
         if: github.ref == 'refs/heads/main' && (github.event_name == 'schedule' || inputs.publicar)
         env:
@@ -252,6 +211,28 @@ jobs:
               --notes-file "$notas" --target "$GITHUB_SHA"
           fi
 
+      - name: cortes del Worker de datos
+        # Cada despliegue reemplaza todos los archivos del Worker. Van el corte vigente y el anterior,
+        # para que una petición que leyó el latest.json previo encuentre todavía sus archivos. El
+        # histórico completo queda en los Releases.
+        id: desplegar
+        if: github.ref == 'refs/heads/main' && (github.event_name == 'schedule' || inputs.publicar)
+        env:
+          CORTE: ${{ steps.corte.outputs.corte }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          cortes=$(gh release list --limit 200 --json tagName --jq '.[].tagName' \
+            | sed -nE 's/^corte-([0-9]{4}-(0[1-9]|1[0-2]))$/\1/p' | sort -r | head -n 2)
+          if ! grep -qx "$CORTE" <<< "$cortes"; then
+            # Reprocesar un mes viejo no despliega: borraría el vigente y la app no lo muestra.
+            echo "El corte $CORTE es anterior a los publicados ($(echo $cortes)): solo se actualizó su Release." \
+              | tee -a "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          echo "cortes=$(echo $cortes)" >> "$GITHUB_OUTPUT"
+          echo "vigente=$(head -n 1 <<< "$cortes")" >> "$GITHUB_OUTPUT"
+        working-directory: .
+
       - name: registros de la ejecución
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -263,15 +244,91 @@ jobs:
           if-no-files-found: ignore
           retention-days: 90
 
-      - name: avisar del fallo
-        if: failure() && github.event_name == 'schedule'
+  datos:
+    name: publicar en el Worker de datos
+    needs: corte
+    if: needs.corte.outputs.cortes != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # Los secretos de Cloudflare están en el environment `production`: cada publicación espera la
+    # aprobación de uno de sus revisores (Settings → Environments, no este archivo).
+    environment: production
+    permissions:
+      contents: read
+    env:
+      WRANGLER_SEND_METRICS: "false"
+    defaults:
+      run:
+        working-directory: .
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+
+      - run: npm ci
+
+      - name: armar la publicación
+        # Se arma desde los Releases, que ya incluyen el corte de esta ejecución: el vigente y el
+        # anterior salen siempre de la misma fuente, también al reprocesar uno de ellos.
         env:
-          CORTE: ${{ steps.corte.outputs.corte }}
+          CORTES: ${{ needs.corte.outputs.cortes }}
+          VIGENTE: ${{ needs.corte.outputs.vigente }}
           GH_REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          raiz=pipeline/worker-datos/publicacion
+          rm -rf "$raiz"
+          for corte in $CORTES; do
+            gh release download "corte-$corte" --dir "$raiz/datos/$corte" \
+              --pattern mapa_municipios.json --pattern calidad_corte.json
+          done
+          # Mismo formato que `npm run datos:descargar` (scripts/datos.mjs).
+          jq -n --arg corte "$VIGENTE" --arg publicado "$(date -u +%Y-%m-%dT%H:%M:%SZ)" '{
+            corte: $corte,
+            publicado: $publicado,
+            archivos: {
+              calidad_corte: "datos/\($corte)/calidad_corte.json",
+              mapa_municipios: "datos/\($corte)/mapa_municipios.json"
+            }
+          }' > "$raiz/datos/latest.json"
+          find "$raiz" -type f | sort
+          echo "Worker de datos: cortes $CORTES; latest.json → $VIGENTE" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: desplegar ekou-elephants-datos
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          # Con una credencial a medias Wrangler fallaría sin explicar por qué: se comprueban las dos.
+          if [[ -z "$CLOUDFLARE_API_TOKEN" || -z "$CLOUDFLARE_ACCOUNT_ID" ]]; then
+            echo "::error::faltan CLOUDFLARE_API_TOKEN o CLOUDFLARE_ACCOUNT_ID en el environment production; el Release ya quedó publicado"
+            exit 1
+          fi
+          npx --no-install wrangler deploy --config pipeline/worker-datos/wrangler.jsonc
+
+  avisar:
+    name: avisar del fallo
+    needs: [corte, datos]
+    if: failure() && github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      issues: write # abrir un issue si el corte falla
+    steps:
+      - name: abrir o comentar el issue
+        env:
+          CORTE: ${{ needs.corte.outputs.corte }}
+          GH_REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           titulo="Falló el corte mensual $CORTE"
           url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
-          cuerpo="La ejecución programada del corte $CORTE falló (extracción, pruebas de datos o compuertas de calidad) y no se publicó. Se mantiene el corte anterior.
+          cuerpo="La ejecución programada del corte $CORTE falló (extracción, pruebas de datos, compuertas de calidad o despliegue del Worker de datos). La app sigue con el corte anterior.
 
           Registros: $url
 

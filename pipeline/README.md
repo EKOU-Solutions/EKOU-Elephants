@@ -85,31 +85,32 @@ El workflow [`corte-mensual`](../.github/workflows/corte-mensual.yml) corre el d
 
 **Qué se publica**
 
-| Destino | Contenido | Caché |
-|---|---|---|
-| Bucket R2 `datos/AAAA-MM/` | `mapa_municipios.json` y `calidad_corte.json`, lo que consume la app | Inmutable (`max-age=31536000, immutable`): un corte nuevo usa otra ruta |
-| Bucket R2 `datos/latest.json` | Puntero al corte vigente y a sus archivos | 5 minutos (`stale-while-revalidate` de un día) |
-| Release `corte-AAAA-MM` | Todos los archivos de `export` y el reporte de extracción: el histórico | — |
+| Destino | Contenido |
+|---|---|
+| Release `corte-AAAA-MM` | Todos los archivos de `export` y el reporte de extracción: el histórico |
+| Worker `ekou-elephants-datos`: `datos/AAAA-MM/` | `mapa_municipios.json` y `calidad_corte.json` del corte vigente y del anterior, lo que consume la app |
+| Worker `ekou-elephants-datos`: `datos/latest.json` | Puntero al corte vigente y a sus archivos |
 
-Reprocesar un mes viejo no mueve `latest.json` hacia atrás.
+El Worker de datos ([`worker-datos/wrangler.jsonc`](worker-datos/wrangler.jsonc)) solo tiene archivos estáticos y no tiene URL pública: la API lo lee por el binding `DATOS` ([CI/CD](../docs/ci-cd.md#datos-del-corte-mensual)). No se usa R2 porque exige tarjeta de crédito.
+
+Cada despliegue de un Worker reemplaza todos sus archivos. Por eso el job `datos` arma la carpeta completa desde los Releases (el corte vigente y el anterior, para que una petición que leyó el `latest.json` previo encuentre todavía sus archivos) y la despliega con `wrangler deploy`. Reprocesar un mes más viejo que esos dos solo actualiza su Release: no se despliega ni mueve `latest.json` hacia atrás. Reprocesar el vigente reemplaza sus archivos en las mismas rutas; como el Worker no es público, ningún navegador ni CDN guarda esas rutas, y la caché hacia los usuarios la decide la API.
 
 **Operación**
 
-- **Reintentar o reprocesar un mes:** Actions → *corte-mensual* → *Run workflow*, con el corte `AAAA-MM` (vacío = mes actual). Lo ya extraído se guarda en la caché de Actions, **cifrado** con `EKOU_PSEUDONYM_KEY` porque trae cédulas en claro y en un repositorio público un PR desde un fork puede leer las cachés. Así un reintento solo baja las particiones que faltan. Si el Release ya existe, se reemplazan sus archivos.
-- **Si falla** la extracción, una prueba de datos o una compuerta: no se publica nada y se mantiene el corte anterior. La tabla de compuertas queda en el resumen de la ejecución y, si la ejecución era programada, se abre (o se comenta) un issue `Falló el corte mensual AAAA-MM` con el enlace. Los logs de dbt y el reporte de extracción quedan como artefacto durante 90 días.
+- **Reintentar o reprocesar un mes:** Actions → *corte-mensual* → *Run workflow*, con el corte `AAAA-MM` (vacío = mes actual), o `npm run datos:corte -- AAAA-MM`. Lo ya extraído se guarda en la caché de Actions, **cifrado** con `EKOU_PSEUDONYM_KEY` porque trae cédulas en claro y en un repositorio público un PR desde un fork puede leer las cachés. Así un reintento solo baja las particiones que faltan. Si el Release ya existe, se reemplazan sus archivos.
+- **Aprobación:** el job `datos` usa el environment `production`, porque ahí están las credenciales de Cloudflare. Cada publicación en el Worker espera la aprobación de uno de sus revisores; el Release se publica antes, sin aprobación.
+- **Si falla** la extracción, una prueba de datos o una compuerta: no se publica nada y se mantiene el corte anterior. Si falla el despliegue del Worker, el Release ya quedó publicado y la app sigue con el corte anterior. La tabla de compuertas queda en el resumen de la ejecución y, si la ejecución era programada, se abre (o se comenta) un issue `Falló el corte mensual AAAA-MM` con el enlace. Los logs de dbt y el reporte de extracción quedan como artefacto durante 90 días.
 - Solo se publica desde `main`; desde otra rama la ejecución sirve de ensayo.
 
-**Secretos del repositorio** (Settings → Secrets and variables → Actions)
+**Secretos**
 
-| Secreto | Uso |
-|---|---|
-| `EKOU_PSEUDONYM_KEY` | Obligatorio. Clave para seudonimizar las cédulas |
-| `EKOU_SOCRATA_APP_TOKEN` | Recomendado. Sin él la API de datos.gov.co aplica límites más estrictos |
-| `R2_ACCOUNT_ID` | ID de la cuenta de Cloudflare |
-| `R2_BUCKET` | Nombre del bucket |
-| `R2_ACCESS_KEY_ID` y `R2_SECRET_ACCESS_KEY` | Token de API de R2 con permiso *Object Read & Write* **limitado a ese bucket** |
+| Secreto | Dónde | Uso |
+|---|---|---|
+| `EKOU_PSEUDONYM_KEY` | Repositorio | Obligatorio. Clave para seudonimizar las cédulas |
+| `EKOU_SOCRATA_APP_TOKEN` | Repositorio | Recomendado. Sin él la API de datos.gov.co aplica límites más estrictos |
+| `CLOUDFLARE_API_TOKEN` y `CLOUDFLARE_ACCOUNT_ID` | Environment `production` (ya existen, [CI/CD](../docs/ci-cd.md)) | Desplegar el Worker de datos. Si falta alguno, el job `datos` falla y lo explica; el Release ya quedó publicado |
 
-Sin los secretos `R2_*` el workflow avisa y publica solo el Release.
+Después del primer despliegue del Worker de datos, activa la variable `DATOS_CORTE_ENABLED=true` para que la app se despliegue con el binding.
 
 Varios datasets de SECOP se reconstruyen completos a diario en origen (SECOP II Contratos hacia las 02:43, hora de Colombia). Si eso ocurre en medio de una partición, el pipeline lo detecta con la cabecera `X-SODA2-Truth-Last-Modified` y vuelve a extraer la partición completa, para no mezclar dos versiones del dataset.
 

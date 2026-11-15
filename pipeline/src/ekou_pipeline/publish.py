@@ -4,7 +4,7 @@ Escribe en ``<data_dir>/publicacion/<corte>/``:
 
 - ``contratos.parquet``: la capa silver completa (las cédulas ya van seudonimizadas).
 - ``mapa_municipios`` y ``calidad_corte`` en Parquet, CSV y JSON (el JSON es lo que consume la
-  app desde R2).
+  app desde el Worker de datos).
 - ``resumen.md``: el reporte de calidad en una tabla, para las notas del release.
 """
 
