@@ -1,0 +1,25 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+import { Status } from '../../blocks';
+
+<Meta title="Fundamentos/Formato de datos" />
+
+# Formato de datos
+
+<Status status="accepted" detail="Contrato de presentación de la guía v1.0 · formato es-CO" />
+
+Cómo se muestra cada cifra para que se entienda sola y no engañe.
+
+| Elemento | Regla | Ejemplo |
+| --- | --- | --- |
+| Proporción con señales | Contratos distintos con señales ÷ contratos analizados × 100. Siempre se muestran los dos conteos. | 30%, «36 de 120 contratos analizados» |
+| Cobertura | Analizados ÷ disponibles, aparte del riesgo. | 80%, «120 de 150 disponibles» |
+| Sin datos | Si el denominador es cero, no hay dato. | «Sin datos», nunca 0% |
+| Cero real | Se muestra 0 cuando se midió, y se dice qué se evaluó. | «0 de 100 analizados» |
+| Conteo | Entero, punto de miles, siempre con sustantivo. | 2.500 contratos |
+| Dinero | Pesos con la escala en palabras; en filas densas, `M` = millones. Aclarar si es firmado, vigente, pagado o presupuestado. | $ 2.300 millones; $ 4.800 M |
+| Porcentaje | Máximo un decimal, coma decimal. Se calcula con los valores sin redondear. | 12,5% |
+| Cambio | Puntos porcentuales, no cambio relativo. | +4 p. p. |
+| Fecha | La fecha de actualización del dato, separada del periodo consultado. | «actualizado el 31 dic 2025»; periodo 2025 |
+| Fuente | Toda cifra lleva fuente y periodo cerca. | «SECOP II · 2025» |
+
+Un contrato con varias señales cuenta **una sola vez** en el numerador. Nunca se clasifica a partir de un valor redondeado.

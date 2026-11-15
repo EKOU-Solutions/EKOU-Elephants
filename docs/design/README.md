@@ -21,7 +21,9 @@ The [design system guide v1.0](guide/README.md) is the deliverable and the catal
 - [rules for developers and AI agents](guide/design-system.md);
 - an HTML reference and example screens in phone and laptop simulators.
 
-Storybook was dropped. The previous [guide v0.1](archive/guide-v0.1/README.md) is archived.
+> **Actualización 2026-11-15:** Storybook es ahora la referencia visual viva del sistema de diseño (`npm run storybook`; ver [desarrollo](../desarrollo.md#sistema-de-diseño-storybook)). Reúne los lineamientos para personas y todos los componentes que se crean con la skill `elephants-design`. La página HTML de la guía (`preview.html`, `examples.html`) y las rondas quedan como seguimiento histórico. `tokens.json`, `components.css` y `components.json` siguen siendo la fuente de verdad que Storybook importa. Esto revierte la decisión del 2026-11-08 de descartar Storybook.
+
+The previous [guide v0.1](archive/guide-v0.1/README.md) is archived.
 
 ## Designing pages for development
 

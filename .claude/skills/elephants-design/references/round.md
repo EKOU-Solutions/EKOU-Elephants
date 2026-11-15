@@ -24,5 +24,6 @@ Use `frontend-design` for the plan and its self-critique (spend boldness in one 
 ## Finish
 
 - Add the round to the review log in `docs/design/README.md` as "Proposed — awaiting review".
+- Si el equipo acepta la ronda, se convierte en la siguiente versión mayor de la guía y Storybook se actualiza en la misma entrega (tokens, páginas MDX de fundamentos e historias de los componentes que cambian).
 - Serve the previews locally for the user (`python3 -m http.server` in the round folder) and give the URLs.
 - Report what changed, what was verified, and the decisions the user still has to make. Do not commit.

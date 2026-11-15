@@ -1,0 +1,22 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+import { SpacingScale, Status } from '../../blocks';
+
+<Meta title="Fundamentos/Espacio y forma" />
+
+# Espacio y forma
+
+<Status status="accepted" detail="Guía v1.0" />
+
+Una sola escala para todo el espacio. Las líneas organizan el contenido; no usamos tarjetas ni sombras.
+
+<SpacingScale />
+
+| Uso | Valor |
+| --- | --- |
+| Dentro de un control | `--el-space-12` a `--el-space-16` |
+| Entre elementos relacionados | `--el-space-8` a `--el-space-12` |
+| Entre grupos / secciones | `--el-space-24` a `--el-space-32` / `--el-space-48` |
+| Esquinas: marcas de datos / controles | `--el-mark-radius` 2 px / `--el-control-radius` 6 px |
+| Altura mínima de control | `--el-control-height` 44 px |
+| Líneas: separador / inicio de bloque | `--el-rule` 1 px / `--el-rule-strong` 2 px (encima de cifras clave y encabezados de tabla) |
+| Foco | Anillo de 3 px con 3 px de separación (`--el-focus-width`, `--el-focus-offset`). Nunca se quita. |

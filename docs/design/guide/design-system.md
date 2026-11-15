@@ -2,6 +2,8 @@
 
 Accepted on 2026-11-08: the [Round 05](../rounds/05-system-reference/README.md) editorial direction with **Public Sans**. This file is the short, normative version of the guide. The visual reference (`preview.html`) shows the same rules with live specimens. If the two disagree, report it; do not pick one silently.
 
+> **Actualización 2026-11-15:** la referencia visual viva es Storybook (`npm run storybook`), que importa `tokens.css` y `components.css` de esta carpeta. Cada componente nuevo o modificado se documenta con su historia en Storybook; `preview.html` queda como seguimiento histórico de la v1.0. Todo cambio de diseño pasa por la skill `elephants-design`.
+
 ## Files
 
 | File | Role | Edit? |

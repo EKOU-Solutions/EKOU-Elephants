@@ -1,0 +1,23 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+import { DoAndDont, IconGrid, Status } from '../../blocks';
+
+<Meta title="Fundamentos/Íconos" />
+
+# Íconos
+
+<Status status="accepted" detail="Lucide 0.468.0 (licencia ISC)" />
+
+Lucide con trazo de 2 px: **20 px junto a texto, 24 px en alertas**. Cada ícono acompaña una palabra. En React se usan desde `lucide-react` (misma versión).
+
+<IconGrid />
+
+<DoAndDont
+  dos={[
+    'Ícono + texto visible. Un ícono decorativo lleva aria-hidden="true".',
+    'Si va solo, nombre accesible (aria-label) y área táctil de 44 × 44 px.',
+  ]}
+  donts={[
+    'Emojis, íconos rellenos o de otra familia.',
+    'Calaveras, sirenas o escudos verdes de «seguro» para hablar de riesgo.',
+  ]}
+/>

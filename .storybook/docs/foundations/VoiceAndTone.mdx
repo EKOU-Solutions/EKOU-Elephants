@@ -1,0 +1,31 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+import { DoAndDont, Status } from '../../blocks';
+
+<Meta title="Fundamentos/Voz y tono" />
+
+# Voz y tono
+
+<Status status="accepted" detail="Guía v1.0" />
+
+**Directo y movilizador.** La fuerza viene del hecho y del número, no del adjetivo. Tuteamos («Revisa», «Consulta») y usamos un español claro para Colombia. Ejemplos con datos ficticios.
+
+| Patrón | Así lo decimos | Nunca |
+| --- | --- | --- |
+| Un solo oferente | Solo una empresa se presentó. Nadie más compitió por este contrato de $ 2.300 millones. | ~~Contrato amañado~~ |
+| Contratación directa repetida | La misma empresa recibió 6 contratos directos de esta alcaldía en 2025. | ~~Favorecimiento~~ |
+| Sobrecosto | Este contrato ya cuesta 40% más de lo firmado. | ~~Robo~~ |
+| Obra sin terminar | Esta obra lleva 2 años detenida. Debía entregarse en marzo de 2024. | ~~Obra fantasma~~ |
+| Riesgo bajo | Pocas señales en los contratos que analizamos. | ~~Territorio limpio~~ |
+
+<DoAndDont
+  dos={[
+    'Frase corta, verbo activo, número concreto.',
+    'Fuente y fecha siempre cerca del dato.',
+    'Recordar que una señal es motivo para revisar, no prueba de nada.',
+  ]}
+  donts={[
+    '«Corrupción», «robo», «sospechoso» o nombres de personas naturales (TASK-08).',
+    'Jerga de contratación sin traducir.',
+    '«Enviar», «OK» o «Clic aquí» en botones.',
+  ]}
+/>

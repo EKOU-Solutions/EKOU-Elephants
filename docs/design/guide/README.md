@@ -4,6 +4,8 @@ Status: **Accepted** (2026-11-08). Task: [#6](https://github.com/EKOU-Solutions/
 
 This is the deliverable of TASK-05: an HTML guide, documentation for developers and AI agents, and the `elephants-design` skill, which builds each final page from its API contract. Storybook was dropped by decision on 2026-11-08.
 
+> **Actualización 2026-11-15:** se revirtió esa decisión. La referencia visual viva es Storybook (`npm run storybook`). Esta carpeta conserva la fuente de verdad de tokens y catálogo (`tokens.json`, `components.css`, `components.json`, `build.py`), que Storybook importa. La página de referencia `preview.html` y los ejemplos `examples.html` quedan como seguimiento histórico de la v1.0: no se amplían con componentes nuevos.
+
 ## Start here
 
 | You are | Read |

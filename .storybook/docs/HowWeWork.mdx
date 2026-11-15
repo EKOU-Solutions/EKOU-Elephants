@@ -1,0 +1,67 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Cómo trabajamos" />
+
+# Cómo trabajamos el diseño
+
+**Regla global del proyecto** (`AGENTS.md`, la leen Claude, Codex y Antigravity): todo cambio de diseño, de una pantalla o de un componente visual pasa por el flujo de la skill **`elephants-design`**. No hay excepción para cambios pequeños: la skill decide qué tan profundo es el proceso.
+
+Si una persona o un agente intenta saltarse el flujo, la respuesta es: *«Este cambio debe pasar por el flujo de diseño. Usa el comando `/elephants-design` (Claude), `$elephants-design` (Codex) o pídele a Antigravity que use la skill `elephants-design`.»*
+
+## Qué ruta toma cada cambio
+
+La skill clasifica el pedido y elige la ruta más corta que es segura:
+
+| Pedido | Ruta | Qué pasa |
+| --- | --- | --- |
+| Ajuste puntual que **mantiene la dirección** (un texto, un espaciado, un bug visual, un contraste) | **Ajuste** | Se revisa contra los tokens y el catálogo, se corrige, se actualiza la historia y se vuelve a validar. |
+| **Pantalla o página** para desarrollo (mapa, contrato, búsqueda…) | **Construir una página** | Parte del contrato de nuestra API, explora los datos, define la especificación y los componentes, valida y entrega. |
+| **Componente nuevo** o token nuevo | **Construir una página** (paso de componentes) | Nace de una página que lo necesita y requiere aprobación antes de entrar al catálogo. |
+| Juzgar una ronda o la guía | **Auditoría** | Revisión contra el brief, con las otras skills de diseño como segunda opinión. |
+| **Cambiar la dirección** (paleta, tipografía, lenguaje visual) | **Ronda** | Nueva ronda en `docs/design/rounds/`; si se acepta, es la siguiente versión mayor. |
+| No hay brief o cambió el negocio o la audiencia | **Descubrimiento** | Se construye el brief primero. |
+
+Ninguna ruta publica, hace commit ni marca algo como aceptado sin la instrucción de una persona del equipo.
+
+## Cómo entra un componente a Storybook
+
+1. Nace en el flujo **Construir una página** y se aprueba.
+2. Se implementa como componente React en `src/` (por ejemplo, `src/ui/risk-tag/`) usando solo tokens `--el-*` y clases del catálogo.
+3. Se escribe su historia **al lado** del componente: `ComponentName.stories.tsx`, con `tags: ['autodocs']`. El código va en inglés (nombre del componente, props, variables y archivos); lo que lee una persona va en español: el título (`Componentes/Núcleo/…` o `Componentes/Candidatos/…`), el `name` de cada historia, la descripción de las props y los textos de la interfaz. Lleva una historia por estado: normal, vacío o «Sin datos», error, carga, y el caso de 320 px si aplica.
+4. Se documenta en lenguaje claro: para qué sirve, cuándo usarlo, qué evitar y la accesibilidad.
+5. Se actualiza `components.json` y, si existía, se retira la historia de especificación de `.storybook/catalog/`.
+6. Se valida: `npm run build-storybook`, panel de accesibilidad sin fallas, tema claro y oscuro, 320 px.
+
+## Plantilla de historia
+
+```tsx
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { RiskTag } from './RiskTag';
+
+const meta = {
+  title: 'Componentes/Núcleo/Etiqueta de riesgo',
+  component: RiskTag,
+  tags: ['autodocs'],
+  parameters: {
+    docs: { description: { component: 'Para qué sirve, cuándo usarla y qué evitar.' } },
+  },
+} satisfies Meta<typeof RiskTag>;
+
+export default meta;
+type Story = StoryObj<typeof meta>;
+
+export const High: Story = { name: 'Alto', args: { level: 'high' } };
+export const Unknown: Story = { name: 'Sin datos', args: { level: 'unknown' } };
+```
+
+## Dónde vive cada cosa
+
+| Qué | Dónde |
+| --- | --- |
+| Configuración de Storybook | `.storybook/main.ts`, `.storybook/preview.tsx` |
+| Lineamientos (estas páginas) | `.storybook/docs/*.mdx` |
+| Especificación del catálogo v1.0 | `.storybook/catalog/` |
+| Componentes reales y sus historias | `src/**/*.stories.tsx` |
+| Tokens y catálogo (fuente de verdad) | `docs/design/guide/` |
+| Flujo de la skill | `.claude/skills/elephants-design/` (enlazada para Codex y Antigravity en `.agents/skills/`) |
+| Historial de rondas | `docs/design/rounds/` |

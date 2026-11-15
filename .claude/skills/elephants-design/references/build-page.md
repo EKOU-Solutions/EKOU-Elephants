@@ -86,12 +86,12 @@ For each row of the spec:
 2. Components with `"status": "candidate"` (status pill, coverage bar, breakdown bars, progress vs expected, signal item) are approved or discarded here, the first time a real page needs them. On approval, set them to `core`; if discarded, remove them.
 3. If nothing fits, propose a **new component**:
    - purpose, anatomy, variants, states, tokens, accessibility, do / avoid;
-   - a specimen in the reference page (`source.html`).
+   - una historia en Storybook con sus estados (ver `.storybook/docs/HowWeWork.mdx`). La página HTML `source.html` es histórica y ya no se amplía.
 
    Iterate until the user approves it. Then add it to the guide:
    - `components.css`;
    - `components.json`;
-   - its section in `source.html`.
+   - su historia en Storybook: junto al componente en `src/` si ya es React, o en `.storybook/catalog/` mientras sea solo especificación.
 
    Next, run `build.py`, which fails if `components.json` and the CSS or tokens disagree. Then bump the guide's minor version and note the change in the guide README. Never use a component in a page before it is in the catalog.
 4. A new token follows the same path: it goes into `tokens.json`, then `build.py` regenerates `tokens.css` and checks contrast. Never use a raw hex value.
@@ -116,6 +116,7 @@ If the page reuses the examples tooling, generate it with a small `build.py` (Py
 - `impeccable detect` on the mockup. Report the accepted advisories (grey hatch) as such.
 - Copy reviewed against the tone rules (`design:ux-copy`).
 - The 10-second test from the spec, answered honestly.
+- Storybook: `npm run build-storybook` sin errores; las historias de los componentes que usa la página, sin fallas en el panel de accesibilidad, en claro y oscuro.
 - Limits: what was not checked.
 
 ## 6. Approve and hand off
@@ -131,6 +132,7 @@ The handoff is the folder itself:
 - `spec.md`: hierarchy, field to component to token mapping, states, copy.
 - `mockup.html`: the visual target.
 - `validation.md`: what was verified.
+- Las historias de Storybook de cada componente nuevo o confirmado en el paso 3.
 
 If the contract changes after approval, the page goes back to step 0: re-check the contract and update `spec.md`.
 

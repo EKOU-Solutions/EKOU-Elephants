@@ -21,6 +21,10 @@ Brand, interaction and data have separate roles. Selection must retain the terri
 
 This confirms the brief's "data journalism" visual world. How pages are designed from now on: [design flow](design-flow.md).
 
+## Referencia en Storybook (2026-11-15)
+
+**Decisión (Jouler):** el sistema de diseño se consulta en Storybook (`npm run storybook`). Reúne los lineamientos para personas, los fundamentos, la accesibilidad y el catálogo, y en él se suman los componentes que se crean con la skill `elephants-design`. La guía HTML v1.0 y las rondas quedan como seguimiento histórico. Los tokens y el catálogo siguen saliendo de `docs/design/guide/`. Revierte la decisión del 2026-11-08 de descartar Storybook. La dirección visual no cambia.
+
 ## Earlier selection — Round 02 (basis of the colour roles)
 
 The user selected Round 02's visual direction after comparing Transparency-inspired Round 03. The all-warm map suggested that everything was wrong; distinct blue, yellow and warm-red categories communicate the intended business meaning more clearly to the user. The native system font's legibility remains accepted.

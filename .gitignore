@@ -27,3 +27,7 @@ pipeline/transform/.user.yml
 .agents/skills/impeccable/scripts/bin/
 .impeccable/config.local.json
 .claude/settings.local.json
+
+# Storybook (estático generado)
+storybook-static/
+*storybook.log

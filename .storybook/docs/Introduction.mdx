@@ -1,0 +1,54 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+import { Status } from '../blocks';
+
+<Meta title="Introducción" />
+
+# Sistema de diseño de EKOU Elephants
+
+<Status status="accepted" detail="Guía v1.0 · aceptada el 8 nov 2026 (Ronda 05, editorial, con Public Sans)" />
+
+Elephants ayuda a la ciudadanía colombiana a entender el gasto público y a hacer veeduría sin conocimientos técnicos. Este Storybook es **la referencia viva** para diseñar y construir su interfaz: aquí están los lineamientos, los fundamentos visuales y todos los componentes, con ejemplos que puedes probar en tema claro y oscuro y en tamaño de celular.
+
+Todos los datos que ves aquí son **ficticios**.
+
+## Cómo usarlo según tu rol
+
+| Si… | Empieza por |
+| --- | --- |
+| **Construyes (desarrollo)** | [Cómo trabajamos](?path=/docs/cómo-trabajamos--docs), luego cada componente en **Componentes**. Importa `tokens.css`, usa solo variables `--el-*` (el = Elephants) y copia el marcado de la pestaña *Show code*. |
+| **Diseñas la experiencia (UX)** | [Principios](?path=/docs/principios--docs) y [Voz y tono](?path=/docs/fundamentos-voz-y-tono--docs): cómo hablamos de una señal y qué nunca decimos. |
+| **Diseñas la interfaz (UI)** | **Fundamentos** (color, tipografía, espacio, íconos) y los componentes. Revisa todo en claro y oscuro, y primero en celular. |
+| **Eres un agente de IA** | Lo mismo que desarrollo, y además la regla de `AGENTS.md`: todo cambio de diseño pasa por la skill `elephants-design`. |
+
+## Cómo moverte
+
+- **Barra superior › Tema**: cambia entre *Según el dispositivo*, *Claro* y *Oscuro*. Aplica a historias y a estas páginas.
+- **Barra superior › Viewport**: prueba *Celular mínimo · 320 px*. Nada debe desplazarse en horizontal.
+- **Panel inferior › Controls**: cambia el texto, la variante o el estado de un componente.
+- **Panel inferior › Accessibility**: revisa contraste y roles de cada historia con axe.
+
+## Qué hay en cada sección
+
+- **Principios**: cinco reglas para decidir cuando una pieza no cubre tu caso.
+- **Fundamentos**: color, tipografía, espacio y forma, íconos, voz y tono, y el formato de cifras.
+- **Accesibilidad**: la línea base que toda pantalla cumple.
+- **Componentes**: el catálogo. *Núcleo* = aceptado; *Candidato* = la primera página que lo necesite lo confirma o lo descarta. Aquí se suman los componentes nuevos que se crean con la skill `elephants-design`.
+- **Historial**: las rondas de diseño y la guía HTML v1.0, guardadas como seguimiento.
+
+## Levantar este Storybook
+
+```sh
+npm install
+npm run storybook          # http://localhost:6006
+npm run build-storybook    # versión estática en storybook-static/
+```
+
+## Fuentes de verdad
+
+Storybook **muestra** el sistema; no lo redefine. Los valores salen de estos archivos:
+
+- `docs/design/guide/tokens.json` → `tokens.css` (generado por `build.py`, que también comprueba el contraste).
+- `docs/design/guide/components.css` y `components.json` (catálogo).
+- `docs/design/visual-direction.md` (decisiones aceptadas).
+
+Si Storybook y esos archivos no coinciden, repórtalo; no elijas uno en silencio.

@@ -1,0 +1,38 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+import { Status } from '../blocks';
+
+<Meta title="Historial" />
+
+# Historial del sistema de diseño
+
+<Status status="historical" detail="Seguimiento: no se edita para cambiar el sistema" />
+
+Desde el 15 nov 2026, **Storybook es la referencia viva** del sistema de diseño. Todo lo anterior se conserva en el repositorio como historia del proceso: sirve para entender por qué se decidió cada cosa, no para construir.
+
+## Rondas de diseño
+
+| Ronda | Hipótesis | Resultado |
+| --- | --- | --- |
+| 01 | Acentos de EKOU contenidos dejan el mapa como foco | Tipografía aceptada; semántica del mapa y errores reemplazados |
+| 02 | Base azul, señales ámbar/rojo y errores recuperables | Seleccionada tras comparar; base de los roles de riesgo |
+| 03 | Escala cálida continua inspirada en Transparencia | No seleccionada: el mapa todo cálido se sentía caótico |
+| 04 | Guía guiada por el mapa, estilo libro contable | Revisada: estructura poco clara para construir; se conservó la trama |
+| 05 | Referencia de componentes para dev/UX/UI, temas claro y oscuro | **Seleccionada (final)** el 8 nov 2026 con Public Sans → guía v1.0 |
+| 06 | Capa limpia: lienzo con tarjetas blancas | No seleccionada: invita a explorar, pero se aleja del dato |
+
+## Dónde está
+
+| Qué | Ruta en el repositorio |
+| --- | --- |
+| Índice y registro de revisiones | `docs/design/README.md` |
+| Decisiones aceptadas | `docs/design/visual-direction.md` |
+| Rondas 01 a 06 | `docs/design/rounds/` |
+| Guía HTML v1.0 (previsualización y pantallas de ejemplo) | `docs/design/guide/` · `python3 docs/design/guide/build.py` |
+| Guía v0.1 (archivada) | `docs/design/archive/guide-v0.1/` |
+| Auditorías | `docs/design/audits/` |
+
+La carpeta `docs/design/guide/` sigue siendo la **fuente de los tokens** (`tokens.json` → `tokens.css`) y del catálogo (`components.css`, `components.json`): Storybook los importa. Lo que pasa a seguimiento es su página HTML de referencia (`preview.html`, `examples.html`).
+
+## Decisión del 15 nov 2026
+
+El 8 nov 2026 se descartó Storybook y se entregó la guía como HTML. El 15 nov 2026 el equipo revirtió esa decisión: Storybook reúne en un solo lugar los lineamientos para personas, los componentes que se van creando y su revisión de accesibilidad, y se levanta con `npm run storybook`.
