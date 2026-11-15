@@ -14,7 +14,8 @@ export function crearApp(db: Queryable) {
 
   app.notFound((c) => c.json({ error: 'no_encontrado' }, 404));
   app.onError((err, c) => {
-    if (err instanceof TerritorioNoEncontrado) return c.json({ error: 'territorio_no_encontrado' }, 404);
+    if (err instanceof TerritorioNoEncontrado)
+      return c.json({ error: 'territorio_no_encontrado' }, 404);
     console.error('Unhandled error:', err.name); // no message/stack: may contain connection details
     return c.json({ error: 'error_interno' }, 500);
   });

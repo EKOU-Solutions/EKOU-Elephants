@@ -4,7 +4,7 @@ Alcance del MVP: [Explorar Colombia, contratos municipales y patrones sospechoso
 
 📊 **Fuentes de datos:** ver [docs/fuentes-de-datos.md](docs/fuentes-de-datos.md)
 
-🛠️ **Desarrollo local:** ver [docs/desarrollo.md](docs/desarrollo.md)
+🛠️ **Desarrollo local:** ver [docs/desarrollo.md](docs/desarrollo.md) · **CI/CD y previews por PR:** ver [docs/ci-cd.md](docs/ci-cd.md)
 
 🏗️ **Arquitectura y módulos:** ver [docs/arquitectura.md](docs/arquitectura.md)
 

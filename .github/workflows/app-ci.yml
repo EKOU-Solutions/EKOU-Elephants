@@ -1,0 +1,55 @@
+name: app-ci
+
+# Calidad de la app: lint y formato (Biome), tipos, pruebas con PostgreSQL, build y paquete.
+# La invocan app-preview (PRs) y app-deploy (main). Sin secretos: sirve también para forks.
+on:
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  quality:
+    name: Calidad de la app
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: elephants_ci
+        ports: [5432:5432]
+        options: >-
+          --health-cmd "pg_isready -U postgres -d elephants_ci"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      TEST_DATABASE_URL: postgres://postgres:postgres@localhost:5432/elephants_ci
+      WRANGLER_SEND_METRICS: 'false'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Lint (Biome)
+        run: npm run lint
+      - name: Formato (Biome)
+        run: npm run format:check
+      - name: Tipos
+        run: npm run typecheck
+      - name: Pruebas unitarias, HTTP y PostgreSQL
+        run: npm test
+      - name: Build del cliente y el Worker
+        run: npm run build
+      - name: Validar el paquete de despliegue
+        run: npm run deploy:dry-run

@@ -7,5 +7,17 @@
     "not_found_handling": "single-page-application",
     "run_worker_first": ["/api/*"]
   },
-  "observability": { "enabled": true }
+  "observability": {
+    "enabled": true
+  },
+  // Datos del corte mensual: Worker solo de archivos estáticos que publica TASK-15 (docs/ci-cd.md).
+  "services": [{ "binding": "DATOS", "service": "ekou-elephants-datos" }],
+  "preview_urls": true,
+  "previews": {
+    "observability": {
+      "enabled": true
+    },
+    // Los previews no heredan los bindings; el workflow puede cambiarlo por el Worker de datos del PR.
+    "services": [{ "binding": "DATOS", "service": "ekou-elephants-datos" }]
+  }
 }

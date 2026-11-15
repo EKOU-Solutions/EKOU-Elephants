@@ -5,13 +5,21 @@ import { crearApp } from '../../src/server/app';
 import { createDb } from '../../src/server/db';
 
 const url = process.env.TEST_DATABASE_URL;
+// Solo se usa dentro del describe, que se omite cuando no hay URL.
+const dbUrl = url ?? '';
 
 // Needs a disposable database: it runs migrations up/down against it.
 describe.skipIf(!url)('HTTP → caso de uso → PostgreSQL', () => {
   // Programmatic API: same SQL loader and table as `npm run migrate`, with no child process,
   // so it behaves the same on Windows (npx.cmd), macOS and Linux.
   const migrarArriba = () =>
-    runner({ databaseUrl: url!, dir: 'migrations', direction: 'up', migrationsTable: 'pgmigrations', log: () => {} });
+    runner({
+      databaseUrl: dbUrl,
+      dir: 'migrations',
+      direction: 'up',
+      migrationsTable: 'pgmigrations',
+      log: () => {},
+    });
   const client = new pg.Client({ connectionString: url });
   let conectado = false;
 
@@ -31,13 +39,17 @@ describe.skipIf(!url)('HTTP → caso de uso → PostgreSQL', () => {
   });
 
   it('devuelve el resumen almacenado', async () => {
-    const res = await crearApp(createDb(() => url!)).request('/api/mapa/territorios/98/resumen');
+    const res = await crearApp(createDb(() => dbUrl)).request('/api/mapa/territorios/98/resumen');
     expect(res.status).toBe(200);
-    expect(await res.json()).toMatchObject({ codigo: '98', presupuestoAsignadoCentavos: 100050, obrasConRetraso: 2 });
+    expect(await res.json()).toMatchObject({
+      codigo: '98',
+      presupuestoAsignadoCentavos: 100050,
+      obrasConRetraso: 2,
+    });
   });
 
   it('devuelve 404 para un territorio inexistente', async () => {
-    const res = await crearApp(createDb(() => url!)).request('/api/mapa/territorios/97/resumen');
+    const res = await crearApp(createDb(() => dbUrl)).request('/api/mapa/territorios/97/resumen');
     expect(res.status).toBe(404);
   });
 
@@ -46,19 +58,25 @@ describe.skipIf(!url)('HTTP → caso de uso → PostgreSQL', () => {
       `INSERT INTO gasto_territorial VALUES ('96','Límite', $1, $1, 0, 0) ON CONFLICT DO NOTHING`,
       ['90071992547409.91'],
     );
-    const res = await crearApp(createDb(() => url!)).request('/api/mapa/territorios/96/resumen');
+    const res = await crearApp(createDb(() => dbUrl)).request('/api/mapa/territorios/96/resumen');
     expect(res.status).toBe(200);
     expect(await res.json()).toMatchObject({
-      presupuestoAsignadoCentavos: Number.MAX_SAFE_INTEGER, gastoActualCentavos: Number.MAX_SAFE_INTEGER,
+      presupuestoAsignadoCentavos: Number.MAX_SAFE_INTEGER,
+      gastoActualCentavos: Number.MAX_SAFE_INTEGER,
     });
   });
 
-  it.each(['presupuesto_asignado', 'gasto_actual'])('PostgreSQL rechaza %s fuera de rango', async (campo) => {
-    // The column name comes from this fixed test list, never from user input.
-    await expect(client.query(
-      `UPDATE gasto_territorial SET ${campo} = $1 WHERE codigo = '98'`, ['90071992547409.92'],
-    )).rejects.toMatchObject({ code: '23514' });
-  });
+  it.each(['presupuesto_asignado', 'gasto_actual'])(
+    'PostgreSQL rechaza %s fuera de rango',
+    async (campo) => {
+      // The column name comes from this fixed test list, never from user input.
+      await expect(
+        client.query(`UPDATE gasto_territorial SET ${campo} = $1 WHERE codigo = '98'`, [
+          '90071992547409.92',
+        ]),
+      ).rejects.toMatchObject({ code: '23514' });
+    },
+  );
 
   it('no reaplica migraciones ya ejecutadas', async () => {
     expect(await migrarArriba()).toEqual([]);
