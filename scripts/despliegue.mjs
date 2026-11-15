@@ -2,7 +2,6 @@
 // Uso: node scripts/despliegue.mjs preview|produccion
 //
 // preview:    PREVIEW_NAME (pr-123), DATABASE_URL; MIGRAR=true exige DATABASE_URL_UNPOOLED.
-//             DATOS_R2_PREFIJO opcional, se inyecta como variable del Worker.
 // produccion: DATABASE_URL y DATABASE_URL_UNPOOLED de la rama `production` de Neon; siempre migra.
 // Ambos:      CLOUDFLARE_API_TOKEN y CLOUDFLARE_ACCOUNT_ID.
 //
@@ -105,14 +104,10 @@ export async function desplegarPreview({
   if (!/^pr-[1-9]\d*$/.test(env.PREVIEW_NAME)) {
     throw new Error('PREVIEW_NAME debe identificar un PR (pr-123).');
   }
-  if (env.DATOS_R2_PREFIJO && !/^[a-z0-9][a-z0-9/_-]*\/$/.test(env.DATOS_R2_PREFIJO)) {
-    throw new Error('DATOS_R2_PREFIJO no es un prefijo válido (ej.: previews/pr-123/datos/).');
-  }
   if (migra) migrar(env, run);
 
   const salida = conSecretos(env, (archivo) => {
     const args = [WRANGLER, 'preview', '--name', env.PREVIEW_NAME, '--ignore-base-config'];
-    if (env.DATOS_R2_PREFIJO) args.push('--var', `DATOS_R2_PREFIJO:${env.DATOS_R2_PREFIJO}`);
     args.push('--secrets-file', archivo, '--json');
     try {
       return run(process.execPath, args, { env, encoding: 'utf8', stdio: 'pipe' });

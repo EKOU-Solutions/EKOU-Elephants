@@ -8,8 +8,8 @@ Implementa [TASK-04 · Configurar CI y CD (#5)](https://github.com/EKOU-Solution
 flowchart LR
   pr[PR abierto o actualizado] --> ci[app-ci: Biome, tipos, pruebas, build]
   ci --> prev[app-preview: Worker de preview en Cloudflare]
-  prev --> com[Comentario fijado: URL, base y datos]
-  com -- marcar casillas --> prev
+  prev --> com[Comentario fijado: URL y base de datos]
+  com -- marcar la casilla --> prev
   merge[Merge a main] --> ci2[app-ci] --> dev[Migraciones en Neon dev] --> aprob{Aprobación manual} --> prod[Producción: migraciones + Worker]
   cerrar[PR cerrado] --> limpiar[Borrar preview y rama de Neon]
 ```
@@ -37,22 +37,20 @@ Cada PR desde una rama de este repositorio (no forks ni Dependabot) despliega un
 
 > Fijar comentarios está documentado para issues (GitHub, febrero de 2026). En PRs no está verificado. Si la API lo rechaza, el comentario queda sin fijar y el log lo avisa.
 
-El comentario muestra la URL, el commit desplegado, la base de datos y el prefijo de R2 que usa el preview. También tiene dos casillas. Al marcar o desmarcar una, se vuelve a desplegar el último commit del PR con esa configuración:
+El comentario muestra la URL, el commit desplegado y la base de datos que usa el preview. También tiene una casilla. Al marcarla o desmarcarla, se vuelve a desplegar el último commit del PR con esa configuración:
 
 | Casilla | Sin marcar (por defecto) | Marcada |
 | --- | --- | --- |
 | **Copia propia de la base de datos** | Base compartida `dev` de Neon. No se aplican migraciones. | Rama de Neon `preview/pr-<n>` creada desde `dev`, con las migraciones del PR. Al desmarcarla se borra. |
-| **Prefijo de R2 propio** | Variable `DATOS_R2_PREFIJO=datos/` (el corte publicado por TASK-15) | `DATOS_R2_PREFIJO=previews/pr-<n>/datos/`: sube ahí tus archivos modificados con la misma estructura (`latest.json` y `AAAA-MM/`). |
 
 Casos de uso:
 
 - **No cambiaste el backend:** no marques nada. El preview usa `dev`.
 - **Cambiaste tablas o migraciones:** marca la copia de la base. Si el PR toca `migrations/` sin la copia, el preview **no se despliega** y el comentario explica por qué. Las migraciones de un PR nunca se aplican a `dev`.
-- **Quieres probar datos de R2 modificados** (por ejemplo, municipios del mapa): marca el prefijo propio y sube tus archivos a `previews/pr-<n>/datos/`.
 
-Solo cuenta la edición de alguien con permiso de escritura en el repositorio. La lectura de opciones y la gestión del comentario usan el código de `main`, no el del PR. Al cerrar el PR se borran el preview de Cloudflare y la rama de Neon. Los archivos bajo `previews/pr-<n>/` en R2 **no se borran automáticamente** (pendiente).
+Solo cuenta la edición de alguien con permiso de escritura en el repositorio. La lectura de opciones y la gestión del comentario usan el código de `main`, no el del PR. Al cerrar el PR se borran el preview de Cloudflare y la rama de Neon.
 
-**Pendiente con TASK-09 (#16):** hoy la API lee PostgreSQL y el adaptador de R2 no existe. El workflow ya inyecta `DATOS_R2_PREFIJO`, con la misma estructura que publica el corte mensual de TASK-15 (PR #26): `latest.json` apunta al corte vigente en `AAAA-MM/`. El adaptador R2 de #16 debe leer bajo ese prefijo. Falta decidir en #16 si, cuando falte un archivo en el prefijo del PR, se usa el de `datos/`. Previews y producción comparten el bucket de TASK-15; los previews solo leen.
+**Datos del corte mensual:** no se usa R2. El corte mensual (TASK-15) genera los JSON y los publica como GitHub Release `corte-AAAA-MM`; la API los lee como archivos estáticos del mismo Worker. Los previews **no** dependen de esos archivos. Cómo entran al despliegue de producción está pendiente (ver «Producción»).
 
 ## Producción
 
@@ -64,11 +62,13 @@ Con cada push a `main` (tras el merge de un PR):
 
 Una migración fallida detiene el despliegue. Un despliegue fallido **no revierte** las migraciones ya aplicadas, así que las migraciones deben ser aditivas y compatibles con la versión anterior. Para revertir código, haz un PR que revierta el cambio y vuelve a pasar por el pipeline. El rollback de Cloudflare restaura código, no datos. Tras el primer despliegue real, verifica a mano la SPA, `GET /api/salud` y una ruta que use la base.
 
+**Pendiente: datos del corte en producción.** Los archivos estáticos son parte de cada versión del Worker, así que un despliegue que no los incluya los quita de producción. Falta definir cómo se incluyen los JSON del último Release `corte-AAAA-MM` en cada despliegue y el comando local para lanzar el corte.
+
 ## Configuración única (administración del repositorio)
 
 Nada de esto lo crean los archivos del repositorio. Los secretos nunca se escriben en archivos ni en el chat.
 
-1. **Cloudflare (cuenta de EKOU):** crea un token de API con permiso de edición de Workers Scripts (y de R2 cuando exista el bucket), limitado a la cuenta. No le des permisos de DNS.
+1. **Cloudflare (cuenta de EKOU):** crea un token de API con permiso de edición de Workers Scripts, limitado a la cuenta (plantilla «Edit Cloudflare Workers», sin R2). No le des permisos de DNS.
 2. **Neon:** crea una clave de API para crear y borrar ramas del proyecto. La rama `dev` **debe ser permanente** (sin TTL), porque es la base compartida y el origen de las copias.
 3. **GitHub → Settings → Environments:**
    - `preview`: secretos `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `NEON_API_KEY`, `DATABASE_URL_DEV` (pooler de `dev`) y `DATABASE_URL_DEV_UNPOOLED` (conexión directa de `dev`).

@@ -3,7 +3,7 @@ import { renderizarComentario } from './control.mjs';
 import { calcularOpciones, publicarComentario } from './github.mjs';
 
 const bot = (id, body) => ({ id, body, user: { login: 'github-actions[bot]' } });
-const opciones = { copiaBd: true, prefijoR2Propio: false };
+const opciones = { copiaBd: true };
 
 function apiFalsa({ comentarios = [], archivos = [], fallaPin = false } = {}) {
   return vi.fn(async (metodo, ruta) => {

@@ -18,9 +18,6 @@ describe('desplegarPreview', () => {
     await expect(desplegarPreview({ env: { ...base, PREVIEW_NAME: 'main' }, run })).rejects.toThrow(
       'PREVIEW_NAME',
     );
-    await expect(
-      desplegarPreview({ env: { ...base, DATOS_R2_PREFIJO: '../otro' }, run }),
-    ).rejects.toThrow('DATOS_R2_PREFIJO');
     const { DATABASE_URL_UNPOOLED: _, ...sinDirecta } = base;
     await expect(desplegarPreview({ env: { ...sinDirecta, MIGRAR: 'true' }, run })).rejects.toThrow(
       'DATABASE_URL_UNPOOLED',
@@ -38,15 +35,10 @@ describe('desplegarPreview', () => {
         DATABASE_URL: base.DATABASE_URL,
       });
       expect(statSync(archivo).mode & 0o777).toBe(0o600);
-      expect(args).toContain('DATOS_R2_PREFIJO:previews/pr-12/datos/');
       return respuestaPreview;
     });
     const verify = vi.fn();
-    const url = await desplegarPreview({
-      env: { ...base, DATOS_R2_PREFIJO: 'previews/pr-12/datos/' },
-      run,
-      verify,
-    });
+    const url = await desplegarPreview({ env: base, run, verify });
     expect(url).toBe('https://pr-12.ekou.workers.dev/');
     expect(run).toHaveBeenCalledTimes(1);
     expect(verify).toHaveBeenCalledWith(url);

@@ -1,26 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import {
-  bloqueoPorMigraciones,
-  leerOpciones,
-  MARCA,
-  prefijoR2,
-  renderizarComentario,
-} from './control.mjs';
+import { bloqueoPorMigraciones, leerOpciones, MARCA, renderizarComentario } from './control.mjs';
 
-const opciones = { copiaBd: false, prefijoR2Propio: false };
+const opciones = { copiaBd: false };
 
 describe('comentario de control', () => {
-  it('sin comentario usa la base compartida y el prefijo datos/', () => {
+  it('sin comentario usa la base compartida', () => {
     expect(leerOpciones(undefined)).toEqual(opciones);
-    expect(prefijoR2(7, opciones)).toBe('datos/');
   });
 
   it('lo que renderiza se vuelve a leer igual (ida y vuelta)', () => {
-    for (const o of [
-      opciones,
-      { copiaBd: true, prefijoR2Propio: true },
-      { copiaBd: true, prefijoR2Propio: false },
-    ]) {
+    for (const o of [opciones, { copiaBd: true }]) {
       const cuerpo = renderizarComentario({
         pr: 7,
         sha: 'abcdef123',
@@ -39,8 +28,7 @@ describe('comentario de control', () => {
       opciones,
       estado: 'desplegado',
     }).replace('- [ ] **Copia propia', '- [X] **Copia propia');
-    expect(leerOpciones(cuerpo)).toEqual({ copiaBd: true, prefijoR2Propio: false });
-    expect(prefijoR2(7, { prefijoR2Propio: true })).toBe('previews/pr-7/datos/');
+    expect(leerOpciones(cuerpo)).toEqual({ copiaBd: true });
   });
 
   it('bloquea migraciones sobre la base compartida', () => {
@@ -58,7 +46,7 @@ describe('comentario de control', () => {
     const cuerpo = renderizarComentario({
       pr: 7,
       sha: 'abcdef1',
-      opciones: { copiaBd: true, prefijoR2Propio: false },
+      opciones: { copiaBd: true },
       estado: 'bloqueado',
       motivo: 'razón',
       url: 'https://pr-7.x.dev/',

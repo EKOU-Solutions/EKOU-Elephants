@@ -1,9 +1,9 @@
 name: app-preview
 
 # Preview de cada PR en Cloudflare Workers (app + API).
-# - Por defecto usa la base compartida `dev` de Neon y el prefijo `datos/` de R2 (corte publicado por TASK-15).
-# - El comentario fijado "Preview de este PR" tiene casillas: copia propia de la base
-#   (rama de Neon desde `dev`) y prefijo de R2 propio. Al editarlas se redespliega.
+# - Por defecto usa la base compartida `dev` de Neon. No incluye los datos del corte mensual.
+# - El comentario fijado "Preview de este PR" tiene una casilla: copia propia de la base
+#   (rama de Neon desde `dev`). Al editarla se redespliega.
 # - Al cerrar el PR se borran el preview y la rama de Neon.
 # Configuración y flujo: docs/ci-cd.md.
 
@@ -50,7 +50,6 @@ jobs:
       pr: ${{ steps.pr.outputs.pr }}
       sha: ${{ steps.pr.outputs.sha }}
       copia_bd: ${{ steps.opciones.outputs.copia_bd }}
-      prefijo_r2_propio: ${{ steps.opciones.outputs.prefijo_r2_propio }}
       bloqueo: ${{ steps.opciones.outputs.bloqueo }}
     steps:
       - name: Identificar el PR y validar a quien edita el comentario
@@ -108,7 +107,6 @@ jobs:
       PR: ${{ needs.opciones.outputs.pr }}
       SHA: ${{ needs.opciones.outputs.sha }}
       COPIA_BD: ${{ needs.opciones.outputs.copia_bd }}
-      PREFIJO_R2_PROPIO: ${{ needs.opciones.outputs.prefijo_r2_propio }}
       EJECUCION: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
       GITHUB_TOKEN: ${{ github.token }}
       WRANGLER_SEND_METRICS: 'false'
@@ -174,7 +172,6 @@ jobs:
           MIGRAR: ${{ needs.opciones.outputs.copia_bd }}
           DATABASE_URL: ${{ steps.neon.outputs.db_url_pooled || secrets.DATABASE_URL_DEV }}
           DATABASE_URL_UNPOOLED: ${{ steps.neon.outputs.db_url }}
-          DATOS_R2_PREFIJO: ${{ needs.opciones.outputs.prefijo_r2_propio == 'true' && format('previews/pr-{0}/datos/', needs.opciones.outputs.pr) || 'datos/' }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       - name: Publicar resultado
