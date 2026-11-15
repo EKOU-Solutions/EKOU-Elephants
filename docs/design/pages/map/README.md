@@ -4,8 +4,8 @@
 
 | | |
 | --- | --- |
-| **Status** | *Exploring*: [contract](contract.md) approved 2026-11-15; API under construction |
-| **Step** | 1. Explore data (after the API serves real data) |
+| **Status** | *Exploring*: [contract](contract.md) approved, API serving real data locally ([#29](https://github.com/EKOU-Solutions/EKOU-Elephants/pull/29)) |
+| **Step** | 2. Define the page (`spec.md`, Approval 1) |
 | **Started** | 2026-11-15 |
 
 ## Files
@@ -13,7 +13,7 @@
 | File | Status |
 | --- | --- |
 | [contract.md](contract.md) | Approved 2026-11-15 |
-| data.md | Not started (after the contract) |
+| [data.md](data.md) | Done 2026-11-15 |
 | spec.md | Not started (Approval 1) |
 | mockup.html | Not started |
 | validation.md | Not started (Approval 2) |

@@ -45,7 +45,7 @@ execFileSync(
     '-dissolve', 'dpto', '+', 'name=departamentos',
     '-rename-fields', 'codigo=dpto', 'target=departamentos',
     '-filter-fields', 'codigo', 'target=municipios',
-    '-o', 'format=topojson', `quantization=${CUANTIZACION}`, 'target=municipios,departamentos', salida,
+    '-o', 'format=topojson', 'bbox', `quantization=${CUANTIZACION}`, 'target=municipios,departamentos', salida,
   ],
   { stdio: ['ignore', 'ignore', 'inherit'] },
 );
@@ -62,6 +62,7 @@ for (const [objeto, total] of Object.entries(ESPERADO)) {
   if (geometrias.length !== total) errores.push(`${objeto}: ${geometrias.length} formas (esperadas ${total})`);
   if (geometrias.some((g) => g.type == null)) errores.push(`${objeto}: hay formas vacías`);
 }
+if (topologia.bbox?.length !== 4) errores.push('falta bbox');
 
 // Join check: the shapes must match the municipalities of every exported cut, code by code.
 const codigosMgn = new Set(topologia.objects.municipios.geometries.map((g) => g.properties.codigo));

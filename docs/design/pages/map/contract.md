@@ -78,7 +78,7 @@ interface Geometria {          // TopoJSON Topology
 - Departments are dissolved from the municipalities, so their borders match exactly.
 - San Andrés, Providencia y Santa Catalina are included. Drawing them as an inset is a layout decision for `spec.md`.
 - Cache: `public, max-age=31536000, immutable`. A new MGN version is a new path.
-- Size budget: **≤ 100 KB with Brotli** (what travels; mobile first, limited data; see the brief) and **≤ 350 KB uncompressed** (parse cost). Built by `scripts/geometria-mgn.mjs` (mapshaper: Visvalingam weighted, 0.4 % of vertices, quantisation 20,000 ≈ 95 m), which fails if the budget or the code join breaks. Result 2026-11-15: 340,530 B, 73,514 B with Brotli.
+- Size budget: **≤ 100 KB with Brotli** (what travels; mobile first, limited data; see the brief) and **≤ 350 KB uncompressed** (parse cost). Built by `scripts/geometria-mgn.mjs` (mapshaper: Visvalingam weighted, 0.4 % of vertices, quantisation 20,000 ≈ 95 m), which fails if the budget or the code join breaks. Result 2026-11-15: 340,615 B, 73,510 B with Brotli.
 - Budget change (2026-11-15): the approved draft said ≤ 300 KB uncompressed. Reaching it needed ≤ 0.3 % of vertices, which deforms small municipalities when zoomed, so the uncompressed limit moved to 350 KB; the Brotli limit is unchanged.
 
 ### 3. `GET /api/mapa/municipios`: one row per municipality
