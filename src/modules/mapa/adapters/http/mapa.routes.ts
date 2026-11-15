@@ -3,6 +3,7 @@ import { Hono } from 'hono';
 import { z } from 'zod';
 import type {
   CorteVigente,
+  DepartamentosDelCorte,
   MunicipiosDelCorte,
   MunicipioSeleccionado,
 } from '../../domain/mapa';
@@ -21,6 +22,7 @@ export interface MapaCasosDeUso {
   obtenerResumenTerritorial: (codigo: string) => Promise<ResumenTerritorial>;
   obtenerCorte: () => Promise<CorteVigente>;
   listarMunicipios: () => Promise<MunicipiosDelCorte>;
+  listarDepartamentos: () => Promise<DepartamentosDelCorte>;
   obtenerMunicipio: (codigo: string) => Promise<MunicipioSeleccionado>;
   obtenerGeometria: (version: string) => Promise<string>;
 }
@@ -43,6 +45,11 @@ export function mapaRoutes(casos: MapaCasosDeUso) {
       const municipios = await casos.listarMunicipios();
       c.header('Cache-Control', CACHE_CORTE);
       return c.json(municipios);
+    })
+    .get('/departamentos', async (c) => {
+      const departamentos = await casos.listarDepartamentos();
+      c.header('Cache-Control', CACHE_CORTE);
+      return c.json(departamentos);
     })
     .get(
       '/municipios/:codigo',

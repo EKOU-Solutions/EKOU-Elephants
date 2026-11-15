@@ -2,6 +2,7 @@ import { mapaRoutes } from '../../modules/mapa/adapters/http/mapa.routes';
 import { gastoTerritorialRepository } from '../../modules/mapa/adapters/postgres/gasto-territorial.repository';
 import { type AlmacenObjetos, mapaR2 } from '../../modules/mapa/adapters/r2/mapa.r2';
 import {
+  listarDepartamentos,
   listarMunicipios,
   obtenerCorte,
   obtenerGeometria,
@@ -16,6 +17,7 @@ export function componerMapa(db: Queryable, datos: AlmacenObjetos) {
     obtenerResumenTerritorial: obtenerResumenTerritorial(gastoTerritorialRepository(db)),
     obtenerCorte: obtenerCorte(mapa),
     listarMunicipios: listarMunicipios(mapa),
+    listarDepartamentos: listarDepartamentos(mapa),
     obtenerMunicipio: obtenerMunicipio(mapa),
     obtenerGeometria: obtenerGeometria(mapa),
   });

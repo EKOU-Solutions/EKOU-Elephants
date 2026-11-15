@@ -13,6 +13,17 @@
 
 The first screen needs `corte` + `municipios` + `geometria`: about **250 KB on the wire** (Brotli), within the brief's mobile budget.
 
+## Levels: nation, departments, municipalities (`GET /api/mapa/departamentos`)
+
+| Level | Contracts 2021–2026 | Share |
+| --- | --- | --- |
+| In one municipality | 6,771,167 | 90.8 % |
+| Only in a department | 626,277 | 8.4 % |
+| Without place | 59,305 | 0.8 % |
+| **National total** | **7,456,749** | 100 % |
+
+Who contracts at department level: governorships place only 28 % of their contracts in a single municipality; 418,086 of their contracts stay at department level. The share "only department" varies a lot: **Arauca 58.2 %**, San Andrés 50.5 %, Amazonas 33.1 %, Quindío and Putumayo 16.7 %; Tolima 0.4 %, Huila 0.3 %, Vaupés ~0 %.
+
 ## Fill rate
 
 | Field | Filled | Notes |
@@ -60,7 +71,8 @@ None. The contract has only territories, counts and sources: no natural persons'
 4. **"Ubicados" is not "ejecutados".** 6.77 M of the 7.46 M contracts signed in 2021–2026 (91 %) are located in a municipality. For 65 % of those, the location comes from the municipal entity's seat (confidence *media*), not from a declared execution place. Copy must say "contratos ubicados en el municipio" with the window, and link to the method; never "contratos ejecutados en".
 5. **Tiny shapes in dense clusters.** The Valle de Aburrá, the Sabana de Bogotá and the Caribbean coast pack dozens of small municipalities. On a 390 px screen many are under one finger width. Selection cannot rely on tapping the map alone: the page needs a **search by name** (showing the department, see 2) as an equal way in.
 6. **San Andrés needs an inset.** Drawn at true position, the archipelago forces a wide empty area and is invisible on mobile. `spec.md` decides the inset (the geometry already includes it).
-7. **The six largest values are cities people know.** Showing a raw count without context invites ranking ("Bogotá is the worst"). The panel shows the count as information about volume, with the window and the source, and no comparison until TASK-10 defines one.
+7. **A municipal map alone hides the governorships** (raised by the user, contract decision 5). 8.4 % of the contracts, and more than half in Arauca and San Andrés, are located only at department level. The page needs the department as a level of its own, with its department-level contracts, not only as a container of municipalities.
+8. **The six largest values are cities people know.** Showing a raw count without context invites ranking ("Bogotá is the worst"). The panel shows the count as information about volume, with the window and the source, and no comparison until TASK-10 defines one.
 
 ## Checks that back this file
 

@@ -34,6 +34,19 @@ const cacahual = {
   contratosUbicados: null,
 };
 const municipios = { corte: '2026-11', ventana: { desde: 2021, hasta: 2026 }, municipios: [medellin, cacahual] };
+const departamentos = {
+  corte: '2026-11',
+  ventana: { desde: 2021, hasta: 2026 },
+  nacional: {
+    contratos: 7456749,
+    contratosEnMunicipios: 6771167,
+    contratosSoloDepartamento: 626277,
+    contratosSinLugar: 59305,
+  },
+  departamentos: [
+    { codigo: '81', iso: 'CO-ARA', nombre: 'Arauca', contratosEnMunicipios: 19268, contratosSoloDepartamento: 26863 },
+  ],
+};
 const topojson = '{"type":"Topology","objects":{},"arcs":[]}';
 
 function publicado(): Record<string, string> {
@@ -41,6 +54,7 @@ function publicado(): Record<string, string> {
     [claves.puntero]: JSON.stringify({ corte: '2026-11' }),
     [claves.corte('2026-11')]: JSON.stringify(corte),
     [claves.municipios('2026-11')]: JSON.stringify(municipios),
+    [claves.departamentos('2026-11')]: JSON.stringify(departamentos),
     [claves.geometria('mgn-2025')]: topojson,
   };
 }
@@ -129,6 +143,31 @@ describe('GET /api/mapa/municipios', () => {
       [claves.municipios('2026-11')]: JSON.stringify({ ...municipios, corte: '2026-10' }),
     };
     expect((await app(objetos).app.request('/api/mapa/municipios')).status).toBe(503);
+  });
+});
+
+describe('GET /api/mapa/departamentos', () => {
+  it('devuelve los departamentos y el total nacional por nivel', async () => {
+    const res = await app().app.request('/api/mapa/departamentos');
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual(departamentos);
+    expect(res.headers.get('cache-control')).toBe('public, max-age=300, stale-while-revalidate=86400');
+  });
+
+  it('responde 503 si el total nacional no cuadra con sus niveles', async () => {
+    const objetos = {
+      ...publicado(),
+      [claves.departamentos('2026-11')]: JSON.stringify({
+        ...departamentos,
+        nacional: { ...departamentos.nacional, contratosSinLugar: 0 },
+      }),
+    };
+    expect((await app(objetos).app.request('/api/mapa/departamentos')).status).toBe(503);
+  });
+
+  it('responde 503 si faltan los departamentos del corte', async () => {
+    const { [claves.departamentos('2026-11')]: _, ...objetos } = publicado();
+    expect((await app(objetos).app.request('/api/mapa/departamentos')).status).toBe(503);
   });
 });
 

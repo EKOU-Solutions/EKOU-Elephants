@@ -1,4 +1,4 @@
-import type { CorteVigente, MunicipiosDelCorte } from '../../domain/mapa';
+import type { CorteVigente, DepartamentosDelCorte, MunicipiosDelCorte } from '../../domain/mapa';
 
 /** Output port: where the published map data lives (R2 in production). */
 export interface ConsultarMapa {
@@ -6,6 +6,8 @@ export interface ConsultarMapa {
   corteVigente(): Promise<CorteVigente | null>;
   /** One row per municipality for `corte`, or null if the file is missing. */
   municipios(corte: string): Promise<MunicipiosDelCorte | null>;
+  /** The 33 departments and the national total for `corte`, or null if the file is missing. */
+  departamentos(corte: string): Promise<DepartamentosDelCorte | null>;
   /** TopoJSON text for a geometry version, or null if it does not exist. */
   geometria(version: string): Promise<string | null>;
 }

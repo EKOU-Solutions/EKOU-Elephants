@@ -40,6 +40,34 @@ export interface MunicipiosDelCorte {
   municipios: MunicipioDelMapa[];
 }
 
+/** Every contract in the window falls in exactly one level. */
+export interface TotalNacional {
+  contratos: number;
+  /** Located in one municipality (the municipal map). */
+  contratosEnMunicipios: number;
+  /** Located only in a department: governorships, several municipalities, uncertain seat. */
+  contratosSoloDepartamento: number;
+  /** No municipality and no department. */
+  contratosSinLugar: number;
+}
+
+export interface DepartamentoDelMapa {
+  /** DIVIPOLA 2-digit code. */
+  codigo: string;
+  iso: string;
+  nombre: string;
+  /** Sum of its municipalities' `contratosUbicados`. Measured, so 0 is a real zero. */
+  contratosEnMunicipios: number;
+  contratosSoloDepartamento: number;
+}
+
+export interface DepartamentosDelCorte {
+  corte: string;
+  ventana: { desde: number; hasta: number };
+  nacional: TotalNacional;
+  departamentos: DepartamentoDelMapa[];
+}
+
 export interface MunicipioSeleccionado extends MunicipioDelMapa {
   corte: string;
   ventana: { desde: number; hasta: number };

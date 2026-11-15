@@ -355,3 +355,23 @@ def test_map_has_one_row_per_municipality_with_null_when_nothing_is_located(
     assert filas["81001"] == ("CO-ARA", 2021, 2026, 1)  # la alcaldía de Arauca, ya ubicada
     assert filas["05001"][3] == 3
     assert filas["13001"][3] is None  # sin contratos ubicados: null, nunca 0
+
+
+def test_every_contract_in_the_window_falls_in_one_level(
+    warehouse: duckdb.DuckDBPyConnection,
+) -> None:
+    niveles = dict(
+        warehouse.execute(
+            "select nivel, sum(contratos) from mapa_niveles_corte group by 1"
+        ).fetchall()
+    )
+    ventana = warehouse.execute(
+        "select count(*) from contratos where anio_firma between 2021 and 2026 "
+        "and estado_ejecucion not in ('antes_de_firma', 'cancelado') "
+        "and fecha_firma <= date '2026-11-30'"
+    ).fetchone()
+    assert ventana is not None and sum(niveles.values()) == ventana[0]
+    # La gobernación de Arauca ("Arauca»Arauca") queda en el departamento, no se pierde.
+    assert warehouse.execute(
+        "select contratos from mapa_niveles_corte where nivel = 'departamento' and cod_dpto = '81'"
+    ).fetchone() == (1,)

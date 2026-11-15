@@ -6,7 +6,7 @@ Step 0 of the [Build a page](../../../../.claude/skills/elephants-design/referen
 
 ## Scope
 
-TASK-09 only: draw Colombia's municipalities with real data from the latest cut, select one, identify it (DIVIPOLA code and name), and show the source and cut date. The municipal summary (TASK-10), contract lists (TASK-11) and risk signals (TASK-13/14) extend this contract later; they are **not** part of it.
+TASK-09 only: draw Colombia at two levels (departments, then municipalities) with real data from the latest cut, select one, identify it (DIVIPOLA code and name), and show the source and cut date. The municipal summary (TASK-10), contract lists (TASK-11) and risk signals (TASK-13/14) extend this contract later; they are **not** part of it.
 
 ## Data path
 
@@ -15,7 +15,7 @@ DANE MGN 2025 + DIVIPOLA + SECOP (ekou.duckdb) → pipeline export → R2 (local
 ```
 
 - The API reads JSON files from R2 through an output port (`ConsultarMapa`), with no PostgreSQL. TASK-09 asks for exactly this.
-- R2 keys (bucket binding `DATOS`): `datos/latest.json` (pointer `{ "corte": "2026-11" }`), `datos/<corte>/corte.json`, `datos/<corte>/mapa/municipios.json`, `datos/geometria/<version>.topojson`. The pipeline writes the same tree with `ekou-pipeline export-mapa`.
+- R2 keys (bucket binding `DATOS`): `datos/latest.json` (pointer `{ "corte": "2026-11" }`), `datos/<corte>/corte.json`, `datos/<corte>/mapa/municipios.json`, `datos/<corte>/mapa/departamentos.json`, `datos/geometria/<version>.topojson`. The pipeline writes the same tree with `ekou-pipeline export-mapa`.
 - Locally, `wrangler dev` emulates the R2 binding on disk, so the same adapter runs without a Cloudflare account and without waiting for the team's R2 decision.
 
 ## Conventions
@@ -105,6 +105,38 @@ interface MunicipioDelMapa {
 
 Cache: same as `/corte`.
 
+### 3b. `GET /api/mapa/departamentos`: the national level (added 2026-11-15, decision 5)
+
+Contracting happens at three levels: the nation, the departments and the municipalities. Every contract in the window falls in **exactly one** location level, so the three add up to the national total:
+
+- **en municipios**: located in one municipality with medium or better confidence (the same contracts as `contratosUbicados`);
+- **solo departamento**: no reliable municipality, but a department (governorships, contracts spanning several municipalities, entities that repeat their seat);
+- **sin lugar**: neither.
+
+```ts
+interface DepartamentosDelCorte {
+  corte: string;
+  ventana: { desde: number; hasta: number };
+  nacional: {
+    contratos: number;                   // = the three below
+    contratosEnMunicipios: number;
+    contratosSoloDepartamento: number;
+    contratosSinLugar: number;
+  };
+  departamentos: DepartamentoDelMapa[];  // exactly 33, ordered by codigo
+}
+
+interface DepartamentoDelMapa {
+  codigo: string;                        // "81"
+  iso: string;                           // "CO-ARA"
+  nombre: string;                        // "Arauca"
+  contratosEnMunicipios: number;         // sum of its municipalities; measured, 0 is a real zero
+  contratosSoloDepartamento: number;
+}
+```
+
+Cache: same as `/corte`. The API rejects a file whose national total does not add up (503).
+
 ### 4. `GET /api/mapa/municipios/:codigo`: one municipality
 
 Returns one `MunicipioDelMapa` plus `corte` and `ventana`. It supports shared links (`/mapa/05001` arriving through WhatsApp; see the brief) without downloading all 1,122 rows.
@@ -138,6 +170,7 @@ interface MunicipioSeleccionado extends MunicipioDelMapa {
 | `tipo` | MGN 2025 `MPIO_TIPO` (1,103 municipios, 18 áreas no municipalizadas, 1 isla) | MVP |
 | `departamento.iso` | ISO 3166-2:CO, static seed in the pipeline | MVP |
 | `contratosUbicados`, `ventana` | Gold `mapa_municipios_corte`: contracts from `mapa_municipios` (location confidence medium or better, not cancelled; rules S08, TASK-06) signed in the window | MVP |
+| `departamentos[]`, `nacional` | Gold `mapa_niveles_corte`: every contract of the window (not cancelled, signed up to the cut) in one level. dbt test `mapa_niveles_cuadra_con_municipios` checks that the municipal level equals the sum of `contratosUbicados` per department | MVP |
 | Risk level and signals | TASK-07 → TASK-13/14 | Later contract |
 | Summary figures (value, works…) | TASK-10 | Later contract |
 
@@ -198,6 +231,7 @@ Other real values for the mockups: Bogotá, D.C. 1,393,923; San Andrés 17,973; 
 | 2 | 16 municipalities with no located contract (Arauca, Sucre, Nariño…) | **Fix the pipeline's name matching within TASK-09**, before exporting the map data |
 | 3 | Map fill in TASK-09 | **Neutral fill**, with the grey "Sin datos" hatch only where `contratosUbicados` is `null`. Risk colour arrives with TASK-13/14 |
 | 4 | Name casing | The pipeline converts names to display case, with tested exceptions |
+| 5 | Nation, departments and municipalities (raised after the spec draft) | **Two zoom levels**: national view by department, then municipalities. Adds endpoint 3b. Real data: 7,456,749 contracts = 6,771,167 in municipalities + 626,277 only in a department + 59,305 without place |
 
 ## Questions as asked
 

@@ -73,6 +73,18 @@ def _warehouse(path: Path, corte: str = "2026-11") -> None:
         )
         conn.execute("alter table mapa_municipios_corte add column corte varchar")
         conn.execute("update mapa_municipios_corte set corte = ?", [corte])
+        conn.execute(
+            """
+            create table mapa_niveles_corte as
+            select *, 2021 as ventana_desde, 2026 as ventana_hasta, ? as corte from (values
+                ('municipio', '05', 640861),
+                ('departamento', '05', 25000),
+                ('departamento', '81', 1200),
+                ('sin_lugar', null, 300)
+            ) t(nivel, cod_dpto, contratos)
+            """,
+            [corte],
+        )
 
 
 def test_export_writes_the_contract_shape(tmp_path: Path) -> None:
@@ -90,6 +102,7 @@ def test_export_writes_the_contract_shape(tmp_path: Path) -> None:
 
     assert [p.relative_to(out).as_posix() for p in paths] == [
         "2026-11/mapa/municipios.json",
+        "2026-11/mapa/departamentos.json",
         "2026-11/corte.json",
         "latest.json",
     ]
@@ -104,6 +117,30 @@ def test_export_writes_the_contract_shape(tmp_path: Path) -> None:
     }
     # Sin contratos ubicados: null, nunca 0.
     assert municipios["municipios"][1]["contratosUbicados"] is None
+
+    departamentos = json.loads((out / "2026-11/mapa/departamentos.json").read_text("utf-8"))
+    assert departamentos["nacional"] == {
+        "contratos": 667361,
+        "contratosEnMunicipios": 640861,
+        "contratosSoloDepartamento": 26200,
+        "contratosSinLugar": 300,
+    }
+    assert departamentos["departamentos"] == [
+        {
+            "codigo": "05",
+            "iso": "CO-ANT",
+            "nombre": "Antioquia",
+            "contratosEnMunicipios": 640861,
+            "contratosSoloDepartamento": 25000,
+        },
+        {  # sin contratos ubicados en sus municipios: 0 medido, no "sin datos"
+            "codigo": "81",
+            "iso": "CO-ARA",
+            "nombre": "Arauca",
+            "contratosEnMunicipios": 0,
+            "contratosSoloDepartamento": 1200,
+        },
+    ]
 
     corte = json.loads((out / "2026-11/corte.json").read_text("utf-8"))
     assert corte["fechaCorte"] == "2026-11-07"
@@ -133,4 +170,4 @@ def test_cli_exports_to_the_local_bucket(
     assert main(["export-mapa", "--corte", "2026-11"]) == 0
     corte = json.loads((tmp_path / "r2/datos/2026-11/corte.json").read_text("utf-8"))
     assert corte["fechaCorte"] == "2026-11-07"
-    assert len(capsys.readouterr().out.splitlines()) == 3
+    assert len(capsys.readouterr().out.splitlines()) == 4

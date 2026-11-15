@@ -5,6 +5,7 @@ Contrato: ``docs/design/pages/map/contract.md``. Escribe en ``out_dir``::
     latest.json                     puntero al corte vigente: {"corte": "AAAA-MM"}
     <corte>/corte.json              CorteVigente
     <corte>/mapa/municipios.json    MunicipiosDelCorte
+    <corte>/mapa/departamentos.json DepartamentosDelCorte (con el total nacional)
 
 La estructura replica las rutas del bucket R2, así un mismo directorio sirve para cargar el
 R2 local (``wrangler``) y el de producción.
@@ -154,6 +155,49 @@ def municipios_del_corte(conn: duckdb.DuckDBPyConnection, corte: str) -> dict[st
     }
 
 
+def departamentos_del_corte(conn: duckdb.DuckDBPyConnection, corte: str) -> dict[str, Any]:
+    """Los 33 departamentos y el total nacional, por nivel de ubicación de los contratos."""
+    niveles = conn.execute(
+        "select nivel, cod_dpto, contratos, ventana_desde, ventana_hasta, corte "
+        "from mapa_niveles_corte"
+    ).fetchall()
+    cortes = {fila[5] for fila in niveles}
+    if cortes != {corte}:
+        raise ValueError(f"mapa_niveles_corte tiene el corte {sorted(cortes)}, no {corte}")
+    por_nivel: dict[tuple[str, str | None], int] = {
+        (nivel, cod_dpto): int(contratos) for nivel, cod_dpto, contratos, *_ in niveles
+    }
+    departamentos = conn.execute(
+        "select distinct cod_dpto, iso_3166_2, nom_dpto from mapa_municipios_corte order by 1"
+    ).fetchall()
+
+    def total(nivel: str) -> int:
+        return sum(n for (nv, _), n in por_nivel.items() if nv == nivel)
+
+    en_municipios, solo_departamento = total("municipio"), total("departamento")
+    sin_lugar = total("sin_lugar")
+    return {
+        "corte": corte,
+        "ventana": {"desde": int(niveles[0][3]), "hasta": int(niveles[0][4])},
+        "nacional": {
+            "contratos": en_municipios + solo_departamento + sin_lugar,
+            "contratosEnMunicipios": en_municipios,
+            "contratosSoloDepartamento": solo_departamento,
+            "contratosSinLugar": sin_lugar,
+        },
+        "departamentos": [
+            {
+                "codigo": cod_dpto,
+                "iso": iso,
+                "nombre": nombre_visible(nom_dpto),
+                "contratosEnMunicipios": por_nivel.get(("municipio", cod_dpto), 0),
+                "contratosSoloDepartamento": por_nivel.get(("departamento", cod_dpto), 0),
+            }
+            for cod_dpto, iso, nom_dpto in departamentos
+        ],
+    }
+
+
 def export_mapa(
     conn: duckdb.DuckDBPyConnection,
     *,
@@ -166,6 +210,7 @@ def export_mapa(
     publicado_en = publicado_en or datetime.now(tz=UTC)
     archivos = {
         out_dir / corte / "mapa" / "municipios.json": municipios_del_corte(conn, corte),
+        out_dir / corte / "mapa" / "departamentos.json": departamentos_del_corte(conn, corte),
         out_dir / corte / "corte.json": corte_vigente(corte, fecha_datos, publicado_en),
         # El puntero va de último: solo apunta al corte cuando sus archivos ya existen.
         out_dir / "latest.json": {"corte": corte},

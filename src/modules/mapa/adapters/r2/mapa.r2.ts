@@ -1,6 +1,11 @@
 import { z } from 'zod';
 import type { ConsultarMapa } from '../../application/ports/consultar-mapa';
-import { CorteNoDisponible, type CorteVigente, type MunicipiosDelCorte } from '../../domain/mapa';
+import {
+  CorteNoDisponible,
+  type CorteVigente,
+  type DepartamentosDelCorte,
+  type MunicipiosDelCorte,
+} from '../../domain/mapa';
 
 /** The slice of R2Bucket this adapter needs, so tests can use an in-memory fake. */
 export interface AlmacenObjetos {
@@ -13,6 +18,7 @@ export const claves = {
   puntero: `${PREFIJO}/latest.json`,
   corte: (corte: string) => `${PREFIJO}/${corte}/corte.json`,
   municipios: (corte: string) => `${PREFIJO}/${corte}/mapa/municipios.json`,
+  departamentos: (corte: string) => `${PREFIJO}/${corte}/mapa/departamentos.json`,
   geometria: (version: string) => `${PREFIJO}/geometria/${version}.topojson`,
 };
 
@@ -66,6 +72,38 @@ const esquemaMunicipios = z
   })
   .strict();
 
+const conteo = z.number().int().nonnegative();
+
+const esquemaDepartamentos = z
+  .object({
+    corte: corteId,
+    ventana,
+    nacional: z
+      .object({
+        contratos: conteo,
+        contratosEnMunicipios: conteo,
+        contratosSoloDepartamento: conteo,
+        contratosSinLugar: conteo,
+      })
+      .strict()
+      .refine(
+        (n) => n.contratos === n.contratosEnMunicipios + n.contratosSoloDepartamento + n.contratosSinLugar,
+        'el total nacional no cuadra con sus niveles',
+      ),
+    departamentos: z.array(
+      z
+        .object({
+          codigo: z.string().regex(/^\d{2}$/),
+          iso: z.string().regex(/^CO-[A-Z]{2,3}$/),
+          nombre: z.string().min(1),
+          contratosEnMunicipios: conteo,
+          contratosSoloDepartamento: conteo,
+        })
+        .strict(),
+    ),
+  })
+  .strict();
+
 export function mapaR2(almacen: AlmacenObjetos): ConsultarMapa {
   async function leerJson<T>(clave: string, esquema: z.ZodType<T>): Promise<T | null> {
     const objeto = await almacen.get(clave);
@@ -94,6 +132,12 @@ export function mapaR2(almacen: AlmacenObjetos): ConsultarMapa {
     async municipios(corte: string): Promise<MunicipiosDelCorte | null> {
       const datos = await leerJson(claves.municipios(corte), esquemaMunicipios);
       if (datos && datos.corte !== corte) throw new CorteNoDisponible('los municipios son de otro corte');
+      return datos;
+    },
+
+    async departamentos(corte: string): Promise<DepartamentosDelCorte | null> {
+      const datos = await leerJson(claves.departamentos(corte), esquemaDepartamentos);
+      if (datos && datos.corte !== corte) throw new CorteNoDisponible('los departamentos son de otro corte');
       return datos;
     },
 
