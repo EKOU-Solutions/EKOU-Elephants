@@ -183,7 +183,7 @@ Que el dato sea público en datos.gov.co no exime a EKOU de la Ley 1581 de 2012:
 |---|---|
 | Cuentas bancarias, domicilios, representantes legales, supervisores, ordenadores del gasto | **No se extraen** (catálogo) |
 | Documento de persona natural | Seudonimizar con HMAC-SHA256 y clave secreta, sobre el documento normalizado, con prefijo de versión (`k1_`). No rotar salvo compromiso de la clave. |
-| Nombre de persona natural | Fuera de la capa pública hasta la revisión legal ([TASK-08, #9](https://github.com/EKOU-Solutions/EKOU-Elephants/issues/9)) |
+| Nombre de persona natural | Fuera de la capa pública ([criterios de datos personales](datos-personales.md)) |
 | NIT y razón social de personas jurídicas | Se publican |
 | RUES | No se republican los ~7 M de registros de personas naturales |
 | SIRI (sanciones) | Solo dentro de la ventana de tiempo vigente |

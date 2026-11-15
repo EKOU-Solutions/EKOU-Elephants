@@ -40,7 +40,7 @@ Referencia visual: [Mapa de elecciones de la Registraduría](https://www.registr
 ### Buscador
 Búsqueda de contratos y obras por:
 - **Entidad:** por ejemplo, *Alcaldía de Medellín* o *Instituto Nacional de Vías (INVÍAS)*
-- **Contratista:** por nombre o NIT de la empresa o del consorcio. Mostrar el nombre o la cédula de **personas naturales** depende de la validación legal en [TASK-08](https://github.com/EKOU-Solutions/EKOU-Elephants/issues/9).
+- **Contratista:** por nombre o NIT de la empresa o del consorcio. El nombre y la cédula de **personas naturales** no se muestran (ver [datos personales](docs/datos-personales.md)).
 - **Obra:** por nombre o código de proyecto (BPIN), por ejemplo, *Construcción puente vehicular*
 - **Ubicación:** departamento o municipio
 
