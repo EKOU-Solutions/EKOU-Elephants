@@ -4,8 +4,8 @@
 
 | | |
 | --- | --- |
-| **Status** | *Spec awaiting approval* · API serving real data locally ([#29](https://github.com/EKOU-Solutions/EKOU-Elephants/pull/29)) |
-| **Step** | 2. Define the page (`spec.md`, Approval 1) |
+| **Status** | *Mockup in progress* · spec approved 2026-11-15 · API serving real data locally ([#29](https://github.com/EKOU-Solutions/EKOU-Elephants/pull/29)) |
+| **Step** | 4. Mockup (components added in guide v1.1) |
 | **Started** | 2026-11-15 |
 
 ## Files
@@ -14,10 +14,10 @@
 | --- | --- |
 | [contract.md](contract.md) | Approved 2026-11-15 |
 | [data.md](data.md) | Done 2026-11-15 |
-| [spec.md](spec.md) | Awaiting Approval 1 |
+| [spec.md](spec.md) | Approved 2026-11-15 (Approval 1) |
 | mockup.html | Not started |
 | validation.md | Not started (Approval 2) |
 
 ## Open questions
 
-Spec questions answered: [spec.md → Decisions](spec.md#8-decisions-2026-11-15); the spec as a whole awaits Approval 1. Contract decisions: [contract.md → Decisions](contract.md#decisions-2026-11-15).
+Spec questions answered: [spec.md → Decisions](spec.md#8-decisions-2026-11-15); spec approved 2026-11-15. Contract decisions: [contract.md → Decisions](contract.md#decisions-2026-11-15).

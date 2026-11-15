@@ -159,6 +159,22 @@
       "ratio": 6.07,
       "minimum": null,
       "passes": null
+    },
+    {
+      "usage": "Relleno line (relieve con borde, etiqueta y tabla)",
+      "foreground": "#DCE3E7",
+      "background": "#FFFFFF",
+      "ratio": 1.3,
+      "minimum": null,
+      "passes": null
+    },
+    {
+      "usage": "Relleno surface-subtle (relieve con borde, etiqueta y tabla)",
+      "foreground": "#F4F6F8",
+      "background": "#FFFFFF",
+      "ratio": 1.08,
+      "minimum": null,
+      "passes": null
     }
   ],
   "dark": [
@@ -319,6 +335,22 @@
       "foreground": "#F4A397",
       "background": "#121A21",
       "ratio": 8.81,
+      "minimum": null,
+      "passes": null
+    },
+    {
+      "usage": "Relleno line (relieve con borde, etiqueta y tabla)",
+      "foreground": "#2C3A45",
+      "background": "#121A21",
+      "ratio": 1.5,
+      "minimum": null,
+      "passes": null
+    },
+    {
+      "usage": "Relleno surface-subtle (relieve con borde, etiqueta y tabla)",
+      "foreground": "#1A242D",
+      "background": "#121A21",
+      "ratio": 1.12,
       "minimum": null,
       "passes": null
     }

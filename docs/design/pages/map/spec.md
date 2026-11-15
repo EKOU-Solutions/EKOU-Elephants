@@ -1,6 +1,6 @@
 # Map page · Spec
 
-> Step 2 of [Build a page](../../../../.claude/skills/elephants-design/references/build-page.md) · Status: **awaiting Approval 1** · Built on [contract.md](contract.md) (approved 2026-11-15; decision 5 adds the department level) and [data.md](data.md) (cut 2026-11) · Guide v1.0 ([design-system.md](../../guide/design-system.md))
+> Step 2 of [Build a page](../../../../.claude/skills/elephants-design/references/build-page.md) · Status: **Approved 2026-11-15** (Approval 1, by the user; components added in guide v1.1) · Built on [contract.md](contract.md) (approved 2026-11-15; decision 5 adds the department level) and [data.md](data.md) (cut 2026-11) · Guide v1.0 ([design-system.md](../../guide/design-system.md))
 
 ## 1. Purpose
 

@@ -1,4 +1,4 @@
-"""Build the Elephants design system guide (v1.0) from repository-owned sources.
+"""Build the Elephants design system guide (v1.1) from repository-owned sources.
 
 Python standard library only. Outputs:
 - tokens.css           versioned: CSS custom properties for light/dark, ready for the app
@@ -57,7 +57,7 @@ for mode, colors in modes.items():
     for name, fg, bg, minimum in pairs:
         value = ratio(colors[fg], colors[bg])
         rows.append({'usage': name, 'foreground': colors[fg], 'background': colors[bg], 'ratio': round(value, 2), 'minimum': minimum, 'passes': value >= minimum})
-    for level in ('risk-low', 'risk-medium', 'risk-high'):
+    for level in ('risk-low', 'risk-medium', 'risk-high', 'line', 'surface-subtle'):
         rows.append({'usage': f'Relleno {level} (relieve con borde, etiqueta y tabla)', 'foreground': colors[level], 'background': colors['surface'], 'ratio': round(ratio(colors[level], colors['surface']), 2), 'minimum': None, 'passes': None})
     failing = [r for r in rows if r['passes'] is False]
     assert not failing, (mode, failing)
@@ -132,6 +132,22 @@ map_svg = ('<svg class="el-map" viewBox="0 0 600 560" role="img" aria-labelledby
            '<defs><pattern id="el-hatch" width="7" height="7" patternUnits="userSpaceOnUse">'
            '<rect width="7" height="7" class="el-hatch-bg"/><path d="M0 7L7 0" class="el-hatch-line"/></pattern></defs>'
            + ''.join(paint(e) for e in ordered) + '</svg>')
+
+
+def neutral(element):
+    # v1.1 neutral variant (map page, TASK-09): no metric yet; one territory without data.
+    region = re.search(r'data-region="([^"]+)"', element).group(1)
+    element = re.sub(r'<title>.*?</title>', '', element, flags=re.S)
+    element = re.sub(r'\sfill="[^"]*"', '', element)
+    fill = 'unknown' if region == 'CO-GUA' else 'neutral'
+    selected = ' data-selected="true"' if region == 'CO-ARA' else ''
+    return element.replace('<path ', f'<path class="el-fill-{fill}"{selected} ', 1)
+
+
+# The hatch pattern is defined once, in the first map of the page.
+map_neutral_svg = ('<svg class="el-map" viewBox="0 0 600 560" role="img" aria-labelledby="el-map-neutral-title">'
+                   '<title id="el-map-neutral-title">Mapa de ejemplo, variante neutra: departamentos sin métrica, Guainía sin datos, Arauca seleccionado. Datos ficticios.</title>'
+                   + ''.join(neutral(e) for e in sorted(elements, key=lambda e: 'CO-ARA' in e)) + '</svg>')
 ranked = sorted([t for t in territories if t['analyzed']], key=lambda t: -t['flagged'] / t['analyzed'])[:5]
 
 
@@ -184,6 +200,7 @@ replacements = {
     '__FONTFACES__': font_faces,
     '__TOKENS_CSS__': tokens_css,
     '__MAP__': map_svg,
+    '__MAP_NEUTRAL__': map_neutral_svg,
     '__RANK_ROWS__': rank_rows,
     '__SWATCH_ROWS__': swatch_rows(),
     '__CONTRAST_ROWS__': contrast_rows,
@@ -346,4 +363,4 @@ lines += [f'| `--{p}-{k}` | {v} px |' for k, v in tokens['geometry'].items()]
 lines += ['', '## Contrast', '', 'Every text, control, focus, hatch and risk-tag pair passes in both themes; see `contrast-report.json`.', '']
 (folder / 'tokens.md').write_text('\n'.join(lines))
 sizes['examples.html'] = finish((folder / 'examples.source.html').read_text(), 'examples.html')
-print('Built guide v1.0: ' + ', '.join(f'{k} ({v} KB)' for k, v in sizes.items()) + '; tokens.css; contrast pairs pass in light and dark.')
+print('Built guide v1.1: ' + ', '.join(f'{k} ({v} KB)' for k, v in sizes.items()) + '; tokens.css; contrast pairs pass in light and dark.')

@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0",
+  "version": "1.1.0",
   "about": "Machine-readable catalogue of the Elephants components. build.py asserts that every class exists in components.css and every token exists in tokens.css. 'core' = reviewed and accepted in Round 05; 'candidate' = introduced by the example screens, usable but must be confirmed by the first page that needs it (see .claude/skills/elephants-design/references/build-page.md).",
   "components": [
     {
@@ -95,11 +95,33 @@
       "label_es": "Mapa con leyenda",
       "status": "core",
       "reference": "preview.html#mapa",
-      "classes": ["el-map", "el-fill-low", "el-fill-medium", "el-fill-high", "el-fill-unknown", "el-hatch-bg", "el-hatch-line", "el-legend"],
-      "use": "Colours each territory by the share of contracts with signals. The legend says what colour measures; selection is an outline plus a detail panel.",
-      "variants": ["default", "selected territory"],
-      "tokens": ["--el-color-risk-low", "--el-color-risk-medium", "--el-color-risk-high", "--el-color-unknown", "--el-color-unknown-surface", "--el-color-map-border"],
-      "a11y": ["<svg role=img> with <title>", "A data table with the same values is always reachable", "Selection never by colour alone"]
+      "classes": ["el-map", "el-fill-low", "el-fill-medium", "el-fill-high", "el-fill-unknown", "el-hatch-bg", "el-hatch-line", "el-legend", "el-fill-neutral", "el-fill-context", "el-dpto", "el-key-neutral", "el-key-selected", "el-map-frame", "el-map-zoom", "el-map-inset", "el-map-status"],
+      "use": "Shows territories on a map. With a metric, colours each territory by the share of contracts with signals; with no metric yet (neutral variant), only shows where data exists. The legend says what colour measures; selection is an outline plus a detail panel.",
+      "variants": ["default (risk fills)", "neutral (no metric yet; v1.1, map page)", "selected territory", "context (territories outside the current level, faded)", "with zoom controls and San Andrés inset"],
+      "tokens": ["--el-color-risk-low", "--el-color-risk-medium", "--el-color-risk-high", "--el-color-unknown", "--el-color-unknown-surface", "--el-color-map-border", "--el-color-line", "--el-color-surface-subtle", "--el-color-line-strong", "--el-color-control-border"],
+      "a11y": ["<svg role=img> with <title>", "A data table with the same values is always reachable", "Selection never by colour alone", "Zoom controls are native buttons with aria-label, 44 px", "Shapes are not tab stops; keyboard users reach every territory through the search, breadcrumb and table"]
+    },
+    {
+      "name": "Territory search",
+      "label_es": "Búsqueda de lugar",
+      "status": "core",
+      "reference": "preview.html#busqueda",
+      "classes": ["el-search", "el-search-list"],
+      "use": "Finds a department or municipality by name and selects it. The equal way in to a map for small territories, keyboards and screen readers.",
+      "variants": ["empty", "typing with suggestions (up to 8, departments first)", "no results (help text)", "disabled while data loads"],
+      "tokens": ["--el-color-control-border", "--el-color-action-soft", "--el-color-text-muted", "--el-control-height", "--el-control-radius", "--el-size-small"],
+      "a11y": ["WAI-ARIA APG combobox: input role=combobox, aria-expanded, aria-controls, aria-activedescendant; list role=listbox", "Keys: ↑ ↓ move, Enter selects, Esc closes", "Matches ignore accents and case", "Every suggestion shows name · department, because 66 municipality names repeat"]
+    },
+    {
+      "name": "Breadcrumb",
+      "label_es": "Ruta de navegación",
+      "status": "core",
+      "reference": "preview.html#ruta",
+      "classes": ["el-breadcrumb"],
+      "use": "Shows the territorial level on screen (Colombia › departamento › municipio) and links back to each level.",
+      "variants": ["one level", "two levels", "three levels"],
+      "tokens": ["--el-color-action", "--el-color-text", "--el-color-text-muted", "--el-control-height", "--el-size-small"],
+      "a11y": ["<nav aria-label=\"Ubicación\"> with an ordered list", "Current level: aria-current=page, not a link", "44 px tap height"]
     },
     {
       "name": "Status pill",

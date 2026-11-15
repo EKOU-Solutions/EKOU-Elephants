@@ -89,3 +89,35 @@
 .el-signal{display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 12px;padding:14px 0;border-bottom:1px solid var(--el-color-line)}
 .el-signal .n{grid-row:span 2;display:grid;place-items:center;width:32px;height:32px;border-radius:var(--el-control-radius);background:var(--el-color-risk-high);color:var(--el-color-on-risk-high);font-weight:700}
 .el-signal strong{font-size:17px}.el-signal p{color:var(--el-color-text-muted);font-size:15px}
+/* v1.1 (2026-11-15, map page TASK-09) ------------------------------------------- */
+/* Map with legend: neutral variant (no metric yet), context, department borders, frame, zoom, inset */
+.el-fill-neutral{fill:var(--el-color-line)}
+.el-fill-context{fill:var(--el-color-surface-subtle)}
+.el-map path.el-dpto{fill:none;stroke:var(--el-color-line-strong);stroke-width:1.2;pointer-events:none}
+.el-key-neutral{background:var(--el-color-line)}
+.el-key-selected{background:var(--el-color-surface);box-shadow:inset 0 0 0 2.5px var(--el-color-text)}
+.el-map-frame{position:relative;margin:0}
+.el-map-zoom{position:absolute;top:8px;right:8px;display:grid;gap:4px}
+.el-map-zoom .el-btn{min-width:var(--el-control-height);padding:8px}
+.el-map-zoom .el-btn-all{font-size:var(--el-size-small)}
+.el-map-inset{position:absolute;top:8px;left:8px;width:72px;padding:4px;background:var(--el-color-surface);border:var(--el-rule) solid var(--el-color-control-border);border-radius:var(--el-mark-radius)}
+.el-map-inset svg{display:block;width:100%;height:auto}
+.el-map-inset span{display:block;font-size:12px;line-height:1.2;color:var(--el-color-text-muted);margin-top:2px}
+.el-map-status{display:grid;place-items:center;min-height:240px;color:var(--el-color-text-muted);border:var(--el-rule) dashed var(--el-color-line)}
+/* Territory search: Field + listbox (WAI-ARIA combobox) */
+.el-search{position:relative;display:grid;gap:6px;width:100%;max-width:480px}
+.el-search label{font-weight:600;font-size:15px}
+.el-search input{font:inherit;min-height:var(--el-control-height);padding:10px 12px 10px 40px;border:var(--el-rule) solid var(--el-color-control-border);border-radius:var(--el-control-radius);background:var(--el-color-surface);color:var(--el-color-text);width:100%}
+.el-search .icon{position:absolute;left:12px;bottom:12px;width:20px;height:20px;color:var(--el-color-text-muted);pointer-events:none}
+.el-search-list{list-style:none;margin:0;padding:4px 0;background:var(--el-color-surface);border:var(--el-rule) solid var(--el-color-control-border);border-radius:var(--el-control-radius)}
+.el-search-list [role=option]{display:flex;justify-content:space-between;gap:12px;align-items:center;min-height:var(--el-control-height);padding:8px 12px;cursor:pointer}
+.el-search-list [role=option] .meta{font-size:var(--el-size-small);color:var(--el-color-text-muted);text-align:right}
+.el-search-list [role=option][aria-selected=true],.el-search-list [role=option]:hover{background:var(--el-color-action-soft)}
+.el-search-list mark{background:none;color:inherit;font-weight:700}
+.el-search .help{font-size:var(--el-size-small);color:var(--el-color-text-muted)}
+/* Breadcrumb */
+.el-breadcrumb ol{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;align-items:center;font-size:var(--el-size-small)}
+.el-breadcrumb li{display:inline-flex;align-items:center}
+.el-breadcrumb li+li::before{content:"›";margin:0 8px;color:var(--el-color-text-muted)}
+.el-breadcrumb a{display:inline-flex;align-items:center;min-height:var(--el-control-height);color:var(--el-color-action);text-underline-offset:3px}
+.el-breadcrumb [aria-current=page]{color:var(--el-color-text);font-weight:var(--el-weight-emphasis);text-decoration:none}
