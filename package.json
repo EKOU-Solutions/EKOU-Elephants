@@ -23,7 +23,9 @@
     "format": "biome format --write .",
     "check": "npm run lint && npm run format:check && npm run typecheck && npm test && npm run build",
     "deploy:dry-run": "wrangler deploy --dry-run",
-    "deploy:preview": "node scripts/deploy-preview.mjs"
+    "datos:corte": "node scripts/datos.mjs corte",
+    "datos:descargar": "node scripts/datos.mjs descargar",
+    "datos:preview": "node scripts/datos.mjs preview"
   },
   "dependencies": {
     "@hono/zod-validator": "^0.9.1",

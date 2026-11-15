@@ -1,7 +1,7 @@
 // CLI que usa el workflow `app-preview` para leer y actualizar el comentario de control.
 // Uso: node scripts/preview/github.mjs opciones|comentar
 // Variables: GITHUB_TOKEN, GITHUB_REPOSITORY, PR, y para `comentar`: SHA, ESTADO, URL, MOTIVO,
-// COPIA_BD, EJECUCION.
+// COPIA_BD, DATOS_PROPIOS, EJECUCION.
 import { appendFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -100,6 +100,7 @@ async function main(comando, env = process.env) {
     salida({
       comentario_id: r.comentarioId,
       copia_bd: r.opciones.copiaBd,
+      datos_propios: r.opciones.datosPropios,
       migraciones: r.migraciones,
       bloqueo: r.bloqueo,
     });
@@ -114,6 +115,7 @@ async function main(comando, env = process.env) {
       ejecucion: env.EJECUCION || undefined,
       opciones: {
         copiaBd: env.COPIA_BD === 'true',
+        datosPropios: env.DATOS_PROPIOS === 'true',
       },
     });
     return;

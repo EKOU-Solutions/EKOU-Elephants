@@ -2,16 +2,21 @@
 // Uso: node scripts/despliegue.mjs preview|produccion
 //
 // preview:    PREVIEW_NAME (pr-123), DATABASE_URL; MIGRAR=true exige DATABASE_URL_UNPOOLED.
+//             DATOS_SERVICIO (opcional): Worker de datos del PR (casilla «Datos propios»).
 // produccion: DATABASE_URL y DATABASE_URL_UNPOOLED de la rama `production` de Neon; siempre migra.
 // Ambos:      CLOUDFLARE_API_TOKEN y CLOUDFLARE_ACCOUNT_ID.
+//             DATOS_CORTE_ENABLED=true activa el binding DATOS al Worker del corte y verifica que
+//             exista (Cloudflare rechaza un binding a un Worker inexistente). Sin la bandera, la app
+//             se despliega sin binding: el frontend no depende de los datos del corte.
 //
 // Las URL de base de datos nunca van en argumentos ni en la salida: el pooled se sube como
 // secreto del Worker con un archivo temporal 0600 y la salida de las migraciones se descarta.
 import { execFileSync } from 'node:child_process';
-import { appendFileSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { appendFileSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { WORKER_DATOS } from './preview/control.mjs';
 
 const WRANGLER = 'node_modules/wrangler/bin/wrangler.js';
 const MIGRADOR = 'node_modules/node-pg-migrate/bin/node-pg-migrate.js';
@@ -44,6 +49,41 @@ export async function verificar(url, request = fetch, esperar = 2_000) {
     if (!ok) throw new Error(`La verificación del despliegue falló en ${ruta}`);
   }
 }
+
+/** Error con un motivo que se puede mostrar en el comentario del PR. */
+class Bloqueo extends Error {}
+
+export async function existeWorker(env, nombre, request = fetch) {
+  const respuesta = await request(
+    `https://api.cloudflare.com/client/v4/accounts/${env.CLOUDFLARE_ACCOUNT_ID}/workers/scripts/${nombre}/settings`,
+    {
+      headers: { Authorization: `Bearer ${env.CLOUDFLARE_API_TOKEN}` },
+      signal: AbortSignal.timeout(15_000),
+    },
+  );
+  if (respuesta.status === 200) return true;
+  if (respuesta.status === 404) return false;
+  throw new Error(`Cloudflare respondió ${respuesta.status} al buscar el Worker ${nombre}.`);
+}
+
+/**
+ * Fija el binding DATOS en la configuración que generó `vite build`, para producción
+ * (`services`) o para los previews (`previews.services`). Con `servicio` nulo, sin binding.
+ */
+export function apuntarDatos(destino, servicio, raiz = process.cwd()) {
+  const redireccion = join(raiz, '.wrangler/deploy/config.json');
+  const ruta = resolve(
+    dirname(redireccion),
+    JSON.parse(readFileSync(redireccion, 'utf8')).configPath,
+  );
+  const config = JSON.parse(readFileSync(ruta, 'utf8'));
+  const services = servicio ? [{ binding: 'DATOS', service: servicio }] : [];
+  if (destino === 'preview') config.previews = { ...config.previews, services };
+  else config.services = services;
+  writeFileSync(ruta, JSON.stringify(config));
+}
+
+const datosActivos = (env) => env.DATOS_CORTE_ENABLED === 'true';
 
 function exigir(env, nombres) {
   const faltantes = nombres.filter((n) => !env[n]?.trim());
@@ -92,6 +132,8 @@ export async function desplegarPreview({
   env = process.env,
   run = execFileSync,
   verify = verificar,
+  existe = existeWorker,
+  apuntar = apuntarDatos,
 } = {}) {
   const migra = env.MIGRAR === 'true';
   exigir(env, [
@@ -103,6 +145,23 @@ export async function desplegarPreview({
   ]);
   if (!/^pr-[1-9]\d*$/.test(env.PREVIEW_NAME)) {
     throw new Error('PREVIEW_NAME debe identificar un PR (pr-123).');
+  }
+  const propio = `${WORKER_DATOS}-${env.PREVIEW_NAME}`;
+  if (env.DATOS_SERVICIO && env.DATOS_SERVICIO !== propio) {
+    throw new Error(`DATOS_SERVICIO solo puede ser ${propio}.`);
+  }
+  if (env.DATOS_SERVICIO) {
+    if (!(await existe(env, propio))) {
+      throw new Bloqueo(
+        `No existe \`${propio}\`. Sube tus datos con \`npm run datos:preview -- ${env.PREVIEW_NAME.slice(3)}\` y vuelve a marcar la casilla.`,
+      );
+    }
+    apuntar('preview', propio);
+  } else if (datosActivos(env)) {
+    if (!(await existe(env, WORKER_DATOS))) throw new Error(`No existe el Worker ${WORKER_DATOS}.`);
+    apuntar('preview', WORKER_DATOS);
+  } else {
+    apuntar('preview', null);
   }
   if (migra) migrar(env, run);
 
@@ -128,13 +187,29 @@ export async function desplegarPreview({
   return url;
 }
 
-export async function desplegarProduccion({ env = process.env, run = execFileSync } = {}) {
+export async function desplegarProduccion({
+  env = process.env,
+  run = execFileSync,
+  existe = existeWorker,
+  apuntar = apuntarDatos,
+} = {}) {
   exigir(env, [
     'CLOUDFLARE_API_TOKEN',
     'CLOUDFLARE_ACCOUNT_ID',
     'DATABASE_URL',
     'DATABASE_URL_UNPOOLED',
   ]);
+  if (datosActivos(env)) {
+    // Verificación de los datos: sin el Worker del corte, Cloudflare rechazaría el binding.
+    if (!(await existe(env, WORKER_DATOS))) {
+      throw new Error(
+        `No existe el Worker ${WORKER_DATOS}: publica primero un corte mensual (TASK-15). No se migró nada.`,
+      );
+    }
+  } else {
+    console.log('DATOS_CORTE_ENABLED no está activa: se despliega sin el binding DATOS.');
+    apuntar('produccion', null);
+  }
   migrar(env, run);
   conSecretos(env, (archivo) => {
     try {
@@ -160,6 +235,12 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     })
     .catch((error) => {
       console.error(error.message);
+      if (error instanceof Bloqueo && process.env.GITHUB_OUTPUT) {
+        appendFileSync(
+          process.env.GITHUB_OUTPUT,
+          `motivo=${error.message.replaceAll('\n', ' ')}\n`,
+        );
+      }
       process.exitCode = 1;
     });
 }

@@ -1,15 +1,27 @@
 import { describe, expect, it } from 'vitest';
-import { bloqueoPorMigraciones, leerOpciones, MARCA, renderizarComentario } from './control.mjs';
+import {
+  bloqueoPorMigraciones,
+  leerOpciones,
+  MARCA,
+  renderizarComentario,
+  workerDatos,
+} from './control.mjs';
 
-const opciones = { copiaBd: false };
+const opciones = { copiaBd: false, datosPropios: false };
 
 describe('comentario de control', () => {
-  it('sin comentario usa la base compartida', () => {
+  it('sin comentario usa la base compartida y los datos de producción', () => {
     expect(leerOpciones(undefined)).toEqual(opciones);
+    expect(workerDatos(7, opciones)).toBe('ekou-elephants-datos');
+    expect(workerDatos(7, { datosPropios: true })).toBe('ekou-elephants-datos-pr-7');
   });
 
   it('lo que renderiza se vuelve a leer igual (ida y vuelta)', () => {
-    for (const o of [opciones, { copiaBd: true }]) {
+    for (const o of [
+      opciones,
+      { copiaBd: true, datosPropios: false },
+      { copiaBd: false, datosPropios: true },
+    ]) {
       const cuerpo = renderizarComentario({
         pr: 7,
         sha: 'abcdef123',
@@ -28,7 +40,7 @@ describe('comentario de control', () => {
       opciones,
       estado: 'desplegado',
     }).replace('- [ ] **Copia propia', '- [X] **Copia propia');
-    expect(leerOpciones(cuerpo)).toEqual({ copiaBd: true });
+    expect(leerOpciones(cuerpo)).toEqual({ copiaBd: true, datosPropios: false });
   });
 
   it('bloquea migraciones sobre la base compartida', () => {
@@ -46,12 +58,13 @@ describe('comentario de control', () => {
     const cuerpo = renderizarComentario({
       pr: 7,
       sha: 'abcdef1',
-      opciones: { copiaBd: true },
+      opciones: { copiaBd: true, datosPropios: true },
       estado: 'bloqueado',
       motivo: 'razón',
       url: 'https://pr-7.x.dev/',
     });
     expect(cuerpo).toContain('preview/pr-7');
+    expect(cuerpo).toContain('ekou-elephants-datos-pr-7');
     expect(cuerpo).toContain('> razón');
     expect(cuerpo).toContain('https://pr-7.x.dev/');
   });

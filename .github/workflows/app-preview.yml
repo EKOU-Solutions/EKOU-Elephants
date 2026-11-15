@@ -1,10 +1,12 @@
 name: app-preview
 
 # Preview de cada PR en Cloudflare Workers (app + API).
-# - Por defecto usa la base compartida `dev` de Neon. No incluye los datos del corte mensual.
-# - El comentario fijado "Preview de este PR" tiene una casilla: copia propia de la base
-#   (rama de Neon desde `dev`). Al editarla se redespliega.
-# - Al cerrar el PR se borran el preview y la rama de Neon.
+# - Por defecto usa la base compartida `dev` de Neon y, si DATOS_CORTE_ENABLED=true, los datos
+#   del corte de producción (Worker `ekou-elephants-datos`, solo lectura).
+# - El comentario fijado "Preview de este PR" tiene casillas: copia propia de la base
+#   (rama de Neon desde `dev`) y datos propios (Worker `ekou-elephants-datos-pr-<n>`, subido
+#   con `npm run datos:preview`). Al editarlas se redespliega.
+# - Al cerrar el PR se borran el preview, la rama de Neon y el Worker de datos del PR.
 # Configuración y flujo: docs/ci-cd.md.
 
 on:
@@ -50,6 +52,7 @@ jobs:
       pr: ${{ steps.pr.outputs.pr }}
       sha: ${{ steps.pr.outputs.sha }}
       copia_bd: ${{ steps.opciones.outputs.copia_bd }}
+      datos_propios: ${{ steps.opciones.outputs.datos_propios }}
       bloqueo: ${{ steps.opciones.outputs.bloqueo }}
     steps:
       - name: Identificar el PR y validar a quien edita el comentario
@@ -107,6 +110,7 @@ jobs:
       PR: ${{ needs.opciones.outputs.pr }}
       SHA: ${{ needs.opciones.outputs.sha }}
       COPIA_BD: ${{ needs.opciones.outputs.copia_bd }}
+      DATOS_PROPIOS: ${{ needs.opciones.outputs.datos_propios }}
       EJECUCION: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
       GITHUB_TOKEN: ${{ github.token }}
       WRANGLER_SEND_METRICS: 'false'
@@ -172,6 +176,8 @@ jobs:
           MIGRAR: ${{ needs.opciones.outputs.copia_bd }}
           DATABASE_URL: ${{ steps.neon.outputs.db_url_pooled || secrets.DATABASE_URL_DEV }}
           DATABASE_URL_UNPOOLED: ${{ steps.neon.outputs.db_url }}
+          DATOS_SERVICIO: ${{ needs.opciones.outputs.datos_propios == 'true' && format('ekou-elephants-datos-pr-{0}', needs.opciones.outputs.pr) || '' }}
+          DATOS_CORTE_ENABLED: ${{ vars.DATOS_CORTE_ENABLED }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       - name: Publicar resultado
@@ -180,6 +186,7 @@ jobs:
         env:
           ESTADO: ${{ steps.despliegue.outcome == 'success' && 'desplegado' || 'error' }}
           URL: ${{ steps.despliegue.outputs.url }}
+          MOTIVO: ${{ steps.despliegue.outputs.motivo }}
 
   limpiar:
     name: Borrar recursos del PR cerrado
@@ -205,6 +212,14 @@ jobs:
       - name: Borrar el preview de Cloudflare
         continue-on-error: true
         run: npx --no-install wrangler preview delete --name "pr-$PR" --skip-confirmation
+        env:
+          PR: ${{ github.event.pull_request.number }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          WRANGLER_SEND_METRICS: 'false'
+      - name: Borrar el Worker de datos del PR
+        continue-on-error: true # No existe si nunca se subieron datos propios.
+        run: npx --no-install wrangler delete --name "ekou-elephants-datos-pr-$PR" --force
         env:
           PR: ${{ github.event.pull_request.number }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
