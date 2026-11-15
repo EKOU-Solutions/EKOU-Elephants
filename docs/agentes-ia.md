@@ -13,7 +13,7 @@ Mención de una persona con escritura → ejecución (Actions o Codex cloud) →
 
 ## Parametrización
 - Claude: modelo fijo `claude-sonnet-5-5` y máximo 30 turnos en `claude_args` del workflow; instrucciones persistentes con `--append-system-prompt` o en el propio comentario.
-- Codex: solo revisa cuando se menciona `@codex review` (sin revisión automática en cada PR); instrucciones en el comentario tras `@codex`; entorno y modelo en chatgpt.com/codex (`sin verificar` el detalle del esfuerzo).
+- Codex: solo revisa cuando se menciona `@codex review`. La revisión automática en cada PR está desactivada en chatgpt.com/codex → Settings → Code review; se configura allí, no en el repositorio; instrucciones en el comentario tras `@codex`; entorno y modelo en chatgpt.com/codex (`sin verificar` el detalle del esfuerzo).
 - Instrucciones persistentes: [guias-revision.md](guias-revision.md).
 
 ## Límites y riesgos (repositorio público)
