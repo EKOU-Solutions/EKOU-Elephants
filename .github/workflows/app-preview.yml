@@ -1,0 +1,222 @@
+name: app-preview
+
+# Preview de cada PR en Cloudflare Workers (app + API).
+# - Por defecto usa la base compartida `dev` de Neon y el prefijo `datos/` de R2 (corte publicado por TASK-15).
+# - El comentario fijado "Preview de este PR" tiene casillas: copia propia de la base
+#   (rama de Neon desde `dev`) y prefijo de R2 propio. Al editarlas se redespliega.
+# - Al cerrar el PR se borran el preview y la rama de Neon.
+# Configuración y flujo: docs/ci-cd.md.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+  issue_comment:
+    types: [edited]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: app-preview-${{ github.event.pull_request.number || github.event.issue.number }}
+  # No se interrumpen migraciones ni se compite con la limpieza.
+  cancel-in-progress: false
+
+jobs:
+  ci:
+    if: github.event_name == 'pull_request' && github.event.action != 'closed'
+    uses: ./.github/workflows/app-ci.yml
+
+  # Decide si hay que desplegar y con qué opciones.
+  opciones:
+    if: >-
+      vars.PREVIEW_DEPLOY_ENABLED == 'true' &&
+      (
+        (github.event_name == 'pull_request' &&
+          github.event.action != 'closed' &&
+          github.event.pull_request.head.repo.full_name == github.repository &&
+          github.actor != 'dependabot[bot]') ||
+        (github.event_name == 'issue_comment' &&
+          github.event.issue.pull_request &&
+          github.event.comment.user.login == 'github-actions[bot]' &&
+          startsWith(github.event.comment.body, '<!-- ekou-preview-control -->') &&
+          github.event.sender.login != 'github-actions[bot]')
+      )
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      pr: ${{ steps.pr.outputs.pr }}
+      sha: ${{ steps.pr.outputs.sha }}
+      copia_bd: ${{ steps.opciones.outputs.copia_bd }}
+      prefijo_r2_propio: ${{ steps.opciones.outputs.prefijo_r2_propio }}
+      bloqueo: ${{ steps.opciones.outputs.bloqueo }}
+    steps:
+      - name: Identificar el PR y validar a quien edita el comentario
+        id: pr
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          EVENTO: ${{ github.event_name }}
+          PR: ${{ github.event.pull_request.number || github.event.issue.number }}
+          QUIEN: ${{ github.event.sender.login }}
+        run: |
+          set -euo pipefail
+          datos=$(gh api "repos/$REPO/pulls/$PR")
+          if [ "$(jq -r .state <<<"$datos")" != open ]; then
+            echo "El PR no está abierto; no se despliega." >&2; exit 1
+          fi
+          if [ "$(jq -r .head.repo.full_name <<<"$datos")" != "$REPO" ]; then
+            echo "PR desde un fork: no se despliega con secretos." >&2; exit 1
+          fi
+          if [ "$EVENTO" = issue_comment ]; then
+            # Solo quien tiene escritura puede cambiar las opciones del preview.
+            permiso=$(gh api "repos/$REPO/collaborators/$QUIEN/permission" --jq .permission)
+            case "$permiso" in admin|maintain|write) ;; *)
+              echo "$QUIEN no tiene permiso de escritura ($permiso)." >&2; exit 1;;
+            esac
+          fi
+          echo "pr=$PR" >> "$GITHUB_OUTPUT"
+          echo "sha=$(jq -r .head.sha <<<"$datos")" >> "$GITHUB_OUTPUT"
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Código de la rama base: el PR no puede alterar cómo se leen sus opciones.
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+      - name: Leer opciones del comentario
+        id: opciones
+        run: node scripts/preview/github.mjs opciones
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          PR: ${{ steps.pr.outputs.pr }}
+
+  desplegar:
+    name: Desplegar preview
+    needs: [ci, opciones]
+    if: >-
+      always() &&
+      needs.opciones.result == 'success' &&
+      (needs.ci.result == 'success' || needs.ci.result == 'skipped')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: preview
+    permissions:
+      contents: read
+      pull-requests: write
+    env:
+      PR: ${{ needs.opciones.outputs.pr }}
+      SHA: ${{ needs.opciones.outputs.sha }}
+      COPIA_BD: ${{ needs.opciones.outputs.copia_bd }}
+      PREFIJO_R2_PROPIO: ${{ needs.opciones.outputs.prefijo_r2_propio }}
+      EJECUCION: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      GITHUB_TOKEN: ${{ github.token }}
+      WRANGLER_SEND_METRICS: 'false'
+    steps:
+      # Scripts de control desde la rama base; el código a desplegar, desde el commit del PR.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          path: base
+          persist-credentials: false
+      - name: Publicar estado inicial
+        run: node base/scripts/preview/github.mjs comentar
+        env:
+          ESTADO: ${{ needs.opciones.outputs.bloqueo != '' && 'bloqueado' || 'desplegando' }}
+          MOTIVO: ${{ needs.opciones.outputs.bloqueo }}
+      - name: Detener si las opciones lo bloquean
+        if: needs.opciones.outputs.bloqueo != ''
+        env:
+          MOTIVO: ${{ needs.opciones.outputs.bloqueo }}
+        run: |
+          echo "::error::$MOTIVO"
+          exit 1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.opciones.outputs.sha }}
+          path: app
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version-file: app/.nvmrc
+          package-manager-cache: false
+      - run: npm ci
+        working-directory: app
+      - run: npm run build
+        working-directory: app
+      - name: Crear o reutilizar la copia de la base (rama de Neon)
+        id: neon
+        if: needs.opciones.outputs.copia_bd == 'true'
+        uses: neondatabase/create-branch-action@72ed4f69a12b6be9c16aebfad893f6a21e9aba8b # v6.4.0
+        with:
+          api_key: ${{ secrets.NEON_API_KEY }}
+          project_id: ${{ vars.NEON_PROJECT_ID }}
+          parent_branch: dev
+          branch_name: preview/pr-${{ needs.opciones.outputs.pr }}
+          database: ${{ vars.NEON_DATABASE }}
+          role: ${{ vars.NEON_ROLE }}
+          suspend_timeout: 300
+          ssl: verify-full
+      - name: Borrar la copia si se desmarcó la casilla
+        if: needs.opciones.outputs.copia_bd != 'true'
+        continue-on-error: true # Lo normal es que no exista.
+        uses: neondatabase/delete-branch-action@4468d825d5a88ef4012f1705a82f02ec3072f776 # v3.2.1
+        with:
+          api_key: ${{ secrets.NEON_API_KEY }}
+          project_id: ${{ vars.NEON_PROJECT_ID }}
+          branch: preview/pr-${{ needs.opciones.outputs.pr }}
+      - name: Migrar (solo con copia propia) y desplegar
+        id: despliegue
+        working-directory: app
+        run: node ../base/scripts/despliegue.mjs preview
+        env:
+          PREVIEW_NAME: pr-${{ needs.opciones.outputs.pr }}
+          MIGRAR: ${{ needs.opciones.outputs.copia_bd }}
+          DATABASE_URL: ${{ steps.neon.outputs.db_url_pooled || secrets.DATABASE_URL_DEV }}
+          DATABASE_URL_UNPOOLED: ${{ steps.neon.outputs.db_url }}
+          DATOS_R2_PREFIJO: ${{ needs.opciones.outputs.prefijo_r2_propio == 'true' && format('previews/pr-{0}/datos/', needs.opciones.outputs.pr) || 'datos/' }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      - name: Publicar resultado
+        if: always() && needs.opciones.outputs.bloqueo == ''
+        run: node base/scripts/preview/github.mjs comentar
+        env:
+          ESTADO: ${{ steps.despliegue.outcome == 'success' && 'desplegado' || 'error' }}
+          URL: ${{ steps.despliegue.outputs.url }}
+
+  limpiar:
+    name: Borrar recursos del PR cerrado
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.event.action == 'closed' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      vars.PREVIEW_DEPLOY_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: preview
+    steps:
+      # La limpieza ejecuta código de la rama base, nunca del PR cerrado.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+      - run: npm ci
+      - name: Borrar el preview de Cloudflare
+        continue-on-error: true
+        run: npx --no-install wrangler preview delete --name "pr-$PR" --skip-confirmation
+        env:
+          PR: ${{ github.event.pull_request.number }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          WRANGLER_SEND_METRICS: 'false'
+      - name: Borrar la rama de Neon
+        continue-on-error: true # No existe si nunca se marcó la copia.
+        uses: neondatabase/delete-branch-action@4468d825d5a88ef4012f1705a82f02ec3072f776 # v3.2.1
+        with:
+          api_key: ${{ secrets.NEON_API_KEY }}
+          project_id: ${{ vars.NEON_PROJECT_ID }}
+          branch: preview/pr-${{ github.event.pull_request.number }}

@@ -4,7 +4,14 @@ import { crearApp } from '../src/server/app';
 import type { Queryable } from '../src/server/db';
 
 const filas: Record<string, unknown>[] = [
-  { codigo: '05', nombre: 'Antioquia', presupuesto_asignado: '1000000000', gasto_actual: '400000000', total_obras: 120, obras_con_retraso: 18 },
+  {
+    codigo: '05',
+    nombre: 'Antioquia',
+    presupuesto_asignado: '1000000000',
+    gasto_actual: '400000000',
+    total_obras: 120,
+    obras_con_retraso: 18,
+  },
 ];
 
 const db: Queryable = {

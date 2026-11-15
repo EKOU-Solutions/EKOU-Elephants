@@ -1,0 +1,74 @@
+name: app-deploy
+
+# Al integrar en `main`: CI, migraciones en la base compartida `dev` y despliegue a
+# producción tras la aprobación manual del environment `production`. Ver docs/ci-cd.md.
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: app-deploy
+  # Nunca se cancela un despliegue a medias; los siguientes esperan su turno.
+  cancel-in-progress: false
+
+jobs:
+  ci:
+    uses: ./.github/workflows/app-ci.yml
+
+  migrar-dev:
+    name: Migrar la base compartida dev
+    needs: ci
+    if: vars.PREVIEW_DEPLOY_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: preview
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+      - run: npm ci
+      - name: Aplicar migraciones en dev
+        env:
+          DATABASE_URL_UNPOOLED: ${{ secrets.DATABASE_URL_DEV_UNPOOLED }}
+        run: |
+          if [ -z "$DATABASE_URL_UNPOOLED" ]; then echo "::error::Falta DATABASE_URL_DEV_UNPOOLED"; exit 1; fi
+          # La salida puede contener credenciales: se descarta.
+          node node_modules/node-pg-migrate/bin/node-pg-migrate.js --migrations-dir migrations \
+            --migration-file-language sql --database-url-var DATABASE_URL_UNPOOLED up >/dev/null 2>&1 \
+            || { echo "::error::Fallaron las migraciones en dev"; exit 1; }
+
+  produccion:
+    name: Desplegar a producción
+    needs: [ci, migrar-dev]
+    if: always() && needs.ci.result == 'success' && needs.migrar-dev.result != 'failure' && vars.PRODUCTION_DEPLOY_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # Las aprobaciones se configuran en GitHub (Settings → Environments), no en este archivo.
+    environment: production
+    env:
+      WRANGLER_SEND_METRICS: 'false'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+      - run: npm ci
+      - run: npm run build
+      - name: Migrar producción y desplegar
+        run: node scripts/despliegue.mjs produccion
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DATABASE_URL_UNPOOLED: ${{ secrets.DATABASE_URL_UNPOOLED }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
