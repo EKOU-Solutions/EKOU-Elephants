@@ -59,7 +59,21 @@ uv run python -c "import duckdb; print(duckdb.connect('data/ekou.duckdb', read_o
 
 Si una prueba de datos falla (por ejemplo, una cédula sin seudonimizar o un contrato que se pierde entre capas), el comando termina con código 1 y el corte no se publica.
 
-Por último, `export` escribe los archivos abiertos del corte en `data/publicacion/<corte>/`: `contratos.parquet`, `mapa_municipios` y `calidad_corte` en Parquet y CSV, y un `resumen.md` con el reporte de calidad. Antes de exportar comprueba que la base contenga ese mismo corte.
+Después, `compuertas` revisa el corte en conjunto. Las pruebas de dbt detectan datos malos; las compuertas detectan un corte que se ve mal, como una vista de SECOP que queda vacía sin dar error. Con `--anterior` compara contra el `calidad_corte.csv` del corte publicado anterior. Imprime una tabla con cada compuerta y termina con código 1 si alguna falla.
+
+```bash
+uv run ekou-pipeline compuertas --corte 2026-12 --anterior calidad_corte_2026-11.csv
+```
+
+| Compuerta | Umbral por defecto | Variable |
+|---|---|---|
+| Cada fuente (SECOP I y II) tiene contratos | > 0 | — |
+| Contratos de cada fuente ubicados en un municipio del mapa | ≥ 80 % (2026-11: 88,3 % y 84,3 %) | `EKOU_GATE_MIN_PCT_MAPA` |
+| Municipios con al menos un contrato | ≥ 1.050 (2026-11: 1.106 de 1.122) | `EKOU_GATE_MIN_MUNICIPIOS` |
+| Caída de contratos de cada fuente frente al corte anterior | ≤ 1 % | `EKOU_GATE_MAX_CAIDA_CONTRATOS` |
+| Caída del porcentaje de ubicados frente al corte anterior | ≤ 2 puntos | `EKOU_GATE_MAX_CAIDA_PCT_MAPA` |
+
+Por último, `export` escribe los archivos abiertos del corte en `data/publicacion/<corte>/`: `contratos.parquet`; `mapa_municipios` y `calidad_corte` en Parquet, CSV y JSON; y un `resumen.md` con el reporte de calidad. Antes de exportar comprueba que la base contenga ese mismo corte.
 
 ```bash
 uv run ekou-pipeline export --corte 2026-11
@@ -67,12 +81,35 @@ uv run ekou-pipeline export --corte 2026-11
 
 ## Ejecución mensual
 
-El workflow [`corte-mensual`](../.github/workflows/corte-mensual.yml) corre el día 1 de cada mes a las 11:17 UTC en GitHub Actions: extrae las cinco fuentes, transforma, exporta y publica el Release `corte-AAAA-MM` con los archivos y el reporte de calidad.
+El workflow [`corte-mensual`](../.github/workflows/corte-mensual.yml) corre el día 1 de cada mes a las 11:17 UTC en GitHub Actions: `extract` → `transform` → `compuertas` → `export` → publicación.
+
+**Qué se publica**
+
+| Destino | Contenido | Caché |
+|---|---|---|
+| Bucket R2 `datos/AAAA-MM/` | `mapa_municipios.json` y `calidad_corte.json`, lo que consume la app | Inmutable (`max-age=31536000, immutable`): un corte nuevo usa otra ruta |
+| Bucket R2 `datos/latest.json` | Puntero al corte vigente y a sus archivos | 5 minutos (`stale-while-revalidate` de un día) |
+| Release `corte-AAAA-MM` | Todos los archivos de `export` y el reporte de extracción: el histórico | — |
+
+Reprocesar un mes viejo no mueve `latest.json` hacia atrás.
+
+**Operación**
 
 - **Reintentar o reprocesar un mes:** Actions → *corte-mensual* → *Run workflow*, con el corte `AAAA-MM` (vacío = mes actual). Lo ya extraído se guarda en la caché de Actions, así que un reintento solo baja las particiones que faltan. Si el Release ya existe, se reemplazan sus archivos.
-- **Si falla:** no se publica nada, se mantiene el corte anterior y se abre (o se comenta) un issue `Falló el corte mensual AAAA-MM` con el enlace a la ejecución. Los logs de dbt y el reporte de extracción quedan como artefacto de la ejecución durante 90 días.
-- **Secretos del repositorio:** `EKOU_PSEUDONYM_KEY` (obligatorio) y `EKOU_SOCRATA_APP_TOKEN` (recomendado).
+- **Si falla** la extracción, una prueba de datos o una compuerta: no se publica nada y se mantiene el corte anterior. La tabla de compuertas queda en el resumen de la ejecución y, si la ejecución era programada, se abre (o se comenta) un issue `Falló el corte mensual AAAA-MM` con el enlace. Los logs de dbt y el reporte de extracción quedan como artefacto durante 90 días.
 - Solo se publica desde `main`; desde otra rama la ejecución sirve de ensayo.
+
+**Secretos del repositorio** (Settings → Secrets and variables → Actions)
+
+| Secreto | Uso |
+|---|---|
+| `EKOU_PSEUDONYM_KEY` | Obligatorio. Clave para seudonimizar las cédulas |
+| `EKOU_SOCRATA_APP_TOKEN` | Recomendado. Sin él la API de datos.gov.co aplica límites más estrictos |
+| `R2_ACCOUNT_ID` | ID de la cuenta de Cloudflare |
+| `R2_BUCKET` | Nombre del bucket |
+| `R2_ACCESS_KEY_ID` y `R2_SECRET_ACCESS_KEY` | Token de API de R2 con permiso *Object Read & Write* **limitado a ese bucket** |
+
+Sin los secretos `R2_*` el workflow avisa y publica solo el Release.
 
 Varios datasets de SECOP se reconstruyen completos a diario en origen (SECOP II Contratos hacia las 02:43, hora de Colombia). Si eso ocurre en medio de una partición, el pipeline lo detecta con la cabecera `X-SODA2-Truth-Last-Modified` y vuelve a extraer la partición completa, para no mezclar dos versiones del dataset.
 
@@ -113,7 +150,8 @@ src/ekou_pipeline/
 ├── config.py      # configuración validada (pydantic-settings)
 ├── log_config.py  # logs estructurados en JSON
 ├── transform.py   # ejecuta dbt para un corte
-├── publish.py     # exporta el corte a Parquet y CSV para publicarlo
+├── compuertas.py  # compuertas de calidad del corte antes de publicar
+├── publish.py     # exporta el corte a Parquet, CSV y JSON para publicarlo
 ├── seudonimo.py   # HMAC-SHA256 de los documentos de personas naturales
 ├── dbt_plugin.py  # expone ekou_seudonimo() dentro de DuckDB
 └── cli.py         # comando ekou-pipeline

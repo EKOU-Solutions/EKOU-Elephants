@@ -3,7 +3,8 @@
 Escribe en ``<data_dir>/publicacion/<corte>/``:
 
 - ``contratos.parquet``: la capa silver completa (las cédulas ya van seudonimizadas).
-- ``mapa_municipios`` y ``calidad_corte`` en Parquet y CSV.
+- ``mapa_municipios`` y ``calidad_corte`` en Parquet, CSV y JSON (el JSON es lo que consume la
+  app desde R2).
 - ``resumen.md``: el reporte de calidad en una tabla, para las notas del release.
 """
 
@@ -16,13 +17,14 @@ log = structlog.get_logger(__name__)
 
 TABLES: dict[str, tuple[str, ...]] = {
     "contratos": ("parquet",),
-    "mapa_municipios": ("parquet", "csv"),
-    "calidad_corte": ("parquet", "csv"),
+    "mapa_municipios": ("parquet", "csv", "json"),
+    "calidad_corte": ("parquet", "csv", "json"),
 }
 
 _FORMAT_OPTIONS = {
     "parquet": "(format parquet, compression zstd)",
     "csv": "(format csv, header true)",
+    "json": "(format json, array true)",
 }
 
 _SUMMARY_COLUMNS = (
@@ -43,11 +45,16 @@ def publication_dir(data_dir: Path, corte: str) -> Path:
     return data_dir / "publicacion" / corte
 
 
-def export_corte(conn: duckdb.DuckDBPyConnection, *, corte: str, out_dir: Path) -> list[Path]:
-    """Exporta las tablas del corte y devuelve las rutas escritas."""
+def check_corte(conn: duckdb.DuckDBPyConnection, corte: str) -> None:
+    """Falla si la base de DuckDB no contiene exactamente ese corte."""
     cortes = {row[0] for row in conn.execute("select distinct corte from calidad_corte").fetchall()}
     if cortes != {corte}:
         raise CorteMismatchError(f"la base tiene el corte {sorted(cortes)}, no {corte}")
+
+
+def export_corte(conn: duckdb.DuckDBPyConnection, *, corte: str, out_dir: Path) -> list[Path]:
+    """Exporta las tablas del corte y devuelve las rutas escritas."""
+    check_corte(conn, corte)
 
     out_dir.mkdir(parents=True, exist_ok=True)
     written: list[Path] = []

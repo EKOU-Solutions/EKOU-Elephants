@@ -1,7 +1,8 @@
 name: corte-mensual
 
 # Extrae, transforma y publica el corte mensual de contratación pública (ADR 0002, decisión 4).
-# Cada ejecución queda pública en la pestaña Actions; cada corte aprobado, en un Release.
+# extract → transform (pruebas de dbt) → compuertas de calidad → export → R2 + Release.
+# Cada ejecución queda pública en la pestaña Actions; cada corte aprobado, en R2 y en un Release.
 
 on:
   schedule:
@@ -121,12 +122,83 @@ jobs:
         # Si una prueba de datos falla, termina con código 1 y el corte no se publica.
         run: uv run ekou-pipeline transform --corte "${{ steps.corte.outputs.corte }}"
 
+      - name: calidad del corte anterior
+        id: anterior
+        env:
+          CORTE: ${{ steps.corte.outputs.corte }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          # El Release más reciente de un corte anterior a este; si no hay, no se compara.
+          tag=$(gh release list --limit 100 --json tagName --jq '.[].tagName' \
+            | grep -E '^corte-[0-9]{4}-[0-9]{2}$' | sort -r \
+            | awk -v actual="corte-$CORTE" '$0 < actual' | head -n 1 || true)
+          if [[ -z "$tag" ]]; then
+            echo "Sin corte anterior publicado: solo se aplican los umbrales absolutos."
+            exit 0
+          fi
+          gh release download "$tag" --pattern calidad_corte.csv --output data/calidad_corte_anterior.csv
+          echo "ruta=data/calidad_corte_anterior.csv" >> "$GITHUB_OUTPUT"
+          echo "Se compara contra $tag."
+
+      - name: compuertas de calidad
+        # Si la cobertura cae bajo el umbral o frente al corte anterior, el corte no se publica.
+        env:
+          ANTERIOR: ${{ steps.anterior.outputs.ruta }}
+        run: |
+          uv run ekou-pipeline compuertas --corte "${{ steps.corte.outputs.corte }}" \
+            ${ANTERIOR:+--anterior "$ANTERIOR"} | tee -a "$GITHUB_STEP_SUMMARY"
+
       - name: exportar
         run: |
           uv run ekou-pipeline export --corte "${{ steps.corte.outputs.corte }}"
           cp data/reporte-extraccion.json "data/publicacion/${{ steps.corte.outputs.corte }}/"
           ls -lh "data/publicacion/${{ steps.corte.outputs.corte }}"
           cat "data/publicacion/${{ steps.corte.outputs.corte }}/resumen.md" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: publicar en R2
+        # Lo que consume la app: rutas versionadas inmutables y un puntero latest.json con caché
+        # corta (ADR 0002, decisión 6.2).
+        if: github.ref == 'refs/heads/main' && (github.event_name == 'schedule' || inputs.publicar)
+        env:
+          CORTE: ${{ steps.corte.outputs.corte }}
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: auto
+          # R2 no acepta las sumas de verificación que la CLI de AWS envía por defecto.
+          AWS_REQUEST_CHECKSUM_CALCULATION: when_required
+          AWS_RESPONSE_CHECKSUM_VALIDATION: when_required
+        run: |
+          if [[ -z "$R2_ACCOUNT_ID" || -z "$R2_BUCKET" || -z "$AWS_ACCESS_KEY_ID" ]]; then
+            echo "::warning::R2 sin configurar (secretos R2_*): el corte solo se publica en el Release"
+            exit 0
+          fi
+          s3() { aws s3 --endpoint-url "https://$R2_ACCOUNT_ID.r2.cloudflarestorage.com" "$@"; }
+          dir="data/publicacion/$CORTE"
+          for archivo in mapa_municipios.json calidad_corte.json; do
+            s3 cp "$dir/$archivo" "s3://$R2_BUCKET/datos/$CORTE/$archivo" \
+              --content-type application/json \
+              --cache-control "public, max-age=31536000, immutable"
+          done
+
+          # Reprocesar un mes viejo no debe mover el puntero hacia atrás.
+          vigente=$(s3 cp "s3://$R2_BUCKET/datos/latest.json" - 2>/dev/null | jq -r '.corte // ""' || true)
+          if [[ -n "$vigente" && "$vigente" > "$CORTE" ]]; then
+            echo "latest.json se queda en $vigente (más reciente que $CORTE)."
+            exit 0
+          fi
+          jq -n --arg corte "$CORTE" --arg publicado "$(date -u +%Y-%m-%dT%H:%M:%SZ)" '{
+            corte: $corte,
+            publicado: $publicado,
+            archivos: {
+              mapa_municipios: "datos/\($corte)/mapa_municipios.json",
+              calidad_corte: "datos/\($corte)/calidad_corte.json"
+            }
+          }' > latest.json
+          s3 cp latest.json "s3://$R2_BUCKET/datos/latest.json" \
+            --content-type application/json \
+            --cache-control "public, max-age=300, stale-while-revalidate=86400"
 
       - name: publicar Release
         if: github.ref == 'refs/heads/main' && (github.event_name == 'schedule' || inputs.publicar)
@@ -167,7 +239,7 @@ jobs:
         run: |
           titulo="Falló el corte mensual $CORTE"
           url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
-          cuerpo="La ejecución programada del corte $CORTE falló y no se publicó. Se mantiene el corte anterior.
+          cuerpo="La ejecución programada del corte $CORTE falló (extracción, pruebas de datos o compuertas de calidad) y no se publicó. Se mantiene el corte anterior.
 
           Registros: $url
 

@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 
 import duckdb
@@ -31,15 +32,20 @@ def test_export_writes_open_files(
     names = sorted(p.name for p in out.iterdir())
     assert names == [
         "calidad_corte.csv",
+        "calidad_corte.json",
         "calidad_corte.parquet",
         "contratos.parquet",
         "mapa_municipios.csv",
+        "mapa_municipios.json",
         "mapa_municipios.parquet",
         "resumen.md",
     ]
     assert pq.read_table(out / "contratos.parquet").num_rows == 1
     assert "| secop_ii | 10 | 87.50% | 5.00% | 1 | 0 |" in (out / "resumen.md").read_text("utf-8")
-    assert len(capsys.readouterr().out.splitlines()) == 6
+    assert json.loads((out / "mapa_municipios.json").read_text("utf-8")) == [
+        {"cod_mpio": "05001", "contratos": 3}
+    ]
+    assert len(capsys.readouterr().out.splitlines()) == 8
 
 
 def test_export_refuses_a_different_corte(tmp_path: Path) -> None:
