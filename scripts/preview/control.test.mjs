@@ -68,4 +68,12 @@ describe('comentario de control', () => {
     expect(cuerpo).toContain('> razón');
     expect(cuerpo).toContain('https://pr-7.x.dev/');
   });
+
+  it('dice si el preview lee los datos de producción o ninguno', () => {
+    const base = { pr: 7, sha: 'abcdef1', opciones, estado: 'desplegado' };
+    expect(renderizarComentario(base)).toContain('sin datos del corte');
+    expect(renderizarComentario({ ...base, datosCorte: true })).toContain(
+      'de producción `ekou-elephants-datos`',
+    );
+  });
 });

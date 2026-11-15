@@ -1,4 +1,4 @@
-// Comentario de control del preview de un PR: lo publica el workflow, se fija en el PR
+// Comentario de control del preview de un PR: lo publica y actualiza el workflow (uno por PR)
 // y sus casillas deciden con qué base de datos y qué datos del corte se despliega el preview.
 
 export const MARCA = '<!-- ekou-preview-control -->';
@@ -42,13 +42,24 @@ const casilla = (marcada, clave, texto) => `- [${marcada ? 'x' : ' '}] ${texto} 
 /**
  * Cuerpo del comentario. `estado` es 'desplegado', 'desplegando', 'bloqueado' o 'error'.
  */
-export function renderizarComentario({ pr, sha, opciones, estado, url, motivo, ejecucion }) {
+export function renderizarComentario({
+  pr,
+  sha,
+  opciones,
+  estado,
+  url,
+  motivo,
+  ejecucion,
+  datosCorte,
+}) {
   const bd = opciones.copiaBd
     ? `copia propia \`${nombreRamaNeon(pr)}\` (rama de Neon desde \`dev\`, con las migraciones de este PR)`
     : 'compartida `dev` (sin migraciones del PR)';
   const datos = opciones.datosPropios
     ? `propios \`${workerDatos(pr, opciones)}\` (subidos con \`npm run datos:preview -- ${pr}\`)`
-    : `de producción \`${WORKER_DATOS}\` (solo lectura)`;
+    : datosCorte
+      ? `de producción \`${WORKER_DATOS}\` (solo lectura)`
+      : 'sin datos del corte (`DATOS_CORTE_ENABLED` apagada)';
   const estados = {
     desplegado: `✅ Desplegado desde \`${sha.slice(0, 7)}\``,
     desplegando: `⏳ Desplegando \`${sha.slice(0, 7)}\`…`,

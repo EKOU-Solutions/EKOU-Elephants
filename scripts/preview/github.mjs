@@ -1,7 +1,7 @@
 // CLI que usa el workflow `app-preview` para leer y actualizar el comentario de control.
 // Uso: node scripts/preview/github.mjs opciones|comentar
 // Variables: GITHUB_TOKEN, GITHUB_REPOSITORY, PR, y para `comentar`: SHA, ESTADO, URL, MOTIVO,
-// COPIA_BD, DATOS_PROPIOS, EJECUCION.
+// COPIA_BD, DATOS_PROPIOS, DATOS_CORTE_ENABLED, EJECUCION.
 import { appendFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -64,21 +64,16 @@ export async function calcularOpciones(api, pr) {
   };
 }
 
-/** Crea o actualiza el comentario de control e intenta fijarlo en el PR. */
-export async function publicarComentario(api, pr, datos, avisar = console.warn) {
+/**
+ * Crea o actualiza el único comentario de control del PR. No se fija: GitHub solo permite
+ * fijar comentarios en issues («issue cannot be a pull request», verificado el 2026-11-15).
+ */
+export async function publicarComentario(api, pr, datos) {
   const cuerpo = renderizarComentario({ pr, ...datos });
   const existente = await buscarComentario(api, pr);
   const comentario = existente
     ? await api('PATCH', `/issues/comments/${existente.id}`, { body: cuerpo })
     : await api('POST', `/issues/${pr}/comments`, { body: cuerpo });
-  if (!existente) {
-    try {
-      // Fijar comentarios existe para issues (2026-02); en PRs no está verificado.
-      await api('PUT', `/issues/comments/${comentario.id}/pin`);
-    } catch (error) {
-      avisar(`No se pudo fijar el comentario (${error.status ?? error.message}); queda sin fijar.`);
-    }
-  }
   return comentario.id;
 }
 
@@ -117,6 +112,7 @@ async function main(comando, env = process.env) {
         copiaBd: env.COPIA_BD === 'true',
         datosPropios: env.DATOS_PROPIOS === 'true',
       },
+      datosCorte: env.DATOS_CORTE_ENABLED === 'true',
     });
     return;
   }

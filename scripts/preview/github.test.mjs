@@ -5,13 +5,12 @@ import { calcularOpciones, publicarComentario } from './github.mjs';
 const bot = (id, body) => ({ id, body, user: { login: 'github-actions[bot]' } });
 const opciones = { copiaBd: true, datosPropios: false };
 
-function apiFalsa({ comentarios = [], archivos = [], fallaPin = false } = {}) {
+function apiFalsa({ comentarios = [], archivos = [] } = {}) {
   return vi.fn(async (metodo, ruta) => {
     if (metodo === 'GET' && ruta.startsWith('/issues/7/comments')) return comentarios;
     if (metodo === 'GET' && ruta.startsWith('/pulls/7/files')) return archivos;
     if (metodo === 'POST') return { id: 99 };
     if (metodo === 'PATCH') return { id: 5 };
-    if (metodo === 'PUT' && fallaPin) throw Object.assign(new Error('no'), { status: 404 });
     return null;
   });
 }
@@ -44,16 +43,15 @@ describe('calcularOpciones', () => {
 });
 
 describe('publicarComentario', () => {
-  it('crea y fija el comentario la primera vez; si fijar falla, solo avisa', async () => {
-    const api = apiFalsa({ fallaPin: true });
-    const avisar = vi.fn();
+  it('crea el comentario la primera vez, sin intentar fijarlo', async () => {
+    const api = apiFalsa();
     const datos = { sha: 'abc1234', opciones, estado: 'desplegando' };
-    await expect(publicarComentario(api, 7, datos, avisar)).resolves.toBe(99);
-    expect(api).toHaveBeenCalledWith('PUT', '/issues/comments/99/pin');
-    expect(avisar).toHaveBeenCalled();
+    await expect(publicarComentario(api, 7, datos)).resolves.toBe(99);
+    expect(api).toHaveBeenCalledWith('POST', '/issues/7/comments', expect.any(Object));
+    expect(api).not.toHaveBeenCalledWith('PUT', expect.anything());
   });
 
-  it('actualiza el existente sin volver a fijarlo', async () => {
+  it('actualiza el existente en lugar de crear otro', async () => {
     const api = apiFalsa({
       comentarios: [
         bot(5, renderizarComentario({ pr: 7, sha: 'a', opciones, estado: 'desplegado' })),
