@@ -37,6 +37,9 @@ export function bloqueoPorMigraciones({ opciones, migracionesCambiadas }) {
   return null;
 }
 
+/** Static Storybook served by the same Worker (`npm run build` writes it to dist/client). */
+export const STORYBOOK_PATH = '/storybook/';
+
 const casilla = (marcada, clave, texto) => `- [${marcada ? 'x' : ' '}] ${texto} <!-- ${clave} -->`;
 
 /**
@@ -78,6 +81,7 @@ export function renderizarComentario({
     '| | |',
     '| --- | --- |',
     `| App y API | ${url ? `[${url}](${url})` : '—'} |`,
+    `| Storybook (sistema de diseño) | ${url ? `[${STORYBOOK_PATH}](${new URL(STORYBOOK_PATH, url).href})` : '—'} |`,
     `| Base de datos | ${bd} |`,
     `| Datos del corte | ${datos} |`,
     '',

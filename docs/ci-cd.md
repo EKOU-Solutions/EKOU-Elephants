@@ -26,7 +26,7 @@ flowchart LR
 | --- | --- |
 | `npm run lint` | Reglas recomendadas de Biome; las advertencias hacen fallar. |
 | `npm run format:check` / `npm run format` | Verifica o aplica el formato de Biome. |
-| `npm run check` | Lint, formato, tipos, pruebas y build. Es lo mismo que CI, salvo la integración con PostgreSQL si no hay `TEST_DATABASE_URL`. |
+| `npm run check` | Lint, formato, tipos, pruebas y build (que incluye el Storybook estático). Es lo mismo que CI, salvo la integración con PostgreSQL si no hay `TEST_DATABASE_URL`. |
 | `npm run deploy:dry-run` | Valida el paquete del Worker sin subirlo (requiere `npm run build`). |
 | `npm run datos:corte -- [AAAA-MM]` | Lanza el workflow `corte-mensual` en GitHub Actions (sin mes: el actual). |
 | `npm run datos:descargar -- [AAAA-MM]` | Baja un corte publicado (por defecto el último Release) a `datos-locales/`, que git ignora. `--forzar` reemplaza la carpeta. |
@@ -55,6 +55,22 @@ Casos de uso:
 
 Solo cuenta la edición de alguien con permiso de escritura en el repositorio. La lectura de opciones y la gestión del comentario usan el código de `main`, no el del PR. Al cerrar el PR se borran el preview de Cloudflare, la rama de Neon y el Worker de datos del PR.
 
+## Storybook en el preview y en producción
+
+`npm run build` genera la app y, después, la versión estática de Storybook en `dist/client/storybook/` (`npm run build:storybook-app`). El mismo Worker la sirve como archivos estáticos, así que no hay workflow, secreto ni proyecto aparte:
+
+| Entorno | Dónde |
+| --- | --- |
+| Preview del PR | `<URL del preview>/storybook/`. El comentario «Preview de este PR» y el resumen del job traen el enlace. |
+| Producción | `/storybook/` del dominio de producción. |
+| Local | `npm run build && npm run preview`, luego `/storybook/`; o `npm run storybook` para desarrollar. |
+
+Como sale del mismo commit, cada preview muestra el sistema de diseño de su PR y producción muestra el de `main`. CI ya construye Storybook dentro de `npm run build`: una historia rota hace fallar el PR. Storybook muestra solo datos ficticios; no lee la API ni la base.
+
+Cloudflare sirve `/storybook/iframe.html` como `/storybook/iframe` (redirección 307 que conserva la consulta); Storybook funciona igual.
+
+Un PR abierto antes de este cambio no trae Storybook en su build: su enlace muestra la app hasta que se actualice desde `main`.
+
 ## Datos del corte mensual
 
 No se usa R2 (exige tarjeta de crédito). El corte mensual (TASK-15) publica los JSON (`datos/latest.json` y `datos/AAAA-MM/`) en un **Worker solo de archivos estáticos, `ekou-elephants-datos`**, sin URL pública, y guarda el histórico en los Releases `corte-AAAA-MM`. La API lo lee con el binding `DATOS` (`env.DATOS.fetch(...)`, TASK-09).
@@ -78,7 +94,7 @@ Con cada push a `main` (tras el merge de un PR):
 2. Se aplican las migraciones nuevas en la base compartida `dev`, para que los previews siguientes la encuentren al día.
 3. El job `produccion` espera la **aprobación manual** del environment `production`. Al aprobarlo, verifica los datos del corte (solo con `DATOS_CORTE_ENABLED=true`), aplica las migraciones en la rama `production` de Neon y despliega el Worker con `wrangler deploy`.
 
-Una migración fallida detiene el despliegue. Un despliegue fallido **no revierte** las migraciones ya aplicadas, así que las migraciones deben ser aditivas y compatibles con la versión anterior. Para revertir código, haz un PR que revierta el cambio y vuelve a pasar por el pipeline. El rollback de Cloudflare restaura código, no datos. Tras el primer despliegue real, verifica a mano la SPA, `GET /api/salud` y una ruta que use la base.
+Una migración fallida detiene el despliegue. Un despliegue fallido **no revierte** las migraciones ya aplicadas, así que las migraciones deben ser aditivas y compatibles con la versión anterior. Para revertir código, haz un PR que revierta el cambio y vuelve a pasar por el pipeline. El rollback de Cloudflare restaura código, no datos. Tras el primer despliegue real, verifica a mano la SPA, `GET /api/salud`, una ruta que use la base y `/storybook/`.
 
 ## Configuración única (administración del repositorio)
 

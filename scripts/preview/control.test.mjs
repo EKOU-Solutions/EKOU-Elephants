@@ -67,6 +67,7 @@ describe('comentario de control', () => {
     expect(cuerpo).toContain('ekou-elephants-datos-pr-7');
     expect(cuerpo).toContain('> razón');
     expect(cuerpo).toContain('https://pr-7.x.dev/');
+    expect(cuerpo).toContain('(https://pr-7.x.dev/storybook/)');
   });
 
   it('dice si el preview lee los datos de producción o ninguno', () => {

@@ -16,7 +16,7 @@ import { appendFileSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { WORKER_DATOS } from './preview/control.mjs';
+import { STORYBOOK_PATH, WORKER_DATOS } from './preview/control.mjs';
 
 const WRANGLER = 'node_modules/wrangler/bin/wrangler.js';
 const MIGRADOR = 'node_modules/node-pg-migrate/bin/node-pg-migrate.js';
@@ -192,7 +192,10 @@ export async function desplegarPreview({
   const url = new URL(direccion.startsWith('https://') ? direccion : `https://${direccion}`).href;
   console.log(`Preview: ${url}`);
   await verify(url);
-  resumen(env, `### ${env.PREVIEW_NAME}\n\nApp y API: [abrir preview](${url})`);
+  resumen(
+    env,
+    `### ${env.PREVIEW_NAME}\n\nApp y API: [abrir preview](${url}) · Storybook: [sistema de diseño](${new URL(STORYBOOK_PATH, url).href})`,
+  );
   if (env.GITHUB_OUTPUT) appendFileSync(env.GITHUB_OUTPUT, `url=${url}\n`);
   return url;
 }
@@ -232,7 +235,10 @@ export async function desplegarProduccion({
       throw new Error('Falló el despliegue a producción; las migraciones aplicadas se mantienen.');
     }
   });
-  resumen(env, '### Producción\n\nMigraciones aplicadas y Worker desplegado.');
+  resumen(
+    env,
+    `### Producción\n\nMigraciones aplicadas y Worker desplegado. Storybook en \`${STORYBOOK_PATH}\`.`,
+  );
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

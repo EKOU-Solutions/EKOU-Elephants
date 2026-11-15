@@ -38,6 +38,8 @@ Storybook es la referencia viva del sistema de diseño: lineamientos para person
 npm run storybook          # http://localhost:6006
 ```
 
+Cada preview de PR y producción publican la versión estática en `/storybook/`: `npm run build` la incluye en `dist/client/storybook/` (ver [CI/CD](ci-cd.md#storybook-en-el-preview-y-en-producción)).
+
 - Configuración y lineamientos: `.storybook/` (páginas MDX en `.storybook/docs/`, especificación de los candidatos en `.storybook/catalog/`). Los componentes del núcleo viven en `src/components/ui/`.
 - Los componentes React reales llevan su historia al lado: `src/**/ComponentName.stories.tsx`.
 - Los tokens salen de `docs/design/guide/tokens.json`: `build.py` genera `tokens.css` y lo copia, con la fuente, a `src/styles/`. La app (`src/client/main.tsx`) y Storybook importan `src/styles/global.css`; no se edita a mano.
