@@ -1,39 +1,41 @@
-# Page designs
+# Diseños de página
 
-One folder per page, built with the `elephants-design` skill's [Build a page](../../../.claude/skills/elephants-design/references/build-page.md) flow. How developers interact with it: [design flow](../design-flow.md).
+Una carpeta por página, construida con la ruta [Construir una página](../../../.claude/skills/elephants-design/references/build-page.md) de la skill `elephants-design`. Cómo trabaja desarrollo con ella: [flujo de diseño](../design-flow.md).
 
-## Folder contract
+## Contrato de la carpeta
 
 ```
-docs/design/pages/<page>/
-  README.md        status, date, links, open questions
-  contract.md      which API contract (version, date) the design depends on
-  data.md          data exploration: real samples, fill rates, phase, sensitive fields
-  spec.md          purpose, hierarchy table (field → component → tokens), states, copy
-  mockup.html      visual target: mobile + desktop, light + dark (generated output git-ignored if built)
-  validation.md    accessibility, overflow, detector, copy, 10-second test, limits
+docs/design/pages/<pagina>/
+  README.md        estado, fecha, enlaces, preguntas abiertas
+  contract.md      de qué contrato de API (versión, fecha) depende el diseño
+  data.md          exploración de datos: muestras reales, porcentaje de llenado, fase, campos sensibles
+  spec.md          propósito, tabla de jerarquía (campo → componente → tokens), estados, textos
+  mockup.html      objetivo visual: celular + escritorio, claro + oscuro (la salida generada se ignora en git)
+  validation.md    accesibilidad, desbordamiento, detector, textos, prueba de 10 segundos, límites
 ```
 
-## Page log
+Los componentes nuevos o confirmados por la página quedan documentados con su historia en Storybook.
 
-| Page | Status | Contract |
+## Registro de páginas
+
+| Página | Estado | Contrato |
 | --- | --- | --- |
-| — | No page started yet | — |
+| — | Ninguna página empezada todavía | — |
 
-Statuses: *Blocked — no contract* · *Exploring* · *Spec awaiting approval* · *Mockup in review* · *Approved*.
+Estados: *Bloqueada: sin contrato* · *Explorando* · *Especificación pendiente de aprobación* · *Maqueta en revisión* · *Aprobada*.
 
-## Tentative reference
+## Referencia tentativa
 
-**Tentative. Not a specification.** These are starting points, taken from the scope in the [root README](../../../README.md#funcionalidades) and the dataset list in [fuentes de datos](../../fuentes-de-datos.md). What each page finally shows is decided in its own `spec.md`, after its contract and data exploration. The component names refer to the catalog in the [design system guide v1.0](../guide/components.json); candidates are marked *(candidate)*. "Likely upstream data" is where ingestion maps the fields from; the page itself is designed on our API's contract.
+**Tentativa. No es una especificación.** Son puntos de partida, tomados del alcance del [README raíz](../../../README.md#funcionalidades) y de la lista de conjuntos de datos de [fuentes de datos](../../fuentes-de-datos.md). Lo que cada página muestre al final se decide en su propio `spec.md`, después de su contrato y de la exploración de datos. Los nombres de componentes remiten al catálogo (Storybook, fuente en [components.json](../guide/components.json)); los candidatos se marcan como *(candidato)*. «Datos de origen probables» es de dónde la ingesta toma los campos; la página en sí se diseña sobre el contrato de nuestra API.
 
-| Page (tentative) | Question it answers | Likely upstream data (MVP / phase 2) | Components that may apply |
+| Página (tentativa) | Pregunta que responde | Datos de origen probables (MVP / fase 2) | Componentes que pueden aplicar |
 | --- | --- | --- | --- |
-| Map (Mapa de inversión) | How does my territory compare, and where should I look? | SECOP II Contracts `jbjy-vk9h`, DIVIPOLA `gdxc-w37w` (MVP); CUIPO budget, DNP projects (phase 2) | Map + legend, risk tag, key figure, coverage *(candidate)*, bars *(candidate)*, data table |
-| Search (Buscador) | Which contracts or works match what I am looking for? | SECOP II Contracts `jbjy-vk9h`, Processes `p6dx-8zbt` (MVP); DNP projects (phase 2) | Search field, active filter, counter, risk tag, result row |
-| Contract detail | Why does this contract have signals? | Contracts `jbjy-vk9h`, Processes `p6dx-8zbt`, Additions `cb9c-h8sn`, Suspensions `u99c-7mfm` (MVP); Execution `mfmm-jqmq`, Projects ↔ Contracts `uwns-mbwd` (phase 2) | Risk tag (large), key figures, signal *(candidate)*, status *(candidate)*, alert, buttons |
-| Works detail | Is this work progressing, and how does the money compare with the progress? | DNP Projects `cf9k-55fw`, Follow-up `7mxf-bp6x`, Projects ↔ Contracts `uwns-mbwd` (phase 2) | Progress *(candidate)*, key figures, linked rows, timeline. **Entity model pending (works vs contract, with Esteban)** |
-| Entities (Presupuesto por entidad) | What does each public entity spend its budget on? | CUIPO, PGN budget (phase 2); Contracts `jbjy-vk9h` (MVP) | Bars *(candidate)*, data table, key figures |
-| Contractors (Principales contratistas) | Who receives the most contracts and money, and how are their works doing? | Contracts `jbjy-vk9h`, Sanctions `it5q-hg94` / `4n4q-k399` (MVP); RUES (phase 2) | Data table, risk tag, counter |
-| Alerts (Alertas de riesgo) | Which signals appear, and where? | Computed from the datasets above; patterns defined in TASK-07 | Risk tag, signal *(candidate)*, map, data table |
+| Mapa (Mapa de inversión) | ¿Cómo se compara mi territorio y dónde debería mirar? | Contratos SECOP II `jbjy-vk9h`, DIVIPOLA `gdxc-w37w` (MVP); presupuesto CUIPO, proyectos DNP (fase 2) | Mapa + leyenda, etiqueta de riesgo, cifra destacada, cobertura *(candidato)*, barras *(candidato)*, tabla de datos |
+| Búsqueda (Buscador) | ¿Qué contratos u obras coinciden con lo que busco? | Contratos SECOP II `jbjy-vk9h`, Procesos `p6dx-8zbt` (MVP); proyectos DNP (fase 2) | Campo de búsqueda, filtro activo, contador, etiqueta de riesgo, fila de resultado |
+| Detalle de contrato | ¿Por qué este contrato tiene señales? | Contratos `jbjy-vk9h`, Procesos `p6dx-8zbt`, Adiciones `cb9c-h8sn`, Suspensiones `u99c-7mfm` (MVP); Ejecución `mfmm-jqmq`, Proyectos ↔ Contratos `uwns-mbwd` (fase 2) | Etiqueta de riesgo (grande), cifras destacadas, señal *(candidato)*, estado *(candidato)*, alerta, botones |
+| Detalle de obra | ¿Esta obra avanza, y cómo se compara el dinero con el avance? | Proyectos DNP `cf9k-55fw`, Seguimiento `7mxf-bp6x`, Proyectos ↔ Contratos `uwns-mbwd` (fase 2) | Avance *(candidato)*, cifras destacadas, filas enlazadas, línea de tiempo. **Modelo de entidades pendiente (obra frente a contrato, con Esteban)** |
+| Entidades (Presupuesto por entidad) | ¿En qué gasta su presupuesto cada entidad pública? | Presupuesto CUIPO, PGN (fase 2); Contratos `jbjy-vk9h` (MVP) | Barras *(candidato)*, tabla de datos, cifras destacadas |
+| Contratistas (Principales contratistas) | ¿Quién recibe más contratos y dinero, y cómo van sus obras? | Contratos `jbjy-vk9h`, Sanciones `it5q-hg94` / `4n4q-k399` (MVP); RUES (fase 2) | Tabla de datos, etiqueta de riesgo, contador |
+| Alertas (Alertas de riesgo) | ¿Qué señales aparecen y dónde? | Calculadas a partir de los conjuntos anteriores; patrones definidos en TASK-07 | Etiqueta de riesgo, señal *(candidato)*, mapa, tabla de datos |
 
-Cross-cutting rule from the scope: the global territorial filter (DANE code) limits every page.
+Regla transversal del alcance: el filtro territorial global (código DANE) limita todas las páginas.

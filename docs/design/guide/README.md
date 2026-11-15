@@ -1,61 +1,62 @@
-# Design system guide v1.0
+# Guía del sistema de diseño v1.0
 
-Status: **Accepted** (2026-11-08). Task: [#6](https://github.com/EKOU-Solutions/EKOU-Elephants/issues/6). Origin: [Round 05: system reference](../rounds/05-system-reference/README.md). Decision record: [visual direction](../visual-direction.md#final-selection-2026-11-08).
+Estado: **Aceptada** (2026-11-08). Tarea: [#6](https://github.com/EKOU-Solutions/EKOU-Elephants/issues/6). Origen: [Ronda 05: referencia del sistema](../rounds/05-system-reference/README.md). Registro de la decisión: [dirección visual](../visual-direction.md#selección-final-2026-11-08).
 
-This is the deliverable of TASK-05: an HTML guide, documentation for developers and AI agents, and the `elephants-design` skill, which builds each final page from its API contract. Storybook was dropped by decision on 2026-11-08.
+Este fue el entregable de TASK-05: una guía en HTML, documentación para desarrollo y agentes de IA, y la skill `elephants-design`, que construye cada página final a partir de su contrato de API. El 2026-11-08 se descartó Storybook.
 
 > **Actualización 2026-11-15:** se revirtió esa decisión. La referencia visual viva es Storybook (`npm run storybook`). Esta carpeta conserva la fuente de verdad de tokens y catálogo (`tokens.json`, `components.css`, `components.json`, `build.py`), que Storybook importa. La página de referencia `preview.html` y los ejemplos `examples.html` quedan como seguimiento histórico de la v1.0: no se amplían con componentes nuevos.
 
-## Start here
+## Empieza aquí
 
-| You are | Read |
+| Si eres | Lee |
 | --- | --- |
-| A developer or an AI agent implementing UI | [design-system.md](design-system.md) (rules), `tokens.css` (import it), [components.json](components.json) (catalogue), `tokens.md` (token table) |
-| A designer, or the team reviewing visuals | `preview.html` (reference) and `examples.html` (screens on a phone and a laptop) after building |
-| Anyone designing a new page | [Design flow](../design-flow.md) and the skill's [Build a page](../../../.claude/skills/elephants-design/references/build-page.md) phase |
+| Desarrollo o un agente de IA que implementa interfaz | Storybook (`npm run storybook`), [design-system.md](design-system.md) (reglas), `tokens.css` (impórtalo), [components.json](components.json) (catálogo), `tokens.md` (tabla de tokens) |
+| Diseño, o el equipo que revisa lo visual | Storybook: lineamientos, fundamentos y componentes en tema claro y oscuro |
+| Quien diseña una página nueva | [Flujo de diseño](../design-flow.md) y la ruta [Construir una página](../../../.claude/skills/elephants-design/references/build-page.md) de la skill |
+| Quien quiere ver la referencia histórica v1.0 | `preview.html` y `examples.html` (pantallas en celular y portátil), después de generarlas |
 
 ```sh
 python3 docs/design/guide/build.py
 open docs/design/guide/preview.html docs/design/guide/examples.html
 ```
 
-## What v1.0 contains
+## Qué contiene la v1.0
 
-- Round 05's **editorial layout**: neutral surface, lines instead of cards, data first.
-- **One typeface: Public Sans 5.3.0**, self-hosted. The A/B type switch and the Source Sans 3 / Source Serif 4 files were removed.
-- Light and dark themes. All 17 contrast pairs pass in both.
-- 9 core components and 5 candidates (see `components.json`).
-- Three example screens (contract detail, results list, map with territory panel) inside iPhone and MacBook simulators.
+- La **maquetación editorial** de la Ronda 05: superficie neutra, líneas en lugar de tarjetas, el dato primero.
+- **Una sola tipografía: Public Sans 5.3.0**, alojada con la aplicación. Se quitaron el selector A/B de tipografía y los archivos de Source Sans 3 / Source Serif 4.
+- Tema claro y oscuro. Los 17 pares de contraste pasan en ambos.
+- 9 componentes del núcleo y 5 candidatos (ver `components.json`).
+- Tres pantallas de ejemplo (detalle de contrato, lista de resultados, mapa con panel de territorio) dentro de simuladores de iPhone y MacBook.
 
-What changed against Round 05, and why:
+Qué cambió frente a la Ronda 05, y por qué:
 
-- **Fixes carried over:**
-  - The phone's "full screen" link now opens the screen at 390 px (`screens/phone.html`).
-  - The laptop simulator no longer overflows at 320 px.
-- **Removed:** the works (obra) screen. Whether a work is a separate entity from a contract will be decided when the business model is shaped with Esteban, and its page will go through Build a page.
-- **Added:**
-  - `components.json` and `design-system.md`.
-  - A generated `tokens.md`.
-  - Build-time checks that every catalogue class and token exists.
-- **Not adopted:** Round 06's visual layer (canvas with white cards, pill controls). See the decision record.
+- **Correcciones trasladadas:**
+  - El enlace de «pantalla completa» del celular ahora abre la pantalla a 390 px (`screens/phone.html`).
+  - El simulador de portátil ya no se desborda a 320 px.
+- **Quitado:** la pantalla de obra. Si una obra es una entidad distinta de un contrato se decidirá cuando se defina el modelo de negocio con Esteban, y su página pasará por Construir una página.
+- **Agregado:**
+  - `components.json` y `design-system.md`.
+  - Un `tokens.md` generado.
+  - Comprobaciones en el build de que cada clase y cada token del catálogo existen.
+- **No adoptado:** la capa visual de la Ronda 06 (lienzo con tarjetas blancas, controles en píldora). Ver el registro de la decisión.
 
-## Files
+## Archivos
 
-`tokens.json` (source of truth) → `build.py` → `tokens.css`, `tokens.md` and `contrast-report.json`, all versioned and generated. It also writes `preview.html`, `examples.html` and `screens/`, which are ignored and fully offline: the font is embedded and the Lucide script is inlined. The other sources are `source.html`, `examples.source.html`, `examples/`, `components.css` and `components.json`. The `assets/` folder holds the font with its OFL licence, Lucide 0.468.0 with its ISC licence, the map paths and the fictional territories.
+`tokens.json` (fuente de verdad) → `build.py` → `tokens.css`, `tokens.md` y `contrast-report.json`, todos versionados y generados. También escribe `preview.html`, `examples.html` y `screens/`, que se ignoran en git y funcionan sin conexión: la fuente va incrustada y el script de Lucide va en línea. Las otras fuentes son `source.html`, `examples.source.html`, `examples/`, `components.css` y `components.json`. La carpeta `assets/` guarda la fuente con su licencia OFL, Lucide 0.468.0 con su licencia ISC, los trazos del mapa y los territorios ficticios.
 
-The previous guide (v0.1, based on Round 02) is kept for history in [`../archive/guide-v0.1/`](../archive/guide-v0.1/README.md).
+La guía anterior (v0.1, basada en la Ronda 02) se conserva como historia en [`../archive/guide-v0.1/`](../archive/guide-v0.1/README.md).
 
-## Sources (checked 2026-11-08)
+## Fuentes (consultadas el 2026-11-08)
 
-- Font: [`@fontsource-variable/public-sans@5.3.0`](https://cdn.jsdelivr.net/npm/@fontsource-variable/public-sans@5.3.0/), OFL-1.1.
-- Icons: [Lucide 0.468.0](https://lucide.dev), ISC.
-- Geography: geoBoundaries COL ADM1 / OpenStreetMap, ODbL 1.0; provenance in [Round 01](../rounds/01-territory-overview/README.md#geography-and-attribution). All values are fictional.
+- Tipografía: [`@fontsource-variable/public-sans@5.3.0`](https://cdn.jsdelivr.net/npm/@fontsource-variable/public-sans@5.3.0/), OFL-1.1.
+- Íconos: [Lucide 0.468.0](https://lucide.dev), ISC.
+- Geografía: geoBoundaries COL ADM1 / OpenStreetMap, ODbL 1.0; procedencia en la [Ronda 01](../rounds/01-territory-overview/README.md#geografía-y-atribución). Todos los valores son ficticios.
 
-## Open (outside this guide)
+## Abierto (fuera de esta guía)
 
-- Risk thresholds and categories: TASK-07.
-- Personal data: TASK-08.
-- Works vs contract as entities: to be decided when the business model is shaped.
-- Production implementation: the markup here is a specification, not a tested component library.
+- Umbrales y categorías de riesgo: TASK-07.
+- Datos personales: TASK-08.
+- Obra frente a contrato como entidades: se decide cuando se defina el modelo de negocio.
+- Implementación de producción: el marcado de aquí es una especificación, no una biblioteca de componentes probada.
 
-Validation: [validation.md](validation.md).
+Validación: [validation.md](validation.md).

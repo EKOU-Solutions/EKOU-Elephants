@@ -1,48 +1,48 @@
-# Round 04 — Grounded guide
+# Ronda 04: guía con fundamento
 
-Status: **Proposed — awaiting review**. Date: 2026-11-08. Task: [#6](https://github.com/EKOU-Solutions/EKOU-Elephants/issues/6). Previous: [Round 02](../02-risk-signals/README.md) (selected direction) and [guide v0.1](../../guide/README.md).
+Estado: **Propuesta, en espera de revisión**. Fecha: 2026-11-08. Tarea: [#6](https://github.com/EKOU-Solutions/EKOU-Elephants/issues/6). Anterior: [Ronda 02](../02-risk-signals/README.md) (dirección seleccionada) y [guía v0.1](../../guide/README.md).
 
-## Feedback addressed
+## Comentarios atendidos
 
-The user found [guide v0.1](../../guide/README.md) still looked "very AI" and asked for design principles grounded in the business objective. This round keeps the selected Round 02 semantics and reworks everything around them. v0.1 is left untouched for comparison.
+Jouler sintió que la [guía v0.1](../../guide/README.md) todavía se veía «muy de IA» y pidió principios de diseño basados en el objetivo de negocio. Esta ronda conserva la semántica seleccionada en la Ronda 02 y rehace todo lo demás alrededor de ella. La v0.1 se deja intacta para comparar.
 
-## Hypothesis
+## Hipótesis
 
-A guide that behaves like a well-made public record (map first, ledger rules, plain language) reads as more credible to citizens than a SaaS-style kit, without changing the accepted colour meaning.
+Una guía que se comporta como un registro público bien hecho (primero el mapa, reglas de libro contable, lenguaje claro) resulta más creíble para la ciudadanía que un kit con estilo SaaS, sin cambiar el significado del color ya aceptado.
 
-## What changes from v0.1
+## Qué cambia frente a la v0.1
 
-- **Map-led opening.** The first element is a real departmental map with legend, grey hatch for missing data, a selected-territory outline and an exact-value readout, instead of a slogan. The title states the product's core principle: a signal asks for review, it does not accuse.
-- **Template chrome removed.** No all-caps label above the title, no 01–04 numbering (the sections are not a sequence), no tinted icon callouts, no card containers, no left-border stripes. Structure comes from ink rules and whitespace.
-- **Tags equal the legend.** Each risk tag shows the exact map fill (or the hatch) next to its name.
-- **Plain-language voice.** A "Cómo escribimos" table translates the README's risk patterns (single bidder, repeated direct contracting, cost overrun, unfinished works) into everyday Spanish for the general public.
-- **Geometry.** 2 px corners on data marks, 6 px on controls, no panel radius. Headline figure reduced from 52 to 44 px.
-- **Typeface under comparison.** Atkinson Hyperlegible Next (designed for low vision, SIL OFL 1.1, self-hosted) versus the system font accepted after Round 01. Both are built so they can be compared. The Atkinson zero is slashed by design.
+- **Apertura con el mapa.** El primer elemento es un mapa departamental real con leyenda, trama gris para los datos faltantes, el contorno del territorio seleccionado y una ficha con el valor exacto, en lugar de un eslogan. El título enuncia el principio central del producto: una señal pide revisar, no acusa.
+- **Sin adornos de plantilla.** Sin antetítulo en mayúsculas sobre el título, sin numeración 01–04 (las secciones no son una secuencia), sin recuadros con íconos sobre fondo de color, sin tarjetas y sin franjas en el borde izquierdo. La estructura sale de líneas de tinta y del espacio en blanco.
+- **Las etiquetas son iguales a la leyenda.** Cada etiqueta de riesgo muestra el relleno exacto del mapa (o la trama) junto a su nombre.
+- **Voz en lenguaje claro.** Una tabla «Cómo escribimos» traduce los patrones de riesgo del README (único oferente, contratación directa repetida, sobrecosto, obras inconclusas) a un español cotidiano para el público general.
+- **Geometría.** Esquinas de 2 px en las marcas de datos, de 6 px en los controles y sin radio en los paneles. La cifra principal baja de 52 a 44 px.
+- **Tipografía en comparación.** Atkinson Hyperlegible Next (diseñada para baja visión, SIL OFL 1.1, alojada en el proyecto) frente a la fuente del sistema aceptada después de la Ronda 01. Se generan ambas para poder compararlas. El cero de Atkinson va tachado por diseño.
 
-Unchanged: blue / yellow / warm-red / grey-hatch roles, colour tokens, contrast pairs, accessibility targets and data-display rules.
+Sin cambios: los roles azul / amarillo / rojo cálido / trama gris, los tokens de color, los pares de contraste, las metas de accesibilidad y las reglas de presentación de datos.
 
-## Decisions and open questions
+## Decisiones y preguntas abiertas
 
-Accepted: none yet. Needs a decision: the typeface, and whether this structure replaces v0.1 as the guide. Risk thresholds, labels and the contract-versus-work unit remain TASK-07. The hero's category split (up to 12% blue, up to 30% amber, above red) is an **illustrative example only**, labelled as such in the guide, and is not an agreed threshold nor the Round 02 fixture's 0%/25% bins.
+Aceptado: nada todavía. Falta decidir la tipografía y si esta estructura reemplaza a la v0.1 como guía. Los umbrales de riesgo, las etiquetas y la unidad contrato frente a obra siguen en TASK-07. El reparto de categorías del encabezado (hasta 12 % azul, hasta 30 % ámbar, por encima rojo) es **solo un ejemplo ilustrativo**, rotulado así en la guía; no es un umbral acordado ni los intervalos de 0 % / 25 % del fixture de la Ronda 02.
 
-## Files and reproduction
+## Archivos y cómo reproducirla
 
-- `source.html`: editable guide; `§` in its CSS is replaced by the root selector at build time.
-- `tokens.json`: candidate tokens (v0.2: both font families, weights, 2 px mark radius).
-- `assets/`: pinned Atkinson Hyperlegible Next 5.3.0 latin variable woff2 and its [OFL licence](assets/ATKINSON-OFL); own copies of the Round 02 map paths and fictional territory fixture.
-- `build.py`: Python 3 standard library only. Reuses the pinned Lucide bundle from `../../guide/assets`.
+- `source.html`: guía editable; en su CSS, `§` se reemplaza por el selector raíz al generar.
+- `tokens.json`: tokens candidatos (v0.2: ambas familias tipográficas, pesos, radio de 2 px en las marcas).
+- `assets/`: Atkinson Hyperlegible Next 5.3.0 latin variable woff2 fijada y su [licencia OFL](assets/ATKINSON-OFL); copias propias de los trazos del mapa y del fixture ficticio de territorios de la Ronda 02.
+- `build.py`: solo biblioteca estándar de Python 3. Reutiliza el paquete fijado de Lucide de `../../guide/assets`.
 
 ```sh
 python3 docs/design/rounds/04-grounded-guide/build.py
 ```
 
-Outputs, ignored: `preview.html` and `guide.html` (Atkinson) and `preview-system.html` and `guide-system.html` (system font); `contrast-report.json` is versioned. Previews work offline.
+Salidas, ignoradas en git: `preview.html` y `guide.html` (Atkinson), y `preview-system.html` y `guide-system.html` (fuente del sistema); `contrast-report.json` sí se versiona. Las vistas previas funcionan sin conexión.
 
-## Sources
+## Fuentes
 
-- Font: [`@fontsource-variable/atkinson-hyperlegible-next` 5.3.0](https://cdn.jsdelivr.net/npm/@fontsource-variable/atkinson-hyperlegible-next@5.3.0/), OFL-1.1, checked 2026-11-08.
-- Geography: geoBoundaries COL ADM1 / OpenStreetMap, ODbL 1.0, simplified; provenance in [Round 01](../01-territory-overview/README.md#geography-and-attribution). All values are fictional.
+- Tipografía: [`@fontsource-variable/atkinson-hyperlegible-next` 5.3.0](https://cdn.jsdelivr.net/npm/@fontsource-variable/atkinson-hyperlegible-next@5.3.0/), OFL-1.1, consultada el 2026-11-08.
+- Geografía: geoBoundaries COL ADM1 / OpenStreetMap, ODbL 1.0, simplificada; procedencia en la [Ronda 01](../01-territory-overview/README.md#geografía-y-atribución). Todos los valores son ficticios.
 
-## Validation
+## Validación
 
-See `validation.md`.
+Ver `validation.md`.

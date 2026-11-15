@@ -1,29 +1,29 @@
-# Round
+# Ronda
 
-Output: a new `docs/design/rounds/NN-short-name/` built from the accepted audit findings.
+Resultado: una nueva carpeta `docs/design/rounds/NN-nombre-corto/` construida a partir de los hallazgos aceptados de una auditoría.
 
-## Start
+## Empezar
 
-- Next number after the highest existing round; short kebab-case name for the hypothesis.
-- Base it on the selected round or the guide; copy what you change into the new folder. Never edit an earlier round or the accepted guide in place.
-- One hypothesis per round. If the accepted findings pull in different directions, propose separate rounds.
+- El número siguiente a la ronda más alta que exista; un nombre corto en kebab-case para la hipótesis.
+- Se basa en la ronda seleccionada o en la guía; copia a la carpeta nueva lo que cambies. Nunca edites en su lugar una ronda anterior ni la guía aceptada.
+- Una hipótesis por ronda. Si los hallazgos aceptados tiran en direcciones distintas, propone rondas separadas.
 
-## Folder contract
+## Contrato de la carpeta
 
-Same as earlier rounds:
+Igual que en las rondas anteriores:
 
-- `README.md`: status, date, task link, previous round, feedback addressed, hypothesis, what changes, decisions and open questions, files and reproduction, sources, link to validation.
-- `source.html` and small `assets/` (own copies of geometry and fixtures), `build.py` using the Python standard library only.
-- `.gitignore` for generated previews; generated files are never edited by hand.
-- `validation.md`: what was observed, at which widths, which checks passed, and limits (what was not checked).
+- `README.md`: estado, fecha, enlace a la tarea, ronda anterior, comentarios atendidos, hipótesis, qué cambia, decisiones y preguntas abiertas, archivos y cómo reproducir, fuentes, enlace a la validación.
+- `source.html` y una carpeta `assets/` pequeña (copias propias de la geometría y de los datos de ejemplo), `build.py` solo con la biblioteca estándar de Python.
+- `.gitignore` para las vistas previas generadas; los archivos generados nunca se editan a mano.
+- `validation.md`: qué se observó, en qué anchos, qué comprobaciones pasaron y los límites (qué no se comprobó).
 
-## Build
+## Construir
 
-Use `frontend-design` for the plan and its self-critique (spend boldness in one place; remove template tells); `impeccable shape` is an optional second plan. Use `dataviz` for map and legend work. Re-run the audit's critique and accessibility passes on the result before reporting.
+Usa `frontend-design` para el plan y su autocrítica (gasta la audacia en un solo lugar; quita las señales de plantilla); `impeccable shape` es un segundo plan opcional. Usa `dataviz` para el mapa y la leyenda. Antes de reportar, repite sobre el resultado las pasadas de crítica y de accesibilidad de la auditoría.
 
-## Finish
+## Cerrar
 
-- Add the round to the review log in `docs/design/README.md` as "Proposed — awaiting review".
+- Agrega la ronda al registro de revisiones de `docs/design/README.md` como «Propuesta: pendiente de revisión».
 - Si el equipo acepta la ronda, se convierte en la siguiente versión mayor de la guía y Storybook se actualiza en la misma entrega (tokens, páginas MDX de fundamentos e historias de los componentes que cambian).
-- Serve the previews locally for the user (`python3 -m http.server` in the round folder) and give the URLs.
-- Report what changed, what was verified, and the decisions the user still has to make. Do not commit.
+- Sirve las vistas previas en local para el equipo (`python3 -m http.server` en la carpeta de la ronda) y comparte las URL.
+- Reporta qué cambió, qué se verificó y qué decisiones le quedan al equipo. No hagas commit.

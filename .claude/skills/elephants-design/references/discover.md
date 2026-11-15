@@ -1,36 +1,36 @@
-# Discover
+# Descubrimiento
 
-Output: `docs/design/discovery/brief.md`. It becomes the yardstick for audits and rounds.
+Resultado: `docs/design/discovery/brief.md`. Se convierte en la vara de medir de auditorías y rondas.
 
-## Before asking
+## Antes de preguntar
 
-Read the project `README.md`, `docs/fuentes-de-datos.md`, `docs/design/visual-direction.md`, the accepted guide (`docs/design/guide/README.md`) and any existing brief. Draft answers from them. Only ask what they leave open or what may have changed.
+Lee el `README.md` del proyecto, `docs/fuentes-de-datos.md`, `docs/design/visual-direction.md`, la guía aceptada (`docs/design/guide/README.md`) y el brief existente, si lo hay. Redacta respuestas a partir de ellos. Pregunta solo lo que dejan abierto o lo que pudo haber cambiado.
 
-## Ask
+## Preguntar
 
-One question per message, multiple choice with a recommended option first, free answer always allowed. Skip any question the documents already answer; say which source answered it.
+Una pregunta por mensaje, de opción múltiple, con la opción recomendada primero y siempre con respuesta libre permitida. Omite cualquier pregunta que los documentos ya respondan e indica qué fuente la respondió.
 
-1. **Audience and task.** For the general public and for the interested public (journalists, oversight groups, students, community leaders): what is the first concrete thing each must accomplish on the map?
-2. **Device and context.** Main devices, connection quality, reading level to design for.
-3. **Risk voice.** How strong may wording be? Words we must avoid. What a "low risk" label may and may not imply.
-4. **Trust.** What makes the product look credible to a Colombian citizen; references that feel trustworthy or untrustworthy; what currently looks generic or "AI".
-5. **Constraints.** Legal limits (TASK-08: natural persons), accessibility target, free-tier/performance limits, brand relationship with EKOU.
-6. **Success.** How we will know the visual system works (a task a test user completes, an observed reaction, a metric from the README).
+1. **Audiencia y tarea.** Para el público general y para el público interesado (periodistas, veedurías, estudiantes, líderes comunitarios): ¿qué es lo primero y concreto que cada uno debe lograr en el mapa?
+2. **Dispositivo y contexto.** Dispositivos principales, calidad de la conexión y nivel de lectura para el que se diseña.
+3. **Voz del riesgo.** ¿Qué tan fuerte puede ser la redacción? Palabras que debemos evitar. Qué puede y qué no puede implicar una etiqueta de «riesgo bajo».
+4. **Confianza.** Qué hace que el producto se vea creíble para una persona colombiana; referentes que transmiten confianza o desconfianza; qué se ve hoy genérico o «hecho con IA».
+5. **Restricciones.** Límites legales (TASK-08: personas naturales), meta de accesibilidad, límites de capa gratuita y rendimiento, relación de marca con EKOU.
+6. **Éxito.** Cómo sabremos que el sistema visual funciona (una tarea que completa una persona en una prueba, una reacción observada, una métrica del README).
 
-## Write back
+## Devolver
 
-Summarise in under 25 lines with three lists: **Said by the team**, **Taken from documents** (with file), **Assumed** (to confirm). Ask for corrections. Write `brief.md` only after the user confirms, with the date and who answered.
+Resume en menos de 25 líneas con tres listas: **Dicho por el equipo**, **Tomado de documentos** (con el archivo) y **Supuesto** (por confirmar). Pide correcciones. Escribe `brief.md` solo cuando el equipo confirme, con la fecha y quién respondió.
 
-## Brief format
+## Formato del brief
 
 ```markdown
-# Design brief
-Date: YYYY-MM-DD. Answered by: ...
-## Audiences and first tasks
-## Devices and reading level
-## Risk voice (allowed / avoid)
-## Trust signals
-## Constraints
-## Success criteria
-## Open questions
+# Brief de diseño
+Fecha: AAAA-MM-DD. Respondido por: ...
+## Audiencias y primeras tareas
+## Dispositivos y nivel de lectura
+## Voz del riesgo (permitido / evitar)
+## Señales de confianza
+## Restricciones
+## Criterios de éxito
+## Preguntas abiertas
 ```

@@ -1,87 +1,89 @@
-# Round 05 — System reference
+# Ronda 05: referencia del sistema
 
-Status: **Selected (final)** (2026-11-08); consolidated as the [design system guide v1.0](../../guide/README.md) with Public Sans. [Round 06](../06-clean-layer/README.md) was explored and not selected. Date: 2026-11-08. Task: [#6](https://github.com/EKOU-Solutions/EKOU-Elephants/issues/6). Previous: [Round 04](../04-grounded-guide/README.md); audit: [2026-11-08](../../audits/2026-11-08-round-04.md); brief: [discovery](../../discovery/brief.md).
+Estado: **Seleccionada (final)** (2026-11-08); consolidada como la [guía del sistema de diseño v1.0](../../guide/README.md) con Public Sans. La [Ronda 06](../06-clean-layer/README.md) se exploró y no se seleccionó. Fecha: 2026-11-08. Tarea: [#6](https://github.com/EKOU-Solutions/EKOU-Elephants/issues/6). Anterior: [Ronda 04](../04-grounded-guide/README.md); auditoría: [2026-11-08](../../audits/2026-11-08-round-04.md); brief: [descubrimiento](../../discovery/brief.md).
 
-## Feedback addressed
+> Desde el 2026-11-15 la referencia viva del sistema es Storybook (`npm run storybook`). Esta ronda se conserva como historia.
 
-User review of Round 04 (2026-11-08):
+## Comentarios atendidos
 
-- Foundations, components and "cifras y etiquetas" were not clear enough to build from. The system must be clear and digestible for developers, UX and UI.
-- Typeface: must be legible and self-hosted (the system font varies by platform); Atkinson's slashed zero is rejected for numbers. Two options may be proposed.
-- Grey hatch for missing data: kept, confirmed as clear.
-- The national headline belongs to the future Map page, not to the design system; example copy must use the agreed direct, mobilising tone.
-- Re-order the risk colours and add a dark theme; both themes will be used.
-- Format: Storybook or per-round HTML preview are both acceptable.
+Revisión de Jouler sobre la Ronda 04 (2026-11-08):
 
-Follow-up review (2026-11-08, same day):
+- Los fundamentos, los componentes y «cifras y etiquetas» no eran lo bastante claros para construir a partir de ellos. El sistema debe ser claro y fácil de digerir para desarrollo, UX y UI.
+- Tipografía: debe ser legible y alojada en el proyecto (la fuente del sistema cambia según la plataforma); se descarta el cero tachado de Atkinson para los números. Se pueden proponer dos opciones.
+- Trama gris para los datos faltantes: se mantiene, confirmada como clara.
+- El titular nacional pertenece a la futura página del Mapa, no al sistema de diseño; los textos de ejemplo deben usar el tono directo y movilizador acordado.
+- Reordenar los colores de riesgo y agregar un tema oscuro; se usarán ambos temas.
+- Formato: Storybook o una vista previa HTML por ronda; los dos sirven.
 
-- Risk tags, counters and the map panel did not stand out; the information hierarchy must make the risk label obvious.
-- The map panel looked serious but not professional, current or eye-catching.
-- Integrate the components into real screens on a separate page, shown in realistic phone and laptop simulators, to judge what works.
-- Alerts needed another style and variants; the Display callout must be blue and full width.
+Revisión de seguimiento (2026-11-08, el mismo día):
 
-## Hypothesis
+- Las etiquetas de riesgo, los contadores y el panel del mapa no se destacaban; la jerarquía de la información debe hacer evidente la etiqueta de riesgo.
+- El panel del mapa se veía serio, pero no profesional, actual ni llamativo.
+- Integrar los componentes en pantallas reales en una página aparte, mostradas en simuladores realistas de celular y portátil, para juzgar qué funciona.
+- Las alertas necesitaban otro estilo y variantes; el destacado Display debe ser azul y de ancho completo.
 
-A reference organised like component documentation — one page, side index, and the same template for every piece — lets dev, UX and UI build without interpretation, and keeps iteration fast.
+## Hipótesis
 
-## Decisions taken in this round
+Una referencia organizada como documentación de componentes (una página, índice lateral y la misma plantilla para cada pieza) permite que desarrollo, UX y UI construyan sin interpretar, y mantiene rápida la iteración.
 
-- **Format: per-round HTML preview now, Storybook later.** The React archetype (TASK-04) is not merged yet; a static page iterates faster. `tokens.css` is generated so the app can import the same variables when it exists, and the component markup/classes in each "Código" block map to future React components.
-- **Template per piece:** what it is · specimen with variants and states · when to use · tokens · do / avoid · code · accessibility.
-- **Index:** Start (how to use, principles) · Foundations (colour, typography, spacing and shape, icons, voice and tone) · Components (button, alert, form field, risk tag, counter, active filter, key figure, data table, map with legend).
+## Decisiones tomadas en esta ronda
 
-- **Risk tag, filled:** risk colour as background, `--el-color-on-risk-*` text (≥ 4.5:1 in both themes) and a three-bar level glyph (1, 2 or 3 filled bars; dashed for "Sin datos"), so the level reads without colour. Two sizes: normal (lists, tables, map) and large (once, at the top of a detail page).
-- **Red means "riesgo alto" only.** "Con señales" counts and bars use ink (`.el-key-flagged`), not the risk red, so a red mark never contradicts the territory's level.
-- **Counter:** stat blocks (large number over its label) instead of inline text.
-- **Alerts:** colour only in the icon badge and border, text in ink; three variants: page banner, inline alert, compact note.
-- **Candidate components** introduced by the examples (review before adopting): status pill (`.el-status`), coverage bar with hatch for "not analysed" (`.el-coverage`), horizontal bars (`.el-bars`), progress against expected (`.el-progress`), numbered signal row (`.el-signal`).
+- **Formato: vista previa HTML por ronda ahora, Storybook después.** El arquetipo de React (TASK-04) todavía no está integrado; una página estática itera más rápido. `tokens.css` se genera para que la app pueda importar las mismas variables cuando exista, y el marcado y las clases de cada bloque «Código» corresponden a futuros componentes React.
+- **Plantilla por pieza:** qué es · muestra con variantes y estados · cuándo usarla · tokens · hacer / evitar · código · accesibilidad.
+- **Índice:** Inicio (cómo usarla, principios) · Fundamentos (color, tipografía, espacio y forma, íconos, voz y tono) · Componentes (botón, alerta, campo de formulario, etiqueta de riesgo, contador, filtro activo, cifra destacada, tabla de datos, mapa con leyenda).
 
-## Examples page
+- **Etiqueta de riesgo rellena:** el color de riesgo como fondo, texto `--el-color-on-risk-*` (≥ 4,5:1 en ambos temas) y un glifo de nivel de tres barras (1, 2 o 3 barras llenas; punteadas para «Sin datos»), para que el nivel se lea sin color. Dos tamaños: normal (listas, tablas, mapa) y grande (una vez, arriba de una página de detalle).
+- **El rojo significa solo «riesgo alto».** Los conteos y las barras de «Con señales» usan tinta (`.el-key-flagged`), no el rojo de riesgo, para que una marca roja nunca contradiga el nivel del territorio.
+- **Contador:** bloques de cifra (número grande sobre su etiqueta) en lugar de texto en línea.
+- **Alertas:** el color va solo en el distintivo del ícono y en el borde; el texto, en tinta. Tres variantes: banner de página, alerta en línea y nota compacta.
+- **Componentes candidatos** que trajeron los ejemplos (revisar antes de adoptarlos): píldora de estado (`.el-status`), barra de cobertura con trama para «sin analizar» (`.el-coverage`), barras horizontales (`.el-bars`), avance frente a lo esperado (`.el-progress`) y fila numerada de señal (`.el-signal`).
 
-`examples.html` shows four screens built only with the system: contract detail, results list, map with territory panel, and public-works detail. Each one appears in an iPhone-like simulator (390 × 844) next to a MacBook-like simulator (1280 × 800 browser viewport), with the questions to judge listed above it. Theme and typeface switches propagate to every screen. Screens are generated from `examples/*.html` fragments with `examples/app.css` (app shell and layouts, not system components).
+## Página de ejemplos
 
-## Proposals awaiting decision
+`examples.html` muestra cuatro pantallas construidas solo con el sistema: detalle de contrato, lista de resultados, mapa con panel territorial y detalle de obra pública. Cada una aparece en un simulador tipo iPhone (390 × 844) junto a un simulador tipo MacBook (ventana de navegador de 1280 × 800), con las preguntas para juzgarla encima. Los selectores de tema y de tipografía se aplican a todas las pantallas. Las pantallas se generan a partir de los fragmentos `examples/*.html` con `examples/app.css` (estructura de la app y composiciones, no componentes del sistema).
 
-| Topic | Proposal |
+## Propuestas pendientes de decisión
+
+| Tema | Propuesta |
 | --- | --- |
-| Typeface A | **Public Sans** 5.3.0 (USWDS), one family for everything; plain zero; OFL 1.1; ~27 KB |
-| Typeface B | **Source Sans 3** 5.3.1 for UI + **Source Serif 4** 5.3.1 for titles and headline figures; plain zero; OFL 1.1; ~80 KB |
-| Risk fills, light | `#7FB4D4` low · `#CF8721` intermediate · `#A93F39` high — lightness descends low → high |
-| Risk fills, dark | `#34708F` low · `#C08A2E` intermediate · `#F4A397` high — order inverted so high risk is the most visible on a dark surface |
-| Dark theme | Full token set in `tokens.json` → `tokens.css`; follows the device by default, with a manual switch (`data-theme`) |
+| Tipografía A | **Public Sans** 5.3.0 (USWDS), una sola familia para todo; cero sin tachar; OFL 1.1; ~27 KB |
+| Tipografía B | **Source Sans 3** 5.3.1 para la interfaz + **Source Serif 4** 5.3.1 para títulos y cifras destacadas; cero sin tachar; OFL 1.1; ~80 KB |
+| Rellenos de riesgo, claro | `#7FB4D4` bajo · `#CF8721` intermedio · `#A93F39` alto: la luminosidad baja de bajo a alto |
+| Rellenos de riesgo, oscuro | `#34708F` bajo · `#C08A2E` intermedio · `#F4A397` alto: orden invertido para que el riesgo alto sea el más visible sobre una superficie oscura |
+| Tema oscuro | Conjunto completo de tokens en `tokens.json` → `tokens.css`; sigue al dispositivo por defecto, con un selector manual (`data-theme`) |
 
-Both typefaces can be switched live in the preview. `tokens.css` defaults to A until the team chooses.
+Las dos tipografías se pueden cambiar en vivo en la vista previa. `tokens.css` usa la A por defecto hasta que el equipo elija.
 
-Unchanged: blue / yellow / warm-red roles, grey hatch for missing data, no invented thresholds (the map specimen's category split is illustrative and labelled), "signal, not verdict".
+Sin cambios: los roles azul / amarillo / rojo cálido, la trama gris para los datos faltantes, ningún umbral inventado (el reparto de categorías de la muestra del mapa es ilustrativo y está rotulado) y «una señal, no un veredicto».
 
-## Files and reproduction
+## Archivos y cómo reproducirla
 
-- `source.html`: the reference page (Spanish product copy).
-- `components.css`: component styles shared by the reference and the examples.
-- `examples.source.html`, `examples/`: the examples page, its screen fragments and the app-shell CSS.
-- `tokens.json`: source of truth for both themes, typography, spacing and geometry.
-- `build.py`: Python standard library only. Writes `tokens.css` and `contrast-report.json` (versioned) and `preview.html`, `examples.html` and `screens/*.html` (ignored, standalone, offline, fonts embedded).
-- `assets/fonts/`: pinned latin variable woff2 files with their OFL licences; `assets/`: own copies of the map paths and fictional fixture.
-- Lucide is reused from `../../guide/assets`.
+- `source.html`: la página de referencia (textos del producto en español).
+- `components.css`: estilos de los componentes, compartidos por la referencia y los ejemplos.
+- `examples.source.html`, `examples/`: la página de ejemplos, sus fragmentos de pantalla y el CSS de la estructura de la app.
+- `tokens.json`: fuente de verdad de ambos temas, la tipografía, el espacio y la geometría.
+- `build.py`: solo biblioteca estándar de Python. Escribe `tokens.css` y `contrast-report.json` (versionados) y `preview.html`, `examples.html` y `screens/*.html` (ignorados, independientes, sin conexión, con las fuentes incrustadas).
+- `assets/fonts/`: archivos woff2 latin variables fijados, con sus licencias OFL; `assets/`: copias propias de los trazos del mapa y del fixture ficticio.
+- Lucide se reutiliza desde `../../guide/assets`.
 
 ```sh
 python3 docs/design/rounds/05-system-reference/build.py
 ```
 
-## Sources (checked 2026-11-08)
+## Fuentes (consultadas el 2026-11-08)
 
-- Fonts via Fontsource: [`@fontsource-variable/public-sans@5.3.0`](https://cdn.jsdelivr.net/npm/@fontsource-variable/public-sans@5.3.0/) (published 2026-07-19), [`@fontsource-variable/source-sans-3@5.3.1`](https://cdn.jsdelivr.net/npm/@fontsource-variable/source-sans-3@5.3.1/) and [`@fontsource-variable/source-serif-4@5.3.1`](https://cdn.jsdelivr.net/npm/@fontsource-variable/source-serif-4@5.3.1/) (published 2026-10-11), all OFL-1.1.
-- Geography: geoBoundaries COL ADM1 / OpenStreetMap, ODbL 1.0; provenance in [Round 01](../01-territory-overview/README.md#geography-and-attribution). All values are fictional.
+- Tipografías vía Fontsource: [`@fontsource-variable/public-sans@5.3.0`](https://cdn.jsdelivr.net/npm/@fontsource-variable/public-sans@5.3.0/) (publicada el 2026-07-19), [`@fontsource-variable/source-sans-3@5.3.1`](https://cdn.jsdelivr.net/npm/@fontsource-variable/source-sans-3@5.3.1/) y [`@fontsource-variable/source-serif-4@5.3.1`](https://cdn.jsdelivr.net/npm/@fontsource-variable/source-serif-4@5.3.1/) (publicadas el 2026-10-11), todas OFL-1.1.
+- Geografía: geoBoundaries COL ADM1 / OpenStreetMap, ODbL 1.0; procedencia en la [Ronda 01](../01-territory-overview/README.md#geografía-y-atribución). Todos los valores son ficticios.
 
-## Validation
+## Validación
 
-See `validation.md`.
+Ver `validation.md`.
 
-## Review outcome (2026-11-08)
+## Resultado de la revisión (2026-11-08)
 
-- Typeface: **Public Sans** (proposal A) chosen.
-- "Pagado" bar on the work screen stays red as an alert.
-- Candidate components enter the reference only after approval.
-- Bug: the phone "full screen" link opened the desktop layout (fixed in Round 06).
-- Work page lacks clarity and visual calm; information architecture of work vs contract to be reviewed.
-- Next: a cleaner, Apple-like visual layer keeping this architecture and hierarchy ([Round 06](../06-clean-layer/README.md)).
+- Tipografía: se eligió **Public Sans** (propuesta A).
+- La barra «Pagado» de la pantalla de obra se queda en rojo como alerta.
+- Los componentes candidatos entran a la referencia solo después de aprobarlos.
+- Error: el enlace de «pantalla completa» del celular abría la composición de escritorio (corregido en la Ronda 06).
+- A la página de obra le falta claridad y calma visual; hay que revisar la arquitectura de información de obra frente a contrato.
+- Siguiente: una capa visual más limpia, al estilo de Apple, que conserve esta arquitectura y jerarquía ([Ronda 06](../06-clean-layer/README.md)).

@@ -57,7 +57,7 @@ Storybook es la referencia visual viva; la guía HTML (`preview.html`, `examples
 ## Siempre
 
 - Textos de la interfaz en español (Colombia). La documentación nueva del proyecto, en español (regla de `AGENTS.md`).
-- Las direcciones nuevas son rondas en `docs/design/rounds/NN-nombre-corto/`; nunca se sobrescribe una ronda anterior. La guía aceptada cambia solo por su proceso de cambio (`docs/design/guide/design-system.md#changing-the-system`): componentes y tokens aprobados, `build.py` pasando, versión actualizada y Storybook al día.
+- Las direcciones nuevas son rondas en `docs/design/rounds/NN-nombre-corto/`; nunca se sobrescribe una ronda anterior. La guía aceptada cambia solo por su proceso de cambio (`docs/design/guide/design-system.md#cambiar-el-sistema`): componentes y tokens aprobados, `build.py` pasando, versión actualizada y Storybook al día.
 - Los diseños de página viven en `docs/design/pages/<pagina>/` y se construyen solo sobre **el contrato de nuestra API** (ingesta → base de datos/JSON → nuestra API → pantallas), los tokens de la guía y los componentes del catálogo. Sin contrato, no hay diseño.
 - Marca los datos ficticios. Registra las fuentes externas con su fecha de consulta.
 - No hagas commit, no publiques ni marques nada como aceptado sin la instrucción de una persona del equipo.
@@ -72,5 +72,3 @@ Storybook es la referencia visual viva; la guía HTML (`preview.html`, `examples
 | `impeccable` (`critique`, `audit`, `shape`, `polish`; CLI de detección) | [pbakaus/impeccable](https://github.com/pbakaus/impeccable), Apache-2.0, instalada en el proyecto para Claude (`.claude/skills`) y Codex/Antigravity (`.agents/skills`) sin hooks | Auditoría (segunda opinión, detector de antipatrones), Ronda (shape) |
 
 Impeccable se instala **sin hooks** por decisión del equipo (2026-11-08): al instalarla o actualizarla, usa siempre `--no-hooks` y nunca agregues su hook a `.claude/settings*.json` ni a `.codex/hooks.json`; ejecuta su detector de forma explícita durante una auditoría. No ejecutes `impeccable init` ni `document`: escriben su propio PRODUCT.md / DESIGN.md. Nuestro brief y `docs/design/` son la única fuente; pásaselos a Impeccable como contexto. Agrega una skill de terceros solo después de leerla completa, revisar su licencia y obtener la aprobación del equipo; luego regístrala aquí.
-
-Nota: los archivos de `references/` anteriores a 2026-11-15 siguen en inglés; tradúcelos al español cuando los modifiques.

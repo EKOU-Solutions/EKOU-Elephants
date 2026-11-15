@@ -1,15 +1,15 @@
-# Validation — Round 01
+# Validación: Ronda 01
 
-Checked locally on 2026-11-07 against the generated standalone preview.
+Comprobado en local el 2026-11-07 sobre la vista previa independiente generada.
 
-- Build completes with Python standard library; 33 unique territorial identifiers; assembled fragment below 1 MB.
-- Visually inspected desktop composition and the full stacked 320 px composition. Map renders projected departmental geometry, amount fills and the missing-data hatch.
-- No document horizontal overflow at 320 px and 1024 px (scroll width equals client width).
-- Changing the native department selector updates the name, exact amount, numeric interval and selected outline. Vaupés displays “No data” and an explanation distinguishing missing from zero.
-- Error preview displays its message; “Try again” restores the ready view. Loading and empty previews show distinct headings and hide the map rather than imply zero.
-- Exactly one selected geometry path in the observed ready state.
-- Sources and fictional-data labels are visible without hover. No external runtime dependencies are required.
+- El build termina con la biblioteca estándar de Python; 33 identificadores territoriales únicos; fragmento ensamblado de menos de 1 MB.
+- Se inspeccionaron visualmente la composición de escritorio y la composición completa apilada a 320 px. El mapa muestra la geometría departamental proyectada, los rellenos de monto y la trama de datos faltantes.
+- Sin desplazamiento horizontal del documento a 320 px ni a 1024 px (el ancho de desplazamiento es igual al ancho del cliente).
+- Cambiar el selector nativo de departamento actualiza el nombre, el monto exacto, el intervalo numérico y el contorno de selección. Vaupés muestra «Sin datos» y una explicación que distingue lo faltante del cero.
+- La vista previa de error muestra su mensaje; «Volver a intentar» restaura la vista lista. Las vistas de carga y de vacío muestran encabezados distintos y ocultan el mapa en lugar de dar a entender un cero.
+- Exactamente un trazo geográfico seleccionado en el estado listo observado.
+- Las fuentes y las etiquetas de datos ficticios se ven sin hover. No se requieren dependencias externas en tiempo de ejecución.
 
-Limits: no exhaustive screen-reader, keyboard, browser or colour-vision audit. Map paths use pointer selection; the native department selector provides the keyboard route to every value. Touch hit targets on small geographical shapes, zoom/insets, production DANE identifiers and risk methodology remain outside this visual round. No claim of production readiness or final WCAG conformance.
+Límites: no hubo auditoría exhaustiva con lector de pantalla, teclado, navegadores ni visión del color. Los trazos del mapa se seleccionan con el puntero; el selector nativo de departamento es la ruta de teclado hacia cada valor. Las áreas táctiles de las formas geográficas pequeñas, el zoom y los recuadros, los identificadores DANE de producción y la metodología de riesgo quedan fuera de esta ronda visual. No se afirma que esté lista para producción ni que cumpla WCAG de forma definitiva.
 
-The integrated canvas uses the same generated fragment; the above browser checks were performed on the standalone wrapper.
+El lienzo integrado usa el mismo fragmento generado; las comprobaciones de navegador de arriba se hicieron sobre el contenedor independiente.

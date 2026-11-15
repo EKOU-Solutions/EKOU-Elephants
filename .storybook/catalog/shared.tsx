@@ -156,7 +156,7 @@ export function RiskMap({ selected, title }: { selected?: string; title: string 
   );
 }
 
-// Spanish accessibility notes, equivalent to the `a11y` field in components.json (which is in English).
+// Expanded accessibility notes for the docs; components.json keeps the short version in its `a11y` field.
 const A11Y_NOTES: Record<string, string> = {
   Button:
     'elemento `button` nativo, mínimo 44 px de alto; foco visible de 3 px; `disabled` real (no solo opacidad); `aria-busy` mientras carga; un botón solo con ícono necesita `aria-label`.',

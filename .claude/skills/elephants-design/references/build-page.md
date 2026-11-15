@@ -1,139 +1,139 @@
-# Build a page
+# Construir una página
 
-Output: `docs/design/pages/<page>/`, a page design built only on the API contract, approved tokens and catalog components, ready for development.
+Resultado: `docs/design/pages/<pagina>/`, el diseño de una página construido solo sobre el contrato de la API, los tokens aprobados y los componentes del catálogo, listo para desarrollo.
 
-We work **vertically**: one page from data to approved design, then the next page. Nothing about a page is assumed in advance. The [tentative page reference](../../../../docs/design/pages/README.md#tentative-reference) and the candidate components are starting points, never specifications.
+Trabajamos en **vertical**: una página desde los datos hasta el diseño aprobado, y luego la siguiente. Nada de una página se supone de antemano. La [referencia tentativa de páginas](../../../../docs/design/pages/README.md#referencia-tentativa) y los componentes candidatos son puntos de partida, nunca especificaciones.
 
-Developer-facing explanation with diagrams: [`docs/design/design-flow.md`](../../../../docs/design/design-flow.md).
+Explicación para desarrollo, con diagramas: [`docs/design/design-flow.md`](../../../../docs/design/design-flow.md).
 
-## Gates
+## Puertas
 
-Stop at each gate and wait for the user's explicit approval. A step does not start until the previous gate has passed.
+Detente en cada puerta y espera la aprobación explícita del equipo. Un paso no empieza hasta que la puerta anterior se haya pasado.
 
-| Step | Output | Gate |
+| Paso | Resultado | Puerta |
 | --- | --- | --- |
-| 0. Contract check | `contract.md` | Contract present and complete |
-| 1. Explore data | `data.md` | — |
-| 2. Define the page | `spec.md` | **Approval 1** |
-| 3. Components | catalog updated (if needed) | **Approval per new component** |
-| 4. Mockup | `mockup.html` (+ `build.py` if generated) | — |
-| 5. Validate | `validation.md` | — |
-| 6. Approve and hand off | `README.md` status "Approved" | **Approval 2** |
+| 0. Revisar el contrato | `contract.md` | Contrato presente y completo |
+| 1. Explorar los datos | `data.md` | — |
+| 2. Definir la página | `spec.md` | **Aprobación 1** |
+| 3. Componentes | catálogo y Storybook actualizados (si hace falta) | **Aprobación por cada componente nuevo** |
+| 4. Maqueta | `mockup.html` (+ `build.py` si se genera) | — |
+| 5. Validar | `validation.md` | — |
+| 6. Aprobar y entregar | `README.md` con estado «Aprobada» | **Aprobación 2** |
 
-## 0. Contract check (blocking)
+## 0. Revisar el contrato (bloqueante)
 
-Before any design work, confirm that the page's **API contract** exists. This is the contract of **our own API**: the endpoints and response shapes the screens consume. It is not a SECOP contract and not the open-data source.
+Antes de cualquier trabajo de diseño, confirma que existe el **contrato de la API** de la página. Es el contrato de **nuestra propia API**: los endpoints y las formas de respuesta que consumen las pantallas. No es un contrato de SECOP ni la fuente de datos abiertos.
 
-The data path is fixed:
+El camino de los datos es fijo:
 
 ```
-open-data sources (datos.gov.co …) → ingestion (TASK-06) → our database or JSON files → our API → screens
+fuentes de datos abiertos (datos.gov.co …) → ingesta (TASK-06) → nuestra base de datos o archivos JSON → nuestra API → pantallas
 ```
 
-The design depends only on the last hop, our API. Raw upstream fields never reach a page directly. The API may still be under construction; its contract may not.
+El diseño depende solo del último tramo, nuestra API. Los campos crudos de la fuente nunca llegan directamente a una página. La API puede seguir en construcción; su contrato, no.
 
-Accepted forms: OpenAPI, JSON Schema or TypeScript types, until TASK-03 fixes one. The minimum for each endpoint the page uses:
+Formas aceptadas: OpenAPI, JSON Schema o tipos de TypeScript, hasta que TASK-03 fije una. Lo mínimo para cada endpoint que usa la página:
 
-- [ ] Endpoint (method, path, parameters such as the DANE territory filter).
-- [ ] Every field: name, type, unit or format (COP, %, date), and whether it can be null or missing.
-- [ ] At least one example response that conforms to the schema.
-- [ ] Phase of each field: MVP or phase 2.
-- [ ] Origin of each field: the upstream dataset id from `docs/fuentes-de-datos.md` that ingestion maps it from, or "computed" plus the rule's owner (for example TASK-07 for risk level). This traceability lets every figure show its source and date.
+- [ ] Endpoint (método, ruta, parámetros como el filtro de territorio DANE).
+- [ ] Cada campo: nombre, tipo, unidad o formato (COP, %, fecha), y si puede ser nulo o faltar.
+- [ ] Al menos una respuesta de ejemplo que cumpla el esquema.
+- [ ] Fase de cada campo: MVP o fase 2.
+- [ ] Origen de cada campo: el id del conjunto de datos de `docs/fuentes-de-datos.md` del que lo toma la ingesta, o «calculado» más el dueño de la regla (por ejemplo, TASK-07 para el nivel de riesgo). Esta trazabilidad permite que cada cifra muestre su fuente y su fecha.
 
-If anything is missing, **stop**. List what is missing in `contract.md` and ask the user or backend to complete it. Never design on assumed fields.
+Si falta algo, **detente**. Lista lo que falta en `contract.md` y pide al equipo o a backend que lo complete. Nunca diseñes sobre campos supuestos.
 
-Record in `contract.md`: where the contract lives (path or URL plus commit or version) and the date it was checked.
+Registra en `contract.md` dónde vive el contrato (ruta o URL más commit o versión) y la fecha en que se revisó.
 
-## 1. Explore data
+## 1. Explorar los datos
 
-Work from real data, in this order of preference:
+Trabaja con datos reales, en este orden de preferencia:
 
-1. **Our API**, if the endpoint responds (any environment).
-2. **Ingestion output**: rows in the database or the JSON files that ingestion writes, shaped to the contract.
-3. **The contract's example response**, checked for realism against samples of the upstream open-data datasets the fields map from (`datos.gov.co`, no auth; see `docs/fuentes-de-datos.md`). Reshape those samples to the contract; never design on the raw upstream shape.
+1. **Nuestra API**, si el endpoint responde (en cualquier entorno).
+2. **La salida de la ingesta**: filas de la base de datos o los archivos JSON que escribe la ingesta, con la forma del contrato.
+3. **La respuesta de ejemplo del contrato**, contrastada con muestras de los conjuntos de datos abiertos de los que salen los campos (`datos.gov.co`, sin autenticación; ver `docs/fuentes-de-datos.md`). Lleva esas muestras a la forma del contrato; nunca diseñes sobre la forma cruda de la fuente.
 
-Record every query or file with its location and date.
+Registra cada consulta o archivo con su ubicación y fecha.
 
-`data.md` answers:
+`data.md` responde:
 
-- **What is really there:** fill rate of each field, typical and extreme values (longest name, largest amount, zero, null), volumes (how many rows a territory or list returns).
-- **What is phase 2:** fields the page cannot show yet.
-- **Sensitive data:** natural persons' names or IDs. Anonymise them in every artefact until TASK-08 says otherwise; companies and public entities may be shown.
-- **Surprises** that change the design, for example a field that is empty for half the records.
+- **Qué hay de verdad:** porcentaje de llenado de cada campo, valores típicos y extremos (el nombre más largo, el monto más grande, cero, nulo), volúmenes (cuántas filas devuelve un territorio o una lista).
+- **Qué es de fase 2:** campos que la página todavía no puede mostrar.
+- **Datos sensibles:** nombres o documentos de personas naturales. Anonimízalos en todos los artefactos hasta que TASK-08 diga otra cosa; se pueden mostrar empresas y entidades públicas.
+- **Sorpresas** que cambian el diseño, por ejemplo un campo vacío en la mitad de los registros.
 
-## 2. Define the page (`spec.md`)
+## 2. Definir la página (`spec.md`)
 
-One document, in this order:
+Un solo documento, en este orden:
 
-1. **Purpose:** the question the page answers, the audience (brief), and the 10-second test: what must be understood first.
-2. **Content and hierarchy:** an ordered table, where row 1 is seen first.
+1. **Propósito:** la pregunta que responde la página, la audiencia (brief) y la prueba de 10 segundos: qué debe entenderse primero.
+2. **Contenido y jerarquía:** una tabla ordenada, donde la fila 1 es lo que se ve primero.
 
-   | Order | Content | Contract field(s) | Component | Tokens | If missing / null | Phase |
+   | Orden | Contenido | Campo(s) del contrato | Componente | Tokens | Si falta / es nulo | Fase |
    | --- | --- | --- | --- | --- | --- | --- |
 
-3. **States:** loading, empty result, "Sin datos" (never shown as 0 or as low risk), error with recovery, phase-2 fields hidden.
-4. **Layout:** mobile first (390 px), then desktop (1280 px); what moves or collapses.
-5. **Copy:** citizen-facing Spanish (Colombia) in the agreed direct tone. Never "corrupción", "robo" or "sospechoso"; never natural persons' names. Every figure carries its source and date.
-6. **Open questions** for the user.
+3. **Estados:** carga, resultado vacío, «Sin datos» (nunca mostrado como 0 ni como riesgo bajo), error con forma de recuperarse, campos de fase 2 ocultos.
+4. **Maquetación:** primero celular (390 px), luego escritorio (1280 px); qué se mueve o se colapsa.
+5. **Textos:** español de Colombia para la ciudadanía, en el tono directo acordado. Nunca «corrupción», «robo» ni «sospechoso»; nunca nombres de personas naturales. Toda cifra lleva su fuente y su fecha.
+6. **Preguntas abiertas** para el equipo.
 
-Every row must trace to a contract field or a fixed rule. Anything that does not trace is removed or listed as an open question. Get **Approval 1**.
+Cada fila debe rastrearse hasta un campo del contrato o una regla fija. Lo que no se pueda rastrear se quita o se lista como pregunta abierta. Obtén la **Aprobación 1**.
 
-## 3. Components
+## 3. Componentes
 
-For each row of the spec:
+Para cada fila de la especificación:
 
-1. Use a **catalog component**. The catalog is the [design system guide v1.0](../../../../docs/design/guide/README.md): `components.json` lists every component, and `design-system.md` holds the rules.
-2. Components with `"status": "candidate"` (status pill, coverage bar, breakdown bars, progress vs expected, signal item) are approved or discarded here, the first time a real page needs them. On approval, set them to `core`; if discarded, remove them.
-3. If nothing fits, propose a **new component**:
-   - purpose, anatomy, variants, states, tokens, accessibility, do / avoid;
+1. Usa un **componente del catálogo**. El catálogo está en Storybook (`npm run storybook`, sección Componentes) y su fuente es la [guía del sistema de diseño v1.0](../../../../docs/design/guide/README.md): `components.json` lista cada componente y `design-system.md` reúne las reglas.
+2. Los componentes con `"status": "candidate"` (estado, barra de cobertura, desglose en barras, avance frente a lo esperado, señal) se aprueban o se descartan aquí, la primera vez que una página real los necesita. Si se aprueban, pásalos a `core`; si se descartan, elimínalos.
+3. Si ninguno sirve, propone un **componente nuevo**:
+   - propósito, anatomía, variantes, estados, tokens, accesibilidad, hacer / evitar;
    - una historia en Storybook con sus estados (ver `.storybook/docs/HowWeWork.mdx`). La página HTML `source.html` es histórica y ya no se amplía.
 
-   Iterate until the user approves it. Then add it to the guide:
+   Itera hasta que el equipo lo apruebe. Luego agrégalo a la guía:
    - `components.css`;
    - `components.json`;
    - su historia en Storybook: junto al componente en `src/` si ya es React, o en `.storybook/catalog/` mientras sea solo especificación.
 
-   Next, run `build.py`, which fails if `components.json` and the CSS or tokens disagree. Then bump the guide's minor version and note the change in the guide README. Never use a component in a page before it is in the catalog.
-4. A new token follows the same path: it goes into `tokens.json`, then `build.py` regenerates `tokens.css` and checks contrast. Never use a raw hex value.
-5. A change of direction (palette, type, layout language) is not done here. It is a [round](round.md).
+   Después ejecuta `build.py`, que falla si `components.json` no cuadra con el CSS o los tokens. Sube la versión menor de la guía y anota el cambio en su README. Nunca uses un componente en una página antes de que esté en el catálogo.
+4. Un token nuevo sigue el mismo camino: entra en `tokens.json` y `build.py` regenera `tokens.css` y comprueba el contraste. Nunca uses un hex suelto.
+5. Un cambio de dirección (paleta, tipografía, lenguaje visual) no se hace aquí. Es una [ronda](round.md).
 
-## 4. Mockup
+## 4. Maqueta
 
-`mockup.html` uses only the guide's `tokens.css` and `components.css`, plus its own page layout. Requirements:
+`mockup.html` usa solo `tokens.css` y `components.css` de la guía, más su propia maquetación de página. Requisitos:
 
-- Data from step 1, conforming to the contract, labelled as a sample with its date; natural persons anonymised.
-- Mobile and desktop.
-- Light and dark themes.
-- At least one stressed case: longest name, missing field, empty list.
+- Datos del paso 1, conformes al contrato, marcados como muestra con su fecha; personas naturales anonimizadas.
+- Celular y escritorio.
+- Tema claro y oscuro.
+- Al menos un caso extremo: el nombre más largo, un campo faltante, una lista vacía.
 
-If the page reuses the examples tooling, generate it with a small `build.py` (Python standard library) and ignore the generated output, like the rounds do.
+Si la página reutiliza las herramientas de los ejemplos, genérala con un `build.py` pequeño (biblioteca estándar de Python) e ignora la salida generada, como hacen las rondas.
 
-## 5. Validate (`validation.md`)
+## 5. Validar (`validation.md`)
 
-- Contrast pairs pass (`build.py`); risk is never conveyed by colour alone.
-- No horizontal overflow at 320, 390, 768 and 1280 px; 200% zoom readable.
-- Keyboard order and visible focus; accessible names on icon buttons, map and charts. Run `design:accessibility-review`.
-- `impeccable detect` on the mockup. Report the accepted advisories (grey hatch) as such.
-- Copy reviewed against the tone rules (`design:ux-copy`).
-- The 10-second test from the spec, answered honestly.
+- Los pares de contraste pasan (`build.py`); el riesgo nunca se comunica solo con color.
+- Sin desplazamiento horizontal a 320, 390, 768 y 1280 px; legible con zoom al 200 %.
+- Orden de teclado y foco visible; nombres accesibles en botones de ícono, mapa y gráficos. Ejecuta `design:accessibility-review`.
+- `impeccable detect` sobre la maqueta. Reporta como tales las advertencias aceptadas (trama gris).
+- Textos revisados contra las reglas de tono (`design:ux-copy`).
+- La prueba de 10 segundos de la especificación, respondida con honestidad.
 - Storybook: `npm run build-storybook` sin errores; las historias de los componentes que usa la página, sin fallas en el panel de accesibilidad, en claro y oscuro.
-- Limits: what was not checked.
+- Límites: qué no se comprobó.
 
-## 6. Approve and hand off
+## 6. Aprobar y entregar
 
-When the user approves (**Approval 2**):
+Cuando el equipo apruebe (**Aprobación 2**):
 
-- Set the page `README.md` to "Approved" with the date.
-- Add or update the row in `docs/design/pages/README.md`.
+- Pon el `README.md` de la página en «Aprobada» con la fecha.
+- Agrega o actualiza su fila en `docs/design/pages/README.md`.
 
-The handoff is the folder itself:
+La entrega es la carpeta misma:
 
-- `contract.md`: which contract version the design depends on.
-- `spec.md`: hierarchy, field to component to token mapping, states, copy.
-- `mockup.html`: the visual target.
-- `validation.md`: what was verified.
+- `contract.md`: de qué versión del contrato depende el diseño.
+- `spec.md`: jerarquía, relación campo → componente → token, estados y textos.
+- `mockup.html`: el objetivo visual.
+- `validation.md`: qué se verificó.
 - Las historias de Storybook de cada componente nuevo o confirmado en el paso 3.
 
-If the contract changes after approval, the page goes back to step 0: re-check the contract and update `spec.md`.
+Si el contrato cambia después de la aprobación, la página vuelve al paso 0: revisa el contrato de nuevo y actualiza `spec.md`.
 
-Do not commit or publish without the user's instruction.
+No hagas commit ni publiques sin la instrucción del equipo.

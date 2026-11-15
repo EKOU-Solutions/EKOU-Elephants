@@ -1,25 +1,25 @@
-# Round 03 — Continuous warm risk map
+# Ronda 03: mapa de riesgo cálido y continuo
 
-Status: **Not selected — Round 02 direction selected instead**. Date: 2026-11-07. Task: [#6](https://github.com/EKOU-Solutions/EKOU-Elephants/issues/6).
+Estado: **No seleccionada; en su lugar se seleccionó la dirección de la Ronda 02**. Fecha: 2026-11-07. Tarea: [#6](https://github.com/EKOU-Solutions/EKOU-Elephants/issues/6).
 
-## Requested direction
+## Dirección pedida
 
-Following rejection of [Round 02](../02-risk-signals/README.md), the user selected the visual direction of [Transparency International CPI 2025](https://www.transparency.org/en/cpi/2025) and supplied a reference image: white background, warm yellow/orange/coral/red progression, strong editorial hierarchy and geography as the main visual.
+Tras el rechazo de la [Ronda 02](../02-risk-signals/README.md), Jouler eligió la dirección visual del [IPC 2025 de Transparency International](https://www.transparency.org/en/cpi/2025) y compartió una imagen de referencia: fondo blanco, progresión cálida de amarillo/naranja/coral/rojo, jerarquía editorial fuerte y la geografía como elemento visual principal.
 
-This is an original composition inspired by that direction, not a copy of TI's identity, index, methodology or assets. Keep the accepted native system font. Product text is Spanish; repository documentation is English.
+Es una composición original inspirada en esa dirección, no una copia de la identidad, el índice, la metodología ni los recursos de TI. Se mantiene la fuente nativa del sistema, ya aceptada. El texto del producto está en español; la documentación del repositorio estaba entonces en inglés.
 
-## What changes
+## Qué cambia
 
-- Replace unrelated blue/amber/red categories with one continuous warm scale.
-- Use a white surface, charcoal typography, an editorial title and quiet dividers; no decorative glows, promotional eyebrow or repeated cards.
-- Put a compact territorial summary on the left and the larger map on the right. On mobile, show the map before the detail. An expandable departmental list offers exact values and native selection buttons.
-- Keep explicit error semantics: restrained red surface/edge, exclamation, error label and retry. Missing analysis remains grey hatching, not yellow/zero.
+- Reemplazar las categorías azul/ámbar/rojo, sin relación entre sí, por una sola escala cálida continua.
+- Usar una superficie blanca, tipografía carbón, un título editorial y separadores discretos; sin brillos decorativos, antetítulo promocional ni tarjetas repetidas.
+- Poner un resumen territorial compacto a la izquierda y el mapa, más grande, a la derecha. En celular, mostrar el mapa antes del detalle. Una lista desplegable de departamentos ofrece los valores exactos y botones nativos de selección.
+- Mantener la semántica explícita del error: superficie y borde rojos contenidos, exclamación, etiqueta de error y reintento. El análisis faltante sigue siendo trama gris, no amarillo ni cero.
 
-## Palette and meaning
+## Paleta y significado
 
-The map encodes `distinct flagged contracts / analyzed contracts × 100`, with one count per contract. Continuous interpolation between these stops:
+El mapa codifica `contratos distintos con señales / contratos analizados × 100`, con un solo conteo por contrato. Interpolación continua entre estos puntos:
 
-| Percentage | Fill |
+| Porcentaje | Relleno |
 | --- | --- |
 | 0% | `#FFE58F` |
 | 20% | `#FFC473` |
@@ -28,27 +28,27 @@ The map encodes `distinct flagged contracts / analyzed contracts × 100`, with o
 | 80% | `#D34B58` |
 | 100% | `#9D334A` |
 
-Legend ticks at 0, 25, 50, 75 and 100% are numeric reference positions, **not risk thresholds**. This round does not assign low/medium/high risk categories. The scale direction is specific to Elephants: larger percentages mean more contracts with signals. Do not import CPI's numeric interpretation, whose high scores represent a different concept.
+Las marcas de la leyenda en 0, 25, 50, 75 y 100 % son posiciones numéricas de referencia, **no umbrales de riesgo**. Esta ronda no asigna categorías de riesgo bajo, medio o alto. La dirección de la escala es propia de Elephants: porcentajes mayores significan más contratos con señales. No se importa la interpretación numérica del IPC, cuyos puntajes altos representan un concepto distinto.
 
-Fictional fixtures deliberately span the scale for visual review. Antioquia starts at 36/120 = 30%, with 120 of 150 available contracts analyzed. Unknown analysis has a zero denominator, no percentage and a grey hatch. Zero detected signals is not a guarantee of safety. All departmental values are illustrative, not factual assessments.
+Los fixtures ficticios recorren la escala a propósito para la revisión visual. Antioquia empieza en 36/120 = 30 %, con 120 de 150 contratos disponibles analizados. El análisis desconocido tiene denominador cero, no tiene porcentaje y lleva trama gris. Cero señales detectadas no es garantía de seguridad. Todos los valores departamentales son ilustrativos, no evaluaciones reales.
 
-The definitive contract-versus-work unit, signal definitions, coverage rules and aggregation/cascade remain unresolved as recorded in Round 02. Choosing this visual direction does not settle TASK-07 or alter the project README's business rules.
+Siguen sin resolverse, como se registró en la Ronda 02, la unidad definitiva contrato frente a obra, las definiciones de las señales, las reglas de cobertura y la agregación en cascada. Elegir esta dirección visual no resuelve TASK-07 ni cambia las reglas de negocio del README del proyecto.
 
-## Reproduction and sources
+## Cómo reproducirla y fuentes
 
 ```sh
 python3 docs/design/rounds/03-warm-risk-map/build.py
 ```
 
-Editable sources: `source.html`, `assets/territories.json`, `assets/map-paths.svg`. Generated `mockup.html` and `preview.html` are ignored and reproducible with Python standard library; no runtime downloads or package installation are needed.
+Fuentes editables: `source.html`, `assets/territories.json`, `assets/map-paths.svg`. `mockup.html` y `preview.html` se generan, se ignoran en git y se reproducen con la biblioteca estándar de Python; no se necesitan descargas en tiempo de ejecución ni instalar paquetes.
 
-Geometry is a preserved copy of the existing projected geoBoundaries/OSM asset. Provenance, pinned input, projection and winding normalization are documented in [Round 01](../01-territory-overview/README.md#geography-and-attribution). The derived path asset retains ODbL 1.0 attribution. Source geometry year: 2017. Prototype ISO codes are not production DANE identifiers.
+La geometría es una copia conservada del recurso proyectado de geoBoundaries/OSM. La procedencia, la entrada fijada, la proyección y la normalización del sentido de los anillos están documentadas en la [Ronda 01](../01-territory-overview/README.md#geografía-y-atribución). El recurso de trazos derivado conserva la atribución ODbL 1.0. Año de la geometría fuente: 2017. Los códigos ISO del prototipo no son identificadores DANE de producción.
 
-## Review questions
+## Preguntas de revisión
 
-- Does the coherent warm progression feel more professional than the previous mixed palette?
-- Do the map, legend and selected department form a clear visual hierarchy?
-- Is it obvious that a signal calls for review rather than proving corruption?
-- Do the error and unknown-data states remain distinct?
+- ¿La progresión cálida coherente se siente más profesional que la paleta mezclada anterior?
+- ¿El mapa, la leyenda y el departamento seleccionado forman una jerarquía visual clara?
+- ¿Es obvio que una señal pide revisar y no prueba corrupción?
+- ¿Los estados de error y de datos desconocidos siguen siendo distintos?
 
-See `validation.md` for observed checks. User feedback: the all-warm map felt chaotic, as though everything was wrong. The user selected Round 02’s blue/yellow/orange-red category direction instead; parameters remain pending.
+Ver `validation.md` para las comprobaciones observadas. Comentarios de Jouler: el mapa todo cálido se sentía caótico, como si todo estuviera mal. En su lugar, Jouler eligió la dirección de categorías azul/amarillo/naranja-rojo de la Ronda 02; los parámetros siguen pendientes.

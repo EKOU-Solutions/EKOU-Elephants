@@ -1,57 +1,56 @@
-# Design
+# Diseño
 
-Repository-first source of truth for the visual direction, the design system and the review rounds for [TASK-05](https://github.com/EKOU-Solutions/EKOU-Elephants/issues/6).
+Fuente de verdad, dentro del repositorio, de la dirección visual, el sistema de diseño y las rondas de revisión de [TASK-05](https://github.com/EKOU-Solutions/EKOU-Elephants/issues/6).
 
-Every provider, human or agent, reads this index and the [visual direction](visual-direction.md) before making changes. Previews are generated from repository files. Chat attachments and provider canvases are views of those files, not the canonical source. Do not publish, commit or mark a proposal accepted without the user's instruction.
+Toda persona o agente, de cualquier proveedor, lee este índice y la [dirección visual](visual-direction.md) antes de hacer cambios. Todo cambio de diseño pasa por la skill `elephants-design` (regla global de `AGENTS.md`). Las vistas previas se generan a partir de archivos del repositorio. Los adjuntos de chat y los lienzos de los proveedores son vistas de esos archivos, no la fuente canónica. No publiques, no hagas commit ni marques una propuesta como aceptada sin la instrucción del equipo.
 
-## Current direction
+## Dirección actual
 
-**Accepted 2026-11-08:**
-- The [Round 05](rounds/05-system-reference/README.md) editorial direction, with **Public Sans**. It puts data first: neutral surfaces, lines instead of cards, large figures with source and date.
-- Blue, yellow and warm red for lower, intermediate and higher risk. Grey hatch for missing data.
-- [Round 06](rounds/06-clean-layer/README.md)'s cleaner, Apple-like layer was not selected: the product centres on data.
+**Aceptada el 2026-11-08:**
+- La dirección editorial de la [Ronda 05](rounds/05-system-reference/README.md), con **Public Sans**. Pone el dato primero: superficies neutras, líneas en lugar de tarjetas, cifras grandes con fuente y fecha.
+- Azul, amarillo y rojo cálido para riesgo bajo, intermedio y alto. Trama gris para los datos faltantes.
+- No se seleccionó la capa más limpia, estilo Apple, de la [Ronda 06](rounds/06-clean-layer/README.md): el producto se centra en los datos.
 
-Decision record: [visual direction](visual-direction.md#final-selection-2026-11-08). Risk thresholds and the risk method stay in TASK-07.
+Registro de la decisión: [dirección visual](visual-direction.md#selección-final-2026-11-08). Los umbrales y el método de riesgo siguen en TASK-07.
 
-## Interface reference
+## Referencia de la interfaz
 
-The [design system guide v1.0](guide/README.md) is the deliverable and the catalogue. It contains:
-- tokens (`tokens.json` is the source of truth, `tokens.css` is generated);
-- components (`components.css` and `components.json`);
-- [rules for developers and AI agents](guide/design-system.md);
-- an HTML reference and example screens in phone and laptop simulators.
+**Storybook es la referencia visual viva** del sistema de diseño (`npm run storybook`; ver [desarrollo](../desarrollo.md#sistema-de-diseño-storybook)). Reúne los lineamientos para personas, los fundamentos, la accesibilidad y todos los componentes que se crean con la skill `elephants-design`. Desde el 2026-11-15 revierte la decisión del 2026-11-08 de descartar Storybook.
 
-> **Actualización 2026-11-15:** Storybook es ahora la referencia visual viva del sistema de diseño (`npm run storybook`; ver [desarrollo](../desarrollo.md#sistema-de-diseño-storybook)). Reúne los lineamientos para personas y todos los componentes que se crean con la skill `elephants-design`. La página HTML de la guía (`preview.html`, `examples.html`) y las rondas quedan como seguimiento histórico. `tokens.json`, `components.css` y `components.json` siguen siendo la fuente de verdad que Storybook importa. Esto revierte la decisión del 2026-11-08 de descartar Storybook.
+La [guía del sistema de diseño v1.0](guide/README.md) sigue siendo la fuente de verdad que Storybook importa:
+- tokens (`tokens.json` es la fuente de verdad; `tokens.css` se genera);
+- componentes (`components.css` y `components.json`);
+- [reglas para desarrollo y agentes de IA](guide/design-system.md).
 
-The previous [guide v0.1](archive/guide-v0.1/README.md) is archived.
+Su página HTML de referencia y las pantallas de ejemplo en simuladores de celular y portátil (`preview.html`, `examples.html`) quedan como seguimiento histórico, igual que las rondas. La [guía v0.1](archive/guide-v0.1/README.md) anterior está archivada.
 
-## Designing pages for development
+## Diseñar páginas para desarrollo
 
-Pages are designed one at a time. Each starts from **our API's contract**: ingestion stores the data in the database or JSON files, and our API serves it to the screens. See:
-- the [design flow](design-flow.md), with diagrams, for developers;
-- the [page designs](pages/README.md): the page log and a tentative reference.
+Las páginas se diseñan de a una. Cada una parte del **contrato de nuestra API**: la ingesta guarda los datos en la base de datos o en archivos JSON, y nuestra API los sirve a las pantallas. Ver:
+- el [flujo de diseño](design-flow.md), con diagramas, para desarrollo;
+- los [diseños de página](pages/README.md): el registro de páginas y una referencia tentativa.
 
-Agents use the `elephants-design` skill's *Build a page* phase.
+Los agentes usan la ruta *Construir una página* de la skill `elephants-design`.
 
-## Working in rounds
+## Trabajar en rondas
 
-Rounds are for changing the system itself (a new direction or a major version), not for designing pages.
+Las rondas sirven para cambiar el sistema mismo (una dirección nueva o una versión mayor), no para diseñar páginas. Los cambios pequeños que mantienen la dirección usan la ruta *Ajuste* de la skill.
 
-- Agents use the project skill `elephants-design` (`.claude/skills/`, linked for Codex in `.agents/skills/`). It runs discover → audit → round and calls the other design skills, including the project-scoped third-party `impeccable`.
-- Each round lives in `rounds/NN-short-name/`, with a README covering purpose, status, decisions, sources, reproduction and validation.
-- Keep the editable source and the small assets it needs inside the round. Label fictional data and record where external assets come from.
-- Revise the current round while it explores the same hypothesis. A materially different direction starts a new round, linked to the previous one.
-- Record feedback and acceptance in the round's README. Keep accepted decisions apart from proposals and open questions. Never silently replace an accepted round.
-- Documents and implementation names are in English; citizen-facing copy is in Spanish for the Colombian audience.
-- Generated previews are disposable; rebuild them from the checked-in sources.
+- Los agentes usan la skill del proyecto `elephants-design` (`.claude/skills/`, enlazada para Codex y Antigravity en `.agents/skills/`). Clasifica el pedido (ajuste, construir una página, auditoría, ronda o descubrimiento) y llama a las otras skills de diseño, incluida la skill de terceros `impeccable`, instalada en el proyecto.
+- Cada ronda vive en `rounds/NN-nombre-corto/`, con un README que cubre propósito, estado, decisiones, fuentes, cómo reproducirla y validación.
+- La fuente editable y los recursos pequeños que necesita viven dentro de la ronda. Marca los datos ficticios y registra de dónde vienen los recursos externos.
+- Revisa la ronda actual mientras explore la misma hipótesis. Una dirección materialmente distinta empieza una ronda nueva, enlazada a la anterior.
+- Registra los comentarios y la aceptación en el README de la ronda. Separa las decisiones aceptadas de las propuestas y las preguntas abiertas. Nunca reemplaces en silencio una ronda aceptada.
+- Toda la documentación y los textos de la interfaz se escriben en español para el público colombiano (regla de `AGENTS.md`). Los identificadores de código y los nombres que exigen las herramientas se conservan.
+- Las vistas previas generadas son desechables; se reconstruyen desde las fuentes versionadas.
 
-## Review log
+## Registro de revisiones
 
-| Round | Hypothesis | Status |
+| Ronda | Hipótesis | Estado |
 | --- | --- | --- |
-| [01](rounds/01-territory-overview/README.md) | Restrained EKOU accents leave geographic data as the main visual focus | Typography accepted; map semantics and error treatment superseded |
-| [02](rounds/02-risk-signals/README.md) | Blue baseline, amber/red signals and explicit recoverable errors | Selected after comparison; basis of the risk colour roles |
-| [03](rounds/03-warm-risk-map/README.md) | Continuous warm scale inspired by Transparency; editorial map and territory summary | Not selected: all-warm map felt chaotic |
-| [04](rounds/04-grounded-guide/README.md) | Map-led, ledger-style guide with plain-language voice; typeface compared with the system font | Reviewed: structure not clear enough to build from; hatch kept; Atkinson rejected for numbers |
-| [05](rounds/05-system-reference/README.md) | Component-documentation reference for dev/UX/UI, self-hosted type, ordered risk fills, light and dark themes, `tokens.css`, filled risk tags, phone and laptop examples | **Selected (final)** 2026-11-08 with Public Sans → [guide v1.0](guide/README.md) |
-| [06](rounds/06-clean-layer/README.md) | Clean layer: canvas + white cards, pill controls, lead-in text; work ↔ contracts proposal | Not selected: cleaner and invites browsing, but less centred on the data; bug fixes carried over |
+| [01](rounds/01-territory-overview/README.md) | Acentos de EKOU contenidos dejan los datos geográficos como foco visual principal | Tipografía aceptada; semántica del mapa y tratamiento de errores reemplazados |
+| [02](rounds/02-risk-signals/README.md) | Base azul, señales ámbar/rojas y errores explícitos y recuperables | Seleccionada tras comparar; base de los roles de color del riesgo |
+| [03](rounds/03-warm-risk-map/README.md) | Escala cálida continua inspirada en Transparencia; mapa editorial y resumen del territorio | No seleccionada: el mapa todo cálido se sentía caótico |
+| [04](rounds/04-grounded-guide/README.md) | Guía guiada por el mapa, estilo libro contable, con voz en lenguaje claro; tipografía comparada con la fuente del sistema | Revisada: estructura poco clara para construir; se mantiene la trama; Atkinson rechazada para cifras |
+| [05](rounds/05-system-reference/README.md) | Referencia de documentación de componentes para dev/UX/UI, fuente alojada, rellenos de riesgo ordenados, tema claro y oscuro, `tokens.css`, etiquetas de riesgo rellenas, ejemplos en celular y portátil | **Seleccionada (final)** el 2026-11-08 con Public Sans → [guía v1.0](guide/README.md) |
+| [06](rounds/06-clean-layer/README.md) | Capa limpia: lienzo + tarjetas blancas, controles en píldora, texto introductorio; propuesta obra ↔ contratos | No seleccionada: más limpia e invita a explorar, pero menos centrada en los datos; se trasladaron las correcciones de errores |
