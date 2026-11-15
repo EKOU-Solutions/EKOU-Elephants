@@ -3,7 +3,9 @@ import { Hono } from 'hono';
 import { z } from 'zod';
 import type { ResumenTerritorial } from '../../domain/resumen-territorial';
 
-const params = z.object({ codigo: z.string().regex(/^(\d{2}|\d{5})$/, 'Código DIVIPOLA inválido') });
+const params = z.object({
+  codigo: z.string().regex(/^(\d{2}|\d{5})$/, 'Código DIVIPOLA inválido'),
+});
 
 export interface MapaCasosDeUso {
   obtenerResumenTerritorial: (codigo: string) => Promise<ResumenTerritorial>;
