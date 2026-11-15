@@ -1,4 +1,4 @@
-# Design system guide v1.1
+# Design system guide v1.0
 
 Status: **Accepted** (2026-11-08). Task: [#6](https://github.com/EKOU-Solutions/EKOU-Elephants/issues/6). Origin: [Round 05: system reference](../rounds/05-system-reference/README.md). Decision record: [visual direction](../visual-direction.md#final-selection-2026-11-08).
 
@@ -16,15 +16,6 @@ This is the deliverable of TASK-05: an HTML guide, documentation for developers 
 python3 docs/design/guide/build.py
 open docs/design/guide/preview.html docs/design/guide/examples.html
 ```
-
-## Changes in v1.1 (2026-11-15)
-
-Minor version, from the [map page](../pages/map/spec.md) (TASK-09, Build a page step 3, components approved by the user on 2026-11-15). No new tokens and no change of direction.
-
-- **Map with legend**: neutral variant (`el-fill-neutral`) for maps with no metric yet, faded context (`el-fill-context`), department borders (`el-dpto`), frame, zoom controls, San Andrés inset and loading area.
-- **Territory search** (new, core): Field + suggestion list, WAI-ARIA combobox.
-- **Breadcrumb** (new, core): Colombia › departamento › municipio.
-- `contrast-report.json` also reports the neutral and context fills against the surface (informational, like the risk fills).
 
 ## What v1.0 contains
 

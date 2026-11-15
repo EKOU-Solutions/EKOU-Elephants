@@ -1,4 +1,4 @@
-# Elephants design system v1.1: rules for developers and AI agents
+# Elephants design system v1.0: rules for developers and AI agents
 
 Accepted on 2026-11-08: the [Round 05](../rounds/05-system-reference/README.md) editorial direction with **Public Sans**. This file is the short, normative version of the guide. The visual reference (`preview.html`) shows the same rules with live specimens. If the two disagree, report it; do not pick one silently.
 
@@ -81,7 +81,7 @@ A contract with several signals counts once in the numerator. Never classify fro
 
 ## Components
 
-`components.json` is the full list. **Core** (accepted with Round 05): Button, Alert (block, banner, inline note), Field, Risk tag, Counter, Active filter, Key figure, Data table, Map with legend. **Added in v1.1** (map page): the Map with legend neutral variant, Territory search and Breadcrumb. **Candidate** (introduced by the example screens, pending confirmation by a real page): Status pill, Coverage bar, Breakdown bars, Progress vs expected, Signal item.
+`components.json` is the full list. **Core** (accepted with Round 05): Button, Alert (block, banner, inline note), Field, Risk tag, Counter, Active filter, Key figure, Data table, Map with legend. **Candidate** (introduced by the example screens, pending confirmation by a real page): Status pill, Coverage bar, Breakdown bars, Progress vs expected, Signal item.
 
 Each section of `preview.html` gives the component's purpose, its states, do / avoid, the tokens it uses and copyable markup.
 
