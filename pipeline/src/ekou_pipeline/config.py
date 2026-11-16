@@ -41,3 +41,18 @@ class Settings(BaseSettings):
     max_retries: int = Field(default=6, ge=0)
     backoff_base_s: float = Field(default=2.0, ge=0)
     """Espera base de los reintentos; crece de forma exponencial: 2, 4, 8, 16… segundos."""
+
+    # Compuertas de calidad: si el corte no las pasa, no se publica (ADR 0002, decisión 5.3).
+    # Valores de referencia del corte 2026-11: 88,3 % (SECOP I) y 84,3 % (SECOP II) de contratos
+    # ubicados, y 1.106 de 1.122 municipios con contratos.
+    gate_min_pct_mapa: float = Field(default=0.80, ge=0, le=1)
+    """Mínimo de contratos de cada fuente ubicados en un municipio del mapa."""
+
+    gate_min_municipios: int = Field(default=1_050, ge=0)
+    """Mínimo de municipios con al menos un contrato en el mapa."""
+
+    gate_max_caida_contratos: float = Field(default=0.01, ge=0, le=1)
+    """Caída máxima de contratos de cada fuente frente al corte anterior (1 % = 0,01)."""
+
+    gate_max_caida_pct_mapa: float = Field(default=0.02, ge=0, le=1)
+    """Caída máxima, en puntos, del porcentaje de contratos ubicados frente al corte anterior."""

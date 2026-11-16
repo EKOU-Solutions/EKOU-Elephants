@@ -1,0 +1,12 @@
+// Worker solo de archivos estáticos con los datos del corte mensual (docs/ci-cd.md).
+// Lo despliega el workflow corte-mensual; la API lo lee con el binding DATOS.
+// Cada despliegue reemplaza todos sus archivos: el workflow arma `publicacion/` completa
+// (datos/latest.json y los cortes que deben seguir disponibles) a partir de los Releases.
+{
+  "name": "ekou-elephants-datos",
+  "compatibility_date": "2026-11-01",
+  // Sin URL pública: solo la API accede a los datos, por el service binding.
+  "workers_dev": false,
+  "preview_urls": false,
+  "assets": { "directory": "./publicacion" }
+}
