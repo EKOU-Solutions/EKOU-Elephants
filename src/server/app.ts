@@ -5,6 +5,7 @@ import { CorteNoDisponible, MunicipioNoEncontrado } from '../modules/mapa/domain
 import { TerritorioNoEncontrado } from '../modules/mapa/domain/resumen-territorial';
 import { componerMapa } from './composition/mapa';
 import type { Queryable } from './db';
+import { montarDocumentacion } from './docs';
 
 /** Without a bucket every map read finds nothing, so the API answers 503 corte_no_disponible. */
 const sinDatos: AlmacenObjetos = { get: async () => null };
@@ -16,6 +17,7 @@ export function crearApp(db: Queryable, datos: AlmacenObjetos = sinDatos) {
   app.use(secureHeaders());
   app.get('/api/salud', (c) => c.json({ ok: true }));
   app.route('/api/mapa', componerMapa(db, datos));
+  montarDocumentacion(app);
 
   app.notFound((c) => c.json({ error: 'no_encontrado' }, 404));
   app.onError((err, c) => {
