@@ -29,9 +29,9 @@ Cada componente tiene su carpeta, con el componente y su historia al lado. Hay d
 
 | Tipo | Carpeta | Título en Storybook | Ejemplos |
 | --- | --- | --- | --- |
-| **UI**: puro y transversal; no conoce ninguna página ni pide datos | `src/components/ui/<Component>/` | `Componentes/UI/<Nombre>` | Botón, Alerta, Campo, Etiqueta de riesgo, Contador |
-| **De página**: nace en una página, incluidos los grandes (paneles, secciones, el mapa) | `src/modules/<módulo>/ui/<Component>/` | `Componentes/<Página>/<Nombre>` | `src/modules/mapa/ui/TerritoryPanel/` → `Componentes/Mapa/Panel del territorio` |
-| **Pantalla**: la página completa, armada con los anteriores | `src/modules/<módulo>/ui/<Page>Page/` | `Pantallas/<Página>` | `Pantallas/Mapa` |
+| **UI**: puro y transversal; no conoce ninguna página ni pide datos | `src/components/ui/<Component>/` | `Componentes/UI/<Component>` | `Button`, `Alert`, `Input`, `Select`, `RiskTag`, `Counter` |
+| **De página**: nace en una página, incluidos los grandes (paneles, secciones, el mapa) | `src/modules/<módulo>/ui/<Component>/` | `Componentes/<Página>/<Component>` | `src/modules/mapa/ui/TerritoryPanel/` → `Componentes/Mapa/TerritoryPanel` |
+| **Pantalla**: la página completa, armada con los anteriores | `src/modules/<módulo>/ui/<Page>Page/` | `Pantallas/<Page>Page` | `Pantallas/MapPage` |
 
 ```text
 src/components/ui/RiskTag/
@@ -64,7 +64,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { RiskTag } from './RiskTag';
 
 const meta = {
-  title: 'Componentes/UI/Etiqueta de riesgo',
+  title: 'Componentes/UI/RiskTag',
   component: RiskTag,
   tags: ['autodocs'],
   parameters: {

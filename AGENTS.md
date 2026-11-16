@@ -8,12 +8,12 @@ EKOU Elephants está dirigido al público colombiano. Lo que leen las personas s
 
 - Documentos de negocio y técnicos: arquitectura, ADR, alcance del MVP, briefs, requisitos, planes, guías, documentación de API y cualquier otro archivo Markdown para personas.
 - Instrucciones para agentes y skills (incluida la de diseño).
-- Textos de la interfaz, mensajes para las personas usuarias y las páginas de Storybook (títulos, nombres de las historias, descripciones de componentes y props).
+- Textos de la interfaz, mensajes para las personas usuarias y las páginas de Storybook (secciones, nombres de las historias, descripciones de componentes y props).
 - Títulos y descripciones de commits y pull requests.
 
 **En inglés:**
 
-- El código: nombres de variables, funciones, tipos, componentes, props, campos, clases CSS, archivos y carpetas de código.
+- El código: nombres de variables, funciones, tipos, componentes, props, campos, clases CSS, archivos y carpetas de código. Como el nombre del componente es código, en Storybook también se usa tal cual en el título de su historia (`Componentes/UI/Button`), para encontrarlo igual en Storybook y en el código.
 - La API: rutas, campos de solicitudes y respuestas, y nombres de columnas o tablas nuevas.
 - Los comentarios del código.
 

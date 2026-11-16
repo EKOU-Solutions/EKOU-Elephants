@@ -51,11 +51,11 @@ Storybook es la referencia visual viva; la guía HTML (`preview.html`, `examples
 
 - Todo componente que se crea o se modifica con esta skill termina con su historia en Storybook, en español y entendible para personas: para qué sirve, cuándo usarlo, qué evitar, accesibilidad, y una historia por estado (normal, «Sin datos» o vacío, error, carga, y 320 px si aplica).
 - Dónde vive cada componente React (una carpeta por componente, con su historia al lado):
-  - **UI**, puro y transversal: `src/components/ui/<Component>/`, título `Componentes/UI/<Nombre>`.
-  - **De página**, incluidos los grandes: `src/modules/<módulo>/ui/<Component>/`, título `Componentes/<Página>/<Nombre>`.
-  - **Pantalla completa**: `src/modules/<módulo>/ui/<Page>Page/`, título `Pantallas/<Página>`.
+  - **UI**, puro y transversal: `src/components/ui/<Component>/`, título `Componentes/UI/<Component>`.
+  - **De página**, incluidos los grandes: `src/modules/<módulo>/ui/<Component>/`, título `Componentes/<Página>/<Component>`.
+  - **Pantalla completa**: `src/modules/<módulo>/ui/<Page>Page/`, título `Pantallas/<Page>Page`.
 - Cada componente trae sus propios estilos en `ComponentName.module.css`; no hay hojas compartidas entre componentes. Lo único global son los tokens `--el-*`, la fuente y la base (`src/styles/global.css`).
-- La historia va al lado: `ComponentName.stories.tsx`, con `tags: ['autodocs']`. El código va en inglés (componente, props, variables, archivos); el título, el `name` de las historias y las descripciones van en español. Si reemplaza una especificación de `.storybook/catalog/`, se retira esa especificación.
+- La historia va al lado: `ComponentName.stories.tsx`, con `tags: ['autodocs']`. El código va en inglés (componente, props, variables, archivos); las secciones del título, el `name` de las historias y las descripciones van en español; el componente se nombra en el título con su nombre real en inglés (`Componentes/UI/Button`, no «Botón») para que se encuentre igual en Storybook y en el código. Si reemplaza una especificación de `.storybook/catalog/`, se retira esa especificación.
 - Un cambio de tokens, principios o reglas se refleja en la página MDX correspondiente de `.storybook/docs/`.
 - Validación mínima: `npm run build-storybook` sin errores, panel de accesibilidad sin fallas en claro y oscuro, y sin desbordamiento horizontal a 320 px.
 
