@@ -93,7 +93,7 @@ const preview: Preview = {
           'Accesibilidad',
           'Componentes',
           ['Catálogo', 'UI', 'Candidatos', '*'],
-          'Pantallas',
+          'Módulos',
           'Historial',
         ],
       },

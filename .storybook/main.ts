@@ -5,7 +5,7 @@ import remarkGfm from 'remark-gfm';
 // - `.storybook/docs`: human-facing guidelines in Spanish (principles, foundations, workflow, history).
 // - `.storybook/catalog`: markup spec (`el-*` classes) of the candidate components that are not React components yet.
 // - `src/**`: real React components (`src/components/ui/` and each module's `ui/`); each one ships its
-//   `*.stories.tsx` next to it (`elephants-design` flow).
+//   `*.stories.tsx` next to it (`elephant-designer` flow).
 const config: StorybookConfig = {
   stories: [
     '../.storybook/docs/**/*.mdx',

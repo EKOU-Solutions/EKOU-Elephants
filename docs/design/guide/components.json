@@ -1,6 +1,6 @@
 {
   "version": "1.3.0",
-  "about": "Catálogo legible por máquina de los componentes de Elephants. 'core' = revisado y aceptado (Ronda 05); 'candidate' = se puede usar, pero lo debe confirmar la primera página que lo necesite (ver .claude/skills/elephants-design/references/build-page.md). Los componentes con 'component' ya son React en src/components/ui/ y traen sus propios estilos ('styles', CSS Modules); los demás son especificación con clases de components.css. build.py comprueba que los archivos, las clases y los tokens existan.",
+  "about": "Catálogo legible por máquina de los componentes de Elephants. 'core' = revisado y aceptado (Ronda 05); 'candidate' = se puede usar, pero lo debe confirmar la primera página que lo necesite (ver .claude/skills/elephant-designer/references/build-page.md). Los componentes con 'component' ya son React en src/components/ui/ y traen sus propios estilos ('styles', CSS Modules); los demás son especificación con clases de components.css. build.py comprueba que los archivos, las clases y los tokens existan.",
   "components": [
     {
       "name": "Button",

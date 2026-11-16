@@ -1,6 +1,6 @@
 # Brief de diseño
 
-Fecha: 2026-11-08. Respondido por: Jouler (EKOU), confirmado en la sesión de descubrimiento de diseño. Es la vara de medir de las auditorías y rondas de diseño (ver `.claude/skills/elephants-design`).
+Fecha: 2026-11-08. Respondido por: Jouler (EKOU), confirmado en la sesión de descubrimiento de diseño. Es la vara de medir de las auditorías y rondas de diseño (ver `.claude/skills/elephant-designer`).
 
 ## Audiencias y primeras tareas
 

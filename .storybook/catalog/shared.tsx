@@ -75,7 +75,7 @@ export function componentDocs(name: string, purpose: string, folder?: string) {
     `**Accesibilidad:** ${A11Y_NOTES[name] ?? 'ver Accesibilidad.'}`,
     folder
       ? `_Componente React de la app: \`${folder}\`. Trae sus propios estilos y solo usa tokens \`--el-*\`._`
-      : '_Especificación v1.0: marcado y clases `el-*`. Todavía no es un componente React de la app; cuando se implemente con el flujo `elephants-design`, su historia vivirá junto al componente en `src/`._',
+      : '_Especificación v1.0: marcado y clases `el-*`. Todavía no es un componente React de la app; cuando se implemente con el flujo `elephant-designer`, su historia vivirá junto al componente en `src/`._',
   ].join('\n\n');
   return { docs: { description: { component: text } } };
 }

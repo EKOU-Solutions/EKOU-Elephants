@@ -37,3 +37,5 @@ pipeline/worker-datos/publicacion/
 # Storybook (estático generado)
 storybook-static/
 *storybook.log
+# Reporte y capturas de npm run design:check
+.design-check/

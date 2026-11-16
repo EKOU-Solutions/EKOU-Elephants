@@ -1,5 +1,7 @@
 # Ronda
 
+**Lee** (además de [`contexto.md`](../contexto.md)): `docs/design/README.md`, `docs/design/visual-direction.md`, `docs/design/discovery/brief.md`, `docs/design/guide/design-system.md` y el README de la ronda base.
+
 Resultado: una nueva carpeta `docs/design/rounds/NN-nombre-corto/` construida a partir de los hallazgos aceptados de una auditoría.
 
 ## Empezar
@@ -24,6 +26,6 @@ Usa `frontend-design` para el plan y su autocrítica (gasta la audacia en un sol
 ## Cerrar
 
 - Agrega la ronda al registro de revisiones de `docs/design/README.md` como «Propuesta: pendiente de revisión».
-- Si el equipo acepta la ronda, se convierte en la siguiente versión mayor de la guía y Storybook se actualiza en la misma entrega (tokens, páginas MDX de fundamentos e historias de los componentes que cambian).
+- Si el equipo acepta la ronda, se convierte en la siguiente versión mayor de la guía y Storybook se actualiza en la misma entrega (tokens, páginas MDX de fundamentos e historias de los componentes que cambian). `npm run design:check` debe pasar completo.
 - Sirve las vistas previas en local para el equipo (`python3 -m http.server` en la carpeta de la ronda) y comparte las URL.
 - Reporta qué cambió, qué se verificó y qué decisiones le quedan al equipo. No hagas commit.

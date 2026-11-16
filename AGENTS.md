@@ -19,14 +19,23 @@ EKOU Elephants está dirigido al público colombiano. Lo que leen las personas s
 
 Conserva la sintaxis y los nombres exigidos por lenguajes, bibliotecas, API y herramientas externas; no traduzcas identificadores externos ni rutas de instrucciones que las herramientas requieran, como `AGENTS.md` y `CLAUDE.md`.
 
-## Diseño: todo cambio pasa por `elephants-design`
+## Diseño: todo cambio visual o de experiencia pasa por los flujos de diseño
 
-Regla global y sin excepciones. Cualquier cambio de diseño, de una pantalla o página, de un componente visual, de un token, del sistema de diseño en Storybook o de los textos de la interfaz se hace **siempre** a través de la skill `elephants-design`. Esto incluye los cambios pequeños: la skill clasifica el pedido y elige la ruta, desde un ajuste puntual hasta una iteración profunda (construir una página, auditoría, ronda o descubrimiento).
+Regla global y sin excepciones. Cualquier cambio visual o de experiencia (una pantalla o página, un componente, un token, el sistema de diseño en Storybook o los textos de la interfaz) se hace **siempre** por uno de los flujos de diseño, también los cambios pequeños.
 
-- Antes de editar cualquiera de esos elementos, carga la skill `elephants-design` y sigue la ruta que indique. No edites diseño, pantallas ni componentes visuales por fuera de ese flujo, aunque el cambio parezca trivial o te pidan hacerlo rápido.
-- Si alguien pide saltarse el flujo, o tú mismo estás a punto de hacerlo, no hagas el cambio. Aclara que debe pasar por el flujo de diseño e indica el comando: `/elephants-design` en Claude Code, `$elephants-design` en Codex, o pedirle a Antigravity que use la skill `elephants-design`.
-- Storybook (`npm run storybook`) es la referencia viva del sistema de diseño. Todo componente creado o modificado con la skill termina documentado con su historia. La guía HTML v1.0 y las rondas de `docs/design/` son seguimiento histórico.
-- La skill vive en `.claude/skills/elephants-design/` y está enlazada en `.agents/skills/elephants-design` para Codex y Antigravity.
+| Comando | Para qué |
+| --- | --- |
+| `/crear-pantalla` | Una página o pantalla completa, del contrato de la API a la pantalla aprobada |
+| `/crear-componente` | Un componente nuevo: definición, variantes, implementación, revisión y commit |
+| `/revisar-implementacion` | Revisar algo ya construido, con el alcance que diga la persona |
+| `/ajuste` | Un cambio puntual que mantiene la dirección |
+| `/elephant-designer` | Todo lo demás (auditoría, ronda, descubrimiento) y cualquier pedido dudoso: clasifica y elige el flujo |
+
+- **Si nadie activó un comando** y te piden un cambio visual o de experiencia, carga igual la skill `elephant-designer` antes de editar y sigue el flujo que indique. No edites diseño, pantallas ni componentes por fuera de un flujo, aunque el cambio parezca trivial o te pidan hacerlo rápido.
+- Si un comando recibe un pedido que no es suyo (por ejemplo, `/crear-componente` para una página), no lo fuerces: redirige al comando correcto o a `elephant-designer`.
+- Si alguien pide saltarse el flujo, no hagas el cambio y explica que debe pasar por los flujos de diseño. En Codex los comandos se llaman con `$` (`$ajuste`); en Antigravity, pidiendo usar la skill por su nombre.
+- Storybook (`npm run storybook`) es la referencia viva del sistema de diseño. Todo componente o pantalla creado o modificado termina documentado con su historia. La guía HTML v1.0 y las rondas de `docs/design/` son seguimiento histórico.
+- Las skills viven en `.claude/skills/` y están enlazadas en `.agents/skills/` para Codex y Antigravity. Roles del flujo: `elephant-designer` (orquesta), `elephant-data`, `elephant-ui`, `elephant-ux` y `elephant-tester`. Qué hace cada comando: [comandos de diseño](docs/design/comandos.md).
 
 ## Fuente compartida de instrucciones
 

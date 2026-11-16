@@ -39,3 +39,20 @@ body {
 a {
   color: var(--el-color-action);
 }
+
+/* Reduced motion is a standard, not an option: when the person asks for it, nothing animates.
+   `!important` is required here: this rule must win over every component's own CSS Module. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    /* biome-ignore lint/complexity/noImportantStyles: must override component styles */
+    animation-duration: 0.01ms !important;
+    /* biome-ignore lint/complexity/noImportantStyles: must override component styles */
+    animation-iteration-count: 1 !important;
+    /* biome-ignore lint/complexity/noImportantStyles: must override component styles */
+    transition-duration: 0.01ms !important;
+    /* biome-ignore lint/complexity/noImportantStyles: must override component styles */
+    scroll-behavior: auto !important;
+  }
+}

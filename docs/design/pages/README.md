@@ -1,6 +1,6 @@
 # Diseños de página
 
-Una carpeta por página, construida con la ruta [Construir una página](../../../.claude/skills/elephants-design/references/build-page.md) de la skill `elephants-design`. Cómo trabaja desarrollo con ella: [flujo de diseño](../design-flow.md).
+Una carpeta por página, construida con la ruta [Construir una página](../../../.claude/skills/elephant-designer/references/build-page.md) de la skill `elephant-designer`. Cómo trabaja desarrollo con ella: [flujo de diseño](../design-flow.md).
 
 ## Contrato de la carpeta
 
@@ -9,12 +9,12 @@ docs/design/pages/<pagina>/
   README.md        estado, fecha, enlaces, preguntas abiertas
   contract.md      de qué contrato de API (versión, fecha) depende el diseño
   data.md          exploración de datos: muestras reales, porcentaje de llenado, fase, campos sensibles
+  bocetos.html     dos o tres composiciones en baja fidelidad a 390 px, con la recomendada y la elegida
   spec.md          propósito, tabla de jerarquía (campo → componente → tokens), estados, textos
-  mockup.html      objetivo visual: celular + escritorio, claro + oscuro (la salida generada se ignora en git)
-  validation.md    accesibilidad, desbordamiento, detector, textos, prueba de 10 segundos, límites
+  validation.md    resultado de npm run design:check, revisión con juicio sobre las capturas, prueba de 10 segundos, límites
 ```
 
-Los componentes nuevos o confirmados por la página quedan documentados con su historia en Storybook.
+La maqueta no es un archivo de esta carpeta: es la pantalla en Storybook, `Módulos/<Módulo>/<Page>Page`, en `src/modules/<módulo>/ui/<Page>Page/`, con una historia por estado y sus datos de muestra. Los componentes que la pantalla arma quedan en el mismo grupo, `Módulos/<Módulo>/<Component>`; los componentes UI nuevos o confirmados, en `Componentes/UI/`.
 
 ## Registro de páginas
 
