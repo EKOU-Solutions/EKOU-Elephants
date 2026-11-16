@@ -185,7 +185,9 @@ export async function desplegarPreview({
     }
   });
 
-  const direccion = leerJsonDeWrangler(salida).preview_urls?.[0];
+  // Forma de `wrangler preview --json` (4.158.0): { preview: { urls }, deployment: { urls } }.
+  const { preview, deployment } = leerJsonDeWrangler(salida);
+  const direccion = preview?.urls?.[0] ?? deployment?.urls?.[0];
   if (typeof direccion !== 'string' || !direccion) {
     throw new Error('Cloudflare no devolvió la URL del preview.');
   }
