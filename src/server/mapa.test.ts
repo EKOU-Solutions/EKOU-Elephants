@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { type AlmacenObjetos, claves } from '../modules/mapa/adapters/r2/mapa.r2';
+import {
+  type AlmacenObjetos,
+  almacenDesdeWorker,
+  claves,
+} from '../modules/mapa/adapters/worker-datos/mapa.worker-datos';
 import { crearApp } from './app';
 import type { Queryable } from './db';
 
@@ -57,7 +61,6 @@ const departamentos = {
     },
   ],
 };
-const topojson = '{"type":"Topology","objects":{},"arcs":[]}';
 
 function publicado(): Record<string, string> {
   return {
@@ -65,7 +68,6 @@ function publicado(): Record<string, string> {
     [claves.corte('2026-11')]: JSON.stringify(corte),
     [claves.municipios('2026-11')]: JSON.stringify(municipios),
     [claves.departamentos('2026-11')]: JSON.stringify(departamentos),
-    [claves.geometria('mgn-2025')]: topojson,
   };
 }
 
@@ -203,7 +205,7 @@ describe('GET /api/mapa/municipios/:codigo', () => {
   });
 
   it.each(['5001', '050011', 'abcde', "05001'--"])(
-    'responde 400 sin leer R2 si el código es %s',
+    'responde 400 sin leer los datos si el código es %s',
     async (codigo) => {
       const { app: a, leidas } = app();
       const res = await a.request(`/api/mapa/municipios/${encodeURIComponent(codigo)}`);
@@ -214,25 +216,31 @@ describe('GET /api/mapa/municipios/:codigo', () => {
   );
 });
 
-describe('GET /api/mapa/geometria/:version', () => {
-  it('devuelve el TopoJSON con caché inmutable', async () => {
-    const res = await app().app.request('/api/mapa/geometria/mgn-2025');
-    expect(res.status).toBe(200);
-    expect(await res.text()).toBe(topojson);
-    expect(res.headers.get('content-type')).toBe('application/json; charset=utf-8');
-    expect(res.headers.get('cache-control')).toBe('public, max-age=31536000, immutable');
+describe('almacenDesdeWorker', () => {
+  const worker = (respuestas: Record<string, Response>) =>
+    ({
+      fetch: async (url: string) => respuestas[url] ?? new Response('no', { status: 404 }),
+    }) as unknown as Fetcher;
+
+  it('lee cada clave como una ruta del Worker de datos', async () => {
+    const almacen = almacenDesdeWorker(
+      worker({ 'https://datos/datos/latest.json': new Response('{"corte":"2026-11"}') }),
+    );
+    expect(await (await almacen?.get('datos/latest.json'))?.text()).toBe('{"corte":"2026-11"}');
   });
 
-  it('responde 404 si la versión no existe', async () => {
-    const res = await app().app.request('/api/mapa/geometria/mgn-2030');
-    expect(res.status).toBe(404);
-    expect(await res.json()).toEqual({ error: 'geometria_no_encontrada' });
+  it('devuelve null si el archivo no existe', async () => {
+    expect(await almacenDesdeWorker(worker({}))?.get('datos/2026-11/corte.json')).toBeNull();
   });
 
-  it('responde 404 sin leer R2 si la versión intenta salir de la carpeta', async () => {
-    const { app: a, leidas } = app();
-    const res = await a.request(`/api/mapa/geometria/${encodeURIComponent('../latest')}`);
-    expect(res.status).toBe(404);
-    expect(leidas).toHaveLength(0);
+  it('falla si el Worker responde con un error', async () => {
+    const almacen = almacenDesdeWorker(
+      worker({ 'https://datos/datos/latest.json': new Response('', { status: 500 }) }),
+    );
+    await expect(almacen?.get('datos/latest.json')).rejects.toThrow('500');
+  });
+
+  it('no hay almacén sin el binding DATOS', () => {
+    expect(almacenDesdeWorker(undefined)).toBeUndefined();
   });
 });

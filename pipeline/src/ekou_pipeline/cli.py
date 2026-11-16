@@ -54,11 +54,13 @@ def build_parser() -> argparse.ArgumentParser:
     )
 
     export_mapa_cmd = commands.add_parser(
-        "export-mapa", help="exporta los JSON del mapa (TASK-09) con la estructura del bucket R2"
+        "export-mapa", help="exporta los JSON del mapa (TASK-09) para el Release del corte"
     )
     _add_corte(export_mapa_cmd)
     export_mapa_cmd.add_argument(
-        "--out", type=Path, help="directorio de salida (por defecto, <data_dir>/r2/datos)"
+        "--out",
+        type=Path,
+        help="directorio de salida (por defecto, <data_dir>/publicacion/<corte>)",
     )
     return parser
 
@@ -96,7 +98,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 0
 
     if args.command == "export-mapa":
-        out_dir = args.out or settings.data_dir / "r2" / "datos"
+        out_dir = args.out or settings.data_dir / "publicacion" / args.corte
         with duckdb.connect(str(settings.data_dir / "ekou.duckdb"), read_only=True) as conn:
             fecha = fecha_de_los_datos(conn, settings.data_dir / "bronze", args.corte)
             paths = export_mapa(conn, corte=args.corte, fecha_datos=fecha, out_dir=out_dir)

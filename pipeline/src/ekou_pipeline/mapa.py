@@ -1,14 +1,16 @@
 """Datos del mapa (TASK-09): exporta el corte a los JSON que sirve la API.
 
-Contrato: ``docs/design/pages/map/contract.md``. Escribe en ``out_dir``::
+Contrato: ``docs/design/pages/map/contract.md``. Escribe en ``out_dir``, por defecto la carpeta
+de publicación del corte (``<data_dir>/publicacion/<corte>/``)::
 
-    latest.json                     puntero al corte vigente: {"corte": "AAAA-MM"}
-    <corte>/corte.json              CorteVigente
-    <corte>/mapa/municipios.json    MunicipiosDelCorte
-    <corte>/mapa/departamentos.json DepartamentosDelCorte (con el total nacional)
+    corte.json          CorteVigente
+    municipios.json     MunicipiosDelCorte
+    departamentos.json  DepartamentosDelCorte (con el total nacional)
 
-La estructura replica las rutas del bucket R2, así un mismo directorio sirve para cargar el
-R2 local (``wrangler``) y el de producción.
+Esos archivos van en el Release ``corte-AAAA-MM`` con el mismo nombre, y el corte mensual los
+despliega en el Worker de datos como ``datos/<corte>/<archivo>``, junto al puntero
+``datos/latest.json`` (docs/ci-cd.md). La geometría no es parte del corte: es un archivo estático
+de la app (``public/geometria/``, scripts/geometria-mgn.mjs).
 """
 
 import json
@@ -209,11 +211,9 @@ def export_mapa(
     """Escribe los JSON del mapa y devuelve las rutas escritas."""
     publicado_en = publicado_en or datetime.now(tz=UTC)
     archivos = {
-        out_dir / corte / "mapa" / "municipios.json": municipios_del_corte(conn, corte),
-        out_dir / corte / "mapa" / "departamentos.json": departamentos_del_corte(conn, corte),
-        out_dir / corte / "corte.json": corte_vigente(corte, fecha_datos, publicado_en),
-        # El puntero va de último: solo apunta al corte cuando sus archivos ya existen.
-        out_dir / "latest.json": {"corte": corte},
+        out_dir / "municipios.json": municipios_del_corte(conn, corte),
+        out_dir / "departamentos.json": departamentos_del_corte(conn, corte),
+        out_dir / "corte.json": corte_vigente(corte, fecha_datos, publicado_en),
     }
     for path, contenido in archivos.items():
         path.parent.mkdir(parents=True, exist_ok=True)

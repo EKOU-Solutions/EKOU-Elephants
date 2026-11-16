@@ -2,7 +2,6 @@ import {
   CorteNoDisponible,
   type CorteVigente,
   type DepartamentosDelCorte,
-  GeometriaNoEncontrada,
   MunicipioNoEncontrado,
   type MunicipiosDelCorte,
   type MunicipioSeleccionado,
@@ -46,13 +45,5 @@ export function obtenerMunicipio(puerto: ConsultarMapa) {
     const municipio = municipios.find((m) => m.codigo === codigo);
     if (!municipio) throw new MunicipioNoEncontrado(codigo);
     return { corte, ventana, ...municipio };
-  };
-}
-
-export function obtenerGeometria(puerto: ConsultarMapa) {
-  return async (version: string): Promise<string> => {
-    const geometria = await puerto.geometria(version);
-    if (geometria === null) throw new GeometriaNoEncontrada(version);
-    return geometria;
   };
 }

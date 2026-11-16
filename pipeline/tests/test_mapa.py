@@ -90,7 +90,7 @@ def _warehouse(path: Path, corte: str = "2026-11") -> None:
 def test_export_writes_the_contract_shape(tmp_path: Path) -> None:
     database = tmp_path / "ekou.duckdb"
     _warehouse(database)
-    out = tmp_path / "r2"
+    out = tmp_path / "publicacion" / "2026-11"
     with duckdb.connect(str(database), read_only=True) as conn:
         paths = export_mapa(
             conn,
@@ -101,12 +101,11 @@ def test_export_writes_the_contract_shape(tmp_path: Path) -> None:
         )
 
     assert [p.relative_to(out).as_posix() for p in paths] == [
-        "2026-11/mapa/municipios.json",
-        "2026-11/mapa/departamentos.json",
-        "2026-11/corte.json",
-        "latest.json",
+        "municipios.json",
+        "departamentos.json",
+        "corte.json",
     ]
-    municipios = json.loads((out / "2026-11/mapa/municipios.json").read_text("utf-8"))
+    municipios = json.loads((out / "municipios.json").read_text("utf-8"))
     assert municipios["ventana"] == {"desde": 2021, "hasta": 2026}
     assert municipios["municipios"][0] == {
         "codigo": "05001",
@@ -118,7 +117,7 @@ def test_export_writes_the_contract_shape(tmp_path: Path) -> None:
     # Sin contratos ubicados: null, nunca 0.
     assert municipios["municipios"][1]["contratosUbicados"] is None
 
-    departamentos = json.loads((out / "2026-11/mapa/departamentos.json").read_text("utf-8"))
+    departamentos = json.loads((out / "departamentos.json").read_text("utf-8"))
     assert departamentos["nacional"] == {
         "contratos": 667361,
         "contratosEnMunicipios": 640861,
@@ -142,12 +141,11 @@ def test_export_writes_the_contract_shape(tmp_path: Path) -> None:
         },
     ]
 
-    corte = json.loads((out / "2026-11/corte.json").read_text("utf-8"))
+    corte = json.loads((out / "corte.json").read_text("utf-8"))
     assert corte["fechaCorte"] == "2026-11-07"
     assert corte["publicadoEn"] == "2026-11-08T02:00:00Z"
     assert corte["geometria"] == "mgn-2025"
     assert {f["id"] for f in corte["fuentes"]} >= {"jbjy-vk9h", "gdxc-w37w", "mgn-2025"}
-    assert json.loads((out / "latest.json").read_text("utf-8")) == {"corte": "2026-11"}
 
 
 def test_export_refuses_another_cut(tmp_path: Path) -> None:
@@ -157,17 +155,17 @@ def test_export_refuses_another_cut(tmp_path: Path) -> None:
         duckdb.connect(str(database), read_only=True) as conn,
         pytest.raises(ValueError, match="2026-10"),
     ):
-        export_mapa(conn, corte="2026-11", fecha_datos=date(2026, 11, 7), out_dir=tmp_path / "r2")
-    assert not (tmp_path / "r2").exists()
+        export_mapa(conn, corte="2026-11", fecha_datos=date(2026, 11, 7), out_dir=tmp_path / "out")
+    assert not (tmp_path / "out").exists()
 
 
-def test_cli_exports_to_the_local_bucket(
+def test_cli_exports_to_the_publication_dir(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
     _warehouse(tmp_path / "ekou.duckdb")
     _bronze(tmp_path, {"divipola": "2026-11-08T00:30:35+00:00"})
     monkeypatch.setenv("EKOU_DATA_DIR", str(tmp_path))
     assert main(["export-mapa", "--corte", "2026-11"]) == 0
-    corte = json.loads((tmp_path / "r2/datos/2026-11/corte.json").read_text("utf-8"))
+    corte = json.loads((tmp_path / "publicacion/2026-11/corte.json").read_text("utf-8"))
     assert corte["fechaCorte"] == "2026-11-07"
-    assert len(capsys.readouterr().out.splitlines()) == 4
+    assert len(capsys.readouterr().out.splitlines()) == 3

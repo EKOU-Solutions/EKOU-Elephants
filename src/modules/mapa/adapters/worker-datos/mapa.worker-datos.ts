@@ -7,19 +7,36 @@ import {
   type MunicipiosDelCorte,
 } from '../../domain/mapa';
 
-/** The slice of R2Bucket this adapter needs, so tests can use an in-memory fake. */
+/** Read files by key, so tests can use an in-memory fake instead of the data Worker. */
 export interface AlmacenObjetos {
   get(clave: string): Promise<{ text(): Promise<string> } | null>;
 }
 
-// Keys written by the pipeline (`ekou-pipeline export-mapa`) and the corte-mensual workflow.
+/**
+ * DATOS is the static-assets Worker `ekou-elephants-datos`. The monthly cut deploys it from the
+ * GitHub Releases `corte-AAAA-MM` (docs/ci-cd.md): `datos/<corte>/` holds the JSON files of that
+ * Release with the same names, and `datos/latest.json` points to the current cut. A key is fetched
+ * as a path, and 404 means the file does not exist.
+ */
+export function almacenDesdeWorker(worker: Fetcher | undefined): AlmacenObjetos | undefined {
+  if (!worker) return undefined;
+  return {
+    async get(clave) {
+      const res = await worker.fetch(`https://datos/${clave}`);
+      if (res.status === 404) return null;
+      if (!res.ok) throw new Error(`Worker de datos respondió ${res.status} para ${clave}`);
+      return res;
+    },
+  };
+}
+
+// Release assets written by `ekou-pipeline export-mapa`, served by the data Worker.
 const PREFIJO = 'datos';
 export const claves = {
   puntero: `${PREFIJO}/latest.json`,
   corte: (corte: string) => `${PREFIJO}/${corte}/corte.json`,
-  municipios: (corte: string) => `${PREFIJO}/${corte}/mapa/municipios.json`,
-  departamentos: (corte: string) => `${PREFIJO}/${corte}/mapa/departamentos.json`,
-  geometria: (version: string) => `${PREFIJO}/geometria/${version}.topojson`,
+  municipios: (corte: string) => `${PREFIJO}/${corte}/municipios.json`,
+  departamentos: (corte: string) => `${PREFIJO}/${corte}/departamentos.json`,
 };
 
 const corteId = z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/);
@@ -106,7 +123,7 @@ const esquemaDepartamentos = z
   })
   .strict();
 
-export function mapaR2(almacen: AlmacenObjetos): ConsultarMapa {
+export function mapaDesdeDatos(almacen: AlmacenObjetos): ConsultarMapa {
   async function leerJson<T>(clave: string, esquema: z.ZodType<T>): Promise<T | null> {
     const objeto = await almacen.get(clave);
     if (!objeto) return null;
@@ -145,11 +162,6 @@ export function mapaR2(almacen: AlmacenObjetos): ConsultarMapa {
       if (datos && datos.corte !== corte)
         throw new CorteNoDisponible('los departamentos son de otro corte');
       return datos;
-    },
-
-    async geometria(version: string): Promise<string | null> {
-      const objeto = await almacen.get(claves.geometria(version));
-      return objeto ? objeto.text() : null;
     },
   };
 }

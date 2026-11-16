@@ -16,7 +16,7 @@ export interface CorteVigente {
   fechaCorte: string;
   /** ISO datetime (UTC) when the pipeline published the cut. */
   publicadoEn: string;
-  /** Geometry version to request from /geometria/:version. */
+  /** Geometry version: the app serves it as a static file at /geometria/<version>.topojson. */
   geometria: string;
   fuentes: Fuente[];
 }
@@ -77,13 +77,6 @@ export class MunicipioNoEncontrado extends Error {
   constructor(readonly codigo: string) {
     super(`Municipio no encontrado: ${codigo}`);
     this.name = 'MunicipioNoEncontrado';
-  }
-}
-
-export class GeometriaNoEncontrada extends Error {
-  constructor(readonly version: string) {
-    super(`Geometría no encontrada: ${version}`);
-    this.name = 'GeometriaNoEncontrada';
   }
 }
 

@@ -1,13 +1,14 @@
 // Builds the map geometry (TASK-09) from DANE's MGN 2025 municipalities.
 //
-//   node scripts/geometria-mgn.mjs <MGN_ADM_MPIO_GRAFICO.geojson> [datos-dir]
+//   node scripts/geometria-mgn.mjs <MGN_ADM_MPIO_GRAFICO.geojson> [salida-dir]
 //
 // Source: https://geoportal.dane.gov.co/descargas/mgn_2025/MGN2025_ADM_MPIO_GRAFICO_(geojson).zip
 // (CC BY 4.0, "Departamento Administrativo Nacional de Estadística - DANE: www.dane.gov.co").
-// Writes <datos-dir>/geometria/mgn-2025.topojson (default datos-dir: pipeline/data/r2/datos) with
+// Writes <salida-dir>/geometria/mgn-2025.topojson (default salida-dir: public, so the app serves it
+// as a static file and it is committed: the MGN changes almost never) with
 // two objects, both carrying only `codigo`: `municipios` (1,122) and `departamentos` (33, dissolved
 // from the municipalities so borders match exactly). Fails if the size budget is exceeded or if the
-// codes do not match the municipalities of the exported cut. Contract:
+// codes do not match the municipalities of the cuts exported in pipeline/data/publicacion. Contract:
 // docs/design/pages/map/contract.md.
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, readdirSync, readFileSync } from 'node:fs';
@@ -29,14 +30,16 @@ const CUANTIZACION = '20000';
 const PRESUPUESTO = { crudo: 380_000, brotli: 100_000 };
 const ESPERADO = { municipios: 1122, departamentos: 33 };
 
-const [entrada, datosArg] = process.argv.slice(2);
+const [entrada, salidaArg] = process.argv.slice(2);
 if (!entrada || !existsSync(entrada)) {
-  console.error('Uso: node scripts/geometria-mgn.mjs <MGN_ADM_MPIO_GRAFICO.geojson> [datos-dir]');
+  console.error('Uso: node scripts/geometria-mgn.mjs <MGN_ADM_MPIO_GRAFICO.geojson> [salida-dir]');
   process.exit(1);
 }
-const datos = resolve(datosArg ?? 'pipeline/data/r2/datos');
-const salida = join(datos, 'geometria', `${VERSION}.topojson`);
-mkdirSync(join(datos, 'geometria'), { recursive: true });
+const salidaDir = resolve(salidaArg ?? 'public');
+const salida = join(salidaDir, 'geometria', `${VERSION}.topojson`);
+mkdirSync(join(salidaDir, 'geometria'), { recursive: true });
+// Cuts exported with `ekou-pipeline export-mapa`, to check the join.
+const publicacion = resolve('pipeline', 'data', 'publicacion');
 
 execFileSync(
   process.execPath,
@@ -98,9 +101,11 @@ if (topologia.bbox?.length !== 4) errores.push('falta bbox');
 
 // Join check: the shapes must match the municipalities of every exported cut, code by code.
 const codigosMgn = new Set(topologia.objects.municipios.geometries.map((g) => g.properties.codigo));
-const cortes = readdirSync(datos).filter((d) => /^\d{4}-\d{2}$/.test(d));
+const cortes = existsSync(publicacion)
+  ? readdirSync(publicacion).filter((d) => /^\d{4}-\d{2}$/.test(d))
+  : [];
 for (const corte of cortes) {
-  const archivo = join(datos, corte, 'mapa', 'municipios.json');
+  const archivo = join(publicacion, corte, 'municipios.json');
   if (!existsSync(archivo)) continue;
   const codigos = new Set(
     JSON.parse(readFileSync(archivo, 'utf-8')).municipios.map((m) => m.codigo),

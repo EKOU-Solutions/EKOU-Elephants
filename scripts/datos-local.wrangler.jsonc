@@ -1,0 +1,7 @@
+// Worker de datos para `npm run dev`: sirve datos-locales/ (npm run datos:local o datos:descargar)
+// con el mismo nombre que el de producción, así el binding DATOS de wrangler.jsonc lo encuentra.
+{
+  "name": "ekou-elephants-datos",
+  "main": "./datos-local.worker.ts",
+  "compatibility_date": "2026-11-01"
+}

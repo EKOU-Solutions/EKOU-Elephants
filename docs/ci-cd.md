@@ -31,6 +31,7 @@ flowchart LR
 | `npm run datos:corte -- [AAAA-MM]` | Lanza el workflow `corte-mensual` en GitHub Actions (sin mes: el actual). |
 | `npm run datos:descargar -- [AAAA-MM]` | Baja un corte publicado (por defecto el último Release) a `datos-locales/`, que git ignora. `--forzar` reemplaza la carpeta. |
 | `npm run datos:preview -- <pr>` | Sube `datos-locales/` al Worker de datos de ese PR (`ekou-elephants-datos-pr-<pr>`). Requiere `wrangler login` en la cuenta de EKOU. |
+| `npm run datos:local -- [AAAA-MM]` | Copia a `datos-locales/` un corte exportado en tu máquina (`ekou-pipeline export-mapa`), con la misma estructura que el Worker de datos. Con `datos-locales/`, `npm run dev` también sirve esos datos por el binding `DATOS`. |
 
 Biome es la única herramienta de lint y formato de la app. Su alcance es `src/`, `tests/`, `scripts/` y la configuración TypeScript/JSON de la raíz. Markdown, SQL y HTML quedan fuera. El pipeline de Python usa Ruff.
 
@@ -69,6 +70,8 @@ Cloudflare rechaza un despliegue con un binding a un Worker que no existe. Por e
 | `true` (cuando exista `ekou-elephants-datos`) | Verifica que el Worker de datos exista antes de migrar; si no, falla. Despliega con el binding. | Leen los datos de producción por defecto. |
 
 El frontend no depende de los datos del corte: la app funciona sin el binding.
+
+El Worker de datos es un espejo de los Releases: `datos/AAAA-MM/` tiene los JSON del Release `corte-AAAA-MM` con el mismo nombre (los del mapa: `corte.json`, `municipios.json` y `departamentos.json`, de `ekou-pipeline export-mapa`), y `datos/latest.json` apunta al corte vigente. La geometría del mapa no va ahí: casi nunca cambia, así que es un archivo estático de la app (`public/geometria/mgn-2025.topojson`, generado con `scripts/geometria-mgn.mjs`), con caché inmutable (`public/_headers`). Una versión nueva del MGN usa otro nombre.
 
 ## Producción
 

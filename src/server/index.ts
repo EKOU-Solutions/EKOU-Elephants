@@ -1,24 +1,7 @@
-import type { AlmacenObjetos } from '../modules/mapa/adapters/r2/mapa.r2';
+import { almacenDesdeWorker } from '../modules/mapa/adapters/worker-datos/mapa.worker-datos';
 import { crearApp } from './app';
 import { createDb } from './db';
 import { leerEnv } from './env';
-
-/**
- * DATOS is the static-assets Worker `ekou-elephants-datos` that the monthly cut publishes from the
- * GitHub Release (docs/ci-cd.md). The map adapter reads files by key (`datos/latest.json`, …), so the
- * Worker is wrapped: a key is fetched as a path, and 404 means the file does not exist.
- */
-export function almacenDesdeWorker(worker: Fetcher | undefined): AlmacenObjetos | undefined {
-  if (!worker) return undefined;
-  return {
-    async get(clave) {
-      const res = await worker.fetch(`https://datos/${clave}`);
-      if (res.status === 404) return null;
-      if (!res.ok) throw new Error(`Worker de datos respondió ${res.status} para ${clave}`);
-      return res;
-    },
-  };
-}
 
 export default {
   async fetch(request: Request, rawEnv: unknown, ctx: ExecutionContext) {
