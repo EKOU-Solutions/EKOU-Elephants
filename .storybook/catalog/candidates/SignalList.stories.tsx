@@ -3,7 +3,7 @@ import { componentDocs } from '../shared';
 import { SignalList } from './SignalList';
 
 const meta = {
-  title: 'Componentes/Candidatos/Señal',
+  title: 'Componentes/Candidatos/SignalList',
   component: SignalList,
   tags: ['autodocs'],
   parameters: componentDocs(

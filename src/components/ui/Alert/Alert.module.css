@@ -101,6 +101,14 @@
   font-weight: 700;
 }
 
+/* Action link: at least 24 px tall (WCAG 2.5.8) even though it reads as text. */
+.link {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 24px;
+  padding-block: 4px;
+}
+
 /* Note: qualifies a figure. */
 .note {
   display: inline-flex;

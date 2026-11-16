@@ -3,7 +3,7 @@ import { componentDocs, FIXTURE } from '../../../../.storybook/catalog/shared';
 import { KeyFigure } from './KeyFigure';
 
 const meta = {
-  title: 'Componentes/UI/Cifra destacada',
+  title: 'Componentes/UI/KeyFigure',
   component: KeyFigure,
   tags: ['autodocs'],
   parameters: componentDocs(

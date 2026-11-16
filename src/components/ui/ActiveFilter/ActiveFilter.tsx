@@ -1,4 +1,4 @@
-import { X } from 'lucide-react';
+import { Icon } from '../Icon/Icon';
 import styles from './ActiveFilter.module.css';
 
 type Props = {
@@ -20,7 +20,7 @@ export function ActiveFilter({ value, accessibleName, onRemove }: Props) {
       onClick={onRemove}
     >
       {value}
-      <X aria-hidden="true" />
+      <Icon name="x" size={18} />
     </button>
   );
 }

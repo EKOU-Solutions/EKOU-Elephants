@@ -1,5 +1,5 @@
 {
-  "version": "1.1.0",
+  "version": "1.2.0",
   "about": "Catálogo legible por máquina de los componentes de Elephants. 'core' = revisado y aceptado (Ronda 05); 'candidate' = se puede usar, pero lo debe confirmar la primera página que lo necesite (ver .claude/skills/elephants-design/references/build-page.md). Los componentes con 'component' ya son React en src/components/ui/ y traen sus propios estilos ('styles', CSS Modules); los demás son especificación con clases de components.css. build.py comprueba que los archivos, las clases y los tokens existan.",
   "components": [
     {
@@ -26,7 +26,9 @@
       "a11y": [
         "<button> nativo; mínimo 44 px de alto",
         "Un botón solo con ícono necesita aria-label",
-        "Anillo de foco visible con --el-color-focus"
+        "Anillo de foco visible con --el-color-focus",
+        "Mientras carga: aria-disabled + aria-busy, no disabled, para no perder el foco",
+        "Deshabilitado: el motivo va cerca, ligado con aria-describedby"
       ],
       "component": "src/components/ui/Button/Button.tsx",
       "styles": "src/components/ui/Button/Button.module.css"
@@ -60,14 +62,38 @@
       "styles": "src/components/ui/Alert/Alert.module.css"
     },
     {
-      "name": "Field",
-      "label_es": "Campo de formulario",
+      "name": "Input",
+      "label_es": "Campo de texto",
       "status": "core",
       "reference": "preview.html#campo",
-      "use": "Recoge un dato para filtrar o buscar. Siempre con etiqueta visible.",
+      "use": "Recoge un dato escrito para filtrar o buscar. Siempre con etiqueta visible.",
       "variants": [
-        "input",
-        "select",
+        "con texto de ayuda",
+        "numérico (inputMode)",
+        "error"
+      ],
+      "tokens": [
+        "--el-color-control-border",
+        "--el-color-danger",
+        "--el-control-height",
+        "--el-control-radius"
+      ],
+      "a11y": [
+        "<label for>",
+        "Error: aria-invalid=true + aria-describedby apuntando al mensaje",
+        "El texto del error dice cómo corregirlo",
+        "inputMode=\"numeric\" solo si el dato es un número"
+      ],
+      "component": "src/components/ui/Input/Input.tsx",
+      "styles": "src/components/ui/FormField/FormField.module.css"
+    },
+    {
+      "name": "Select",
+      "label_es": "Lista",
+      "status": "core",
+      "reference": "preview.html#campo",
+      "use": "Elige un valor de una lista corta y conocida (menos de ~15 opciones) para filtrar. Si son más, buscador con sugerencias.",
+      "variants": [
         "con texto de ayuda",
         "error"
       ],
@@ -82,8 +108,54 @@
         "Error: aria-invalid=true + aria-describedby apuntando al mensaje",
         "El texto del error dice cómo corregirlo"
       ],
-      "component": "src/components/ui/Field/Field.tsx",
-      "styles": "src/components/ui/Field/Field.module.css"
+      "component": "src/components/ui/Select/Select.tsx",
+      "styles": "src/components/ui/FormField/FormField.module.css"
+    },
+    {
+      "name": "FormField",
+      "label_es": "Base de campo",
+      "status": "core",
+      "reference": "preview.html#campo",
+      "use": "Base de Input y Select: etiqueta, control y mensaje de ayuda o de error ligados entre sí. Sirve para crear campos nuevos; no se usa sola en las páginas.",
+      "variants": [
+        "con texto de ayuda",
+        "error"
+      ],
+      "tokens": [
+        "--el-color-control-border",
+        "--el-color-danger",
+        "--el-control-height",
+        "--el-control-radius"
+      ],
+      "a11y": [
+        "<label for>",
+        "Error: aria-invalid=true + aria-describedby apuntando al mensaje",
+        "El texto del error dice cómo corregirlo",
+        "La ayuda también va en aria-describedby"
+      ],
+      "component": "src/components/ui/FormField/FormField.tsx",
+      "styles": "src/components/ui/FormField/FormField.module.css"
+    },
+    {
+      "name": "Icon",
+      "label_es": "Ícono",
+      "status": "core",
+      "reference": "preview.html#iconos",
+      "use": "Dibuja un ícono del conjunto aprobado por su nombre (<Icon name=\"search\" />), con trazo de 2 px. El proveedor (hoy Lucide) o un SVG propio se define solo en icons.ts. Decorativo por defecto; si va solo, lleva nombre accesible.",
+      "variants": [
+        "16 px",
+        "18 px",
+        "20 px (junto a texto)",
+        "24 px (alertas)",
+        "con nombre accesible (label)"
+      ],
+      "tokens": [],
+      "a11y": [
+        "Decorativo: aria-hidden=true",
+        "Solo: role=img y aria-label; si es un botón, el aria-label va en el botón"
+      ],
+      "component": "src/components/ui/Icon/Icon.tsx",
+      "styles": "src/components/ui/Icon/Icon.module.css"
     },
     {
       "name": "Risk tag",
@@ -288,29 +360,29 @@
       ]
     },
     {
-      "name": "Coverage bar",
-      "label_es": "Barra de cobertura",
+      "name": "Progress bar",
+      "label_es": "Barra de progreso",
       "status": "candidate",
       "reference": "examples.html#mapa",
-      "classes": [
-        "el-coverage",
-        "el-coverage-legend",
-        "el-key-flagged",
-        "el-key-clean"
-      ],
-      "use": "Muestra con señales / analizados sin señales / sin analizar sobre el total, para que los datos faltantes se vean.",
+      "use": "Barra horizontal que se llena por tramos (valor y color de cada uno). Sirve para el desglose en barras (un tramo) y para la cobertura (con señales / sin señales / sin analizar). No trae leyenda: los números van en texto al lado.",
       "variants": [
-        "por defecto"
+        "un tramo, delgada (desglose)",
+        "varios tramos, gruesa (cobertura)",
+        "vacía"
       ],
       "tokens": [
         "--el-color-text",
         "--el-color-line",
         "--el-color-unknown",
-        "--el-color-unknown-surface"
+        "--el-color-unknown-surface",
+        "--el-mark-radius"
       ],
       "a11y": [
-        "Leyenda con los números en texto junto a la barra"
-      ]
+        "Con label: role=img y aria-label con el reparto completo",
+        "Sin label: decorativa (aria-hidden); los números deben estar en texto al lado"
+      ],
+      "component": "src/components/ui/ProgressBar/ProgressBar.tsx",
+      "styles": "src/components/ui/ProgressBar/ProgressBar.module.css"
     },
     {
       "name": "Breakdown bars",

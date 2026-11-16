@@ -12,7 +12,7 @@ const KINDS: [LegendKeyKind, string][] = [
 ];
 
 const meta = {
-  title: 'Componentes/UI/Clave de leyenda',
+  title: 'Componentes/UI/LegendKey',
   component: LegendKey,
   tags: ['autodocs'],
   parameters: componentDocs(

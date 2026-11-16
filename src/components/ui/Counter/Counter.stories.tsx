@@ -3,7 +3,7 @@ import { componentDocs } from '../../../../.storybook/catalog/shared';
 import { Counter } from './Counter';
 
 const meta = {
-  title: 'Componentes/UI/Contador',
+  title: 'Componentes/UI/Counter',
   component: Counter,
   tags: ['autodocs'],
   parameters: componentDocs(

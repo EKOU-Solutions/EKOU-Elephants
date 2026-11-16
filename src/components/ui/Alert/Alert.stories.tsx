@@ -3,7 +3,7 @@ import { componentDocs } from '../../../../.storybook/catalog/shared';
 import { Alert } from './Alert';
 
 const meta = {
-  title: 'Componentes/UI/Alerta',
+  title: 'Componentes/UI/Alert',
   component: Alert,
   tags: ['autodocs'],
   parameters: componentDocs(
@@ -18,6 +18,7 @@ const meta = {
     message:
       'Revisa tu conexión y vuelve a intentarlo. El mapa se mostrará cuando lleguen los datos.',
     action: 'Volver a intentar',
+    onAction: () => {},
   },
   argTypes: {
     variant: { control: 'inline-radio', options: ['banner', 'inline', 'note'] },
@@ -56,6 +57,17 @@ export const CoverageBanner: Story = {
     message: 'Analizamos 120 de 150; las cifras pueden cambiar.',
     action: 'Ver cobertura',
     actionHref: '#cobertura',
+  },
+};
+export const RetryBanner: Story = {
+  name: 'Banner · error con reintento',
+  args: {
+    variant: 'banner',
+    tone: 'danger',
+    title: 'No cargó el mapa.',
+    message: 'Revisa tu conexión.',
+    action: 'Volver a intentar',
+    onAction: () => {},
   },
 };
 export const SampleDataBanner: Story = {

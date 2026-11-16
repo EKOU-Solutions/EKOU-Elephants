@@ -17,6 +17,11 @@
   height: 20px;
 }
 
+/* Wraps the icon passed by composition so it stays decorative and aligned with the label. */
+.icon {
+  display: inline-flex;
+}
+
 .primary {
   background: var(--el-color-action);
   color: var(--el-color-on-action);
@@ -44,7 +49,8 @@
   padding-inline: 4px;
 }
 
-.button:disabled {
+.button:disabled,
+.button[aria-disabled="true"] {
   background: var(--el-color-disabled-surface);
   color: var(--el-color-disabled-text);
   border-color: var(--el-color-disabled-surface);

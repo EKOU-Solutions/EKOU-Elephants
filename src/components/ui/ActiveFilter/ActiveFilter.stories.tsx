@@ -3,7 +3,7 @@ import { componentDocs } from '../../../../.storybook/catalog/shared';
 import { ActiveFilter } from './ActiveFilter';
 
 const meta = {
-  title: 'Componentes/UI/Filtro activo',
+  title: 'Componentes/UI/ActiveFilter',
   component: ActiveFilter,
   tags: ['autodocs'],
   parameters: componentDocs(

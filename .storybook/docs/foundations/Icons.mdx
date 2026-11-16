@@ -7,7 +7,13 @@ import { DoAndDont, IconGrid, Status } from '../../blocks';
 
 <Status status="accepted" detail="Lucide 0.468.0 (licencia ISC)" />
 
-Lucide con trazo de 2 px: **20 px junto a texto, 24 px en alertas**. Cada ícono acompaña una palabra. En React se usan desde `lucide-react` (misma versión).
+Lucide con trazo de 2 px: **20 px junto a texto, 24 px en alertas**. Cada ícono acompaña una palabra.
+
+En React, los íconos se piden **por nombre** con el componente `Icon`: `<Icon name="search" />`. Nadie importa `lucide-react` en las pantallas. El conjunto aprobado y quién dibuja cada nombre viven solo en `src/components/ui/Icon/icons.ts`:
+
+- **Agregar un ícono**: se agrega al registro con su nombre y su significado, y aparece en esta página.
+- **Un SVG propio**: se agrega al registro como un componente que acepte `size` y `strokeWidth`, igual que uno de Lucide.
+- **Cambiar de proveedor**: se cambia el registro; las pantallas no se tocan.
 
 <IconGrid />
 

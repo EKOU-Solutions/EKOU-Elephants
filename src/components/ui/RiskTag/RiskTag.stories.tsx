@@ -3,7 +3,7 @@ import { componentDocs } from '../../../../.storybook/catalog/shared';
 import { LEVELS, RiskTag } from './RiskTag';
 
 const meta = {
-  title: 'Componentes/UI/Etiqueta de riesgo',
+  title: 'Componentes/UI/RiskTag',
   component: RiskTag,
   tags: ['autodocs'],
   parameters: componentDocs(

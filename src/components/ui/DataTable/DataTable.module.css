@@ -1,6 +1,8 @@
 /* On small screens the table scrolls inside this box; it is focusable so keyboard users can scroll it. */
 .scroll {
   overflow-x: auto;
+  /* Lets the caption size itself to the visible box, not to the (wider) table. */
+  container-type: inline-size;
 }
 
 .scroll:focus-visible {
@@ -15,6 +17,10 @@
 }
 
 .caption {
+  /* The caption stays in view and wraps inside the visible box while the table scrolls under it. */
+  position: sticky;
+  left: 0;
+  max-width: 100cqi;
   text-align: left;
   font-size: 14px;
   color: var(--el-color-text-muted);

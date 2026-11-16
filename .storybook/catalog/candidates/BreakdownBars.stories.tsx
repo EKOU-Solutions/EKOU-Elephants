@@ -3,7 +3,7 @@ import { componentDocs } from '../shared';
 import { BreakdownBars } from './BreakdownBars';
 
 const meta = {
-  title: 'Componentes/Candidatos/Desglose en barras',
+  title: 'Componentes/Candidatos/BreakdownBars',
   component: BreakdownBars,
   tags: ['autodocs'],
   parameters: componentDocs(

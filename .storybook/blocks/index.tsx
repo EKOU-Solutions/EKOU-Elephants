@@ -5,7 +5,8 @@ import type { CSSProperties, ReactNode } from 'react';
 import catalog from '../../docs/design/guide/components.json';
 import contrast from '../../docs/design/guide/contrast-report.json';
 import tokens from '../../docs/design/guide/tokens.json';
-import { ICONS } from '../catalog/shared';
+import { Icon } from '../../src/components/ui/Icon/Icon';
+import { ICON_NAMES, ICONS } from '../../src/components/ui/Icon/icons';
 
 type Mode = 'light' | 'dark';
 type Palette = Record<string, string>;
@@ -251,15 +252,15 @@ export function SpacingScale() {
   );
 }
 
-/** Frequently used icons (Lucide 0.468.0, 2 px stroke). */
+/** The approved icon set, read from the Icon registry (src/components/ui/Icon/icons.ts). */
 export function IconGrid() {
   return (
     <Block>
       <ul className="sb-el-icons">
-        {ICONS.map(([Icon, label, name]) => (
+        {ICON_NAMES.map((name) => (
           <li key={name}>
-            <Icon aria-hidden="true" strokeWidth={2} />
-            <span>{label}</span>
+            <Icon name={name} />
+            <span>{ICONS[name].label}</span>
             <code>{name}</code>
           </li>
         ))}

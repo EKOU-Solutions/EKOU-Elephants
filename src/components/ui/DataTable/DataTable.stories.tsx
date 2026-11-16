@@ -27,7 +27,7 @@ const rankingRows = (count: number): DataTableRow[] =>
     }));
 
 const meta = {
-  title: 'Componentes/UI/Tabla de datos',
+  title: 'Componentes/UI/DataTable',
   component: DataTable,
   tags: ['autodocs'],
   parameters: componentDocs(

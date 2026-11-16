@@ -3,7 +3,7 @@ import { componentDocs, TERRITORIES } from '../shared';
 import { MapWithLegend } from './MapWithLegend';
 
 const meta = {
-  title: 'Componentes/Candidatos/Mapa con leyenda',
+  title: 'Componentes/Candidatos/MapWithLegend',
   component: MapWithLegend,
   tags: ['autodocs'],
   parameters: componentDocs(

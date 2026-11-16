@@ -62,7 +62,7 @@ Excepción registrada (revisión de la Ronda 05): en la barra de avance «pagado
 
 ## Íconos
 
-Lucide 0.468.0, trazo de 2 px: 20 px junto a texto, 24 px en alertas. Un ícono decorativo lleva `aria-hidden="true"`. Un botón que solo tiene ícono necesita `aria-label`. Sin emojis, sin imágenes criminales, sin escudo verde de «seguro».
+Lucide 0.468.0, trazo de 2 px. En React se piden por nombre con `Icon` (`<Icon name="search" />`); el conjunto aprobado y el proveedor de cada ícono viven solo en `src/components/ui/Icon/icons.ts`. Tamaños: 20 px junto a texto, 24 px en alertas. Un ícono decorativo lleva `aria-hidden="true"`. Un botón que solo tiene ícono necesita `aria-label`. Sin emojis, sin imágenes criminales, sin escudo verde de «seguro».
 
 ## Contrato de presentación de datos
 
@@ -83,7 +83,7 @@ Un contrato con varias señales cuenta una sola vez en el numerador. Nunca se cl
 
 ## Componentes
 
-`components.json` es la lista completa y Storybook los documenta uno por uno. **Núcleo** (aceptados con la Ronda 05): Botón, Alerta (bloque, banner, nota en línea), Campo de formulario, Etiqueta de riesgo, Contador, Filtro activo, Cifra destacada, Tabla de datos. **Candidatos** (pendientes de confirmación por una página real): Mapa con leyenda, Estado, Barra de cobertura, Desglose en barras, Avance frente a lo esperado, Señal. El Mapa con leyenda entró al núcleo con la Ronda 05 y pasó a candidato el 2026-11-15 por decisión de Jouler: lo confirma o lo ajusta la página del Mapa.
+`components.json` es la lista completa y Storybook los documenta uno por uno. **Núcleo** (aceptados con la Ronda 05): Botón, Alerta (bloque, banner, nota en línea), Campo de texto (`Input`) y Lista (`Select`), los dos sobre la base `FormField`, Ícono (`Icon`), Etiqueta de riesgo, Contador, Filtro activo, Cifra destacada, Tabla de datos. **Candidatos** (pendientes de confirmación por una página real): Mapa con leyenda, Estado, Barra de progreso (`ProgressBar`: cobertura y desglose), Desglose en barras, Avance frente a lo esperado, Señal. El Mapa con leyenda entró al núcleo con la Ronda 05 y pasó a candidato el 2026-11-15 por decisión de Jouler: lo confirma o lo ajusta la página del Mapa.
 
 Cada componente React trae **sus propios estilos** en `Component.module.css` (CSS Modules) junto al componente. No hay hojas de estilo compartidas entre componentes: lo único global son los tokens `--el-*`, la fuente y la base del documento (`src/styles/global.css`). Si un componente necesita el aspecto de otro, lo usa (composición); no copia ni comparte sus clases.
 

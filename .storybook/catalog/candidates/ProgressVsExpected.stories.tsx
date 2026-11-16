@@ -3,7 +3,7 @@ import { componentDocs } from '../shared';
 import { ProgressVsExpected } from './ProgressVsExpected';
 
 const meta = {
-  title: 'Componentes/Candidatos/Avance frente a lo esperado',
+  title: 'Componentes/Candidatos/ProgressVsExpected',
   component: ProgressVsExpected,
   tags: ['autodocs'],
   parameters: componentDocs(

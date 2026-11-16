@@ -3,7 +3,7 @@ import { componentDocs } from '../shared';
 import { StatusPill } from './StatusPill';
 
 const meta = {
-  title: 'Componentes/Candidatos/Estado',
+  title: 'Componentes/Candidatos/StatusPill',
   component: StatusPill,
   tags: ['autodocs'],
   parameters: componentDocs(

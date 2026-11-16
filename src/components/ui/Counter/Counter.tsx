@@ -1,3 +1,4 @@
+import { formatNumber } from '../format';
 import { LegendKey } from '../LegendKey/LegendKey';
 import styles from './Counter.module.css';
 
@@ -13,7 +14,7 @@ export function Counter({ counts }: Props) {
     <div className={styles.counts}>
       {counts.map((c) => (
         <div key={c.label} className={`${styles.count}${c.withKey ? ` ${styles.withKey}` : ''}`}>
-          <strong className={styles.value}>{new Intl.NumberFormat('es-CO').format(c.value)}</strong>
+          <strong className={styles.value}>{formatNumber(c.value)}</strong>
           <span className={styles.label}>
             {c.withKey ? <LegendKey kind="flagged" /> : null}
             {c.label}
