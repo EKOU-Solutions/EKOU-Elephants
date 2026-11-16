@@ -28,7 +28,7 @@ Date: 2026-11-15. Mockup built by `build.py` from `sample/` (cut 2026-11, data t
 
 ## Changes after the first review (2026-11-15)
 
-- **Dropdown navigation** (spec decision 13): checked national → Guainía → 94884 → Bogotá → Medellín by URL; the selects follow the view, focus lands on the `h1`, no overflow at 320, 390, 768 px.
+- **Dropdown navigation** (spec decision 13, withdrawn 2026-11-16; the selects are no longer on the page): checked national → Guainía → 94884 → Bogotá → Medellín by URL; the selects follow the view, focus lands on the `h1`, no overflow at 320, 390, 768 px.
 - **Fase 2 preview with fictional risk** (spec decision 14), toggled from the mockup bar «Color del mapa»: 33 departments and every municipality get a fictional level (null stays hatched), legend, tag and table column labelled «ficticio», warning alert on every view, national dek changed so it no longer says the map does not measure risk. Checked light and dark at 320, 390, 768 px; the table scrolls inside its region. `impeccable detect` ran on the real view only (the preview is switched in the page, not by URL).
 
 - **Hover outline cut** (reported by the user): neighbours drawn after the hovered shape covered half its outline. The hovered or focused shape is now drawn last; checked with a zoomed screenshot (continuous outline).

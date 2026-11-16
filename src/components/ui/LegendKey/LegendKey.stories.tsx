@@ -9,6 +9,7 @@ const KINDS: [LegendKeyKind, string][] = [
   ['unknown', 'Sin datos suficientes'],
   ['flagged', 'Con señales'],
   ['clean', 'Sin señales'],
+  ['neutral', 'Territorio con contratos ubicados (mapa neutro)'],
 ];
 
 const meta = {

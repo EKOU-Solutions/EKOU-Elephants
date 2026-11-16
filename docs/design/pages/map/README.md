@@ -11,5 +11,6 @@ Status: **Approved** 2026-11-15 (Approval 2). The handoff for development is thi
 | 4. Mockup | [build.py](build.py) → `mockup.html` (git-ignored), data in [sample/](sample/) | Done 2026-11-15 |
 | 5. Validation | [validation.md](validation.md) | Done 2026-11-15; open points resolved |
 | 6. Approval 2 | — | Approved by the user 2026-11-15 (spec decisions 12–14 added in review) |
+| Construcción | `src/modules/mapa/ui/` | 2026-11-16: componentes `MapWithLegend` y `SearchResults`, pantalla `MapPage` conectada a la API en `MapScreen`, historias en Storybook (`Componentes/Mapa/…` y `Pantallas/MapPage`) con la muestra de [sample/](sample/). Guía v1.3.0. 2026-11-16, ajuste: salen las listas «Departamento» y «Municipio» (decisión 13 retirada); queda solo el buscador. Mismo día: tablas en orden alfabético (decisión 2), «Ver todo» solo con el mapa acercado o movido (decisión 12c), y `/mapa/departamento/11` abre Bogotá (11001). La maqueta aprobada conserva el diseño anterior como historia |
 
 Decisions on the open questions: [spec.md § 6](spec.md#6-decisions-2026-11-15-by-the-user).

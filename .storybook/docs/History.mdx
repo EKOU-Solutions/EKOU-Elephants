@@ -33,6 +33,10 @@ Desde el 15 nov 2026, **Storybook es la referencia viva** del sistema de diseño
 
 La carpeta `docs/design/guide/` sigue siendo la **fuente de los tokens** (`tokens.json` → `tokens.css`) y del catálogo (`components.json`). Los componentes del núcleo ya viven en `src/components/ui/` con sus propios estilos; `components.css` queda solo para los candidatos. Lo que pasa a seguimiento es su página HTML de referencia (`preview.html`, `examples.html`).
 
+## Guía v1.3.0 (16 nov 2026)
+
+La página del Mapa (TASK-09) confirmó el **Mapa con leyenda** (vuelve al núcleo, con su variante neutra) y creó **Resultados de búsqueda**. Los dos son componentes de página en `src/modules/mapa/ui/` y la pantalla completa es `Pantallas/MapPage`. Para construirla se ajustaron, sin romper usos anteriores, `Button`, `Counter`, `KeyFigure`, `DataTable`, `LegendKey` e `Icon`. El detalle está en el README de la guía.
+
 ## Decisión del 15 nov 2026
 
 El 8 nov 2026 se descartó Storybook y se entregó la guía como HTML. El 15 nov 2026 el equipo revirtió esa decisión: Storybook reúne en un solo lugar los lineamientos para personas, los componentes que se van creando y su revisión de accesibilidad, y se levanta con `npm run storybook`.

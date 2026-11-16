@@ -53,3 +53,9 @@
 .key {
   margin-right: 8px;
 }
+
+/* The chosen territory: weight, never a colour. */
+.table .current th,
+.table .current td {
+  font-weight: 700;
+}

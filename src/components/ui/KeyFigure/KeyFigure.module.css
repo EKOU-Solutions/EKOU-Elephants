@@ -32,3 +32,17 @@
   color: var(--el-color-text-muted);
   margin-top: 8px;
 }
+
+/* Count mode without data: the hatch key plus the words, never 0. */
+.noData {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 32px;
+}
+
+.noDataKey {
+  width: 28px;
+  height: 28px;
+  vertical-align: 0;
+}

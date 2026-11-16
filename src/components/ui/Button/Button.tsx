@@ -10,6 +10,8 @@ type Props = Omit<
   variant: 'primary' | 'secondary' | 'text';
   /** Verbo concreto: «Consultar contratos», nunca «Enviar» u «OK». */
   label: string;
+  /** Solo ícono (zoom de un mapa): `label` pasa a ser el nombre accesible y no se ve. Requiere `icon`. */
+  hideLabel?: boolean;
   /** Ícono a la izquierda, por composición: `icon={<Icon name="search" />}`. Es decorativo: el texto ya dice la acción. Mientras carga, lo reemplaza el indicador de carga. */
   icon?: ReactNode;
   /** `disabled` real, no solo opacidad. Explica cerca por qué está deshabilitado y liga esa explicación con `aria-describedby`. */
@@ -26,6 +28,7 @@ type Props = Omit<
 export function Button({
   variant,
   label,
+  hideLabel,
   icon,
   disabled,
   loading,
@@ -44,8 +47,9 @@ export function Button({
   };
   return (
     <button
+      aria-label={hideLabel ? label : undefined}
       {...button}
-      className={`${styles.button} ${styles[variant]}`}
+      className={`${styles.button} ${styles[variant]}${hideLabel ? ` ${styles.iconOnly}` : ''}`}
       type={type}
       disabled={disabled}
       aria-disabled={loading || undefined}
@@ -59,7 +63,7 @@ export function Button({
           {icon}
         </span>
       ) : null}
-      {loading ? (loadingLabel ?? label) : label}
+      {hideLabel ? null : loading ? (loadingLabel ?? label) : label}
     </button>
   );
 }

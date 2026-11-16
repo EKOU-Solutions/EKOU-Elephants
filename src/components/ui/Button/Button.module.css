@@ -17,6 +17,12 @@
   height: 20px;
 }
 
+/* Icon-only (map zoom): a 44 px square; the label is the accessible name. */
+.iconOnly {
+  width: var(--el-control-height);
+  padding: 0;
+}
+
 /* Wraps the icon passed by composition so it stays decorative and aligned with the label. */
 .icon {
   display: inline-flex;

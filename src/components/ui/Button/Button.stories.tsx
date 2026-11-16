@@ -70,3 +70,15 @@ export const LoadingDownload: Story = {
     icon: undefined,
   },
 };
+export const IconOnly: Story = {
+  name: 'Solo ícono (zoom del mapa)',
+  args: { variant: 'secondary', label: 'Acercar', icon: <Icon name="plus" />, hideLabel: true },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Un cuadrado de 44 px sin texto visible: `label` pasa a ser el nombre accesible (`aria-label`). Úsalo solo cuando el ícono se entiende por su lugar, como el zoom de un mapa; si no, el texto va visible.',
+      },
+    },
+  },
+};

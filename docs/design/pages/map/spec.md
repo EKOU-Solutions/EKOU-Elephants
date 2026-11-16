@@ -26,7 +26,7 @@ Heading outline, the same in every view: one `h1` (the page's subject), then `h2
 | 4 | Place search: municipality or department by name, up to 8 results «Municipio, Departamento» | `municipios[].nombre`, `departamento.nombre`, `departamentos[].nombre` | Field + Search results (new, step 3) | `--el-control-height`, `--el-color-control-border`, `--el-color-line`, `--el-color-text-muted` (placeholder) | Empty-result message | MVP |
 | 5 | Counts `h2` «Dónde quedó cada contrato»: en un municipio / solo en un departamento / sin lugar identificado, each with a one-line gloss | `nacional.contratosEnMunicipios`, `contratosSoloDepartamento`, `contratosSinLugar` | Counter | `--el-color-line`, `--el-color-text-muted` | Error state | MVP |
 | 6 | Source and date line | `fuentes[].nombre`, `entidad`, `licencia`, `url`; `fechaCorte`; `ventana` | Key figure · source line | `--el-color-text-muted` | Error state | MVP |
-| 7 | Table `h2` of departments in DANE code order (not sortable): name, contracts in municipalities, contracts only in the department | `departamentos[]` | Data table | `--el-color-line`, `--el-rule-strong` | — | MVP |
+| 7 | Table `h2` of departments in alphabetical order (not sortable; changed from DANE code order on 2026-11-16, decision 2): name, contracts in municipalities, contracts only in the department | `departamentos[]` | Data table | `--el-color-line`, `--el-rule-strong` | — | MVP |
 
 ### Department view (`/mapa/departamento/05`)
 
@@ -38,7 +38,7 @@ Heading outline, the same in every view: one `h1` (the page's subject), then `h2
 | 4 | Legend: neutral + «Sin datos» (the hatch item only if the department has a `null`) | fixed copy | `el-legend` | — | — | MVP |
 | 5 | Counts `h2`: «en sus municipios» / «solo en el departamento» | `contratosEnMunicipios`, `contratosSoloDepartamento` | Counter | — | 0 shown as 0 (measured) | MVP |
 | 6 | Source and date line | as national | Key figure · source line | — | — | MVP |
-| 7 | Table `h2` of its municipalities in DANE code order: name, code, contracts | `municipios[]` of that department | Data table | `el-num` | «Sin datos» with the hatch key in the cell, never 0 | MVP |
+| 7 | Table `h2` of its municipalities in alphabetical order: name, code, contracts | `municipios[]` of that department | Data table | `el-num` | «Sin datos» with the hatch key in the cell, never 0 | MVP |
 
 ### Municipality view (`/mapa/05001`: tap, search or shared link)
 
@@ -104,7 +104,7 @@ No «corrupción», «robo», «sospechoso»; no natural persons. Figures use do
 | # | Question | Decision |
 | --- | --- | --- |
 | 1 | Neutral fill | **No new token.** `--el-color-line` as the territory fill (already the «clean» fill in Coverage bar and `el-key-clean`) |
-| 2 | Sortable table | **Not for now.** DANE code order |
+| 2 | Sortable table | **Not for now.** Alphabetical order, Spanish rules (user, 2026-11-16: in DANE code order nobody finds their department; it was Arauca after Valle del Cauca) |
 | 3 | Search | **Yes, with a new search-results component**, to approve in step 3 |
 | 4 | Bogotá | **Straight to the municipality** 11001 |
 | 5 | Small municipalities | **Pinch-zoom**, with keyboard buttons |
@@ -117,8 +117,8 @@ No «corrupción», «robo», «sospechoso»; no natural persons. Figures use do
 | 11b | `h1` on a municipality (audit #3) | **The municipality's name**, department and code in the kicker |
 | 12 | Archipelago (national inset, `/mapa/departamento/88` and its two municipalities; user, 2026-11-15, revised) | **Both islands in one panel at the same scale.** The islands are about 90 km apart, so only the empty sea between them is reduced: Providencia sits next to San Andrés, shapes and scale untouched, x projected at the islands' latitude (cos 12.9°) so neither is stretched. Each island labelled with its name below it; the legend adds «San Andrés y Providencia están a unos 90 km. En el mapa se acercan para verlas juntas a la misma escala, sin cambiar su forma.» The national inset uses the same panel |
 | 12b | Hover / focus outline (user, 2026-11-15) | The shape under the pointer or with focus is drawn last (the selected shape stays on top), so neighbours never cover part of its outline |
-| 12c | Drag to move (user, 2026-11-15) | With a mouse the map can always be grabbed and dragged, at any zoom (cursor `grab` / `grabbing`); a drag never selects, a click without moving does. On touch, one finger scrolls the page at full view and moves the map once zoomed; two fingers pinch. «Ver todo» recentres |
-| 13 | Navigation by list (user, 2026-11-15) | Two selects from the guide's Field above the search: «Departamento» («Toda Colombia» + 33) and «Municipio» («Todo el departamento» + its municipalities; disabled with «Elige primero un departamento» on the national view). They follow the current view; choosing moves like a search result (focus on the `h1`). Bogotá goes straight to 11001 |
+| 12c | Drag to move (user, 2026-11-15) | With a mouse the map can always be grabbed and dragged, at any zoom (cursor `grab` / `grabbing`); a drag never selects, a click without moving does. On touch, one finger scrolls the page at full view and moves the map once zoomed; two fingers pinch. «Ver todo» recentres. **2026-11-16 (user):** «Ver todo» shows only when the map is zoomed or moved, since at the starting frame it has nothing to undo; after using it, keyboard focus moves to «Acercar» |
+| 13 | ~~Navigation by list (user, 2026-11-15)~~ **Withdrawn 2026-11-16 by the user:** the search, the map, the department table and the back link already cover this navigation; without the selects the right column is cleaner and the key figure moves up, above all on the phone. Original decision: | Two selects from the guide's Field above the search: «Departamento» («Toda Colombia» + 33) and «Municipio» («Todo el departamento» + its municipalities; disabled with «Elige primero un departamento» on the national view). They follow the current view; choosing moves like a search result (focus on the `h1`). Bogotá goes straight to 11001 |
 | 14 | Risk colours (user, 2026-11-15) | No risk data exists in the cut (only counts), so the real view stays neutral (decision 1). The mockup adds a **Fase 2 preview with fictional levels**: guide fills `el-fill-low/medium/high`, legend «Contratos con señales» Bajo / Intermedio / Alto / Sin datos, risk tag in the key figure, a «Riesgo (ficticio)» table column, and a warning alert «Vista previa con datos ficticios». Every fictional level says «(ficticio)». Building it for real needs a risk field in the API contract (TASK-07) and goes back to step 0 |
 
 ## 7. Components for step 3

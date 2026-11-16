@@ -12,7 +12,8 @@
         "primary (una por vista)",
         "secondary",
         "text",
-        "disabled (deshabilitado)"
+        "disabled (deshabilitado)",
+        "solo ícono (hideLabel, 44 px; zoom del mapa, v1.3.0)"
       ],
       "tokens": [
         "--el-color-action",
@@ -28,7 +29,8 @@
         "Un botón solo con ícono necesita aria-label",
         "Anillo de foco visible con --el-color-focus",
         "Mientras carga: aria-disabled + aria-busy, no disabled, para no perder el foco",
-        "Deshabilitado: el motivo va cerca, ligado con aria-describedby"
+        "Deshabilitado: el motivo va cerca, ligado con aria-describedby",
+        "Solo ícono: label pasa a ser el aria-label; úsalo solo cuando el lugar explica el ícono"
       ],
       "component": "src/components/ui/Button/Button.tsx",
       "styles": "src/components/ui/Button/Button.module.css"
@@ -143,7 +145,7 @@
       "label_es": "Ícono",
       "status": "core",
       "reference": "preview.html#iconos",
-      "use": "Dibuja un ícono del conjunto aprobado por su nombre (<Icon name=\"search\" />), con trazo de 2 px. El proveedor (hoy Lucide) o un SVG propio se define solo en icons.ts. Decorativo por defecto; si va solo, lleva nombre accesible.",
+      "use": "Dibuja un ícono del conjunto aprobado por su nombre (<Icon name=\"search\" />), con trazo de 2 px. El proveedor (hoy Lucide) o un SVG propio se define solo en icons.ts. Decorativo por defecto; si va solo, lleva nombre accesible. La v1.3.0 suma plus, minus y maximize (zoom del mapa), link (copiar enlace) y arrow-left (volver).",
       "variants": [
         "16 px",
         "18 px",
@@ -164,12 +166,7 @@
       "label_es": "Resultados de búsqueda",
       "status": "core",
       "reference": "preview.html#resultados",
-      "classes": [
-        "el-results",
-        "el-results-empty",
-        "el-results-status"
-      ],
-      "use": "Lista hasta 8 lugares que coinciden con un campo de búsqueda, cada uno con su departamento, en el flujo de la página bajo el campo (v1.3.0, TASK-09).",
+      "use": "Lista hasta 8 lugares que coinciden con un campo de búsqueda, cada uno con su departamento, en el flujo de la página bajo el campo (v1.3.0, TASK-09). Componente de página: vive en el módulo del mapa.",
       "variants": [
         "con resultados",
         "vacío"
@@ -189,7 +186,9 @@
         "Botones nativos de 44 px",
         "role=status solo anuncia la cantidad",
         "La página anuncia el lugar elegido y lleva el foco a su título"
-      ]
+      ],
+      "component": "src/modules/mapa/ui/SearchResults/SearchResults.tsx",
+      "styles": "src/modules/mapa/ui/SearchResults/SearchResults.module.css"
     },
     {
       "name": "Risk tag",
@@ -230,7 +229,9 @@
       "use": "Un número grande con su nombre debajo; resume una consulta en una fila fácil de recorrer.",
       "variants": [
         "simple",
-        "con clave de riesgo"
+        "con clave de riesgo",
+        "con glosa (note, v1.3.0)",
+        "adaptativo (layout=\"adaptive\": apilado bajo 600 px de su espacio, v1.3.0)"
       ],
       "tokens": [
         "--el-color-line",
@@ -273,12 +274,16 @@
       "use": "Un número grande que se entiende solo, incluso en una captura compartida: qué mide, de cuánto y de dónde sale.",
       "variants": [
         "con comparación",
-        "con fuente"
+        "con fuente",
+        "cantidad (value, v1.3.0)",
+        "cantidad sin datos (value=null: trama + «Sin datos», nunca 0)"
       ],
       "tokens": [
         "--el-rule-strong",
         "--el-color-line-strong",
-        "--el-color-text-muted"
+        "--el-color-text-muted",
+        "--el-color-unknown",
+        "--el-color-unknown-surface"
       ],
       "a11y": [
         "Unidad y denominador en texto, no solo visuales",
@@ -295,7 +300,9 @@
       "use": "Para comparar y verificar; la alternativa accesible a cada mapa o gráfico.",
       "variants": [
         "por defecto",
-        "columnas numéricas alineadas a la derecha (el-num)"
+        "columnas numéricas alineadas a la derecha (el-num)",
+        "fila elegida (currentRowId: peso y aria-current, nunca color; v1.3.0)",
+        "encabezado de fila con enlace y celdas con clave «Sin datos» (v1.3.0)"
       ],
       "tokens": [
         "--el-color-line",
@@ -323,7 +330,8 @@
         "high (alto)",
         "unknown (sin datos, con trama)",
         "flagged (con señales, en tinta)",
-        "clean (sin señales)"
+        "clean (sin señales)",
+        "neutral (territorio con contratos ubicados; mapa neutro, v1.3.0)"
       ],
       "tokens": [
         "--el-color-risk-low",
@@ -344,25 +352,7 @@
       "label_es": "Mapa con leyenda",
       "status": "core",
       "reference": "preview.html#mapa",
-      "classes": [
-        "el-map",
-        "el-fill-low",
-        "el-fill-medium",
-        "el-fill-high",
-        "el-fill-unknown",
-        "el-hatch-bg",
-        "el-hatch-line",
-        "el-legend",
-        "el-fill-neutral",
-        "el-key-neutral",
-        "el-map-outline",
-        "el-map-inset",
-        "el-map-frame",
-        "el-map-label",
-        "el-map-label-start",
-        "el-map-zoom"
-      ],
-      "use": "Colorea cada territorio según la proporción de contratos con señales. La leyenda dice qué mide el color; la selección es un contorno más un panel de detalle. Variante neutra (v1.3.0, página del Mapa, TASK-09): ubica y elige territorios mientras no exista la capa de riesgo; no codifica ningún valor.",
+      "use": "Colorea cada territorio según la proporción de contratos con señales. La leyenda dice qué mide el color; la selección es un contorno más un panel de detalle. Variante neutra (v1.3.0, página del Mapa, TASK-09): ubica y elige territorios mientras no exista la capa de riesgo; no codifica ningún valor. Componente de página: vive en el módulo del mapa; la leyenda es MapLegend, en el mismo archivo.",
       "variants": [
         "por defecto",
         "territorio seleccionado",
@@ -388,7 +378,9 @@
         "La selección nunca se marca solo con color",
         "Variante neutra: contorno del conjunto y contorno al pasar o enfocar en --el-color-control-border (3:1 o más), nunca con opacidad",
         "Los botones de zoom miden 44 px y llevan aria-label; los gestos nunca son la única forma"
-      ]
+      ],
+      "component": "src/modules/mapa/ui/MapWithLegend/MapWithLegend.tsx",
+      "styles": "src/modules/mapa/ui/MapWithLegend/MapWithLegend.module.css"
     },
     {
       "name": "Status pill",
