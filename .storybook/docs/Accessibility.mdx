@@ -20,10 +20,11 @@ Elephants es para toda la ciudadanía. Estas reglas aplican a cada pantalla y ca
 - **Íconos**: decorativos con `aria-hidden="true"`; los que van solos, con `aria-label`.
 - **Tamaño y entrada**: controles de al menos 44 px; nada depende del hover; todo funciona a 320 px sin desplazamiento horizontal.
 - **Foco visible**: anillo de 3 px que nunca se quita.
-- **Movimiento**: respetar `prefers-reduced-motion`.
+- **Movimiento reducido, siempre**: toda animación o transición respeta `prefers-reduced-motion`; la base global (`src/styles/global.css`) las anula cuando la persona lo pide. Nada parpadea ni se mueve solo sin forma de pausarlo.
 
 ## Cómo revisarlo aquí
 
+0. Ejecuta `npm run design:check`: revisa axe y el desplazamiento horizontal de todas las historias, en los dos temas y de 320 a 1280 px.
 1. Abre una historia y mira el panel **Accessibility** (axe): no debe haber fallas.
 2. Cambia el **Tema** a *Oscuro* y repite.
 3. Cambia el **Viewport** a *Celular mínimo · 320 px*.
