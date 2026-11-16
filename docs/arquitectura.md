@@ -1,6 +1,6 @@
 # Arquitectura y organización del código
 
-> Cómo se organiza y ejecuta el código de la app. Decisiones: [ADR-0001](adr/0001-arquitectura-inicial.md) · Comandos: [desarrollo local](desarrollo.md) · Datos: [arquitectura de datos](arquitectura-datos.md)
+> Cómo se organiza y ejecuta el código de la app. Decisiones: [ADR-0001](adr/0001-arquitectura-inicial.md) · Comandos: [desarrollo local](desarrollo.md) · Datos: [arquitectura de datos](arquitectura-datos.md) · API: [arquitectura y documentación](api.md)
 
 ## En 30 segundos
 
