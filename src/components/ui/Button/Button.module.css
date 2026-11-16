@@ -1,0 +1,58 @@
+.button {
+  font: inherit;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: var(--el-control-height);
+  padding: 10px 16px;
+  border: 1px solid transparent;
+  border-radius: var(--el-control-radius);
+  cursor: pointer;
+}
+
+.button svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Wraps the icon passed by composition so it stays decorative and aligned with the label. */
+.icon {
+  display: inline-flex;
+}
+
+.primary {
+  background: var(--el-color-action);
+  color: var(--el-color-on-action);
+}
+
+.primary:hover {
+  background: var(--el-color-action-hover);
+}
+
+.secondary {
+  background: var(--el-color-surface);
+  color: var(--el-color-action);
+  border-color: var(--el-color-control-border);
+}
+
+.secondary:hover {
+  background: var(--el-color-action-soft);
+}
+
+.text {
+  background: none;
+  color: var(--el-color-action);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  padding-inline: 4px;
+}
+
+.button:disabled,
+.button[aria-disabled="true"] {
+  background: var(--el-color-disabled-surface);
+  color: var(--el-color-disabled-text);
+  border-color: var(--el-color-disabled-surface);
+  cursor: not-allowed;
+}

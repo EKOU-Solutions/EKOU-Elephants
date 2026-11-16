@@ -1,123 +1,129 @@
-# Design flow
+# Flujo de diseño
 
-How a page goes from data to an approved design, and how developers work with the `elephants-design` skill. The detailed agent instructions live in the skill: [Build a page](../../.claude/skills/elephants-design/references/build-page.md).
+Cómo pasa una página de los datos a un diseño aprobado, y cómo trabaja desarrollo con la skill `elephants-design`. Las instrucciones detalladas para agentes están en la skill: [Construir una página](../../.claude/skills/elephants-design/references/build-page.md). Para los cambios pequeños que mantienen la dirección existe la ruta [Ajuste](../../.claude/skills/elephants-design/references/ajuste.md). Todo cambio de diseño pasa por la skill (regla global de `AGENTS.md`).
 
-## In one minute
+## En un minuto
 
-- **One page at a time (vertical).** We do not design every page up front. Each page goes from its API contract to an approved design before the next one starts.
-- **No contract, no design.** The entry ticket is the contract of **our API**, the one the screens consume. It is not the open-data source's contract. The API itself may still be under construction.
-- **Nothing invented.** Every element on a page traces back to a contract field, an approved component and approved tokens.
-- **Two human approvals per page:** the spec (what and in which order), then the final design. New components need their own approval.
+- **Una página a la vez (vertical).** No diseñamos todas las páginas por adelantado. Cada página va de su contrato de API a un diseño aprobado antes de que empiece la siguiente.
+- **Sin contrato, no hay diseño.** El boleto de entrada es el contrato de **nuestra API**, el que consumen las pantallas. No es el contrato de la fuente de datos abiertos. La API en sí puede seguir en construcción.
+- **Nada inventado.** Cada elemento de una página se rastrea hasta un campo del contrato, un componente aprobado y tokens aprobados.
+- **Dos aprobaciones humanas por página:** la especificación (qué y en qué orden) y luego el diseño final. Los componentes nuevos necesitan su propia aprobación.
+- **Todo componente queda en Storybook** (`npm run storybook`), con su historia y sus estados.
 
-## Where the data comes from
+## De dónde vienen los datos
 
 ```mermaid
 flowchart LR
-  OD["Open data<br/>datos.gov.co (SECOP, DNP…)"] --> ING["Ingestion<br/>(TASK-06)"]
-  ING --> DB[("Our database<br/>or JSON files")]
-  DB --> API["Our API"]
-  API --> UI["Screens"]
-  C["Our API contract<br/>(OpenAPI / JSON Schema / TS)"] -. "defines" .-> API
-  C -. "entry ticket" .-> DS["Page design"]
-  DS -. "visual target" .-> UI
+  OD["Datos abiertos<br/>datos.gov.co (SECOP, DNP…)"] --> ING["Ingesta<br/>(TASK-06)"]
+  ING --> DB[("Nuestra base de datos<br/>o archivos JSON")]
+  DB --> API["Nuestra API"]
+  API --> UI["Pantallas"]
+  C["Contrato de nuestra API<br/>(OpenAPI / JSON Schema / TS)"] -. "define" .-> API
+  C -. "boleto de entrada" .-> DS["Diseño de la página"]
+  DS -. "objetivo visual" .-> UI
 ```
 
-The design depends only on the last hop: what our API returns. The upstream datasets matter only as each field's origin, so every figure can cite its source and date.
+El diseño depende solo del último tramo: lo que devuelve nuestra API. Los conjuntos de datos de origen importan solo como el origen de cada campo, para que cada cifra pueda citar su fuente y su fecha.
 
-## Where each piece lives
+## Dónde vive cada pieza
 
 ```mermaid
 flowchart LR
-  subgraph Guide["docs/design/guide/ (v1.0)"]
+  subgraph Guia["docs/design/guide/ (v1.0)"]
     T["tokens.json"] -->|build.py| TC["tokens.css"]
-    CC["components.css<br/>+ components.json<br/>+ reference page"]
+    CC["components.css<br/>+ components.json"]
   end
-  API["Our API contract"]
-  subgraph Page["docs/design/pages/{page}/"]
+  SB["Storybook<br/>(.storybook/ + src/**/*.stories.tsx)"]
+  API["Contrato de nuestra API"]
+  subgraph Pagina["docs/design/pages/{pagina}/"]
     K["contract.md"] --> D["data.md"] --> S["spec.md"] --> M["mockup.html"] --> V["validation.md"]
   end
   API --> K
   TC --> M
   CC --> M
-  S -. "new component" .-> CC
-  M --> APP["Application<br/>(imports tokens.css,<br/>follows spec.md)"]
+  TC --> SB
+  CC --> SB
+  S -. "componente nuevo" .-> CC
+  S -. "componente nuevo" .-> SB
+  M --> APP["Aplicación<br/>(importa tokens.css,<br/>sigue spec.md)"]
 ```
 
-`tokens.json` is the source; `tokens.css` is generated, so never edit it by hand. The catalog is the [design system guide v1.0](guide/README.md); the rules are in [design-system.md](guide/design-system.md).
+`tokens.json` es la fuente; `tokens.css` se genera, así que nunca se edita a mano. El catálogo se consulta en Storybook y su fuente es la [guía del sistema de diseño v1.0](guide/README.md); las reglas están en [design-system.md](guide/design-system.md).
 
-## The flow for one page
+## El flujo de una página
 
 ```mermaid
 flowchart TD
-  A["Page to build"] --> B{"API contract<br/>exists and complete?"}
-  B -- No --> B1["Stop: backend defines<br/>or completes the contract"] --> B
-  B -- Yes --> C["1. Explore data<br/>our API → ingestion output<br/>→ contract example"]
-  C --> D["2. Define the page — spec.md<br/>purpose, hierarchy, states, copy"]
-  D --> G1{"Approval 1"}
-  G1 -- Changes --> D
-  G1 -- Yes --> E{"Catalog has the<br/>components?"}
-  E -- No --> E1["Propose new component"] --> E2{"Approved?"}
-  E2 -- Iterate --> E1
-  E2 -- Yes --> E3["Add to catalog<br/>CSS, reference, docs"] --> E
-  E -- Yes --> F["3. Mockup<br/>only tokens + catalog components<br/>mobile + desktop, light + dark"]
-  F --> V["4. Validate<br/>accessibility, overflow 320–1280,<br/>detector, copy, 10-second test"]
-  V --> G2{"Approval 2"}
-  G2 -- Changes --> F
-  G2 -- Yes --> H["5. Handoff<br/>page folder status: Approved"]
+  A["Página por construir"] --> B{"¿Existe el contrato<br/>de la API y está completo?"}
+  B -- No --> B1["Detenerse: backend define<br/>o completa el contrato"] --> B
+  B -- Sí --> C["1. Explorar los datos<br/>nuestra API → salida de la ingesta<br/>→ ejemplo del contrato"]
+  C --> D["2. Definir la página: spec.md<br/>propósito, jerarquía, estados, textos"]
+  D --> G1{"Aprobación 1"}
+  G1 -- Cambios --> D
+  G1 -- Sí --> E{"¿El catálogo tiene<br/>los componentes?"}
+  E -- No --> E1["Proponer componente nuevo"] --> E2{"¿Aprobado?"}
+  E2 -- Iterar --> E1
+  E2 -- Sí --> E3["Agregar al catálogo<br/>CSS, components.json, historia en Storybook"] --> E
+  E -- Sí --> F["3. Maqueta<br/>solo tokens + componentes del catálogo<br/>celular + escritorio, claro + oscuro"]
+  F --> V["4. Validar<br/>accesibilidad, desbordamiento 320–1280,<br/>detector, textos, prueba de 10 segundos"]
+  V --> G2{"Aprobación 2"}
+  G2 -- Cambios --> F
+  G2 -- Sí --> H["5. Entrega<br/>carpeta de la página en estado Aprobada"]
 ```
 
-## What the developer does
+## Qué hace la persona de desarrollo
 
 ```mermaid
 sequenceDiagram
   autonumber
-  actor Dev as Developer
-  participant BE as Backend / our API contract
-  participant Skill as elephants-design skill
-  actor PO as Design owner + team
+  actor Dev as Desarrollo
+  participant BE as Backend / contrato de nuestra API
+  participant Skill as skill elephants-design
+  actor PO as Responsable de diseño + equipo
 
-  Dev->>BE: Contract for the page's endpoint(s)
-  BE-->>Dev: OpenAPI / JSON Schema / TS types + example
-  Dev->>Skill: "Build the {page} page" + contract location
-  Skill->>Skill: 0. Check contract (blocks if incomplete)
-  Skill->>Skill: 1. Explore real or sample data → data.md
-  Skill-->>PO: 2. spec.md (hierarchy, fields → components)
-  PO-->>Skill: Approval 1 (or changes)
-  opt A component is missing
-    Skill-->>PO: New component proposal
-    PO-->>Skill: Approved → added to catalog
+  Dev->>BE: Contrato del endpoint (o endpoints) de la página
+  BE-->>Dev: OpenAPI / JSON Schema / tipos TS + ejemplo
+  Dev->>Skill: "Construye la página {pagina}" + ubicación del contrato
+  Skill->>Skill: 0. Revisar el contrato (bloquea si está incompleto)
+  Skill->>Skill: 1. Explorar datos reales o de muestra → data.md
+  Skill-->>PO: 2. spec.md (jerarquía, campos → componentes)
+  PO-->>Skill: Aprobación 1 (o cambios)
+  opt Falta un componente
+    Skill-->>PO: Propuesta de componente nuevo
+    PO-->>Skill: Aprobado → al catálogo y a Storybook
   end
-  Skill->>Skill: 3–4. Mockup + validation
+  Skill->>Skill: 3–4. Maqueta + validación
   Skill-->>PO: mockup.html + validation.md
-  PO-->>Skill: Approval 2
-  Skill-->>Dev: Approved page folder (contract, spec, mockup, validation)
-  Dev->>Dev: Implement with tokens.css + catalog classes
-  Note over Dev,BE: If the contract changes later,<br/>the page goes back to step 0
+  PO-->>Skill: Aprobación 2
+  Skill-->>Dev: Carpeta de la página aprobada (contrato, spec, maqueta, validación)
+  Dev->>Dev: Implementa con tokens.css + clases del catálogo
+  Note over Dev,BE: Si el contrato cambia después,<br/>la página vuelve al paso 0
 ```
 
-## Contract checklist (entry ticket)
+## Lista de verificación del contrato (boleto de entrada)
 
-For each endpoint a page uses:
+Para cada endpoint que usa una página:
 
-- [ ] Method, path and parameters (including the DANE territory filter).
-- [ ] Every field: type, unit or format (COP, %, date), and whether it can be null or missing.
-- [ ] At least one example response that conforms to the schema.
-- [ ] Phase of each field: MVP or phase 2.
-- [ ] Origin of each field: the upstream dataset id that ingestion maps it from (see [fuentes de datos](../fuentes-de-datos.md)), or "computed" with its rule owner (for example TASK-07 for risk level).
+- [ ] Método, ruta y parámetros (incluido el filtro de territorio DANE).
+- [ ] Cada campo: tipo, unidad o formato (COP, %, fecha), y si puede ser nulo o faltar.
+- [ ] Al menos una respuesta de ejemplo que cumpla el esquema.
+- [ ] Fase de cada campo: MVP o fase 2.
+- [ ] Origen de cada campo: el id del conjunto de datos del que lo toma la ingesta (ver [fuentes de datos](../fuentes-de-datos.md)), o «calculado» con el dueño de la regla (por ejemplo, TASK-07 para el nivel de riesgo).
 
-## What the developer receives
+## Qué recibe desarrollo
 
-| File | Use it for |
+| Archivo | Para qué sirve |
 | --- | --- |
-| `contract.md` | The exact contract version the design depends on |
-| `spec.md` | Build order and hierarchy; the field → component → token table; every state (loading, empty, "Sin datos", error, phase 2 hidden); final copy |
-| `mockup.html` | Visual target in mobile and desktop, light and dark |
-| `validation.md` | What was verified, and what still needs checking in the real app |
+| `contract.md` | La versión exacta del contrato de la que depende el diseño |
+| `spec.md` | Orden de construcción y jerarquía; la tabla campo → componente → token; cada estado (carga, vacío, «Sin datos», error, fase 2 oculta); textos finales |
+| `mockup.html` | Objetivo visual en celular y escritorio, claro y oscuro |
+| `validation.md` | Qué se verificó y qué falta comprobar en la aplicación real |
+| Historias en Storybook | Cada componente que usa la página, con sus estados y su accesibilidad |
 
-## Rules that never change
+## Reglas que nunca cambian
 
-- Import `tokens.css`; use `--el-*` variables only. Never a raw hex value.
-- Use catalog classes (`.el-*`, listed in `components.json`). If something is missing, ask through the flow; do not improvise a component.
-- "Sin datos" is never shown as 0 or as low risk. Missing data uses the grey hatch.
-- A signal asks for review; it is not a verdict. No "corrupción", "robo" or "sospechoso" in the interface. No natural persons' names until TASK-08 decides.
-- Every figure shows its source and date.
+- Importa `tokens.css`; usa solo variables `--el-*`. Nunca un hex suelto.
+- Usa las clases del catálogo (`.el-*`, listadas en `components.json` y documentadas en Storybook). Si falta algo, pídelo a través del flujo; no improvises un componente.
+- «Sin datos» nunca se muestra como 0 ni como riesgo bajo. Los datos faltantes usan la trama gris.
+- Una señal pide revisar; no es un veredicto. Nada de «corrupción», «robo» ni «sospechoso» en la interfaz. Ningún nombre de persona natural hasta que TASK-08 lo decida.
+- Toda cifra muestra su fuente y su fecha.

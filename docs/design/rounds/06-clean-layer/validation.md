@@ -1,26 +1,26 @@
-# Validation — Round 06
+# Validación: Ronda 06
 
-Observed locally on 2026-11-08 with the generated `preview.html`, `examples.html` and `screens/*.html`.
+Observado en local el 2026-11-08 con los archivos generados `preview.html`, `examples.html` y `screens/*.html`.
 
-- **Build:** succeeds; no unreplaced placeholders or macros.
-- **Contrast** (`contrast-report.json`): all 19 pairs pass in light and dark. The two new pairs are secondary text and link on the canvas.
-- **Overflow:** none on the four screens, the reference page or the examples page, at 320, 390, 768 and 1280 px (24 combinations). Fixed during the round:
-  - the `.hero` and `.intro` grids (min-width);
-  - the 48 px title at 320 px;
-  - the laptop simulator's minimum width.
-- **Screenshots reviewed:**
-  - four screens at 390 px (light) and 1280 px (light);
-  - work screen at 1280 px in dark;
-  - reference page header;
-  - full-screen phone view (`screens/phone.html?s=map`), which now shows the 390 px layout.
-- **`impeccable detect`:** 0 anti-patterns on the reference page and the four screens. Fixed in this round:
-  - grey text on the dark info alert;
-  - a skipped heading in results;
-  - two last-row borders, now drawn between rows.
+- **Build:** funciona; no quedan marcadores ni macros sin reemplazar.
+- **Contraste** (`contrast-report.json`): pasan los 19 pares en claro y oscuro. Los dos pares nuevos son el texto secundario y el enlace sobre el lienzo.
+- **Desbordamiento:** ninguno en las cuatro pantallas, la página de referencia ni la página de ejemplos, a 320, 390, 768 y 1280 px (24 combinaciones). Corregido durante la ronda:
+  - las grillas `.hero` e `.intro` (ancho mínimo);
+  - el título de 48 px a 320 px;
+  - el ancho mínimo del simulador de portátil.
+- **Capturas revisadas:**
+  - las cuatro pantallas a 390 px (claro) y a 1280 px (claro);
+  - la pantalla de obra a 1280 px en oscuro;
+  - el encabezado de la página de referencia;
+  - la vista de celular en pantalla completa (`screens/phone.html?s=map`), que ahora muestra la composición de 390 px.
+- **`impeccable detect`:** 0 antipatrones en la página de referencia y en las cuatro pantallas. Corregido en esta ronda:
+  - texto gris sobre la alerta informativa oscura;
+  - un nivel de título saltado en los resultados;
+  - dos bordes de la última fila, que ahora se dibujan entre filas.
 
-  Advisories remain for the grey hatch (accepted) and "em-dash overuse" (token names in code samples). On `examples.html`, `cramped-padding` is reported only on the simulator bezel, screen and browser bar, which are flush by design.
+  Siguen los avisos de la trama gris (aceptada) y del «uso excesivo de rayas largas» (nombres de tokens en los ejemplos de código). En `examples.html`, `cramped-padding` aparece solo en el bisel del simulador, la pantalla y la barra del navegador, que van al ras por diseño.
 
-**Limits:**
-- No real device, screen reader or 200% zoom test.
-- `backdrop-filter` on the app bar depends on browser support; it falls back to a near-opaque surface.
-- Apple's reference page was observed in a headless screenshot; its product images did not load. Typography, surfaces and layout were visible.
+**Límites:**
+- No hubo pruebas en dispositivos reales, con lector de pantalla ni con zoom al 200 %.
+- `backdrop-filter` en la barra de la app depende del soporte del navegador; si falta, se usa una superficie casi opaca.
+- La página de referencia de Apple se observó en una captura sin interfaz; sus imágenes de producto no cargaron. La tipografía, las superficies y la composición sí se veían.

@@ -1,0 +1,44 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+import { ContrastTable, DoAndDont, Status, Swatches } from '../../blocks';
+
+<Meta title="Fundamentos/Color" />
+
+# Color
+
+<Status status="accepted" detail="Valores de tokens.json; cambia el tema en la barra superior para verlos en vivo" />
+
+Cada color tiene **una sola función**. El riesgo va de claro a oscuro (bajo → alto) para que el orden se lea incluso sin distinguir colores: azul, amarillo y rojo cálido. Lo que no tiene datos lleva trama gris.
+
+<Swatches />
+
+## Roles
+
+| Rol | Tokens | Regla |
+| --- | --- | --- |
+| Riesgo (mapa, etiquetas) | `risk-low`, `risk-medium`, `risk-high` y `on-risk-*` para el texto | Solo datos. Ordenados de claro a oscuro. |
+| Sin datos | `unknown`, `unknown-surface` | Trama gris, siempre con «Sin datos». |
+| Texto | `text`, `text-muted` | Ambos pasan 4,5:1. |
+| Estructura | `line`, `line-strong`, `control-border`, `map-border` | Las líneas organizan; los controles llevan borde de 3:1. |
+| Acción | `action`, `action-hover`, `on-action`, `action-soft`, `focus` | Enlaces, botones y foco. Nunca para riesgo. |
+| Mensajes | `warning`, `danger`, `success` y sus versiones `-soft` | Solo mensajes de la interfaz. `success` confirma una acción; nunca dice que un territorio es seguro. |
+
+Excepción registrada (revisión de la Ronda 05): en la barra *Avance frente a lo esperado*, la marca de lo esperado usa `risk-high` como alerta.
+
+<DoAndDont
+  dos={[
+    'Usar los colores de riesgo solo para rellenos de datos: mapa, etiquetas, barras.',
+    'Acompañar cada color con texto, el glifo de 1/2/3 barras, una leyenda o una tabla.',
+    'Usar la trama gris y «Sin datos» para lo que no se analizó.',
+  ]}
+  donts={[
+    'Inventar umbrales: los rangos de cada categoría se definen en TASK-07.',
+    'Usar el verde para decir que un territorio está «limpio» o «seguro».',
+    'Usar los rellenos de riesgo como color de texto, o el rojo de error para hablar de riesgo.',
+  ]}
+/>
+
+## Contraste comprobado
+
+`build.py` comprueba cada par en ambos temas y falla si alguno no pasa (WCAG 2.2 AA: 4,5:1 para texto, 3:1 para controles, foco y trama). «Relieve»: los rellenos del mapa no alcanzan 3:1 contra la superficie a propósito; por eso van siempre con borde entre territorios, leyenda, etiqueta y tabla equivalente.
+
+<ContrastTable />

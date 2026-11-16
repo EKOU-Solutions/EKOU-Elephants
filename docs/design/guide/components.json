@@ -1,160 +1,453 @@
 {
-  "version": "1.0.0",
-  "about": "Machine-readable catalogue of the Elephants components. build.py asserts that every class exists in components.css and every token exists in tokens.css. 'core' = reviewed and accepted in Round 05; 'candidate' = introduced by the example screens, usable but must be confirmed by the first page that needs it (see .claude/skills/elephants-design/references/build-page.md).",
+  "version": "1.2.0",
+  "about": "Catálogo legible por máquina de los componentes de Elephants. 'core' = revisado y aceptado (Ronda 05); 'candidate' = se puede usar, pero lo debe confirmar la primera página que lo necesite (ver .claude/skills/elephants-design/references/build-page.md). Los componentes con 'component' ya son React en src/components/ui/ y traen sus propios estilos ('styles', CSS Modules); los demás son especificación con clases de components.css. build.py comprueba que los archivos, las clases y los tokens existan.",
   "components": [
     {
       "name": "Button",
       "label_es": "Botón",
       "status": "core",
       "reference": "preview.html#boton",
-      "classes": ["el-btn", "el-btn-primary", "el-btn-secondary", "el-btn-text"],
-      "use": "Runs an action on the current screen. To go to another page use a link.",
-      "variants": ["primary (one per view)", "secondary", "text", "disabled"],
-      "tokens": ["--el-color-action", "--el-color-action-hover", "--el-color-on-action", "--el-color-action-soft", "--el-color-control-border", "--el-control-height", "--el-control-radius"],
-      "a11y": ["Native <button>; min height 44 px", "Icon-only buttons need aria-label", "Visible focus ring from --el-color-focus"]
+      "use": "Ejecuta una acción en la pantalla actual. Para ir a otra página se usa un enlace.",
+      "variants": [
+        "primary (una por vista)",
+        "secondary",
+        "text",
+        "disabled (deshabilitado)"
+      ],
+      "tokens": [
+        "--el-color-action",
+        "--el-color-action-hover",
+        "--el-color-on-action",
+        "--el-color-action-soft",
+        "--el-color-control-border",
+        "--el-control-height",
+        "--el-control-radius"
+      ],
+      "a11y": [
+        "<button> nativo; mínimo 44 px de alto",
+        "Un botón solo con ícono necesita aria-label",
+        "Anillo de foco visible con --el-color-focus",
+        "Mientras carga: aria-disabled + aria-busy, no disabled, para no perder el foco",
+        "Deshabilitado: el motivo va cerca, ligado con aria-describedby"
+      ],
+      "component": "src/components/ui/Button/Button.tsx",
+      "styles": "src/components/ui/Button/Button.module.css"
     },
     {
       "name": "Alert",
       "label_es": "Alerta",
       "status": "core",
       "reference": "preview.html#alerta",
-      "classes": ["el-alert", "el-alert-info", "el-alert-warning", "el-alert-danger", "el-alert-success", "el-banner", "el-inline-note"],
-      "use": "Tells something about the interface or the information: what happened and what the person can do. Never rates a territory or contract.",
-      "variants": ["block (el-alert)", "page banner (el-banner)", "inline note (el-inline-note)", "tones: info, warning, danger, success"],
-      "tokens": ["--el-color-warning", "--el-color-warning-soft", "--el-color-danger", "--el-color-danger-soft", "--el-color-success", "--el-color-success-soft", "--el-color-line"],
-      "a11y": ["Colour lives in the icon and border; text stays in --el-color-text", "Dynamic alerts use role=status (info) or role=alert (error)"]
+      "use": "Avisa algo sobre la interfaz o la información: qué pasó y qué puede hacer la persona. Nunca califica un territorio ni un contrato.",
+      "variants": [
+        "bloque (el-alert)",
+        "banner de página (el-banner)",
+        "nota en línea (el-inline-note)",
+        "tonos: info, warning, danger, success"
+      ],
+      "tokens": [
+        "--el-color-warning",
+        "--el-color-warning-soft",
+        "--el-color-danger",
+        "--el-color-danger-soft",
+        "--el-color-success",
+        "--el-color-success-soft",
+        "--el-color-line"
+      ],
+      "a11y": [
+        "El color va en el ícono y el borde; el texto queda en --el-color-text",
+        "Las alertas dinámicas usan role=status (información) o role=alert (error)"
+      ],
+      "component": "src/components/ui/Alert/Alert.tsx",
+      "styles": "src/components/ui/Alert/Alert.module.css"
     },
     {
-      "name": "Field",
-      "label_es": "Campo de formulario",
+      "name": "Input",
+      "label_es": "Campo de texto",
       "status": "core",
       "reference": "preview.html#campo",
-      "classes": ["el-field"],
-      "use": "Collects a value to filter or search. Always with a visible label.",
-      "variants": ["input", "select", "with help text", "error"],
-      "tokens": ["--el-color-control-border", "--el-color-danger", "--el-control-height", "--el-control-radius"],
-      "a11y": ["<label for>", "Error: aria-invalid=true + aria-describedby pointing to the message", "Error text says how to fix it"]
+      "use": "Recoge un dato escrito para filtrar o buscar. Siempre con etiqueta visible.",
+      "variants": [
+        "con texto de ayuda",
+        "numérico (inputMode)",
+        "error"
+      ],
+      "tokens": [
+        "--el-color-control-border",
+        "--el-color-danger",
+        "--el-control-height",
+        "--el-control-radius"
+      ],
+      "a11y": [
+        "<label for>",
+        "Error: aria-invalid=true + aria-describedby apuntando al mensaje",
+        "El texto del error dice cómo corregirlo",
+        "inputMode=\"numeric\" solo si el dato es un número"
+      ],
+      "component": "src/components/ui/Input/Input.tsx",
+      "styles": "src/components/ui/FormField/FormField.module.css"
+    },
+    {
+      "name": "Select",
+      "label_es": "Lista",
+      "status": "core",
+      "reference": "preview.html#campo",
+      "use": "Elige un valor de una lista corta y conocida (menos de ~15 opciones) para filtrar. Si son más, buscador con sugerencias.",
+      "variants": [
+        "con texto de ayuda",
+        "error"
+      ],
+      "tokens": [
+        "--el-color-control-border",
+        "--el-color-danger",
+        "--el-control-height",
+        "--el-control-radius"
+      ],
+      "a11y": [
+        "<label for>",
+        "Error: aria-invalid=true + aria-describedby apuntando al mensaje",
+        "El texto del error dice cómo corregirlo"
+      ],
+      "component": "src/components/ui/Select/Select.tsx",
+      "styles": "src/components/ui/FormField/FormField.module.css"
+    },
+    {
+      "name": "FormField",
+      "label_es": "Base de campo",
+      "status": "core",
+      "reference": "preview.html#campo",
+      "use": "Base de Input y Select: etiqueta, control y mensaje de ayuda o de error ligados entre sí. Sirve para crear campos nuevos; no se usa sola en las páginas.",
+      "variants": [
+        "con texto de ayuda",
+        "error"
+      ],
+      "tokens": [
+        "--el-color-control-border",
+        "--el-color-danger",
+        "--el-control-height",
+        "--el-control-radius"
+      ],
+      "a11y": [
+        "<label for>",
+        "Error: aria-invalid=true + aria-describedby apuntando al mensaje",
+        "El texto del error dice cómo corregirlo",
+        "La ayuda también va en aria-describedby"
+      ],
+      "component": "src/components/ui/FormField/FormField.tsx",
+      "styles": "src/components/ui/FormField/FormField.module.css"
+    },
+    {
+      "name": "Icon",
+      "label_es": "Ícono",
+      "status": "core",
+      "reference": "preview.html#iconos",
+      "use": "Dibuja un ícono del conjunto aprobado por su nombre (<Icon name=\"search\" />), con trazo de 2 px. El proveedor (hoy Lucide) o un SVG propio se define solo en icons.ts. Decorativo por defecto; si va solo, lleva nombre accesible.",
+      "variants": [
+        "16 px",
+        "18 px",
+        "20 px (junto a texto)",
+        "24 px (alertas)",
+        "con nombre accesible (label)"
+      ],
+      "tokens": [],
+      "a11y": [
+        "Decorativo: aria-hidden=true",
+        "Solo: role=img y aria-label; si es un botón, el aria-label va en el botón"
+      ],
+      "component": "src/components/ui/Icon/Icon.tsx",
+      "styles": "src/components/ui/Icon/Icon.module.css"
     },
     {
       "name": "Risk tag",
       "label_es": "Etiqueta de riesgo",
       "status": "core",
       "reference": "preview.html#etiqueta",
-      "classes": ["el-tag", "el-tag-low", "el-tag-medium", "el-tag-high", "el-tag-unknown", "el-tag-lg", "el-key", "el-key-low", "el-key-medium", "el-key-high", "el-key-unknown"],
-      "use": "Names the risk category of a territory, entity or contract. The category comes from the methodology (TASK-07), never chosen by hand.",
-      "variants": ["low", "medium", "high", "unknown (no data)", "large (once, at the top of a detail page)"],
-      "tokens": ["--el-color-risk-low", "--el-color-risk-medium", "--el-color-risk-high", "--el-color-on-risk-low", "--el-color-on-risk-medium", "--el-color-on-risk-high", "--el-color-unknown", "--el-color-unknown-surface", "--el-mark-radius"],
-      "a11y": ["Text label always present; 1/2/3-bar glyph encodes level without colour", "Unknown is hatched/dashed, never a lighter 'low'"]
+      "use": "Nombra la categoría de riesgo de un territorio, entidad o contrato. La categoría sale de la metodología (TASK-07); nunca se elige a mano.",
+      "variants": [
+        "low (bajo)",
+        "medium (intermedio)",
+        "high (alto)",
+        "unknown (sin datos)",
+        "grande (una vez, arriba de una página de detalle)"
+      ],
+      "tokens": [
+        "--el-color-risk-low",
+        "--el-color-risk-medium",
+        "--el-color-risk-high",
+        "--el-color-on-risk-low",
+        "--el-color-on-risk-medium",
+        "--el-color-on-risk-high",
+        "--el-color-unknown",
+        "--el-color-unknown-surface",
+        "--el-mark-radius"
+      ],
+      "a11y": [
+        "Siempre lleva etiqueta de texto; el glifo de 1/2/3 barras indica el nivel sin color",
+        "«Sin datos» va con trama o barras punteadas, nunca como un «bajo» más claro"
+      ],
+      "component": "src/components/ui/RiskTag/RiskTag.tsx",
+      "styles": "src/components/ui/RiskTag/RiskTag.module.css"
     },
     {
       "name": "Counter",
       "label_es": "Contador",
       "status": "core",
       "reference": "preview.html#contador",
-      "classes": ["el-counts", "el-count", "el-count-risk"],
-      "use": "A large number with its name below; summarises a query in one scannable row.",
-      "variants": ["plain", "with risk key"],
-      "tokens": ["--el-color-line", "--el-color-text", "--el-color-text-muted"],
-      "a11y": ["Number and label in the same element so they are read together"]
+      "use": "Un número grande con su nombre debajo; resume una consulta en una fila fácil de recorrer.",
+      "variants": [
+        "simple",
+        "con clave de riesgo"
+      ],
+      "tokens": [
+        "--el-color-line",
+        "--el-color-text",
+        "--el-color-text-muted"
+      ],
+      "a11y": [
+        "Número y etiqueta en el mismo elemento para que se lean juntos"
+      ],
+      "component": "src/components/ui/Counter/Counter.tsx",
+      "styles": "src/components/ui/Counter/Counter.module.css"
     },
     {
       "name": "Active filter",
       "label_es": "Filtro activo",
       "status": "core",
       "reference": "preview.html#filtro",
-      "classes": ["el-chip"],
-      "use": "Shows an applied filter and removes it in one tap.",
-      "variants": ["default"],
-      "tokens": ["--el-color-control-border", "--el-color-action", "--el-color-action-soft", "--el-control-height", "--el-control-radius"],
-      "a11y": ["<button> with aria-label 'Quitar filtro: <value>'"]
+      "use": "Muestra un filtro aplicado y lo quita con un toque.",
+      "variants": [
+        "por defecto"
+      ],
+      "tokens": [
+        "--el-color-control-border",
+        "--el-color-action",
+        "--el-color-action-soft",
+        "--el-control-height",
+        "--el-control-radius"
+      ],
+      "a11y": [
+        "<button> con aria-label «Quitar filtro: <valor>»"
+      ],
+      "component": "src/components/ui/ActiveFilter/ActiveFilter.tsx",
+      "styles": "src/components/ui/ActiveFilter/ActiveFilter.module.css"
     },
     {
       "name": "Key figure",
       "label_es": "Cifra destacada",
       "status": "core",
       "reference": "preview.html#cifra",
-      "classes": ["el-figure"],
-      "use": "A big number that stands on its own, even in a shared screenshot: what it measures, out of how many, and where it comes from.",
-      "variants": ["with comparison", "with source"],
-      "tokens": ["--el-rule-strong", "--el-color-line-strong", "--el-color-text-muted"],
-      "a11y": ["Unit and denominator in text, not only visual", "Source line always present"]
+      "use": "Un número grande que se entiende solo, incluso en una captura compartida: qué mide, de cuánto y de dónde sale.",
+      "variants": [
+        "con comparación",
+        "con fuente"
+      ],
+      "tokens": [
+        "--el-rule-strong",
+        "--el-color-line-strong",
+        "--el-color-text-muted"
+      ],
+      "a11y": [
+        "Unidad y denominador en texto, no solo visuales",
+        "La línea de fuente siempre está presente"
+      ],
+      "component": "src/components/ui/KeyFigure/KeyFigure.tsx",
+      "styles": "src/components/ui/KeyFigure/KeyFigure.module.css"
     },
     {
       "name": "Data table",
       "label_es": "Tabla de datos",
       "status": "core",
       "reference": "preview.html#tabla",
-      "classes": ["el-table", "el-num"],
-      "use": "To compare and verify; the accessible alternative to every map or chart.",
-      "variants": ["default", "numeric columns right-aligned (el-num)"],
-      "tokens": ["--el-color-line", "--el-color-line-strong", "--el-rule-strong", "--el-color-text-muted"],
-      "a11y": ["<caption>, <th scope>", "Wrap in an element with overflow-x:auto on small screens"]
+      "use": "Para comparar y verificar; la alternativa accesible a cada mapa o gráfico.",
+      "variants": [
+        "por defecto",
+        "columnas numéricas alineadas a la derecha (el-num)"
+      ],
+      "tokens": [
+        "--el-color-line",
+        "--el-color-line-strong",
+        "--el-rule-strong",
+        "--el-color-text-muted"
+      ],
+      "a11y": [
+        "<caption>, <th scope>",
+        "En pantallas pequeñas, dentro de un elemento con overflow-x:auto"
+      ],
+      "component": "src/components/ui/DataTable/DataTable.tsx",
+      "styles": "src/components/ui/DataTable/DataTable.module.css"
+    },
+    {
+      "name": "Legend key",
+      "label_es": "Clave de leyenda",
+      "status": "core",
+      "component": "src/components/ui/LegendKey/LegendKey.tsx",
+      "styles": "src/components/ui/LegendKey/LegendKey.module.css",
+      "use": "Cuadro de color que acompaña un texto en leyendas, tablas y contadores. Salió de la clase `.el-key` de la guía v1.0 al implementar los componentes en React.",
+      "variants": [
+        "low (bajo)",
+        "medium (intermedio)",
+        "high (alto)",
+        "unknown (sin datos, con trama)",
+        "flagged (con señales, en tinta)",
+        "clean (sin señales)"
+      ],
+      "tokens": [
+        "--el-color-risk-low",
+        "--el-color-risk-medium",
+        "--el-color-risk-high",
+        "--el-color-unknown",
+        "--el-color-unknown-surface",
+        "--el-color-text",
+        "--el-color-line",
+        "--el-mark-radius"
+      ],
+      "a11y": [
+        "Decorativo (aria-hidden); el texto que lo acompaña lleva el significado"
+      ]
     },
     {
       "name": "Map with legend",
       "label_es": "Mapa con leyenda",
-      "status": "core",
+      "status": "candidate",
       "reference": "preview.html#mapa",
-      "classes": ["el-map", "el-fill-low", "el-fill-medium", "el-fill-high", "el-fill-unknown", "el-hatch-bg", "el-hatch-line", "el-legend"],
-      "use": "Colours each territory by the share of contracts with signals. The legend says what colour measures; selection is an outline plus a detail panel.",
-      "variants": ["default", "selected territory"],
-      "tokens": ["--el-color-risk-low", "--el-color-risk-medium", "--el-color-risk-high", "--el-color-unknown", "--el-color-unknown-surface", "--el-color-map-border"],
-      "a11y": ["<svg role=img> with <title>", "A data table with the same values is always reachable", "Selection never by colour alone"]
+      "classes": [
+        "el-map",
+        "el-fill-low",
+        "el-fill-medium",
+        "el-fill-high",
+        "el-fill-unknown",
+        "el-hatch-bg",
+        "el-hatch-line",
+        "el-legend"
+      ],
+      "use": "Colorea cada territorio según la proporción de contratos con señales. La leyenda dice qué mide el color; la selección es un contorno más un panel de detalle.",
+      "variants": [
+        "por defecto",
+        "territorio seleccionado"
+      ],
+      "tokens": [
+        "--el-color-risk-low",
+        "--el-color-risk-medium",
+        "--el-color-risk-high",
+        "--el-color-unknown",
+        "--el-color-unknown-surface",
+        "--el-color-map-border"
+      ],
+      "a11y": [
+        "<svg role=img> con <title>",
+        "Siempre se puede llegar a una tabla de datos con los mismos valores",
+        "La selección nunca se marca solo con color"
+      ]
     },
     {
       "name": "Status pill",
       "label_es": "Estado",
       "status": "candidate",
       "reference": "examples.html#contrato",
-      "classes": ["el-status"],
-      "use": "Neutral process state of a contract (e.g. 'En ejecución'). Not a risk level.",
-      "variants": ["default"],
-      "tokens": ["--el-color-control-border", "--el-color-text"],
-      "a11y": ["Text label; icon is decorative"]
+      "classes": [
+        "el-status"
+      ],
+      "use": "Estado neutro del proceso de un contrato (por ejemplo, «En ejecución»). No es un nivel de riesgo.",
+      "variants": [
+        "por defecto"
+      ],
+      "tokens": [
+        "--el-color-control-border",
+        "--el-color-text"
+      ],
+      "a11y": [
+        "Etiqueta en texto; el ícono es decorativo"
+      ]
     },
     {
-      "name": "Coverage bar",
-      "label_es": "Barra de cobertura",
+      "name": "Progress bar",
+      "label_es": "Barra de progreso",
       "status": "candidate",
       "reference": "examples.html#mapa",
-      "classes": ["el-coverage", "el-coverage-legend", "el-key-flagged", "el-key-clean"],
-      "use": "Shows flagged / analysed without signals / not analysed out of the total, so missing data is visible.",
-      "variants": ["default"],
-      "tokens": ["--el-color-text", "--el-color-line", "--el-color-unknown", "--el-color-unknown-surface"],
-      "a11y": ["Legend with numbers in text next to the bar"]
+      "use": "Barra horizontal que se llena por tramos (valor y color de cada uno). Sirve para el desglose en barras (un tramo) y para la cobertura (con señales / sin señales / sin analizar). No trae leyenda: los números van en texto al lado.",
+      "variants": [
+        "un tramo, delgada (desglose)",
+        "varios tramos, gruesa (cobertura)",
+        "vacía"
+      ],
+      "tokens": [
+        "--el-color-text",
+        "--el-color-line",
+        "--el-color-unknown",
+        "--el-color-unknown-surface",
+        "--el-mark-radius"
+      ],
+      "a11y": [
+        "Con label: role=img y aria-label con el reparto completo",
+        "Sin label: decorativa (aria-hidden); los números deben estar en texto al lado"
+      ],
+      "component": "src/components/ui/ProgressBar/ProgressBar.tsx",
+      "styles": "src/components/ui/ProgressBar/ProgressBar.module.css"
     },
     {
       "name": "Breakdown bars",
       "label_es": "Desglose en barras",
       "status": "candidate",
       "reference": "examples.html#mapa",
-      "classes": ["el-bars"],
-      "use": "Ranks a few counts (e.g. signals by type) inside a panel.",
-      "variants": ["default"],
-      "tokens": ["--el-color-line", "--el-color-text", "--el-mark-radius"],
-      "a11y": ["Values written as text; bars are decorative"]
+      "classes": [
+        "el-bars"
+      ],
+      "use": "Ordena unos pocos conteos (por ejemplo, señales por tipo) dentro de un panel.",
+      "variants": [
+        "por defecto"
+      ],
+      "tokens": [
+        "--el-color-line",
+        "--el-color-text",
+        "--el-mark-radius"
+      ],
+      "a11y": [
+        "Los valores van escritos en texto; las barras son decorativas"
+      ]
     },
     {
       "name": "Progress vs expected",
       "label_es": "Avance frente a lo esperado",
       "status": "candidate",
       "reference": "examples.html#contrato",
-      "classes": ["el-progress"],
-      "use": "Paid or executed share against the expected mark. The red mark is kept as an alert cue (decided Round 05 review).",
-      "variants": ["default"],
-      "tokens": ["--el-color-line", "--el-color-text", "--el-color-risk-high", "--el-mark-radius"],
-      "a11y": ["Both percentages written as text"]
+      "classes": [
+        "el-progress"
+      ],
+      "use": "Porcentaje pagado o ejecutado frente a la marca de lo esperado. La marca roja se mantiene como señal de alerta (decidido en la revisión de la Ronda 05).",
+      "variants": [
+        "por defecto"
+      ],
+      "tokens": [
+        "--el-color-line",
+        "--el-color-text",
+        "--el-color-risk-high",
+        "--el-mark-radius"
+      ],
+      "a11y": [
+        "Los dos porcentajes van escritos en texto"
+      ]
     },
     {
       "name": "Signal item",
       "label_es": "Señal",
       "status": "candidate",
       "reference": "examples.html#contrato",
-      "classes": ["el-signal"],
-      "use": "One numbered signal with a short title and the fact behind it. A signal, not a verdict.",
-      "variants": ["default"],
-      "tokens": ["--el-color-line", "--el-color-risk-high", "--el-color-on-risk-high", "--el-color-text-muted"],
-      "a11y": ["Use an ordered list; the number is not colour-only"]
+      "classes": [
+        "el-signal"
+      ],
+      "use": "Una señal numerada con un título corto y el hecho que la sustenta. Una señal, no un veredicto.",
+      "variants": [
+        "por defecto"
+      ],
+      "tokens": [
+        "--el-color-line",
+        "--el-color-risk-high",
+        "--el-color-on-risk-high",
+        "--el-color-text-muted"
+      ],
+      "a11y": [
+        "Usa una lista ordenada; el número no depende solo del color"
+      ]
     }
   ]
 }

@@ -1,59 +1,70 @@
-# Design system guide v1.0
+# Guía del sistema de diseño v1.0
 
-Status: **Accepted** (2026-11-08). Task: [#6](https://github.com/EKOU-Solutions/EKOU-Elephants/issues/6). Origin: [Round 05: system reference](../rounds/05-system-reference/README.md). Decision record: [visual direction](../visual-direction.md#final-selection-2026-11-08).
+Estado: **Aceptada** (2026-11-08). Tarea: [#6](https://github.com/EKOU-Solutions/EKOU-Elephants/issues/6). Origen: [Ronda 05: referencia del sistema](../rounds/05-system-reference/README.md). Registro de la decisión: [dirección visual](../visual-direction.md#selección-final-2026-11-08).
 
-This is the deliverable of TASK-05: an HTML guide, documentation for developers and AI agents, and the `elephants-design` skill, which builds each final page from its API contract. Storybook was dropped by decision on 2026-11-08.
+Este fue el entregable de TASK-05: una guía en HTML, documentación para desarrollo y agentes de IA, y la skill `elephants-design`, que construye cada página final a partir de su contrato de API. El 2026-11-08 se descartó Storybook.
 
-## Start here
+> **Actualización 2026-11-15:** se revirtió esa decisión. La referencia visual viva es Storybook (`npm run storybook`). Esta carpeta conserva la fuente de verdad de tokens y catálogo (`tokens.json`, `components.css`, `components.json`, `build.py`), que Storybook importa. La página de referencia `preview.html` y los ejemplos `examples.html` quedan como seguimiento histórico de la v1.0: no se amplían con componentes nuevos.
 
-| You are | Read |
+## Empieza aquí
+
+| Si eres | Lee |
 | --- | --- |
-| A developer or an AI agent implementing UI | [design-system.md](design-system.md) (rules), `tokens.css` (import it), [components.json](components.json) (catalogue), `tokens.md` (token table) |
-| A designer, or the team reviewing visuals | `preview.html` (reference) and `examples.html` (screens on a phone and a laptop) after building |
-| Anyone designing a new page | [Design flow](../design-flow.md) and the skill's [Build a page](../../../.claude/skills/elephants-design/references/build-page.md) phase |
+| Desarrollo o un agente de IA que implementa interfaz | Storybook (`npm run storybook`), [design-system.md](design-system.md) (reglas), `tokens.css` (impórtalo), [components.json](components.json) (catálogo), `tokens.md` (tabla de tokens) |
+| Diseño, o el equipo que revisa lo visual | Storybook: lineamientos, fundamentos y componentes en tema claro y oscuro |
+| Quien diseña una página nueva | [Flujo de diseño](../design-flow.md) y la ruta [Construir una página](../../../.claude/skills/elephants-design/references/build-page.md) de la skill |
+| Quien quiere ver la referencia histórica v1.0 | `preview.html` y `examples.html` (pantallas en celular y portátil), después de generarlas |
 
 ```sh
 python3 docs/design/guide/build.py
 open docs/design/guide/preview.html docs/design/guide/examples.html
 ```
 
-## What v1.0 contains
+## Qué contiene la v1.0
 
-- Round 05's **editorial layout**: neutral surface, lines instead of cards, data first.
-- **One typeface: Public Sans 5.3.0**, self-hosted. The A/B type switch and the Source Sans 3 / Source Serif 4 files were removed.
-- Light and dark themes. All 17 contrast pairs pass in both.
-- 9 core components and 5 candidates (see `components.json`).
-- Three example screens (contract detail, results list, map with territory panel) inside iPhone and MacBook simulators.
+- La **maquetación editorial** de la Ronda 05: superficie neutra, líneas en lugar de tarjetas, el dato primero.
+- **Una sola tipografía: Public Sans 5.3.0**, alojada con la aplicación. Se quitaron el selector A/B de tipografía y los archivos de Source Sans 3 / Source Serif 4.
+- Tema claro y oscuro. Los 17 pares de contraste pasan en ambos.
+- 9 componentes del núcleo (React, en `src/components/ui/`) y 6 candidatos (ver `components.json`). Al aceptarse eran 9 y 5; ver «Cambios después de la aceptación».
+- Tres pantallas de ejemplo (detalle de contrato, lista de resultados, mapa con panel de territorio) dentro de simuladores de iPhone y MacBook.
 
-What changed against Round 05, and why:
+Qué cambió frente a la Ronda 05, y por qué:
 
-- **Fixes carried over:**
-  - The phone's "full screen" link now opens the screen at 390 px (`screens/phone.html`).
-  - The laptop simulator no longer overflows at 320 px.
-- **Removed:** the works (obra) screen. Whether a work is a separate entity from a contract will be decided when the business model is shaped with Esteban, and its page will go through Build a page.
-- **Added:**
-  - `components.json` and `design-system.md`.
-  - A generated `tokens.md`.
-  - Build-time checks that every catalogue class and token exists.
-- **Not adopted:** Round 06's visual layer (canvas with white cards, pill controls). See the decision record.
+- **Correcciones trasladadas:**
+  - El enlace de «pantalla completa» del celular ahora abre la pantalla a 390 px (`screens/phone.html`).
+  - El simulador de portátil ya no se desborda a 320 px.
+- **Quitado:** la pantalla de obra. Si una obra es una entidad distinta de un contrato se decidirá cuando se defina el modelo de negocio con Esteban, y su página pasará por Construir una página.
+- **Agregado:**
+  - `components.json` y `design-system.md`.
+  - Un `tokens.md` generado.
+  - Comprobaciones en el build de que cada clase y cada token del catálogo existen.
+- **No adoptado:** la capa visual de la Ronda 06 (lienzo con tarjetas blancas, controles en píldora). Ver el registro de la decisión.
 
-## Files
+## Cambios después de la aceptación
 
-`tokens.json` (source of truth) → `build.py` → `tokens.css`, `tokens.md` and `contrast-report.json`, all versioned and generated. It also writes `preview.html`, `examples.html` and `screens/`, which are ignored and fully offline: the font is embedded and the Lucide script is inlined. The other sources are `source.html`, `examples.source.html`, `examples/`, `components.css` and `components.json`. The `assets/` folder holds the font with its OFL licence, Lucide 0.468.0 with its ISC licence, the map paths and the fictional territories.
+| Versión | Fecha | Cambio | Decisión |
+| --- | --- | --- | --- |
+| 1.0.1 | 2026-11-15 | El Mapa con leyenda pasa de núcleo a candidato: la página del Mapa lo confirma o lo ajusta | Jouler |
+| 1.1.0 | 2026-11-16 | Los componentes del núcleo son React en `src/components/ui/`, cada uno con su CSS Module; sale la Clave de leyenda (antes la clase `.el-key`). Sin cambios visuales: capturas idénticas antes y después | Jouler |
+| 1.2.0 | 2026-11-16 | Correcciones de la revisión del PR #41 y ajustes pedidos por Jouler. El Campo de formulario (`Field`) se separa en `Input` y `Select`, los dos sobre la base `FormField` (etiqueta, ayuda o error y `aria-describedby`), que acepta los atributos nativos. El `Button` recibe el ícono por composición (`icon`, antes `withIcon` con la lupa fija) y un texto de carga propio (`loadingLabel`). La acción del `Alert` es un enlace con `actionHref` o un botón con `onAction`, de al menos 24 px de alto; info y success llevan `role="status"`. Las cifras de `KeyFigure`, `Counter` y la barra de cobertura usan el formato es-CO. Nuevo componente `Icon`, que dibuja un ícono por su nombre (`<Icon name="search" />`) desde un registro único (`icons.ts`: hoy Lucide, mañana otro proveedor o SVG propios sin tocar las pantallas), con trazo de 2 px, decorativo por defecto y con `label` si va solo; se suma `download` al conjunto aprobado. Lo usan por dentro `Button`, `Alert`, `FormField` y `ActiveFilter`. La barra de cobertura pasa de especificación a un componente React puro y reutilizable, `ProgressBar` (sigue como candidato): una pista que se llena por tramos, con valor y color por tramo, que sirve para la cobertura y para el desglose en barras; la leyenda ya no es parte de la barra, la pone la página. Tras auditar los componentes puros: el `Button` acepta los atributos nativos (`type`, `aria-describedby`…) y mientras carga usa `aria-disabled` para no perder el foco; el `Alert` banner también es región viva; el `caption` de `DataTable` queda visible a 320 px. Los títulos de Storybook nombran cada componente con su nombre real en inglés (`Componentes/UI/Button`). Sin cambios de tokens ni de dirección visual | Jouler |
 
-The previous guide (v0.1, based on Round 02) is kept for history in [`../archive/guide-v0.1/`](../archive/guide-v0.1/README.md).
+## Archivos
 
-## Sources (checked 2026-11-08)
+`tokens.json` (fuente de verdad) → `build.py` → `tokens.css`, `tokens.md` y `contrast-report.json`, todos versionados y generados. También escribe `preview.html`, `examples.html` y `screens/`, que se ignoran en git y funcionan sin conexión: la fuente va incrustada y el script de Lucide va en línea. Las otras fuentes son `source.html`, `examples.source.html`, `examples/`, `components.css` y `components.json`. La carpeta `assets/` guarda la fuente con su licencia OFL, Lucide 0.468.0 con su licencia ISC, los trazos del mapa y los territorios ficticios.
 
-- Font: [`@fontsource-variable/public-sans@5.3.0`](https://cdn.jsdelivr.net/npm/@fontsource-variable/public-sans@5.3.0/), OFL-1.1.
-- Icons: [Lucide 0.468.0](https://lucide.dev), ISC.
-- Geography: geoBoundaries COL ADM1 / OpenStreetMap, ODbL 1.0; provenance in [Round 01](../rounds/01-territory-overview/README.md#geography-and-attribution). All values are fictional.
+La guía anterior (v0.1, basada en la Ronda 02) se conserva como historia en [`../archive/guide-v0.1/`](../archive/guide-v0.1/README.md).
 
-## Open (outside this guide)
+## Fuentes (consultadas el 2026-11-08)
 
-- Risk thresholds and categories: TASK-07.
-- Personal data: TASK-08.
-- Works vs contract as entities: to be decided when the business model is shaped.
-- Production implementation: the markup here is a specification, not a tested component library.
+- Tipografía: [`@fontsource-variable/public-sans@5.3.0`](https://cdn.jsdelivr.net/npm/@fontsource-variable/public-sans@5.3.0/), OFL-1.1.
+- Íconos: [Lucide 0.468.0](https://lucide.dev), ISC.
+- Geografía: geoBoundaries COL ADM1 / OpenStreetMap, ODbL 1.0; procedencia en la [Ronda 01](../rounds/01-territory-overview/README.md#geografía-y-atribución). Todos los valores son ficticios.
 
-Validation: [validation.md](validation.md).
+## Abierto (fuera de esta guía)
+
+- Umbrales y categorías de riesgo: TASK-07.
+- Datos personales: TASK-08.
+- Obra frente a contrato como entidades: se decide cuando se defina el modelo de negocio.
+- Implementación de producción: el marcado de aquí es una especificación, no una biblioteca de componentes probada.
+
+Validación: [validation.md](validation.md).

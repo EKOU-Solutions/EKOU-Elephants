@@ -1,0 +1,30 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+import { Status } from '../blocks';
+
+<Meta title="Accesibilidad" />
+
+# Accesibilidad
+
+<Status status="accepted" detail="Línea base: WCAG 2.2 AA" />
+
+Elephants es para toda la ciudadanía. Estas reglas aplican a cada pantalla y cada componente.
+
+## Línea base
+
+- **Contraste WCAG 2.2 AA**: 4,5:1 para texto; 3:1 para controles, foco y trama. `build.py` comprueba cada par en ambos temas (ver [Color](?path=/docs/fundamentos-color--docs)).
+- **El color nunca va solo**: etiqueta, glifo de nivel, leyenda o tabla equivalente.
+- **Elementos nativos**: `<button>`, `<a href>`, `<label for>`, `<table>` con `<caption>` y `scope`.
+- **Errores de campo**: `aria-invalid` + `aria-describedby` apuntando al mensaje, que dice cómo corregir.
+- **Mapas**: `<svg role="img">` con `<title>` descriptivo; los mismos valores en una tabla y en un selector nativo.
+- **Alertas dinámicas**: error nuevo con `role="alert"`; información y confirmación con `aria-live="polite"`. No se anuncian las que ya estaban al cargar.
+- **Íconos**: decorativos con `aria-hidden="true"`; los que van solos, con `aria-label`.
+- **Tamaño y entrada**: controles de al menos 44 px; nada depende del hover; todo funciona a 320 px sin desplazamiento horizontal.
+- **Foco visible**: anillo de 3 px que nunca se quita.
+- **Movimiento**: respetar `prefers-reduced-motion`.
+
+## Cómo revisarlo aquí
+
+1. Abre una historia y mira el panel **Accessibility** (axe): no debe haber fallas.
+2. Cambia el **Tema** a *Oscuro* y repite.
+3. Cambia el **Viewport** a *Celular mínimo · 320 px*.
+4. Recorre la historia solo con el teclado (Tab, Shift+Tab, Enter, Espacio).

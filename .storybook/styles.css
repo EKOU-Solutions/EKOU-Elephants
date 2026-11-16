@@ -1,0 +1,275 @@
+/* Storybook-only styles: documentation blocks (.storybook/blocks) and docs-page fixes.
+   The app base (tokens, font, body, focus) comes from src/styles/global.css, imported in preview.tsx. */
+
+/* Documentation blocks (.storybook/blocks). They use the same tokens as the app. */
+.sb-el {
+  font-family: var(--el-font-ui);
+  color: var(--el-color-text);
+  background: var(--el-color-surface);
+  border: 1px solid var(--el-color-line);
+  border-radius: var(--el-control-radius);
+  padding: var(--el-space-24);
+  margin: var(--el-space-16) 0 var(--el-space-24);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.sb-el code {
+  font-size: 13px;
+  background: transparent;
+  border: 0;
+}
+
+.sb-el-scroll {
+  overflow-x: auto;
+}
+
+.sb-el-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--el-space-16) var(--el-space-24);
+  align-items: center;
+}
+
+.sb-el-stack {
+  display: grid;
+  gap: var(--el-space-12);
+}
+
+.sb-el-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--el-color-control-border);
+  font: 600 13px / 1.5 var(--el-font-ui);
+  color: var(--el-color-text);
+  background: var(--el-color-surface);
+}
+
+.sb-el-status::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.sb-el-status[data-status="accepted"] {
+  color: var(--el-color-success);
+  border-color: var(--el-color-success);
+}
+
+.sb-el-status[data-status="candidate"] {
+  color: var(--el-color-warning);
+  border-color: var(--el-color-warning);
+}
+
+.sb-el-status[data-status="historical"] {
+  color: var(--el-color-text-muted);
+}
+
+.sb-el-swatch {
+  display: inline-block;
+  width: 56px;
+  height: 32px;
+  border-radius: var(--el-mark-radius);
+  box-shadow: inset 0 0 0 1px rgba(127, 127, 127, 0.4);
+  vertical-align: middle;
+}
+
+.sb-el-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.sb-el-table th,
+.sb-el-table td {
+  text-align: left;
+  padding: 8px 12px 8px 0;
+  border-bottom: 1px solid var(--el-color-line);
+  vertical-align: middle;
+}
+
+.sb-el-table thead th {
+  font-size: 14px;
+  border-bottom: var(--el-rule-strong) solid var(--el-color-line-strong);
+}
+
+.sb-el-table .group th {
+  padding-top: 20px;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--el-color-text-muted);
+}
+
+.sb-el-table .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Icon names wrap inside their card (declared before the table rule: lower specificity first). */
+.sb-el-icons code {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.sb-el-table td code,
+.sb-el-table th code {
+  display: block;
+  color: var(--el-color-text-muted);
+  font-weight: 400;
+}
+
+.sb-el-types > div {
+  display: grid;
+  grid-template-columns: 180px minmax(0, 1fr);
+  gap: 16px;
+  align-items: baseline;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--el-color-line);
+}
+
+.sb-el-types small {
+  color: var(--el-color-text-muted);
+  font-size: 13px;
+}
+
+.sb-el-spacing {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.sb-el-spacing li {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+}
+
+.sb-el-spacing li > span:first-child {
+  display: block;
+  background: var(--el-color-action);
+  border-radius: 1px;
+}
+
+.sb-el-icons {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.sb-el-icons li {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+  justify-items: start;
+  padding: 12px;
+  border: 1px solid var(--el-color-line);
+  border-radius: var(--el-control-radius);
+}
+
+.sb-el-icons svg {
+  width: 24px;
+  height: 24px;
+}
+
+.sb-el-do-dont {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--el-space-16);
+}
+
+.sb-el-do-dont > div {
+  border-top: var(--el-rule-strong) solid var(--tone);
+  padding-top: 10px;
+}
+
+.sb-el-do-dont h3 {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  font-size: 15px;
+  color: var(--tone);
+  margin-bottom: 6px;
+}
+
+.sb-el-do-dont h3 svg {
+  width: 18px;
+  height: 18px;
+}
+
+.sb-el-do-dont ul {
+  padding-left: 18px;
+  display: grid;
+  gap: 4px;
+}
+
+.sb-el-do-dont .do {
+  --tone: var(--el-color-success);
+}
+
+.sb-el-do-dont .dont {
+  --tone: var(--el-color-danger);
+}
+
+.sb-el-fictional {
+  font-size: 13px;
+  color: var(--el-color-text-muted);
+  margin-top: var(--el-space-12);
+}
+
+/* Same as the v1.0 guide (source.html): the map and its readout stack on narrow screens. */
+@media (max-width: 900px) {
+  .mapcard {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .sb-el {
+    padding: var(--el-space-16);
+  }
+
+  .sb-el-types > div {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+}
+
+/* Docs pages at 320 px: inline code, prompt examples and table cells wrap instead of overflowing. */
+.sbdocs-content :not(pre) > code {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.sbdocs-content pre,
+.sbdocs-content pre code,
+.sbdocs-content pre span,
+.sbdocs-content [class*="language-"] {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.sbdocs-content table:not(.sb-el-table, .el-table, .docblock-argstable) :is(th, td) {
+  overflow-wrap: anywhere;
+}
+
+/* Storybook's dark docs theme stripes every other table row (#454c54); our muted text and links fail on it.
+   Rows keep the page surface, whose pairs are checked by build.py. */
+.sbdocs-content table:not(.docblock-argstable) tr:nth-of-type(n) {
+  background-color: transparent;
+}
+
+/* The props table (ArgsTable) scrolls inside its own box at 320 px; it holds focusable controls. */
+.sbdocs-content table.docblock-argstable {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+}

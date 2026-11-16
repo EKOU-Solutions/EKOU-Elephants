@@ -1,53 +1,53 @@
-# Round 01 — Territory overview
+# Ronda 01: panorama territorial
 
-Status: **Reviewed — typography accepted; map semantics and error treatment superseded by Round 02**. Date: 2026-11-07. Task: [#6](https://github.com/EKOU-Solutions/EKOU-Elephants/issues/6).
+Estado: **Revisada: tipografía aceptada; la semántica del mapa y el tratamiento de errores fueron reemplazados por la Ronda 02**. Fecha: 2026-11-07. Tarea: [#6](https://github.com/EKOU-Solutions/EKOU-Elephants/issues/6).
 
-## Review question
+## Pregunta de revisión
 
-Can a light, restrained EKOU identity support a readable map, amount legend and selected-territory detail without competing with the data?
+¿Puede una identidad de EKOU clara y contenida sostener un mapa legible, una leyenda de montos y el detalle de un territorio seleccionado sin competir con los datos?
 
-## Scope
+## Alcance
 
-One responsive composition: national departmental map, a selected territory, illustrative contracted amount, legend, provenance and data-state messages. The top “Preview state” selector is a review tool, not a proposed product feature. The letter E is a placeholder identity mark, not an approved EKOU logo.
+Una composición adaptable: mapa nacional por departamentos, un territorio seleccionado, un monto contratado ilustrativo, leyenda, procedencia y mensajes de estado de los datos. El selector superior «Estado de la vista previa» es una herramienta de revisión, no una función propuesta para el producto. La letra E es una marca de identidad provisional, no un logo aprobado de EKOU.
 
-English review copy follows the working agreement. Citizen-facing Spanish localization remains pending. No risk scale, production data integration, complete component library or finalized map interaction is included.
+Los textos de revisión estaban en inglés según el acuerdo de trabajo de ese momento. La traducción al español para la ciudadanía quedó pendiente. No incluye escala de riesgo, integración con datos de producción, biblioteca completa de componentes ni la interacción final del mapa.
 
-## Files and reproduction
+## Archivos y cómo reproducirla
 
-- `source.html`: editable composition, styles and local interactions.
-- `assets/territories.json`: all 33 named units with deterministic fictional amounts; Antioquia starts at COP 12.4 trillion and Vaupés has no data.
-- `assets/map-paths.svg`: projected vector path fragment derived from the geometry below, not an official cartographic asset.
-- `build.py`: Python 3 standard library only; combines these sources into ignored `mockup.html` (inline canvas fragment) and `preview.html` (standalone offline preview).
+- `source.html`: composición, estilos e interacciones locales editables.
+- `assets/territories.json`: las 33 unidades con nombre y montos ficticios deterministas; Antioquia empieza en COP 12,4 billones y Vaupés no tiene datos.
+- `assets/map-paths.svg`: fragmento de trazos vectoriales proyectados, derivado de la geometría descrita abajo; no es un recurso cartográfico oficial.
+- `build.py`: solo biblioteca estándar de Python 3; combina estas fuentes en `mockup.html` (fragmento para el lienzo integrado) y `preview.html` (vista previa independiente y sin conexión), ambos ignorados en git.
 
-From the repository root:
+Desde la raíz del repositorio:
 
 ```sh
 python3 docs/design/rounds/01-territory-overview/build.py
 ```
 
-Open `preview.html` in a browser or `mockup.html` in the integrated visualization canvas. No server, package installation or network access is needed to use the generated preview. Do not edit the generated files; update the sources and rebuild.
+Abre `preview.html` en un navegador o `mockup.html` en el lienzo de visualización integrado. Para usar la vista previa generada no se necesita servidor, instalación de paquetes ni acceso a la red. No edites los archivos generados; actualiza las fuentes y vuelve a generar.
 
-## Geography and attribution
+## Geografía y atribución
 
-Source checked 2026-11-07: [geoBoundaries COL ADM1 metadata](https://www.geoboundaries.org/api/current/gbOpen/COL/ADM1/). Boundary ID `COL-ADM1-13589884`, represented year 2017, 33 administrative units. Source attribution: OpenStreetMap contributors / Wambacher; distributor geoBoundaries. License stated by source: [ODbL 1.0](https://opendatacommons.org/licenses/odbl/1-0/), with [OpenStreetMap attribution](https://www.openstreetmap.org/copyright).
+Fuente consultada el 2026-11-07: [metadatos de geoBoundaries COL ADM1](https://www.geoboundaries.org/api/current/gbOpen/COL/ADM1/). Id de límites `COL-ADM1-13589884`, año representado 2017, 33 unidades administrativas. Atribución de la fuente: contribuyentes de OpenStreetMap / Wambacher; distribuidor geoBoundaries. Licencia declarada por la fuente: [ODbL 1.0](https://opendatacommons.org/licenses/odbl/1-0/), con [atribución a OpenStreetMap](https://www.openstreetmap.org/copyright).
 
-Input: [simplified GeoJSON pinned to 9469f09](https://github.com/wmgeolab/geoBoundaries/raw/9469f09/releaseData/gbOpen/COL/ADM1/geoBoundaries-COL-ADM1_simplified.geojson). Adaptation: reversed ring winding where the spherical feature area exceeded 2π, then projected using D3 7.9.0 `geoMercator().fitExtent([[18,18],[582,542]], collection)` and `geoPath(projection).digits(1)`. The paths retain source ISO names; they are not DANE identifiers. The derived boundary path asset remains under the source ODbL license. Keep attribution when reusing it.
+Entrada: [GeoJSON simplificado fijado en 9469f09](https://github.com/wmgeolab/geoBoundaries/raw/9469f09/releaseData/gbOpen/COL/ADM1/geoBoundaries-COL-ADM1_simplified.geojson). Adaptación: se invirtió el sentido de los anillos cuando el área esférica de la entidad superaba 2π y luego se proyectó con D3 7.9.0 `geoMercator().fitExtent([[18,18],[582,542]], collection)` y `geoPath(projection).digits(1)`. Los trazos conservan los nombres ISO de la fuente; no son identificadores DANE. El recurso de trazos derivado sigue bajo la licencia ODbL de la fuente. Conserva la atribución al reutilizarlo.
 
-All financial amounts, the period and update date are fictional. No claim about actual spending, risk or dataset completeness is made.
+Todos los montos, el periodo y la fecha de actualización son ficticios. No se afirma nada sobre el gasto real, el riesgo ni la completitud de los conjuntos de datos.
 
-## Review checklist
+## Lista de revisión
 
-- Is the data more prominent than the identity treatment?
-- Is the selected territory obvious while its amount colour remains intact?
-- Can a reader distinguish contracted amount from spending and risk?
-- Is the missing-data treatment distinct from the lowest amount range?
-- Can all territory values be accessed with keyboard and on mobile?
-- Are title, amount, explanation and source ordered clearly?
+- ¿Los datos se destacan más que el tratamiento de identidad?
+- ¿El territorio seleccionado es evidente mientras su color de monto se mantiene?
+- ¿Se distingue el monto contratado del gasto y del riesgo?
+- ¿El tratamiento de datos faltantes se distingue del rango de monto más bajo?
+- ¿Se puede acceder a todos los valores de los territorios con teclado y en celular?
+- ¿El título, el monto, la explicación y la fuente siguen un orden claro?
 
-## Validation
+## Validación
 
-See `validation.md` for observed checks and limits. Partial acceptance and requested corrections are recorded below.
+Ver `validation.md` para las comprobaciones observadas y sus límites. La aceptación parcial y las correcciones pedidas se registran abajo.
 
-## Feedback and decisions
+## Comentarios y decisiones
 
-User feedback, 2026-11-07: typography is legible and clear. Error needs warning/danger semantics and a recognisable but calm failure treatment. Map must show potential risk signals, not contracted amount. Continue in [Round 02](../02-risk-signals/README.md); preserve this round as review history.
+Comentarios de Jouler, 2026-11-07: la tipografía es legible y clara. El error necesita semántica de advertencia o peligro y un tratamiento de falla reconocible pero tranquilo. El mapa debe mostrar señales de riesgo posibles, no el monto contratado. Se continúa en la [Ronda 02](../02-risk-signals/README.md); esta ronda se conserva como historia de la revisión.

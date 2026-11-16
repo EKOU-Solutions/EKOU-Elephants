@@ -1,0 +1,154 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+import { DoAndDont, Status } from '../blocks';
+
+<Meta title="Cómo usar la skill" />
+
+# Cómo usar la skill `elephants-design`
+
+<Status status="accepted" detail="Obligatoria para todo cambio de diseño (regla global de AGENTS.md)" />
+
+La skill `elephants-design` es el flujo de diseño del proyecto. Le cuentas qué necesitas en lenguaje normal; ella clasifica el pedido, elige la ruta y te dice en una línea cuál tomó y por qué. Esta página muestra cómo pedirle cosas en cada ruta y qué esperar de vuelta.
+
+## Cómo llamarla
+
+| Herramienta | Cómo |
+| --- | --- |
+| Claude Code | `/elephants-design` seguido del pedido |
+| Codex | `$elephants-design` seguido del pedido |
+| Antigravity | «Usa la skill `elephants-design` para…» |
+
+```text
+/elephants-design El botón «Consultar contratos» se corta en el celular de 320 px.
+```
+
+No hace falta decir la ruta: la skill la elige. Si la nombras («ruta Ajuste: …»), la usa siempre que sea segura; si el pedido resulta más profundo, te avisa y escala.
+
+## Un buen pedido
+
+Cuanto más concreto, más corta la ruta. Un buen pedido dice **qué**, **dónde** y **por qué**, y trae la evidencia que tengas.
+
+<DoAndDont
+  dos={[
+    'Nombrar el lugar: «Storybook › Fundamentos › Íconos», «la página del Mapa», «el componente Alerta».',
+    'Adjuntar una captura o decir el ancho y el tema donde se ve el problema (320 px, oscuro).',
+    'Decir el motivo: «se confunde con un error», «no se lee en el celular».',
+    'Para una página: indicar dónde está el contrato de la API o pedir que lo revise primero.',
+  ]}
+  donts={[
+    '«Arregla el diseño» o «hazlo más bonito», sin decir qué ni dónde.',
+    'Pedir colores, umbrales de riesgo o categorías nuevas como si fueran un ajuste.',
+    'Pedir que se salte el flujo «porque es rápido»: la skill no lo hace.',
+    'Pedir una página sin contrato de la API: sin contrato no hay diseño.',
+  ]}
+/>
+
+## Ejemplos por ruta
+
+### Ajuste: cambios que mantienen la dirección
+
+Para un texto, un espaciado, un estado que falta, un bug visual, un contraste o un cambio de estado en el catálogo.
+
+```text
+/elephants-design En Fundamentos › Íconos, el nombre sliders-horizontal se sale de su tarjeta. (captura adjunta)
+```
+
+```text
+/elephants-design El Mapa con leyenda es candidato, no núcleo.
+```
+
+```text
+/elephants-design Cambia el texto del error de carga: «No cargaron los contratos» suena técnico. Propón dos opciones.
+```
+
+**Qué te devuelve:** qué cambió, por qué era un ajuste y qué verificó (build de Storybook, accesibilidad en claro y oscuro, 320 px). No hace commit hasta que se lo pidas.
+
+### Construir una página: pantallas para desarrollo
+
+Para diseñar una página concreta (mapa, búsqueda, contrato, obras, entidades, contratistas, alertas). Se trabaja una página a la vez, de los datos al diseño aprobado.
+
+```text
+/elephants-design Construyamos la página del Mapa. El contrato está en docs/design/pages/mapa/contract.md.
+```
+
+```text
+/elephants-design Necesito la página de detalle de contrato. Revisa primero si ya hay contrato de la API.
+```
+
+**Qué pasa y dónde te pide aprobación:**
+
+| Paso | Qué hace | Te pide |
+| --- | --- | --- |
+| 0. Contrato | Revisa el contrato de nuestra API | Que exista y esté completo |
+| 1. Datos | Explora los datos que llegan | — |
+| 2. Especificación | Define la página: tareas, contenido y estados | **Aprobación 1** |
+| 3. Componentes | Usa el catálogo; si falta algo, propone el componente nuevo | **Aprobación por cada componente nuevo** |
+| 4. Maqueta | Arma la página con los componentes | — |
+| 5. Validar | Accesibilidad, 320 px, ambos temas | — |
+| 6. Entregar | Deja la página lista para desarrollo | **Aprobación 2** |
+
+Los componentes nuevos quedan en Storybook: en `Componentes/UI/…` si son transversales, o en `Componentes/<Página>/…` si son de esa página (ver la página **Cómo trabajamos**).
+
+### Componente o token nuevo
+
+Siempre nace de la página que lo necesita, así que va por **Construir una página**, paso 3.
+
+```text
+/elephants-design La página del Mapa necesita un panel del territorio con las cifras y las señales. Propónlo.
+```
+
+```text
+/elephants-design ¿Nos sirve la barra de progreso del catálogo para la página de entidades, o hace falta otra cosa?
+```
+
+### Auditoría: juzgar lo que ya existe
+
+Para revisar Storybook, la guía, una ronda o una página contra el brief, con las otras skills de diseño como segunda opinión.
+
+```text
+/elephants-design Audita la página del Mapa antes de pasarla a desarrollo.
+```
+
+```text
+/elephants-design Haz una auditoría de accesibilidad de los componentes del núcleo en tema oscuro.
+```
+
+**Qué te devuelve:** una tabla de hallazgos con evidencia, gravedad y cambio propuesto. No aplica nada sin que lo aceptes.
+
+### Ronda: cambiar la dirección
+
+Para cambiar la paleta, la tipografía o el lenguaje visual, o para aplicar los hallazgos aceptados de una auditoría. Crea una ronda nueva en `docs/design/rounds/`; si se acepta, es la siguiente versión mayor del sistema.
+
+```text
+/elephants-design Quiero explorar una versión más cálida del sistema sin perder el foco en los datos.
+```
+
+```text
+/elephants-design Aplica los hallazgos 1, 3 y 4 de la última auditoría.
+```
+
+### Descubrimiento: cuando falta el brief
+
+Para cuando no hay brief o cambió el negocio o la audiencia. La skill pregunta solo lo que los documentos no responden y devuelve el brief.
+
+```text
+/elephants-design Vamos a abrir el producto a periodistas de datos. Actualicemos el brief.
+```
+
+### «Todo»
+
+```text
+/elephants-design Revisa todo el sistema de diseño y propón cómo mejorarlo.
+```
+
+Va por Descubrimiento → Auditoría → Ronda, y te pide aprobación entre cada fase.
+
+## Lo que la skill no hace
+
+- **Saltarse el flujo.** Si alguien lo pide, responde que el cambio debe pasar por `elephants-design` y no lo hace.
+- **Inventar umbrales de riesgo.** Los rangos, las etiquetas y la unidad contrato frente a obra los define TASK-07.
+- **Cambiar las decisiones registradas en silencio.** Si un consejo de otra skill contradice una decisión del equipo, te lo pregunta.
+- **Hacer commit, publicar o marcar algo como aceptado** sin que una persona del equipo lo pida.
+
+## Si el pedido cambia de tamaño
+
+La skill empieza por la ruta más corta y escala cuando aparece algo más profundo. Por ejemplo, un ajuste de color que en realidad cambia la paleta pasa a Ronda, y un ajuste que necesita un componente nuevo pasa a Construir una página. Siempre te avisa antes de cambiar de ruta.

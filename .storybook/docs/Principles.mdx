@@ -1,0 +1,26 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+import { Status } from '../blocks';
+
+<Meta title="Principios" />
+
+# Principios
+
+<Status status="accepted" detail="Guía v1.0" />
+
+Cinco reglas para decidir cuando una pieza no cubre tu caso.
+
+| Principio | Qué significa |
+| --- | --- |
+| **El dato es lo primero** | La interfaz es sobria para que el mapa y las cifras se lean primero. Superficies neutras, líneas en lugar de tarjetas, sin sombras, degradados ni brillos. El color fuerte se reserva para los datos. |
+| **Una señal pide revisar** | Decimos el hecho con fuerza y con su número, siempre con fuente, periodo y cobertura. No damos veredictos. |
+| **El color nunca va solo** | Todo color lleva una etiqueta, una forma o una trama. La información también existe en texto o en una tabla. |
+| **Sin datos no es cero** | Lo que no se analizó se muestra con trama gris y «Sin datos». Nunca como 0% ni como riesgo bajo. |
+| **Celular primero** | Cada pieza funciona a 320 px, con controles de 44 px y sin depender del hover. Lo que se comparte en una captura se entiende solo. |
+
+## Reglas que no se negocian
+
+1. **Solo tokens.** Usa `var(--el-*)` en todo. Nunca un hex, una fuente o un valor en píxeles que un token ya cubra.
+2. **Solo el catálogo.** Las pantallas se arman con los componentes de **Componentes**. Si nada sirve, no improvises: propón un componente por el flujo `elephants-design`.
+3. **El nivel de riesgo no se elige a mano.** Bajo, intermedio y alto los calcula la metodología (TASK-07). El sistema no define umbrales.
+4. **No decimos «corrupción», «robo» ni «sospechoso»**, y no mostramos nombres de personas naturales hasta que TASK-08 lo decida.
+5. **Dos temas.** Cada pantalla se revisa en claro y en oscuro. El oscuro sigue `prefers-color-scheme` y se puede forzar con `data-theme="light|dark"` en `<html>`.
