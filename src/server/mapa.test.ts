@@ -1,10 +1,18 @@
 import { describe, expect, it } from 'vitest';
+import type { z } from 'zod';
 import {
   type AlmacenObjetos,
   almacenDesdeWorker,
   claves,
 } from '../modules/mapa/adapters/worker-datos/mapa.worker-datos';
+import {
+  esquemaCorteVigente,
+  esquemaDepartamentosDelCorte,
+  esquemaMunicipioSeleccionado,
+  esquemaMunicipiosDelCorte,
+} from '../modules/mapa/adapters/http/mapa.schemas';
 import { crearApp } from './app';
+import { esquemaError } from './http/respuestas';
 import type { Queryable } from './db';
 
 // Real values from cut 2026-11 (docs/design/pages/map/contract.md).
@@ -242,5 +250,30 @@ describe('almacenDesdeWorker', () => {
 
   it('no hay almacén sin el binding DATOS', () => {
     expect(almacenDesdeWorker(undefined)).toBeUndefined();
+  });
+});
+
+// Contract: the real response body matches the documented schema exactly (strict schemas), so the
+// docs cannot promise a field the route does not send, nor hide one it does send (docs/api.md).
+describe('contrato de respuestas: el body real coincide con el documentado', () => {
+  const casos: [string, Record<string, string>, number, z.ZodType][] = [
+    ['/api/mapa/corte', publicado(), 200, esquemaCorteVigente],
+    ['/api/mapa/municipios', publicado(), 200, esquemaMunicipiosDelCorte],
+    ['/api/mapa/departamentos', publicado(), 200, esquemaDepartamentosDelCorte],
+    ['/api/mapa/municipios/05001', publicado(), 200, esquemaMunicipioSeleccionado],
+    // «Sin datos»: contratosUbicados is null.
+    ['/api/mapa/municipios/94886', publicado(), 200, esquemaMunicipioSeleccionado],
+    ['/api/mapa/municipios/5001', publicado(), 400, esquemaError('codigo_invalido')],
+    ['/api/mapa/municipios/99999', publicado(), 404, esquemaError('municipio_no_encontrado')],
+    ['/api/mapa/corte', {}, 503, esquemaError('corte_no_disponible')],
+    ['/api/mapa/municipios', {}, 503, esquemaError('corte_no_disponible')],
+    ['/api/mapa/departamentos', {}, 503, esquemaError('corte_no_disponible')],
+  ];
+
+  it.each(casos)('%s responde %#', async (ruta, objetos, estado, esquema) => {
+    const res = await app(objetos).app.request(ruta);
+    expect(res.status).toBe(estado);
+    const resultado = esquema.safeParse(await res.json());
+    expect(resultado.error?.issues ?? []).toEqual([]);
   });
 });

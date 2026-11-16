@@ -16,6 +16,20 @@ API pública de solo lectura con el presupuesto y las obras por territorio de Co
 - [GET /api/mapa/departamentos](#scalar-operation-get-apimapadepartamentos)
 - [GET /api/mapa/municipios/{codigo}](#scalar-operation-get-apimapamunicipioscodigo)
 
+**Schemas**
+
+- [Salud](#scalar-schema-salud)
+- [ResumenTerritorial](#scalar-schema-resumenterritorial)
+- [Fuente](#scalar-schema-fuente)
+- [CorteVigente](#scalar-schema-cortevigente)
+- [Ventana](#scalar-schema-ventana)
+- [MunicipioDelMapa](#scalar-schema-municipiodelmapa)
+- [MunicipiosDelCorte](#scalar-schema-municipiosdelcorte)
+- [TotalNacional](#scalar-schema-totalnacional)
+- [DepartamentoDelMapa](#scalar-schema-departamentodelmapa)
+- [DepartamentosDelCorte](#scalar-schema-departamentosdelcorte)
+- [MunicipioSeleccionado](#scalar-schema-municipioseleccionado)
+
 ## Tags
 
 ### Salud
@@ -39,7 +53,21 @@ Datos territoriales del corte mensual vigente.
 
 #### Responses
 
-##### 200 El Worker responde. Cuerpo: \`{ "ok": true }\`.
+##### 200 El Worker responde.
+
+**Content type:** `application/json`
+
+[Salud](#scalar-schema-salud)
+
+<a id="scalar-example-1"></a>
+
+**Generated example:**
+
+```json
+{
+  "ok": true
+}
+```
 
 <a id="scalar-operation-get-apimapaterritorioscodigoresumen"></a>
 
@@ -50,21 +78,92 @@ Datos territoriales del corte mensual vigente.
 - **Operation ID:** `getApiMapaTerritoriosByCodigoResumen`
 - **Tags:** Mapa
 
-Presupuesto asignado, gasto actual (en centavos) y obras de un departamento (2 dígitos) o municipio (5 dígitos) según su código DIVIPOLA.
+Presupuesto asignado, gasto actual (en centavos) y obras de un departamento o municipio según su código DIVIPOLA.
 
 #### Path parameters
 
-- **`codigo` (required)**: `string`
+- **`codigo` (required)**: `string`, pattern: `^(\d{2}|\d{5})$`
+
+  Código DIVIPOLA: 2 dígitos (departamento) o 5 (municipio).
 
 #### Responses
 
 ##### 200 Resumen del territorio.
 
-##### 400 El código DIVIPOLA no tiene el formato esperado. Cuerpo: \`{ "error": "codigo_invalido" }\`.
+**Content type:** `application/json`
 
-##### 404 No existe un territorio con ese código. Cuerpo: \`{ "error": "territorio_no_encontrado" }\`.
+[ResumenTerritorial](#scalar-schema-resumenterritorial)
 
-##### 500 Error inesperado del servidor. Cuerpo: \`{ "error": "error_interno" }\`.
+Ejemplo del arquetipo con cifras ficticias (docs/arquitectura.md).
+
+<a id="scalar-example-2"></a>
+
+**Generated example:**
+
+```json
+{
+  "codigo": "05",
+  "nombre": "Antioquia",
+  "presupuestoAsignadoCentavos": 100050,
+  "gastoActualCentavos": 40000,
+  "totalObras": 10,
+  "obrasConRetraso": 2
+}
+```
+
+##### 400 El código DIVIPOLA no tiene el formato esperado.
+
+**Content type:** `application/json`
+
+no additional properties
+
+- **`error` (required)**: `string`, const: `"codigo_invalido"`
+
+<a id="scalar-example-3"></a>
+
+**Generated example:**
+
+```json
+{
+  "error": "codigo_invalido"
+}
+```
+
+##### 404 No existe un territorio con ese código.
+
+**Content type:** `application/json`
+
+no additional properties
+
+- **`error` (required)**: `string`, const: `"territorio_no_encontrado"`
+
+<a id="scalar-example-4"></a>
+
+**Generated example:**
+
+```json
+{
+  "error": "territorio_no_encontrado"
+}
+```
+
+##### 500 Error inesperado del servidor.
+
+**Content type:** `application/json`
+
+no additional properties
+
+- **`error` (required)**: `string`, const: `"error_interno"`
+
+<a id="scalar-example-5"></a>
+
+**Generated example:**
+
+```json
+{
+  "error": "error_interno"
+}
+```
 
 <a id="scalar-operation-get-apimapacorte"></a>
 
@@ -81,9 +180,69 @@ Metadatos del corte de datos publicado y sus fuentes.
 
 ##### 200 Corte vigente.
 
-##### 500 Error inesperado del servidor. Cuerpo: \`{ "error": "error_interno" }\`.
+**Content type:** `application/json`
 
-##### 503 No hay un corte mensual publicado o sus archivos no son coherentes. Cuerpo: \`{ "error": "corte_no_disponible" }\`.
+[CorteVigente](#scalar-schema-cortevigente)
+
+Corte mensual vigente y sus fuentes.
+
+<a id="scalar-example-6"></a>
+
+**Generated example:**
+
+```json
+{
+  "corte": "2026-11",
+  "fechaCorte": "2026-11-07",
+  "publicadoEn": "2026-11-15T17:43:18Z",
+  "geometria": "mgn-2025",
+  "fuentes": [
+    {
+      "id": "jbjy-vk9h",
+      "nombre": "SECOP II – Contratos",
+      "entidad": "Colombia Compra Eficiente",
+      "url": "https://www.datos.gov.co/d/jbjy-vk9h",
+      "licencia": "CC BY-SA 4.0"
+    }
+  ]
+}
+```
+
+##### 500 Error inesperado del servidor.
+
+**Content type:** `application/json`
+
+no additional properties
+
+- **`error` (required)**: `string`, const: `"error_interno"`
+
+<a id="scalar-example-7"></a>
+
+**Generated example:**
+
+```json
+{
+  "error": "error_interno"
+}
+```
+
+##### 503 No hay un corte mensual publicado o sus archivos no son coherentes.
+
+**Content type:** `application/json`
+
+no additional properties
+
+- **`error` (required)**: `string`, const: `"corte_no_disponible"`
+
+<a id="scalar-example-8"></a>
+
+**Generated example:**
+
+```json
+{
+  "error": "corte_no_disponible"
+}
+```
 
 <a id="scalar-operation-get-apimapamunicipios"></a>
 
@@ -98,9 +257,74 @@ Metadatos del corte de datos publicado y sus fuentes.
 
 ##### 200 Municipios del corte.
 
-##### 500 Error inesperado del servidor. Cuerpo: \`{ "error": "error_interno" }\`.
+**Content type:** `application/json`
 
-##### 503 No hay un corte mensual publicado o sus archivos no son coherentes. Cuerpo: \`{ "error": "corte_no_disponible" }\`.
+[MunicipiosDelCorte](#scalar-schema-municipiosdelcorte)
+
+Municipios del corte vigente.
+
+<a id="scalar-example-9"></a>
+
+**Generated example:**
+
+```json
+{
+  "corte": "2026-11",
+  "ventana": {
+    "desde": 2021,
+    "hasta": 2026
+  },
+  "municipios": [
+    {
+      "codigo": "05001",
+      "nombre": "Medellín",
+      "tipo": "municipio",
+      "departamento": {
+        "codigo": "05",
+        "iso": "CO-ANT",
+        "nombre": "Antioquia"
+      },
+      "contratosUbicados": 356935
+    }
+  ]
+}
+```
+
+##### 500 Error inesperado del servidor.
+
+**Content type:** `application/json`
+
+no additional properties
+
+- **`error` (required)**: `string`, const: `"error_interno"`
+
+<a id="scalar-example-10"></a>
+
+**Generated example:**
+
+```json
+{
+  "error": "error_interno"
+}
+```
+
+##### 503 No hay un corte mensual publicado o sus archivos no son coherentes.
+
+**Content type:** `application/json`
+
+no additional properties
+
+- **`error` (required)**: `string`, const: `"corte_no_disponible"`
+
+<a id="scalar-example-11"></a>
+
+**Generated example:**
+
+```json
+{
+  "error": "corte_no_disponible"
+}
+```
 
 <a id="scalar-operation-get-apimapadepartamentos"></a>
 
@@ -117,9 +341,76 @@ Departamentos con sus agregados y el total nacional.
 
 ##### 200 Departamentos del corte.
 
-##### 500 Error inesperado del servidor. Cuerpo: \`{ "error": "error_interno" }\`.
+**Content type:** `application/json`
 
-##### 503 No hay un corte mensual publicado o sus archivos no son coherentes. Cuerpo: \`{ "error": "corte_no_disponible" }\`.
+[DepartamentosDelCorte](#scalar-schema-departamentosdelcorte)
+
+Departamentos del corte vigente con sus agregados y el total nacional.
+
+<a id="scalar-example-12"></a>
+
+**Generated example:**
+
+```json
+{
+  "corte": "2026-11",
+  "ventana": {
+    "desde": 2021,
+    "hasta": 2026
+  },
+  "nacional": {
+    "contratos": 0,
+    "contratosEnMunicipios": 0,
+    "contratosSoloDepartamento": 0,
+    "contratosSinLugar": 0
+  },
+  "departamentos": [
+    {
+      "codigo": "05",
+      "iso": "CO-ANT",
+      "nombre": "Antioquia",
+      "contratosEnMunicipios": 0,
+      "contratosSoloDepartamento": 0
+    }
+  ]
+}
+```
+
+##### 500 Error inesperado del servidor.
+
+**Content type:** `application/json`
+
+no additional properties
+
+- **`error` (required)**: `string`, const: `"error_interno"`
+
+<a id="scalar-example-13"></a>
+
+**Generated example:**
+
+```json
+{
+  "error": "error_interno"
+}
+```
+
+##### 503 No hay un corte mensual publicado o sus archivos no son coherentes.
+
+**Content type:** `application/json`
+
+no additional properties
+
+- **`error` (required)**: `string`, const: `"corte_no_disponible"`
+
+<a id="scalar-example-14"></a>
+
+**Generated example:**
+
+```json
+{
+  "error": "corte_no_disponible"
+}
+```
 
 <a id="scalar-operation-get-apimapamunicipioscodigo"></a>
 
@@ -130,20 +421,525 @@ Departamentos con sus agregados y el total nacional.
 - **Operation ID:** `getApiMapaMunicipiosByCodigo`
 - **Tags:** Mapa
 
-Datos del municipio (código DIVIPOLA de 5 dígitos) en el corte vigente.
+Datos del municipio en el corte vigente.
 
 #### Path parameters
 
-- **`codigo` (required)**: `string`
+- **`codigo` (required)**: `string`, pattern: `^\d{5}$`
+
+  Código DIVIPOLA del municipio (5 dígitos).
 
 #### Responses
 
 ##### 200 Municipio seleccionado.
 
-##### 400 El código DIVIPOLA no tiene el formato esperado. Cuerpo: \`{ "error": "codigo_invalido" }\`.
+**Content type:** `application/json`
 
-##### 404 El municipio no está en el corte vigente. Cuerpo: \`{ "error": "municipio_no_encontrado" }\`.
+[MunicipioSeleccionado](#scalar-schema-municipioseleccionado)
 
-##### 500 Error inesperado del servidor. Cuerpo: \`{ "error": "error_interno" }\`.
+Un municipio del corte vigente, con el corte y la ventana a los que pertenece.
 
-##### 503 No hay un corte mensual publicado o sus archivos no son coherentes. Cuerpo: \`{ "error": "corte_no_disponible" }\`.
+<a id="scalar-example-15"></a>
+
+**Generated example:**
+
+```json
+{
+  "corte": "2026-11",
+  "ventana": {
+    "desde": 2021,
+    "hasta": 2026
+  },
+  "codigo": "05001",
+  "nombre": "Medellín",
+  "tipo": "municipio",
+  "departamento": {
+    "codigo": "05",
+    "iso": "CO-ANT",
+    "nombre": "Antioquia"
+  },
+  "contratosUbicados": 356935
+}
+```
+
+##### 400 El código DIVIPOLA no tiene el formato esperado.
+
+**Content type:** `application/json`
+
+no additional properties
+
+- **`error` (required)**: `string`, const: `"codigo_invalido"`
+
+<a id="scalar-example-16"></a>
+
+**Generated example:**
+
+```json
+{
+  "error": "codigo_invalido"
+}
+```
+
+##### 404 El municipio no está en el corte vigente.
+
+**Content type:** `application/json`
+
+no additional properties
+
+- **`error` (required)**: `string`, const: `"municipio_no_encontrado"`
+
+<a id="scalar-example-17"></a>
+
+**Generated example:**
+
+```json
+{
+  "error": "municipio_no_encontrado"
+}
+```
+
+##### 500 Error inesperado del servidor.
+
+**Content type:** `application/json`
+
+no additional properties
+
+- **`error` (required)**: `string`, const: `"error_interno"`
+
+<a id="scalar-example-18"></a>
+
+**Generated example:**
+
+```json
+{
+  "error": "error_interno"
+}
+```
+
+##### 503 No hay un corte mensual publicado o sus archivos no son coherentes.
+
+**Content type:** `application/json`
+
+no additional properties
+
+- **`error` (required)**: `string`, const: `"corte_no_disponible"`
+
+<a id="scalar-example-19"></a>
+
+**Generated example:**
+
+```json
+{
+  "error": "corte_no_disponible"
+}
+```
+
+## Schemas
+
+<a id="scalar-schema-salud"></a>
+
+### Salud
+
+**Type:** `object`, no additional properties
+
+- **`ok` (required)**: `boolean`, const: `true`
+
+<a id="scalar-example-20"></a>
+
+**Generated example:**
+
+```json
+{
+  "ok": true
+}
+```
+
+<a id="scalar-schema-resumenterritorial"></a>
+
+### ResumenTerritorial
+
+**Type:** `object`, no additional properties
+
+Ejemplo del arquetipo con cifras ficticias (docs/arquitectura.md).
+
+- **`codigo` (required)**: `string`, pattern: `^(\d{2}|\d{5})$`
+
+  Código DIVIPOLA: 2 dígitos (departamento) o 5 (municipio).
+- **`gastoActualCentavos` (required)**: `integer`, minimum: `0`, maximum: `9007199254740991`
+
+  Gasto actual, en centavos de peso colombiano.
+- **`nombre` (required)**: `string`
+- **`obrasConRetraso` (required)**: `integer`, minimum: `0`, maximum: `9007199254740991`
+- **`presupuestoAsignadoCentavos` (required)**: `integer`, minimum: `0`, maximum: `9007199254740991`
+
+  Presupuesto asignado, en centavos de peso colombiano.
+- **`totalObras` (required)**: `integer`, minimum: `0`, maximum: `9007199254740991`
+
+<a id="scalar-example-21"></a>
+
+**Generated example:**
+
+```json
+{
+  "codigo": "05",
+  "nombre": "Antioquia",
+  "presupuestoAsignadoCentavos": 100050,
+  "gastoActualCentavos": 40000,
+  "totalObras": 10,
+  "obrasConRetraso": 2
+}
+```
+
+<a id="scalar-schema-fuente"></a>
+
+### Fuente
+
+**Type:** `object`, no additional properties
+
+Fuente de datos abiertos del corte.
+
+- **`entidad` (required)**: `string`
+- **`id` (required)**: `string`
+
+  Id del conjunto de datos.
+- **`licencia` (required)**: `string`
+- **`nombre` (required)**: `string`
+- **`url` (required)**: `string`, format: `uri`
+
+<a id="scalar-example-22"></a>
+
+**Generated example:**
+
+```json
+{
+  "id": "jbjy-vk9h",
+  "nombre": "SECOP II – Contratos",
+  "entidad": "Colombia Compra Eficiente",
+  "url": "https://www.datos.gov.co/d/jbjy-vk9h",
+  "licencia": "CC BY-SA 4.0"
+}
+```
+
+<a id="scalar-schema-cortevigente"></a>
+
+### CorteVigente
+
+**Type:** `object`, no additional properties
+
+Corte mensual vigente y sus fuentes.
+
+- **`corte` (required)**: `string`, pattern: `^\d{4}-(0[1-9]|1[0-2])$`
+
+  Corte mensual, `AAAA-MM`.
+- **`fechaCorte` (required)**: `string`, format: `date`, pattern: `^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$`
+
+  Fecha hasta la que llegan los datos (hora de Colombia).
+- **`fuentes` (required)**: array of [Fuente](#scalar-schema-fuente)
+- **`geometria` (required)**: `string`
+
+  Versión de la geometría. La app la sirve como archivo estático en `/geometria/<versión>.topojson`.
+- **`publicadoEn` (required)**: `string`, format: `date-time`, pattern: `^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$`
+
+  Fecha y hora (UTC) en que el pipeline publicó el corte.
+
+<a id="scalar-example-23"></a>
+
+**Generated example:**
+
+```json
+{
+  "corte": "2026-11",
+  "fechaCorte": "2026-11-07",
+  "publicadoEn": "2026-11-15T17:43:18Z",
+  "geometria": "mgn-2025",
+  "fuentes": [
+    {
+      "id": "jbjy-vk9h",
+      "nombre": "SECOP II – Contratos",
+      "entidad": "Colombia Compra Eficiente",
+      "url": "https://www.datos.gov.co/d/jbjy-vk9h",
+      "licencia": "CC BY-SA 4.0"
+    }
+  ]
+}
+```
+
+<a id="scalar-schema-ventana"></a>
+
+### Ventana
+
+**Type:** `object`, no additional properties
+
+Años de firma que se cuentan, ambos incluidos.
+
+- **`desde` (required)**: `integer`, minimum: `-9007199254740991`, maximum: `9007199254740991`
+- **`hasta` (required)**: `integer`, minimum: `-9007199254740991`, maximum: `9007199254740991`
+
+<a id="scalar-example-24"></a>
+
+**Generated example:**
+
+```json
+{
+  "desde": 2021,
+  "hasta": 2026
+}
+```
+
+<a id="scalar-schema-municipiodelmapa"></a>
+
+### MunicipioDelMapa
+
+**Type:** `object`, no additional properties
+
+- **`codigo` (required)**: `string`, pattern: `^\d{5}$`
+
+  Código DIVIPOLA de 5 dígitos, con su cero inicial.
+- **`contratosUbicados` (required)**
+
+  Contratos ubicados en el municipio dentro de la ventana. `null` significa «Sin datos» (ninguno ubicado), nunca 0.
+
+  **Any of:**
+  - `integer`, maximum: `9007199254740991`, exclusiveMinimum: `0`
+  - `null`
+- **`departamento` (required)**: `object`, no additional properties
+  - **`codigo` (required)**: `string`, pattern: `^\d{2}$`
+
+    Código DIVIPOLA del departamento (2 dígitos).
+  - **`iso` (required)**: `string`, pattern: `^CO-[A-Z]{2,3}$`
+
+    Código ISO 3166-2:CO del departamento.
+  - **`nombre` (required)**: `string`
+- **`nombre` (required)**: `string`
+- **`tipo` (required)**: `string`, possible values: `"municipio", "area_no_municipalizada", "isla"`
+
+<a id="scalar-example-25"></a>
+
+**Generated example:**
+
+```json
+{
+  "codigo": "05001",
+  "nombre": "Medellín",
+  "tipo": "municipio",
+  "departamento": {
+    "codigo": "05",
+    "iso": "CO-ANT",
+    "nombre": "Antioquia"
+  },
+  "contratosUbicados": 356935
+}
+```
+
+<a id="scalar-schema-municipiosdelcorte"></a>
+
+### MunicipiosDelCorte
+
+**Type:** `object`, no additional properties
+
+Municipios del corte vigente.
+
+- **`corte` (required)**: `string`, pattern: `^\d{4}-(0[1-9]|1[0-2])$`
+
+  Corte mensual, `AAAA-MM`.
+- **`municipios` (required)**: array of [MunicipioDelMapa](#scalar-schema-municipiodelmapa)
+- **`ventana` (required)**: [Ventana](#scalar-schema-ventana)
+
+  Años de firma que se cuentan, ambos incluidos.
+
+<a id="scalar-example-26"></a>
+
+**Generated example:**
+
+```json
+{
+  "corte": "2026-11",
+  "ventana": {
+    "desde": 2021,
+    "hasta": 2026
+  },
+  "municipios": [
+    {
+      "codigo": "05001",
+      "nombre": "Medellín",
+      "tipo": "municipio",
+      "departamento": {
+        "codigo": "05",
+        "iso": "CO-ANT",
+        "nombre": "Antioquia"
+      },
+      "contratosUbicados": 356935
+    }
+  ]
+}
+```
+
+<a id="scalar-schema-totalnacional"></a>
+
+### TotalNacional
+
+**Type:** `object`, no additional properties
+
+Cada contrato de la ventana cae en un solo nivel: `contratos` es la suma de los otros tres.
+
+- **`contratos` (required)**: `integer`, minimum: `0`, maximum: `9007199254740991`
+- **`contratosEnMunicipios` (required)**: `integer`, minimum: `0`, maximum: `9007199254740991`
+
+  Ubicados en un municipio.
+- **`contratosSinLugar` (required)**: `integer`, minimum: `0`, maximum: `9007199254740991`
+
+  Sin municipio ni departamento.
+- **`contratosSoloDepartamento` (required)**: `integer`, minimum: `0`, maximum: `9007199254740991`
+
+  Ubicados solo en un departamento: gobernaciones, varios municipios o sede incierta.
+
+<a id="scalar-example-27"></a>
+
+**Generated example:**
+
+```json
+{
+  "contratos": 0,
+  "contratosEnMunicipios": 0,
+  "contratosSoloDepartamento": 0,
+  "contratosSinLugar": 0
+}
+```
+
+<a id="scalar-schema-departamentodelmapa"></a>
+
+### DepartamentoDelMapa
+
+**Type:** `object`, no additional properties
+
+- **`codigo` (required)**: `string`, pattern: `^\d{2}$`
+
+  Código DIVIPOLA del departamento (2 dígitos).
+- **`contratosEnMunicipios` (required)**: `integer`, minimum: `0`, maximum: `9007199254740991`
+
+  Suma de `contratosUbicados` de sus municipios. Es una medición: 0 es un cero real.
+- **`contratosSoloDepartamento` (required)**: `integer`, minimum: `0`, maximum: `9007199254740991`
+- **`iso` (required)**: `string`, pattern: `^CO-[A-Z]{2,3}$`
+
+  Código ISO 3166-2:CO del departamento.
+- **`nombre` (required)**: `string`
+
+<a id="scalar-example-28"></a>
+
+**Generated example:**
+
+```json
+{
+  "codigo": "05",
+  "iso": "CO-ANT",
+  "nombre": "Antioquia",
+  "contratosEnMunicipios": 0,
+  "contratosSoloDepartamento": 0
+}
+```
+
+<a id="scalar-schema-departamentosdelcorte"></a>
+
+### DepartamentosDelCorte
+
+**Type:** `object`, no additional properties
+
+Departamentos del corte vigente con sus agregados y el total nacional.
+
+- **`corte` (required)**: `string`, pattern: `^\d{4}-(0[1-9]|1[0-2])$`
+
+  Corte mensual, `AAAA-MM`.
+- **`departamentos` (required)**: array of [DepartamentoDelMapa](#scalar-schema-departamentodelmapa)
+- **`nacional` (required)**: [TotalNacional](#scalar-schema-totalnacional)
+
+  Cada contrato de la ventana cae en un solo nivel: `contratos` es la suma de los otros tres.
+- **`ventana` (required)**: [Ventana](#scalar-schema-ventana)
+
+  Años de firma que se cuentan, ambos incluidos.
+
+<a id="scalar-example-29"></a>
+
+**Generated example:**
+
+```json
+{
+  "corte": "2026-11",
+  "ventana": {
+    "desde": 2021,
+    "hasta": 2026
+  },
+  "nacional": {
+    "contratos": 0,
+    "contratosEnMunicipios": 0,
+    "contratosSoloDepartamento": 0,
+    "contratosSinLugar": 0
+  },
+  "departamentos": [
+    {
+      "codigo": "05",
+      "iso": "CO-ANT",
+      "nombre": "Antioquia",
+      "contratosEnMunicipios": 0,
+      "contratosSoloDepartamento": 0
+    }
+  ]
+}
+```
+
+<a id="scalar-schema-municipioseleccionado"></a>
+
+### MunicipioSeleccionado
+
+**Type:** `object`, no additional properties
+
+Un municipio del corte vigente, con el corte y la ventana a los que pertenece.
+
+- **`codigo` (required)**: `string`, pattern: `^\d{5}$`
+
+  Código DIVIPOLA de 5 dígitos, con su cero inicial.
+- **`contratosUbicados` (required)**
+
+  Contratos ubicados en el municipio dentro de la ventana. `null` significa «Sin datos» (ninguno ubicado), nunca 0.
+
+  **Any of:**
+  - `integer`, maximum: `9007199254740991`, exclusiveMinimum: `0`
+  - `null`
+- **`corte` (required)**: `string`, pattern: `^\d{4}-(0[1-9]|1[0-2])$`
+
+  Corte mensual, `AAAA-MM`.
+- **`departamento` (required)**: `object`, no additional properties
+  - **`codigo` (required)**: `string`, pattern: `^\d{2}$`
+
+    Código DIVIPOLA del departamento (2 dígitos).
+  - **`iso` (required)**: `string`, pattern: `^CO-[A-Z]{2,3}$`
+
+    Código ISO 3166-2:CO del departamento.
+  - **`nombre` (required)**: `string`
+- **`nombre` (required)**: `string`
+- **`tipo` (required)**: `string`, possible values: `"municipio", "area_no_municipalizada", "isla"`
+- **`ventana` (required)**: [Ventana](#scalar-schema-ventana)
+
+  Años de firma que se cuentan, ambos incluidos.
+
+<a id="scalar-example-30"></a>
+
+**Generated example:**
+
+```json
+{
+  "corte": "2026-11",
+  "ventana": {
+    "desde": 2021,
+    "hasta": 2026
+  },
+  "codigo": "05001",
+  "nombre": "Medellín",
+  "tipo": "municipio",
+  "departamento": {
+    "codigo": "05",
+    "iso": "CO-ANT",
+    "nombre": "Antioquia"
+  },
+  "contratosUbicados": 356935
+}
+```

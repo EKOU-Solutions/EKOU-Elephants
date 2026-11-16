@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { crearApp } from '../app';
 import type { Queryable } from '../db';
-import { ENRIQUECIMIENTO_RUTAS, generarDocumentos, RUTAS_DOCUMENTACION } from './openapi';
+import { generarDocumentos, RUTAS_DOCUMENTACION } from './openapi';
 
 const db: Queryable = {
   async query() {
@@ -34,12 +34,20 @@ describe('documentos generados en build', () => {
   });
 });
 
+interface Operacion {
+  summary?: string;
+  tags?: string[];
+  parameters?: { name: string; schema?: { pattern?: string } }[];
+  responses: Record<string, { content?: { 'application/json'?: { schema?: unknown } } }>;
+}
+
 async function openApi() {
   const res = await crearApp(db).request('/api/openapi.json');
   expect(res.status).toBe(200);
   return (await res.json()) as {
     openapi: string;
-    paths: Record<string, { get?: { responses: Record<string, unknown>; summary?: string } }>;
+    paths: Record<string, { get?: Operacion }>;
+    components?: { schemas?: Record<string, unknown> };
   };
 }
 
@@ -56,13 +64,29 @@ describe('GET /api/openapi.json', () => {
     for (const ruta of RUTAS_DOCUMENTACION) expect(spec.paths).not.toHaveProperty(ruta);
   });
 
-  it('el enriquecimiento corresponde a rutas existentes y añade los errores conocidos', async () => {
+  it('cada ruta tiene resumen, etiqueta y el body JSON de cada respuesta (200 y errores)', async () => {
     const spec = await openApi();
-    expect([...ENRIQUECIMIENTO_RUTAS].sort()).toEqual([...RUTAS_API].sort());
-    expect(spec.paths['/api/mapa/corte']?.get?.summary).toBe('Corte mensual vigente');
-    expect(spec.paths['/api/mapa/municipios/{codigo}']?.get?.responses).toHaveProperty('400');
-    expect(spec.paths['/api/mapa/municipios/{codigo}']?.get?.responses).toHaveProperty('404');
-    expect(spec.paths['/api/mapa/corte']?.get?.responses).toHaveProperty('503');
+    for (const ruta of RUTAS_API) {
+      const operacion = spec.paths[ruta]?.get;
+      expect(operacion?.summary, ruta).toBeTruthy();
+      expect(operacion?.tags?.length, ruta).toBeGreaterThan(0);
+      expect(operacion?.responses, ruta).toHaveProperty('200');
+      for (const [estado, respuesta] of Object.entries(operacion?.responses ?? {})) {
+        expect(respuesta.content?.['application/json']?.schema, `${ruta} ${estado}`).toBeDefined();
+      }
+    }
+  });
+
+  it('documenta los campos del body con sus tipos y el patrón del código DIVIPOLA', async () => {
+    const spec = await openApi();
+    expect(spec.components?.schemas).toHaveProperty('MunicipioSeleccionado');
+    expect(spec.components?.schemas?.MunicipioSeleccionado).toMatchObject({
+      type: 'object',
+      additionalProperties: false,
+      properties: { contratosUbicados: { anyOf: [{ type: 'integer' }, { type: 'null' }] } },
+    });
+    const parametro = spec.paths['/api/mapa/municipios/{codigo}']?.get?.parameters?.[0];
+    expect(parametro).toMatchObject({ name: 'codigo', schema: { pattern: '^\\d{5}$' } });
   });
 });
 
