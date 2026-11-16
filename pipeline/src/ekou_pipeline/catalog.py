@@ -34,6 +34,13 @@ class DatasetSpec:
 
     description: str = ""
 
+    min_rows: int = 0
+    """Mínimo de filas que debe traer la fuente para publicar el corte (compuerta de calidad).
+    Se fija cerca del 90 % de lo extraído en el corte 2026-11: SECOP solo crece, así que una
+    caída grande es una recarga del origen que quedó a medias, no un cambio real. El 15 de
+    noviembre de 2026, SECOP II Procesos quedó con 1.000 filas de 9,4 M y su ``count(*)``
+    también decía 1.000, así que la extracción no lo podía notar."""
+
     @property
     def schema_fingerprint(self) -> str:
         """Huella de las columnas: si cambian, las particiones ya extraídas dejan de valer."""
@@ -47,6 +54,7 @@ def _prefix_partitions(column: str, prefix: str) -> tuple[tuple[str, str], ...]:
 
 SECOP_CONTRATOS = DatasetSpec(
     key="secop_contratos",
+    min_rows=5_100_000,  # 2026-11: 5.716.934
     socrata_id="jbjy-vk9h",
     description="SECOP II – Contratos Electrónicos",
     year_partition_column="fecha_de_firma",
@@ -88,6 +96,7 @@ SECOP_CONTRATOS = DatasetSpec(
 
 SECOP_PROCESOS = DatasetSpec(
     key="secop_procesos",
+    min_rows=8_500_000,  # 2026-11 (POC): 9.446.763
     socrata_id="p6dx-8zbt",
     description="SECOP II – Procesos de Contratación (valor inicial, competencia, duración)",
     year_partition_column="fecha_de_publicacion_del",
@@ -126,6 +135,7 @@ SECOP_PROCESOS = DatasetSpec(
 
 SECOP_UBICACIONES = DatasetSpec(
     key="secop_ubicaciones",
+    min_rows=5_800_000,  # 2026-11: 6.491.787
     socrata_id="gra4-pcp2",
     description="SECOP II – Ubicaciones de ejecución de los contratos",
     explicit_partitions=_prefix_partitions("id_contrato", "CO1.PCCNTR."),
@@ -141,6 +151,7 @@ SECOP_UBICACIONES = DatasetSpec(
 
 SECOP_I = DatasetSpec(
     key="secop_i",
+    min_rows=5_800_000,  # 2026-11: 6.486.256
     socrata_id="f789-7hwg",
     description="SECOP I – Procesos de Compra Pública (contratación que no pasa por SECOP II)",
     year_partition_column="fecha_de_firma_del_contrato",
@@ -186,6 +197,7 @@ SECOP_I = DatasetSpec(
 
 DIVIPOLA = DatasetSpec(
     key="divipola",
+    min_rows=1_100,  # 1.122 municipios
     socrata_id="gdxc-w37w",
     description="DANE – Códigos de municipios (DIVIPOLA)",
     columns=("cod_dpto", "dpto", "cod_mpio", "nom_mpio", "tipo_municipio", "longitud", "latitud"),

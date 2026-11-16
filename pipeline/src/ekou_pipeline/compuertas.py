@@ -1,9 +1,9 @@
 """Compuertas de calidad del corte (ADR 0002, decisión 5.3).
 
 Las pruebas de dbt detienen el corte si un dato está mal. Las compuertas lo detienen si el
-corte en conjunto se ve mal: una fuente vacía, la cobertura del mapa por debajo del umbral, o
-una caída brusca frente al corte anterior (por ejemplo, una vista de SECOP que queda vacía sin
-dar error). Si alguna falla, el corte no se publica y se mantiene el anterior.
+corte en conjunto se ve mal: una fuente que llega casi vacía, la cobertura del mapa por debajo
+del umbral, o una caída brusca frente al corte anterior (por ejemplo, una vista de SECOP que
+queda vacía sin dar error). Si alguna falla, el corte no se publica y se mantiene el anterior.
 """
 
 import csv
@@ -13,6 +13,8 @@ from pathlib import Path
 import duckdb
 import structlog
 
+from ekou_pipeline.bronze import extracted_rows
+from ekou_pipeline.catalog import CATALOG
 from ekou_pipeline.config import Settings
 
 log = structlog.get_logger(__name__)
@@ -34,12 +36,16 @@ class _Fuente:
 
 
 def evaluar(
-    conn: duckdb.DuckDBPyConnection, settings: Settings, *, anterior: Path | None = None
+    conn: duckdb.DuckDBPyConnection,
+    settings: Settings,
+    *,
+    corte: str,
+    anterior: Path | None = None,
 ) -> list[Resultado]:
-    """Evalúa todas las compuertas sobre la base del corte; ``anterior`` es el
+    """Evalúa todas las compuertas sobre el bronze y la base del corte; ``anterior`` es el
     ``calidad_corte.csv`` publicado del corte previo, si existe."""
+    resultados = _filas_extraidas(settings, corte)
     actual = _fuentes_actuales(conn)
-    resultados: list[Resultado] = []
 
     for fuente in FUENTES:
         datos = actual.get(fuente)
@@ -69,6 +75,22 @@ def evaluar(
 
     if anterior is not None:
         resultados += _comparar(actual, _fuentes_anteriores(anterior), settings)
+    return resultados
+
+
+def _filas_extraidas(settings: Settings, corte: str) -> list[Resultado]:
+    """Cada fuente debe traer al menos su mínimo del catálogo. Detecta un origen que se recargó
+    a medias: su ``count(*)`` también cae, así que la extracción cuadra y no lo nota."""
+    resultados = []
+    for spec in CATALOG.values():
+        filas = extracted_rows(settings.data_dir, corte, spec)
+        resultados.append(
+            Resultado(
+                f"{spec.key}: filas extraídas",
+                f"{filas:,} (mínimo {spec.min_rows:,})",
+                filas >= spec.min_rows and filas > 0,
+            )
+        )
     return resultados
 
 

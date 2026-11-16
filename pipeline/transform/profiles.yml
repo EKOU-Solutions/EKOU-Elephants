@@ -4,7 +4,10 @@ ekou:
     local:
       type: duckdb
       path: "{{ env_var('EKOU_DATA_DIR', 'data') }}/ekou.duckdb"
-      threads: 2
+      # Un modelo a la vez: los temporales de DuckDB son de toda la base, y dos modelos
+      # grandes en paralelo (int_contratos_secop_i e int_ubicacion_secop_ii) agotaron
+      # entre los dos los 20 GiB en el corte 2026-11 en GitHub Actions.
+      threads: 1
       settings:
         # Límites explícitos: el corte nacional (~28 M filas) no cabe en memoria y DuckDB
         # usa disco temporal. Sin estos valores, el límite de temporales se calcula mal.
