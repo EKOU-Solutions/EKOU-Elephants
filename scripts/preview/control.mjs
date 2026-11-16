@@ -63,6 +63,8 @@ export function renderizarComentario({
     : datosCorte
       ? `de producción \`${WORKER_DATOS}\` (solo lectura)`
       : 'sin datos del corte (`DATOS_CORTE_ENABLED` apagada)';
+  // La API vive en el mismo Worker bajo `/api`.
+  const api = url ? new URL('api', url).href : undefined;
   const estados = {
     desplegado: `✅ Desplegado desde \`${sha.slice(0, 7)}\``,
     desplegando: `⏳ Desplegando \`${sha.slice(0, 7)}\`…`,
@@ -80,7 +82,8 @@ export function renderizarComentario({
     '',
     '| | |',
     '| --- | --- |',
-    `| App y API | ${url ? `[${url}](${url})` : '—'} |`,
+    `| App | ${url ? `[${url}](${url})` : '—'} |`,
+    `| API | ${api ? `[${api}](${api})` : '—'} |`,
     `| Storybook (sistema de diseño) | ${url ? `[${STORYBOOK_PATH}](${new URL(STORYBOOK_PATH, url).href})` : '—'} |`,
     `| Base de datos | ${bd} |`,
     `| Datos del corte | ${datos} |`,

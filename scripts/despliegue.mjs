@@ -196,7 +196,7 @@ export async function desplegarPreview({
   await verify(url);
   resumen(
     env,
-    `### ${env.PREVIEW_NAME}\n\nApp y API: [abrir preview](${url}) · Storybook: [sistema de diseño](${new URL(STORYBOOK_PATH, url).href})`,
+    `### ${env.PREVIEW_NAME}\n\n- App: [abrir preview](${url})\n- API: [${url}api](${url}api)\n- Storybook: [sistema de diseño](${new URL(STORYBOOK_PATH, url).href})`,
   );
   if (env.GITHUB_OUTPUT) appendFileSync(env.GITHUB_OUTPUT, `url=${url}\n`);
   return url;
