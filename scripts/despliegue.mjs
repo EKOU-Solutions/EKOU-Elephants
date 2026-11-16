@@ -194,7 +194,10 @@ export async function desplegarPreview({
   const url = new URL(direccion.startsWith('https://') ? direccion : `https://${direccion}`).href;
   console.log(`Preview: ${url}`);
   await verify(url);
-  resumen(env, `### ${env.PREVIEW_NAME}\n\nApp y API: [abrir preview](${url})`);
+  resumen(
+    env,
+    `### ${env.PREVIEW_NAME}\n\n- App: [abrir preview](${url})\n- API: [${url}api](${url}api)`,
+  );
   if (env.GITHUB_OUTPUT) appendFileSync(env.GITHUB_OUTPUT, `url=${url}\n`);
   return url;
 }
