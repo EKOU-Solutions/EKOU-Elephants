@@ -93,6 +93,14 @@ export function sourceParts(cut: CorteVigente): SourceLink[] {
   ];
 }
 
+/** Air around a municipality drawn alone, as a share of its larger side on each side. */
+const MARGIN = 0.06;
+/** A box grown by `share` of its larger side on every side. */
+function around(box: Box, share: number): Box {
+  const m = Math.max(box[2] - box[0], box[3] - box[1]) * share;
+  return [box[0] - m, box[1] - m, box[2] + m, box[3] + m];
+}
+
 /** Spanish alphabetical order by name («Ñ» after «N», accents ignored), for the tables. */
 const collator = new Intl.Collator('es-CO');
 export const byName = (a: { nombre: string }, b: { nombre: string }) =>
@@ -288,6 +296,10 @@ export function mapView(
   const box = boxes.length
     ? unionBox(boxes)
     : (map.departmentShapes.get(department)?.box ?? map.mainland);
+  // A chosen municipality is drawn alone and fills the frame (spec, decision 16). Without a shape
+  // in this geometry version, the department stays in view instead of an empty frame.
+  const selectedShape = selected ? shapeOf(selected) : undefined;
+  const drawn = selectedShape ? territories.filter((t) => t.code === selected) : territories;
   const name = map.departments.get(department)?.nombre ?? department;
   const selectedName = selected ? map.municipalities.get(selected)?.nombre : undefined;
   const labels = archipelago
@@ -304,20 +316,28 @@ export function mapView(
           : []),
       ];
   return {
-    title: `Mapa de ${name}${
-      selectedName ? ` con ${selectedName} seleccionado` : ' por municipio'
+    title: `${
+      selectedShape && selectedName
+        ? `Mapa de ${selectedName}, ${name}`
+        : `Mapa de ${name} por municipio`
     }. Los valores están en la tabla de municipios.`,
-    territories,
+    territories: drawn,
     // In the archipelago, room under the islands for their names.
-    box: archipelago ? [box[0], box[1], box[2], box[3] + (box[3] - box[1]) * 0.12] : box,
-    labels: labels.map(({ text, x, y, ...rest }) => ({
+    box: selectedShape
+      ? around(selectedShape.box, MARGIN)
+      : archipelago
+        ? [box[0], box[1], box[2], box[3] + (box[3] - box[1]) * 0.12]
+        : box,
+    // Alone in the frame, the municipality is already named by the heading above the map.
+    labels: (selectedShape ? [] : labels).map(({ text, x, y, ...rest }) => ({
       text,
       x,
       y,
       ...('dy' in rest ? { dy: rest.dy } : {}),
     })),
     selected,
-    withUnknown: territories.some((t) => t.fill === 'unknown'),
-    archipelago,
+    withUnknown: drawn.some((t) => t.fill === 'unknown'),
+    // Its note on the sea between the islands only applies when both are drawn.
+    archipelago: archipelago && !selectedShape,
   };
 }

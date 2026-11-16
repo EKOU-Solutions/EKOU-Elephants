@@ -1,8 +1,9 @@
 import type { MapRoute } from './mapModel';
 
 /**
- * Zoom between views (spec, decision 15): going from Colombia into a department, the map grows
- * toward that department until it fills the frame; going back, it shrinks into its place. Built on
+ * Zoom between views (spec, decisions 15 and 16): going from Colombia into a department, or from a
+ * department into a municipality, the map grows toward that place until it fills the frame; going
+ * back, it shrinks into its place. Built on
  * the View Transitions API: the map's `<svg>` carries `view-transition-name: map-zoom` (MapPage sets
  * it), and its two snapshots are animated with transforms measured on screen. Without the API, or
  * with reduced motion, the view changes at once.
@@ -75,14 +76,27 @@ const departmentOf = (route: MapRoute) =>
       ? route.code.slice(0, 2)
       : undefined;
 
-/** Which way to zoom, and around which department; none between views of the same scale. */
-export function zoomDirection(from: MapRoute, to: MapRoute) {
+type Focus = 'shape' | 'content';
+/**
+ * What the zoom follows: a place drawn in both views, measured in each as its own shape or as the
+ * whole drawing. Into a department, or from a department into one of its municipalities, the
+ * place's shape becomes the whole new drawing; going back, the drawing shrinks into that shape.
+ * None between two municipalities or two departments: the eye has nothing in common to follow.
+ */
+export function zoomPlan(
+  from: MapRoute,
+  to: MapRoute,
+): { code: string; old: Focus; new: Focus } | undefined {
   const fromDepartment = departmentOf(from);
   const toDepartment = departmentOf(to);
   if (from.view === 'country' && toDepartment)
-    return { direction: 'in' as const, code: toDepartment };
+    return { code: toDepartment, old: 'shape', new: 'content' };
   if (to.view === 'country' && fromDepartment)
-    return { direction: 'out' as const, code: fromDepartment };
+    return { code: fromDepartment, old: 'content', new: 'shape' };
+  if (from.view === 'department' && to.view === 'municipality' && fromDepartment === toDepartment)
+    return { code: to.code, old: 'shape', new: 'content' };
+  if (from.view === 'municipality' && to.view === 'department' && fromDepartment === toDepartment)
+    return { code: from.code, old: 'content', new: 'shape' };
   return undefined;
 }
 
@@ -102,7 +116,7 @@ const shape = (svg: SVGSVGElement | null, code: string) =>
  * transition when the views allow one; otherwise just runs it.
  */
 export function withMapZoom(from: MapRoute, to: MapRoute, update: () => void): void {
-  const zoom = zoomDirection(from, to);
+  const zoom = zoomPlan(from, to);
   const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
   if (!zoom || reduced || typeof document.startViewTransition !== 'function') {
     update();
@@ -110,7 +124,7 @@ export function withMapZoom(from: MapRoute, to: MapRoute, update: () => void): v
   }
   const oldSvg = mapSvg();
   const oldFrame = rectOf(oldSvg);
-  const oldFocus = zoom.direction === 'in' ? shape(oldSvg, zoom.code) : content(oldSvg);
+  const oldFocus = zoom.old === 'shape' ? shape(oldSvg, zoom.code) : content(oldSvg);
   if (!oldFrame || !oldFocus) {
     update();
     return;
@@ -120,7 +134,7 @@ export function withMapZoom(from: MapRoute, to: MapRoute, update: () => void): v
     update();
     const newSvg = mapSvg();
     const newFrame = rectOf(newSvg);
-    const newFocus = zoom.direction === 'in' ? content(newSvg) : shape(newSvg, zoom.code);
+    const newFocus = zoom.new === 'shape' ? shape(newSvg, zoom.code) : content(newSvg);
     if (newFrame && newFocus) frames = zoomKeyframes(oldFrame, oldFocus, newFrame, newFocus);
   });
   transition.ready

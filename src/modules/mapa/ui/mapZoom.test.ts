@@ -1,30 +1,45 @@
 import { describe, expect, it } from 'vitest';
-import { placement, rectToRect, zoomDirection, zoomKeyframes } from './mapZoom';
+import { placement, rectToRect, zoomKeyframes, zoomPlan } from './mapZoom';
 
-describe('zoomDirection', () => {
-  it('zooms in from Colombia to a department or a municipality, around its department', () => {
-    expect(zoomDirection({ view: 'country' }, { view: 'department', code: '05' })).toEqual({
-      direction: 'in',
+describe('zoomPlan', () => {
+  it('into a department: its shape in Colombia becomes the whole new drawing', () => {
+    expect(zoomPlan({ view: 'country' }, { view: 'department', code: '05' })).toEqual({
       code: '05',
+      old: 'shape',
+      new: 'content',
     });
-    expect(zoomDirection({ view: 'country' }, { view: 'municipality', code: '94884' })).toEqual({
-      direction: 'in',
-      code: '94',
+    expect(zoomPlan({ view: 'country' }, { view: 'municipality', code: '94884' })?.code).toBe('94');
+  });
+
+  it('back to Colombia: the drawing shrinks into the department it came from', () => {
+    expect(zoomPlan({ view: 'municipality', code: '05001' }, { view: 'country' })).toEqual({
+      code: '05',
+      old: 'content',
+      new: 'shape',
     });
   });
 
-  it('zooms out back to Colombia, into the department it came from', () => {
-    expect(zoomDirection({ view: 'municipality', code: '05001' }, { view: 'country' })).toEqual({
-      direction: 'out',
-      code: '05',
-    });
+  it('into a municipality: its shape in the department becomes the whole new drawing', () => {
+    const into = zoomPlan(
+      { view: 'department', code: '05' },
+      { view: 'municipality', code: '05001' },
+    );
+    expect(into).toEqual({ code: '05001', old: 'shape', new: 'content' });
+    const back = zoomPlan(
+      { view: 'municipality', code: '05001' },
+      { view: 'department', code: '05' },
+    );
+    expect(back).toEqual({ code: '05001', old: 'content', new: 'shape' });
   });
 
-  it('does not zoom between views of the same scale', () => {
+  it('none between two municipalities, two departments, nor to an invalid link', () => {
     expect(
-      zoomDirection({ view: 'department', code: '05' }, { view: 'municipality', code: '05001' }),
+      zoomPlan({ view: 'municipality', code: '05001' }, { view: 'municipality', code: '05088' }),
     ).toBeUndefined();
-    expect(zoomDirection({ view: 'country' }, { view: 'invalid' })).toBeUndefined();
+    expect(
+      zoomPlan({ view: 'department', code: '05' }, { view: 'municipality', code: '94884' }),
+    ).toBeUndefined();
+    expect(zoomPlan({ view: 'country' }, { view: 'invalid' })).toBeUndefined();
   });
 });
 

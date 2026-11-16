@@ -105,3 +105,16 @@ describe('mapView with a geometry that lacks a municipality', () => {
     expect(view.box[2] - view.box[0]).toBeLessThanOrEqual(full.box[2] - full.box[0]);
   });
 });
+
+describe('mapView of a municipality', () => {
+  it('draws only the chosen municipality, filling the frame', async () => {
+    const { sampleMap } = await import('./sample');
+    const department = mapView(sampleMap, { view: 'department', code: '05' });
+    const medellin = mapView(sampleMap, { view: 'municipality', code: '05001' });
+    const width = (b: readonly number[]) => (b[2] ?? 0) - (b[0] ?? 0);
+    expect(medellin.territories.map((t) => t.code)).toEqual(['05001']);
+    expect(width(medellin.box)).toBeLessThan(width(department.box) / 5);
+    expect(medellin.labels).toEqual([]);
+    expect(medellin.title).toContain('Mapa de Medellín, Antioquia');
+  });
+});
