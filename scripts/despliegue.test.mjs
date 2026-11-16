@@ -28,7 +28,11 @@ const base = {
 };
 // Sin llamadas reales a Cloudflare: el Worker de datos existe y el binding no toca disco.
 const cf = (existe = true) => ({ existe: vi.fn(async () => existe), apuntar: vi.fn() });
-const respuestaPreview = JSON.stringify({ preview_urls: ['pr-12.ekou.workers.dev'] });
+// Forma real de `wrangler preview --json` (4.158.0), recortada.
+const respuestaPreview = JSON.stringify({
+  preview: { name: 'pr-12', urls: ['https://pr-12-ekou.workers.dev'] },
+  deployment: { id: 'd1', urls: ['https://d1-ekou.workers.dev'] },
+});
 
 describe('desplegarPreview', () => {
   it('rechaza configuración faltante o nombres inválidos sin ejecutar nada', async () => {
@@ -60,10 +64,18 @@ describe('desplegarPreview', () => {
     });
     const verify = vi.fn();
     const url = await desplegarPreview({ ...cf(), env: base, run, verify });
-    expect(url).toBe('https://pr-12.ekou.workers.dev/');
+    expect(url).toBe('https://pr-12-ekou.workers.dev/');
     expect(run).toHaveBeenCalledTimes(1);
     expect(verify).toHaveBeenCalledWith(url);
     expect(existsSync(archivo)).toBe(false);
+  });
+
+  it('sin URL del preview usa la del despliegue', async () => {
+    const run = vi.fn(() =>
+      JSON.stringify({ preview: { urls: [] }, deployment: { urls: ['d1-ekou.workers.dev'] } }),
+    );
+    const url = await desplegarPreview({ ...cf(), env: base, run, verify: vi.fn() });
+    expect(url).toBe('https://d1-ekou.workers.dev/');
   });
 
   it('con copia propia migra antes de desplegar', async () => {
@@ -105,8 +117,8 @@ describe('desplegarPreview', () => {
 
 describe('leerJsonDeWrangler', () => {
   it('ignora los avisos que Wrangler escribe antes del JSON', () => {
-    const salida = `Using redirected Wrangler configuration.\n - Configuration being used: "dist/x/wrangler.json"\n{\n  "preview_urls": ["a.dev"]\n}\n`;
-    expect(leerJsonDeWrangler(salida)).toEqual({ preview_urls: ['a.dev'] });
+    const salida = `Using redirected Wrangler configuration.\n - Configuration being used: "dist/x/wrangler.json"\n{\n  "preview": { "urls": ["a.dev"] }\n}\n`;
+    expect(leerJsonDeWrangler(salida)).toEqual({ preview: { urls: ['a.dev'] } });
     expect(() => leerJsonDeWrangler('sin json')).toThrow('JSON');
   });
 });
