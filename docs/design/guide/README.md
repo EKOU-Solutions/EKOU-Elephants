@@ -1,4 +1,4 @@
-# Design system guide v1.0
+# Design system guide v1.1
 
 Status: **Accepted** (2026-11-08). Task: [#6](https://github.com/EKOU-Solutions/EKOU-Elephants/issues/6). Origin: [Round 05: system reference](../rounds/05-system-reference/README.md). Decision record: [visual direction](../visual-direction.md#final-selection-2026-11-08).
 
@@ -16,6 +16,14 @@ This is the deliverable of TASK-05: an HTML guide, documentation for developers 
 python3 docs/design/guide/build.py
 open docs/design/guide/preview.html docs/design/guide/examples.html
 ```
+
+## Changes in v1.1 (2026-11-15)
+
+From the Map page ([Build a page](../pages/map/README.md), step 3), each approved by the user:
+
+- **Map with legend, neutral variant**: `el-fill-neutral`, `el-key-neutral`, set outline (`el-map-outline`, a drop-shadow outline in `--el-color-control-border`), hover and focus outline, archipelago inset (`el-map-inset`), HTML place labels (`el-map-frame`, `el-map-label`) and zoom buttons (`el-map-zoom`). No new tokens. Specimen: `preview.html#mapa-neutro`.
+- **Search results** (new component): `el-results`, `el-results-empty`, `el-results-status`. Up to 8 places with their department, in the page flow under a search Field. No new tokens. Specimen: `preview.html#resultados`.
+- **Field**: `::placeholder` in `--el-color-text-muted` (the browser default was 3.8:1 in dark, below 4.5:1). Fix to a core component.
 
 ## What v1.0 contains
 

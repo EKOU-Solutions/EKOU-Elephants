@@ -181,13 +181,15 @@ interface MunicipioSeleccionado extends MunicipioDelMapa {
 
 ## Example responses (real data, cut 2026-11)
 
+> Examples refreshed on 2026-11-15 from the pipeline export (`pipeline/data/r2/datos/`, published 2026-11-15T18:19:48Z), after decisions 1 (window 2021–2026) and 2 (name matching fixed). Schema, fields and endpoints are unchanged. The single-municipality examples now include `ventana`, which `MunicipioSeleccionado` requires.
+
 `GET /api/mapa/corte`
 
 ```json
 {
   "corte": "2026-11",
   "fechaCorte": "2026-11-07",
-  "publicadoEn": "2026-11-07T22:43:00Z",
+  "publicadoEn": "2026-11-15T18:19:48Z",
   "geometria": "mgn-2025",
   "fuentes": [
     { "id": "jbjy-vk9h", "nombre": "SECOP II – Contratos", "entidad": "Colombia Compra Eficiente", "url": "https://www.datos.gov.co/d/jbjy-vk9h", "licencia": "CC BY-SA 4.0" },
@@ -203,28 +205,30 @@ interface MunicipioSeleccionado extends MunicipioDelMapa {
 ```json
 {
   "corte": "2026-11",
+  "ventana": { "desde": 2021, "hasta": 2026 },
   "codigo": "05001",
   "nombre": "Medellín",
   "tipo": "municipio",
   "departamento": { "codigo": "05", "iso": "CO-ANT", "nombre": "Antioquia" },
-  "contratosUbicados": 640861
+  "contratosUbicados": 356935
 }
 ```
 
-`GET /api/mapa/municipios/81001`: Arauca, with no contract located in this cut (see open question 2)
+`GET /api/mapa/municipios/94884`: Puerto Colombia (Guainía), a non-municipalised area with no contract located in this cut, one of the 6 `null` rows left after decision 2
 
 ```json
 {
   "corte": "2026-11",
-  "codigo": "81001",
-  "nombre": "Arauca",
-  "tipo": "municipio",
-  "departamento": { "codigo": "81", "iso": "CO-ARA", "nombre": "Arauca" },
+  "ventana": { "desde": 2021, "hasta": 2026 },
+  "codigo": "94884",
+  "nombre": "Puerto Colombia",
+  "tipo": "area_no_municipalizada",
+  "departamento": { "codigo": "94", "iso": "CO-GUA", "nombre": "Guainía" },
   "contratosUbicados": null
 }
 ```
 
-Other real values for the mockups: Bogotá, D.C. 1,393,923; San Andrés 17,973; Leticia 28,996; Pueblorrico 1,970. The longest name is "Villa de San Diego de Ubaté" (27 characters); the longest department name is "Archipiélago de San Andrés, Providencia y Santa Catalina".
+Other real values for the mockups: Bogotá, D.C. 1,190,373; Arauca 3,967; San Andrés 9,128; Leticia 16,380; Pueblorrico 1,316. National total 7,456,749. The longest name is "Villa de San Diego de Ubaté" (27 characters); the longest department name is "Archipiélago de San Andrés, Providencia y Santa Catalina".
 
 ## Decisions (2026-11-15)
 

@@ -18,7 +18,7 @@ docs/design/pages/<page>/
 
 | Page | Status | Contract |
 | --- | --- | --- |
-| Map | *Not started* (design restarted 2026-11-15) | [contract.md](map/contract.md) |
+| [Map](map/README.md) | *Approved* 2026-11-15 (Approval 2; Fase 2 risk colours are a fictional preview pending TASK-07) | [contract.md](map/contract.md) |
 
 Statuses: *Blocked — no contract* · *Exploring* · *Spec awaiting approval* · *Mockup in review* · *Approved*.
 

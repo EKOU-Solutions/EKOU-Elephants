@@ -111,7 +111,7 @@ __COMPONENTS_CSS__
 </head>
 <body>
 <header class="top">
-  <span class="brand"><span>EKOU</span> Elephants <small>Sistema de diseño · v1.0</small></span>
+  <span class="brand"><span>EKOU</span> Elephants <small>Sistema de diseño · v1.1</small></span>
   <a class="examples-link" href="examples.html">Ver ejemplos reales</a>
   <div class="switch"><label for="theme">Tema</label><select id="theme"><option value="">Según el dispositivo</option><option value="light">Claro</option><option value="dark">Oscuro</option></select></div>
 </header>
@@ -119,7 +119,7 @@ __COMPONENTS_CSS__
 <nav class="toc" aria-label="Contenido">
   <p>Empezar</p><ul><li><a href="#uso">Cómo usar esta guía</a></li><li><a href="#principios">Principios</a></li></ul>
   <p>Fundamentos</p><ul><li><a href="#color">Color</a></li><li><a href="#tipografia">Tipografía</a></li><li><a href="#espaciado">Espaciado y forma</a></li><li><a href="#iconos">Íconos</a></li><li><a href="#voz">Voz y tono</a></li></ul>
-  <p>Componentes</p><ul><li><a href="#boton">Botón</a></li><li><a href="#alerta">Alerta</a></li><li><a href="#campo">Campo de formulario</a></li><li><a href="#etiqueta">Etiqueta de riesgo</a></li><li><a href="#contador">Contador</a></li><li><a href="#filtro">Filtro activo</a></li><li><a href="#cifra">Cifra destacada</a></li><li><a href="#tabla">Tabla de datos</a></li><li><a href="#mapa">Mapa con leyenda</a></li></ul>
+  <p>Componentes</p><ul><li><a href="#boton">Botón</a></li><li><a href="#alerta">Alerta</a></li><li><a href="#campo">Campo de formulario</a></li><li><a href="#resultados">Resultados de búsqueda</a></li><li><a href="#etiqueta">Etiqueta de riesgo</a></li><li><a href="#contador">Contador</a></li><li><a href="#filtro">Filtro activo</a></li><li><a href="#cifra">Cifra destacada</a></li><li><a href="#tabla">Tabla de datos</a></li><li><a href="#mapa">Mapa con leyenda</a></li></ul>
 </nav>
 <main>
   <section class="intro" id="uso">
@@ -296,6 +296,31 @@ __COMPONENTS_CSS__
     <p class="a11y"><strong>Accesibilidad:</strong> <code>label</code> asociado; <code>aria-invalid</code> y <code>aria-describedby</code> con el error; el borde de error es de 2 px y va con ícono y texto.</p>
   </section>
 
+  <section class="doc" id="resultados" aria-labelledby="h-resultados">
+    <header><span class="kind">Componente · v1.1</span><h2 id="h-resultados">Resultados de búsqueda</h2><p>Muestra los lugares que coinciden con lo escrito en un campo de búsqueda y distingue los nombres repetidos con su departamento.</p></header>
+    <div class="specimen"><div class="specimen-row">
+      <div><div class="el-field" role="search"><label for="r-q">Busca tu municipio o departamento</label><input id="r-q" type="search" value="granada" autocomplete="off" aria-controls="r-list"></div>
+        <p class="el-results-status" role="status">4 resultados</p>
+        <ul class="el-results" id="r-list"><li><button type="button">Granada<span>, Antioquia</span></button></li><li><button type="button">Granada<span>, Cundinamarca</span></button></li><li><button type="button">Granada<span>, Meta</span></button></li><li><button type="button">Nueva Granada<span>, Magdalena</span></button></li></ul></div>
+      <div><div class="el-field"><label for="r-q2">Busca tu municipio o departamento</label><input id="r-q2" type="search" value="zzq" autocomplete="off"></div>
+        <ul class="el-results"><li class="el-results-empty">No encontramos «zzq». Revisa la escritura o elige el departamento en el mapa.</li></ul></div>
+    </div></div>
+    <div class="facts">
+      <div><h3>Reglas</h3><ul><li>Aparece desde 2 letras; ignora tildes y mayúsculas; primero lo que empieza con lo escrito.</li><li>Máximo 8 resultados. Siempre con el departamento («Antioquia, departamento» para un departamento).</li><li>Dentro del flujo de la página, debajo del campo; nunca flotando sobre el mapa.</li><li>Al elegir: la lista se cierra y el campo se vacía. Flecha abajo desde el campo lleva al primer resultado.</li></ul></div>
+      <div><h3>Tokens</h3><table class="tokens"><tbody><tr><td>Nombre / departamento</td><td><code>--el-color-action</code> / <code>--el-color-text-muted</code></td></tr><tr><td>Líneas / hover</td><td><code>--el-color-line</code> / <code>--el-color-action-soft</code></td></tr><tr><td>Altura</td><td><code>--el-control-height</code></td></tr></tbody></table></div>
+    </div>
+    <div class="dodont"><div class="do"><h3><i data-lucide="check" aria-hidden="true"></i>Hacer</h3><ul><li>Mostrar siempre el departamento.</li><li>Decir qué hacer cuando no hay resultados.</li></ul></div><div class="dont"><h3><i data-lucide="x" aria-hidden="true"></i>Evitar</h3><ul><li>Una lista flotante que tape el mapa.</li><li>El <code>datalist</code> del navegador.</li></ul></div></div>
+    <details class="code"><summary>Código</summary><pre><code>&lt;div class="el-field" role="search"&gt;
+  &lt;label for="q"&gt;Busca tu municipio o departamento&lt;/label&gt;
+  &lt;input id="q" type="search" autocomplete="off" aria-controls="results"&gt;
+&lt;/div&gt;
+&lt;p class="el-results-status" role="status"&gt;4 resultados&lt;/p&gt;
+&lt;ul class="el-results" id="results"&gt;
+  &lt;li&gt;&lt;button type="button"&gt;Granada&lt;span&gt;, Antioquia&lt;/span&gt;&lt;/button&gt;&lt;/li&gt;
+&lt;/ul&gt;</code></pre></details>
+    <p class="a11y"><strong>Accesibilidad:</strong> botones nativos de 44 px; el aviso <code>role="status"</code> anuncia solo la cantidad; la página anuncia el lugar elegido y mueve el foco a su título.</p>
+  </section>
+
   <section class="doc" id="etiqueta" aria-labelledby="h-etiqueta">
     <header><span class="kind">Componente</span><h2 id="h-etiqueta">Etiqueta de riesgo</h2><p>Nombra la categoría de un territorio, entidad o contrato. Va rellena con el color de riesgo para que se vea primero, y lleva un indicador de nivel (1, 2 o 3 barras) para que se entienda sin distinguir colores.</p></header>
     <div class="specimen">
@@ -383,6 +408,20 @@ __COMPONENTS_CSS__
     </div>
     <div class="dodont"><div class="do"><h3><i data-lucide="check" aria-hidden="true"></i>Hacer</h3><ul><li>Título de leyenda que nombra la medida.</li><li>Ficha con numerador, denominador, cobertura y fuente.</li></ul></div><div class="dont"><h3><i data-lucide="x" aria-hidden="true"></i>Evitar</h3><ul><li>Pintar en blanco o azul lo que no tiene datos.</li><li>Depender del hover para ver el valor.</li></ul></div></div>
     <p class="a11y"><strong>Accesibilidad:</strong> el SVG tiene título descriptivo; los valores de cada territorio deben estar en la tabla y en un selector nativo. En oscuro, el orden claro→oscuro se invierte para que el riesgo alto sea el más visible.</p>
+    <h3 class="variant" id="mapa-neutro">Variante neutra · v1.1</h3>
+    <p>Para ubicar y elegir un territorio cuando todavía no hay capa de riesgo (TASK-09). No codifica ningún valor: los datos van en la ficha y en la tabla.</p>
+    <div class="specimen"><div class="mapcard">
+      <figure>__MAP_NEUTRAL__</figure>
+      <div>
+        <div class="el-legend"><h3>Qué muestra el mapa</h3><ul><li><span class="el-key el-key-neutral" aria-hidden="true"></span>Territorio con contratos ubicados</li><li><span class="el-key el-key-unknown" aria-hidden="true"></span>Sin datos</li></ul><p class="note">Todavía no hay color por riesgo. Gris no quiere decir «sin problemas».</p></div>
+        <p class="fictional">Geometría de referencia; sin datos.</p>
+      </div>
+    </div></div>
+    <div class="facts">
+      <div><h3>Reglas</h3><ul><li>Relleno único; nunca colorear por cantidad (sería un mapa de población).</li><li>Contorno del conjunto dibujado (país o departamento) de 1,5 px: separa el mapa de la superficie.</li><li>Hover y foco: contorno, nunca transparencia. Selección: contorno de 2,5 px en color de texto más su nombre.</li><li>Nombres de 14 px solo para el seleccionado, el recuadro del archipiélago y referencias clave; no nombrar todo.</li><li>Zoom: tres botones de 44 px arriba a la derecha, también con gestos.</li></ul></div>
+      <div><h3>Tokens</h3><table class="tokens"><tbody><tr><td>Relleno</td><td><code>--el-color-line</code></td></tr><tr><td>Contorno, hover, foco</td><td><code>--el-color-control-border</code> (4,0:1 / 5,1:1)</td></tr><tr><td>Bordes internos / selección</td><td><code>--el-color-map-border</code> / <code>--el-color-text</code></td></tr><tr><td>Nombres</td><td><code>--el-size-small</code>, <code>--el-color-text</code>, halo <code>--el-color-surface</code></td></tr></tbody></table></div>
+    </div>
+    <div class="dodont"><div class="do"><h3><i data-lucide="check" aria-hidden="true"></i>Hacer</h3><ul><li>Decir en la leyenda que el mapa todavía no mide riesgo.</li><li>Mantener la trama de «Sin datos» de la guía.</li></ul></div><div class="dont"><h3><i data-lucide="x" aria-hidden="true"></i>Evitar</h3><ul><li>Usar colores de riesgo o una escala por cantidad.</li><li>Quitar el contorno del conjunto.</li></ul></div></div>
   </section>
 </main>
 </div>

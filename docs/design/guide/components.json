@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0",
+  "version": "1.1.0",
   "about": "Machine-readable catalogue of the Elephants components. build.py asserts that every class exists in components.css and every token exists in tokens.css. 'core' = reviewed and accepted in Round 05; 'candidate' = introduced by the example screens, usable but must be confirmed by the first page that needs it (see .claude/skills/elephants-design/references/build-page.md).",
   "components": [
     {
@@ -32,8 +32,19 @@
       "classes": ["el-field"],
       "use": "Collects a value to filter or search. Always with a visible label.",
       "variants": ["input", "select", "with help text", "error"],
-      "tokens": ["--el-color-control-border", "--el-color-danger", "--el-control-height", "--el-control-radius"],
-      "a11y": ["<label for>", "Error: aria-invalid=true + aria-describedby pointing to the message", "Error text says how to fix it"]
+      "tokens": ["--el-color-control-border", "--el-color-danger", "--el-control-height", "--el-control-radius", "--el-color-text-muted"],
+      "a11y": ["<label for>", "Error: aria-invalid=true + aria-describedby pointing to the message", "Error text says how to fix it", "Placeholder in --el-color-text-muted (v1.1): the browser default is 3.8:1 in dark; it never replaces the label"]
+    },
+    {
+      "name": "Search results",
+      "label_es": "Resultados de búsqueda",
+      "status": "core",
+      "reference": "preview.html#resultados",
+      "classes": ["el-results", "el-results-empty", "el-results-status"],
+      "use": "Lists up to 8 places matching a search Field, each with its department, in the page flow under the field (v1.1, TASK-09).",
+      "variants": ["with results", "empty"],
+      "tokens": ["--el-color-line", "--el-color-action", "--el-color-action-soft", "--el-color-text-muted", "--el-control-height", "--el-weight-emphasis", "--el-weight-body", "--el-size-small", "--el-space-8"],
+      "a11y": ["Native buttons, 44 px", "role=status announces the count only", "The page announces the chosen place and moves focus to its heading"]
     },
     {
       "name": "Risk tag",
@@ -95,11 +106,11 @@
       "label_es": "Mapa con leyenda",
       "status": "core",
       "reference": "preview.html#mapa",
-      "classes": ["el-map", "el-fill-low", "el-fill-medium", "el-fill-high", "el-fill-unknown", "el-hatch-bg", "el-hatch-line", "el-legend"],
-      "use": "Colours each territory by the share of contracts with signals. The legend says what colour measures; selection is an outline plus a detail panel.",
-      "variants": ["default", "selected territory"],
-      "tokens": ["--el-color-risk-low", "--el-color-risk-medium", "--el-color-risk-high", "--el-color-unknown", "--el-color-unknown-surface", "--el-color-map-border"],
-      "a11y": ["<svg role=img> with <title>", "A data table with the same values is always reachable", "Selection never by colour alone"]
+      "classes": ["el-map", "el-fill-low", "el-fill-medium", "el-fill-high", "el-fill-unknown", "el-hatch-bg", "el-hatch-line", "el-legend", "el-fill-neutral", "el-key-neutral", "el-map-outline", "el-map-inset", "el-map-frame", "el-map-label", "el-map-label-start", "el-map-zoom"],
+      "use": "Colours each territory by the share of contracts with signals. The legend says what colour measures; selection is an outline plus a detail panel. Neutral variant (v1.1, TASK-09): locates and selects territories while no risk layer exists; encodes no value.",
+      "variants": ["default", "selected territory", "neutral (v1.1): one fill, set outline, place labels, zoom"],
+      "tokens": ["--el-color-risk-low", "--el-color-risk-medium", "--el-color-risk-high", "--el-color-unknown", "--el-color-unknown-surface", "--el-color-map-border", "--el-color-line", "--el-color-control-border", "--el-color-text", "--el-color-surface", "--el-size-small", "--el-control-height"],
+      "a11y": ["<svg role=img> with <title>", "A data table with the same values is always reachable", "Selection never by colour alone", "Neutral variant: set outline and hover/focus outline in --el-color-control-border (3:1 or more), never opacity", "Zoom buttons are 44 px with aria-label; gestures are never the only way"]
     },
     {
       "name": "Status pill",

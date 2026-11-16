@@ -1,0 +1,606 @@
+<!doctype html>
+<html lang="es-CO">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mapa de contratación · mockup</title>
+<style>
+/*__FONT__*/
+/*__TOKENS__*/
+/*__COMPONENTS__*/
+
+/* ---- Page layout (map page only; tokens and catalogue classes only) ---- */
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--el-color-surface);color:var(--el-color-text);font-family:var(--el-font-ui);font-size:var(--el-size-body);line-height:var(--el-line-body)}
+h1,h2,h3,p,ul,dl,dd,figure{margin:0}
+p{text-wrap:pretty}
+a{color:var(--el-color-action)}
+:is(a,button,input,select,[tabindex]):focus-visible{outline:var(--el-focus-width) solid var(--el-color-focus);outline-offset:var(--el-focus-offset)}
+.pg-sr{position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+
+/* mockup chrome: not part of the page */
+.mk-bar{display:flex;flex-wrap:wrap;gap:var(--el-space-8) var(--el-space-16);align-items:flex-end;padding:var(--el-space-8) var(--el-space-16);background:var(--el-color-surface-subtle);border-bottom:var(--el-rule) solid var(--el-color-line);font-size:var(--el-size-small)}
+.mk-bar p{flex:1 1 320px;max-width:60ch;color:var(--el-color-text-muted)}
+.mk-bar p strong{color:var(--el-color-text)}
+.mk-bar .el-field{max-width:200px}
+.mk-bar .el-field label{font-size:var(--el-size-small)}
+
+.pg{max-width:1200px;margin:0 auto;padding:var(--el-space-16) var(--el-space-16) var(--el-space-48);display:grid;gap:var(--el-space-24)}
+.pg-back{justify-self:start}
+.pg-back .el-btn{text-decoration:none}
+.pg-head{display:grid;gap:var(--el-space-8);max-width:760px}
+.pg-kicker{font-size:var(--el-size-small);font-weight:var(--el-weight-emphasis);color:var(--el-color-text-muted);text-transform:uppercase;letter-spacing:.05em}
+.pg-head h1{font-size:var(--el-size-title-mobile);line-height:var(--el-line-heading);font-weight:var(--el-weight-heading);text-wrap:balance;font-variant-numeric:var(--el-numbers)}
+.pg-head h1:focus{outline:none}
+.pg-dek{color:var(--el-color-text-muted);max-width:62ch}
+
+.pg-body{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--el-space-24)}
+.pg-side{display:contents}
+.pg-mapbox{order:1;min-width:0}
+.pg-figure{order:2;display:grid;gap:var(--el-space-12)}
+.pg-legend{order:3}
+.pg-search{order:4;display:grid}
+.pg-counts{order:5;display:grid;gap:var(--el-space-8)}
+.pg-source{order:6;font-size:13px;color:var(--el-color-text-muted);max-width:70ch}
+
+.pg h2{font-size:var(--el-size-subsection);line-height:var(--el-line-heading);text-wrap:balance}
+.pg-legend.el-legend h2{font-size:15px;margin-bottom:var(--el-space-8)}
+
+/* map frame */
+.pg-mapbox .el-map-frame{width:100%}
+.pg-mapbox .el-map{max-height:none;touch-action:pan-x pan-y;user-select:none;-webkit-user-select:none}
+.pg-mapbox .el-map[data-zoomed=true]{touch-action:none}
+/* mouse: the map can always be grabbed and dragged; a click without moving selects */
+.pg-mapbox .el-map,.pg-mapbox .el-map path{cursor:grab}
+.pg-mapbox .el-map[data-dragging=true],.pg-mapbox .el-map[data-dragging=true] path{cursor:grabbing}
+.pg-loading{display:grid;place-items:center;min-height:320px;color:var(--el-color-text-muted);border:var(--el-rule) solid var(--el-color-line);border-radius:var(--el-control-radius)}
+
+/* key figure */
+.pg-figure .el-figure{max-width:none}
+.pg-figure .value .pg-hatch{display:inline-block;width:44px;height:34px;margin-right:var(--el-space-12);vertical-align:-2px;border-radius:var(--el-mark-radius);background:repeating-linear-gradient(135deg,var(--el-color-unknown-surface) 0 5px,var(--el-color-unknown) 5px 6px)}
+.pg-jump{display:grid;gap:var(--el-space-12);margin-bottom:var(--el-space-16)}
+@media (min-width:600px){.pg-jump{grid-template-columns:1fr 1fr}}
+.pg-table .el-tag{font-size:13px;padding:2px 8px 2px 6px}
+.pg-copy{display:flex;flex-wrap:wrap;gap:var(--el-space-8) var(--el-space-12);align-items:center}
+.pg-copy .done{font-size:var(--el-size-small);color:var(--el-color-text-muted)}
+.pg-copy input{font:inherit;font-size:var(--el-size-small);width:100%;min-height:var(--el-control-height);padding:8px 12px;border:1px solid var(--el-color-control-border);border-radius:var(--el-control-radius);background:var(--el-color-surface);color:var(--el-color-text)}
+
+/* counts: stacked with horizontal rules; 3-up from 600 px */
+.pg-counts .el-counts{display:grid;grid-template-columns:minmax(0,1fr)}
+.pg-counts .el-count{border-right:0;margin-right:0;padding:10px 0;border-bottom:var(--el-rule) solid var(--el-color-line)}
+.pg-counts .el-count:last-child{border-bottom:0}
+.pg-counts .gloss{font-size:13px}
+
+/* table */
+.pg-table{display:grid;gap:var(--el-space-8);min-width:0}
+.pg-table-scroll{overflow-x:auto}
+.pg-table .el-table a{font-weight:var(--el-weight-emphasis);text-decoration:none}
+.pg-table .el-table a:hover{text-decoration:underline}
+.pg-table tr[aria-current=true] th,.pg-table tr[aria-current=true] td{font-weight:var(--el-weight-heading)}
+.pg-table td.nodata{color:var(--el-color-text-muted);white-space:nowrap}
+.pg-table .short{display:none}
+
+@media (max-width:359px){.pg-table .long{display:none}.pg-table .short{display:inline}}
+@media (min-width:600px){
+  .pg-counts .el-counts{grid-template-columns:repeat(auto-fit,minmax(0,1fr))}
+  .pg-counts .el-count{border-bottom:0;border-right:var(--el-rule) solid var(--el-color-line);padding:10px var(--el-space-16) 10px 0;margin-right:var(--el-space-16)}
+  .pg-counts .el-count:last-child{border-right:0;margin-right:0}
+}
+@media (min-width:960px){
+  .pg{padding-top:var(--el-space-24)}
+  .pg-head h1{font-size:var(--el-size-title)}
+  .pg-body{grid-template-columns:minmax(0,7fr) minmax(0,5fr);column-gap:var(--el-space-32);align-items:start}
+  .pg-mapbox{grid-column:1;grid-row:1}
+  .pg-legend{grid-column:1;grid-row:2}
+  .pg-side{display:grid;gap:var(--el-space-24);grid-column:2;grid-row:1 / span 2;position:sticky;top:var(--el-space-16);align-content:start}
+  .pg-side > *{order:0}
+  .pg-counts .el-counts{grid-template-columns:minmax(0,1fr)}
+  .pg-counts .el-count{border-right:0;margin-right:0;padding:10px 0;border-bottom:var(--el-rule) solid var(--el-color-line)}
+  .pg-counts .el-count:last-child{border-bottom:0}
+}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<div class="mk-bar" role="region" aria-label="Controles del mockup">
+  <p><strong>Mockup del mapa (TASK-09), no es la aplicación.</strong> Muestra real del corte 2026-11, datos al 7 nov 2026, copiada de la exportación del pipeline el 15 nov 2026. Guía v__GUIDE_VERSION__. Las direcciones reales son <code>/mapa/05001</code>; aquí se usa <code>#mapa/05001</code>.</p>
+  <div class="el-field"><label for="mk-theme">Tema</label><select id="mk-theme"><option value="">Según el dispositivo</option><option value="light">Claro</option><option value="dark">Oscuro</option></select></div>
+  <div class="el-field"><label for="mk-state">Estado</label><select id="mk-state"><option value="ok">Con datos</option><option value="loading">Cargando</option><option value="503">Datos no disponibles (503)</option><option value="bad">Enlace inválido (400)</option><option value="404">Municipio no encontrado (404)</option></select></div>
+  <div class="el-field"><label for="mk-data">Color del mapa</label><select id="mk-data"><option value="real">Datos reales (sin riesgo)</option><option value="f2">Fase 2: riesgo ficticio</option></select></div>
+</div>
+
+<main class="pg" id="page">
+  <p class="pg-sr" role="status" id="announce"></p>
+  <div class="pg-back" id="back"></div>
+  <header class="pg-head"><p class="pg-kicker" id="kicker"></p><h1 id="title" tabindex="-1"></h1><p class="pg-dek" id="dek"></p></header>
+  <div id="alert"></div>
+  <div class="pg-body" id="body">
+    <section class="pg-mapbox" aria-label="Mapa">
+      <div class="pg-loading" id="loading" role="status" hidden>Cargando el mapa…</div>
+      <div class="el-map-frame" id="frame">
+        <svg class="el-map" id="map" role="img" aria-labelledby="map-title" xmlns="http://www.w3.org/2000/svg">
+          <title id="map-title"></title>
+          <defs><pattern id="el-hatch" patternUnits="userSpaceOnUse" width="7" height="7"><rect class="el-hatch-bg" width="7" height="7"></rect><path class="el-hatch-line" d="M0 7L7 0"></path></pattern></defs>
+          <g class="el-map-outline"><g id="zoomed"></g></g>
+          <g class="el-map-outline" id="inset-group"><g id="inset"></g></g>
+          <rect class="el-map-inset" id="inset-frame"></rect>
+        </svg>
+        <div id="labels"></div>
+        <div class="el-map-zoom" role="group" aria-label="Zoom del mapa">
+          <button class="el-btn el-btn-secondary" type="button" id="zin" aria-label="Acercar"><i data-lucide="plus" aria-hidden="true"></i></button>
+          <button class="el-btn el-btn-secondary" type="button" id="zout" aria-label="Alejar"><i data-lucide="minus" aria-hidden="true"></i></button>
+          <button class="el-btn el-btn-secondary" type="button" id="zall" aria-label="Ver todo"><i data-lucide="maximize" aria-hidden="true"></i></button>
+        </div>
+      </div>
+    </section>
+    <div class="el-legend pg-legend" id="legend"></div>
+    <div class="pg-side">
+      <div class="pg-search">
+        <div class="pg-jump" role="group" aria-label="Ir a un lugar de la lista">
+          <div class="el-field"><label for="jd">Departamento</label><select id="jd"></select></div>
+          <div class="el-field"><label for="jm">Municipio</label><select id="jm"></select></div>
+        </div>
+        <div class="el-field" role="search"><label for="q">Busca tu municipio o departamento</label><input id="q" type="search" autocomplete="off" placeholder="Ej.: Medellín" aria-controls="results"><span class="help" id="qhelp">Escribe al menos 2 letras.</span></div>
+        <p class="el-results-status" role="status" id="qstatus"></p>
+        <ul class="el-results" id="results" hidden></ul>
+      </div>
+      <div class="pg-figure" id="figure" hidden></div>
+      <section class="pg-counts" id="counts" aria-labelledby="counts-h"></section>
+      <p class="pg-source" id="source"></p>
+    </div>
+  </div>
+  <section class="pg-table" id="table" aria-labelledby="table-h"></section>
+</main>
+
+<script>/*__LUCIDE__*/</script>
+<script>
+(() => {
+'use strict';
+const D = /*__DATA__*/null;
+const $ = id => document.getElementById(id);
+const NS = 'http://www.w3.org/2000/svg';
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const num = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+const MES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+const fecha = iso => { const [y, m, d] = iso.split('-').map(Number); return `${d} ${MES[m - 1]} ${y}`; };
+const fold = s => s.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
+const C = D.corte, V = D.ventana;
+const corteFecha = fecha(C.fechaCorte);
+const periodo = `del 1 ene ${V.desde} al ${corteFecha}`;
+const periodoCorto = `${V.desde} – ${corteFecha}`;
+const DEP = Object.fromEntries(D.departamentos.map(d => [d.codigo, d]));
+const MUN = Object.fromEntries(D.municipios.map(m => [m.codigo, m]));
+const TIPO = { area_no_municipalizada: 'Área no municipalizada', isla: 'Isla' };
+const BOGOTA = '11001';
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+// ---------- mockup controls ----------
+$('mk-theme').addEventListener('change', e => {
+  if (e.target.value) document.documentElement.dataset.theme = e.target.value;
+  else delete document.documentElement.dataset.theme;
+});
+let state = 'ok';
+$('mk-data').addEventListener('change', e => { phase2 = e.target.value === 'f2'; route(); });
+$('mk-state').addEventListener('change', e => {
+  state = e.target.value;
+  if (state === 'bad') { location.hash = 'mapa/123'; return; }
+  if (state === '404') { location.hash = 'mapa/99999'; return; }
+  route();
+});
+
+// ---------- copy ----------
+const sourceLine = () => {
+  const f = id => C.fuentes.find(x => x.id === id);
+  return `Fuentes: <a href="${f('jbjy-vk9h').url}">SECOP II</a> y <a href="${f('f789-7hwg').url}">SECOP I</a> (Colombia Compra Eficiente, ${esc(f('jbjy-vk9h').licencia)}), <a href="${f('gdxc-w37w').url}">DIVIPOLA</a> y <a href="${f('mgn-2025').url}">Marco Geoestadístico 2025</a> (DANE, ${esc(f('mgn-2025').licencia)}). Datos al ${corteFecha}.`;
+};
+// ---------- Fase 2 preview: FICTIONAL risk levels (no risk data exists yet; TASK-07) ----------
+let phase2 = false;
+const LVL = ['low', 'medium', 'high'];
+const LVL_ES = { low: 'Bajo', medium: 'Intermedio', high: 'Alto' };
+const LVL_RISK = { low: 'Riesgo bajo', medium: 'Riesgo intermedio', high: 'Riesgo alto' };
+const fict = code => { let h = 7; for (const c of code) h = (h * 31 + c.charCodeAt(0)) % 9973; return LVL[h % 3]; };
+const fill = code => phase2 ? 'el-fill-' + fict(code) : 'el-fill-neutral';
+const bars = lvl => { const o = n => (LVL.indexOf(lvl) + 1 >= n ? '' : ' opacity=".35"');
+  return `<svg class="lvl" viewBox="0 0 16 16" aria-hidden="true"><rect x="1" y="9" width="4" height="6" rx="1" fill="currentColor"${o(1)}/><rect x="6" y="5" width="4" height="10" rx="1" fill="currentColor"${o(2)}/><rect x="11" y="1" width="4" height="14" rx="1" fill="currentColor"${o(3)}/></svg>`; };
+const tag = (code, lg) => { const l = fict(code); return `<span class="el-tag el-tag-${l}${lg ? ' el-tag-lg' : ''}">${bars(l)}${LVL_RISK[l]} (ficticio)</span>`; };
+const riskLegend = withUnknown => `<h2>Contratos con señales · datos ficticios</h2><ul>
+  ${LVL.map(l => `<li><span class="el-key el-key-${l}" aria-hidden="true"></span>${LVL_ES[l]}</li>`).join('')}
+  ${withUnknown ? '<li><span class="el-key el-key-unknown" aria-hidden="true"></span>Sin datos</li>' : ''}
+</ul><p class="note">Vista previa de la fase 2: los niveles de riesgo son inventados para mostrar el diseño. Las cifras de contratos sí son reales. El dato de riesgo llegará con la metodología (TASK-07).</p>`;
+const legend = withUnknown => phase2 ? riskLegend(withUnknown) : `<h2>Qué muestra el mapa</h2><ul>
+  <li><span class="el-key el-key-neutral" aria-hidden="true"></span>Territorio con contratos ubicados</li>
+  ${withUnknown ? '<li><span class="el-key el-key-unknown" aria-hidden="true"></span>Sin datos: no hay contratos ubicados con certeza</li>' : ''}
+</ul><p class="note">Todavía no hay color por riesgo. Gris no quiere decir «sin problemas».</p>`;
+const count = (n, label, gloss) => `<div class="el-count"><strong>${num(n)}</strong><span>${label}${gloss ? `<br><span class="gloss">${gloss}</span>` : ''}</span></div>`;
+
+// ---------- map ----------
+const svg = $('map'), zoomed = $('zoomed'), inset = $('inset'), frame = $('frame');
+let view = null;            // { box, items:[{code,d,cls,label,sel,inset}], labels, inset: box of the inset panel or null, national:bool }
+let z = 1, cx = 0, cy = 0;  // zoom factor and centre (projected units)
+let W = 0, H = 0, k = 1, OX = 0;  // OX: screen x of the view centre (room kept for the zoom buttons)
+
+function layout() {
+  if (!view) return;
+  W = frame.clientWidth;
+  if (!W) return;
+  const [x0, y0, x1, y1] = view.box, bw = x1 - x0, bh = y1 - y0;
+  const maxH = innerWidth >= 960 ? 640 : Math.round(innerHeight * 0.62);
+  H = Math.max(240, Math.min(Math.round(W * bh / bw), maxH));
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  svg.setAttribute('width', W); svg.setAttribute('height', H);
+  const pad = 12, padR = 44 + 16;
+  k = Math.min((W - pad - padR) / bw, (H - 2 * pad) / bh);
+  OX = (pad + W - padR) / 2;
+  apply();
+}
+
+function apply() {
+  const s = k * z;
+  zoomed.setAttribute('transform', `matrix(${s} 0 0 ${s} ${OX - cx * s} ${H / 2 - cy * s})`);
+  const p = 7 / s;
+  const pat = $('el-hatch');
+  pat.setAttribute('width', p); pat.setAttribute('height', p);
+  pat.firstElementChild.setAttribute('width', p); pat.firstElementChild.setAttribute('height', p);
+  pat.lastElementChild.setAttribute('d', `M0 ${p}L${p} 0`);
+  svg.dataset.zoomed = z > 1 ? 'true' : 'false';
+  // inset (national only): archipelago drawn in a fixed box at the top-left
+  const frameRect = $('inset-frame');
+  if (view.inset) {
+    const b = view.inset, iw = Math.max(76, Math.min(120, W * 0.15)), ih = (iw - 16) * (b[3] - b[1]) / (b[2] - b[0]) + 16, ix = 8, iy = 8;
+    const ks = Math.min((iw - 16) / (b[2] - b[0]), (ih - 16) / (b[3] - b[1]));
+    inset.setAttribute('transform', `matrix(${ks} 0 0 ${ks} ${ix + iw / 2 - (b[0] + b[2]) / 2 * ks} ${iy + ih / 2 - (b[1] + b[3]) / 2 * ks})`);
+    Object.entries({ x: ix, y: iy, width: iw, height: ih }).forEach(([a, v]) => frameRect.setAttribute(a, v));
+    frameRect.removeAttribute('display');
+  } else frameRect.setAttribute('display', 'none');
+  placeLabels();
+}
+
+function screen(x, y) { const s = k * z; return [OX + (x - cx) * s, H / 2 + (y - cy) * s]; }
+
+function placeLabels() {
+  const box = $('labels');
+  box.replaceChildren();
+  for (const l of view.labels) {
+    let x, y;
+    if (l.inset) { const r = $('inset-frame'); x = +r.getAttribute('x'); y = +r.getAttribute('y') + +r.getAttribute('height') + 8; }
+    else { [x, y] = screen(l.x, l.y); y += l.dy || 0; }
+    if (x < 0 || y < 0 || x > W || y > H) continue;
+    const span = document.createElement('span');
+    span.className = 'el-map-label' + (l.inset ? ' el-map-label-start' : '');
+    span.style.left = `${(100 * x / W).toFixed(2)}%`; span.style.top = `${(100 * y / H).toFixed(2)}%`;
+    span.textContent = l.text;
+    if (l.inset) { const r = $('inset-frame'); span.style.width = r.getAttribute('width') + 'px'; span.style.whiteSpace = 'normal'; span.style.transform = 'none'; }
+    span.setAttribute('aria-hidden', 'true');
+    box.appendChild(span);
+  }
+}
+
+function draw() {
+  const make = (it, parent) => {
+    const p = document.createElementNS(NS, 'path');
+    p.setAttribute('d', it.d);
+    p.setAttribute('class', it.cls);
+    p.dataset.code = it.code;
+    if (it.sel) p.dataset.selected = 'true';
+    const t = document.createElementNS(NS, 'title'); t.textContent = it.label; p.appendChild(t);
+    parent.appendChild(p);
+  };
+  zoomed.replaceChildren(); inset.replaceChildren();
+  view.items.filter(i => !i.sel && !i.inset).forEach(i => make(i, zoomed));
+  view.items.filter(i => i.sel && !i.inset).forEach(i => make(i, zoomed));
+  view.items.filter(i => i.inset).sort((a, b) => !!a.sel - !!b.sel).forEach(i => make(i, inset));
+  const [x0, y0, x1, y1] = view.box; cx = (x0 + x1) / 2; cy = (y0 + y1) / 2; z = 1;
+  layout();
+}
+
+new ResizeObserver(() => layout()).observe(frame);
+
+// zoom controls
+function zoomAt(f, sx = OX, sy = H / 2) {
+  const nz = Math.min(12, Math.max(1, z * f));
+  const s0 = k * z, s1 = k * nz;
+  const px = cx + (sx - OX) / s0, py = cy + (sy - H / 2) / s0;
+  cx = px - (sx - OX) / s1; cy = py - (sy - H / 2) / s1; z = nz;
+  if (z === 1) { const [x0, y0, x1, y1] = view.box; cx = (x0 + x1) / 2; cy = (y0 + y1) / 2; }
+  clamp(); apply();
+}
+function clamp() {
+  const [x0, y0, x1, y1] = view.box;
+  cx = Math.min(x1, Math.max(x0, cx)); cy = Math.min(y1, Math.max(y0, cy));
+}
+$('zin').addEventListener('click', () => zoomAt(1.5));
+$('zout').addEventListener('click', () => zoomAt(1 / 1.5));
+$('zall').addEventListener('click', () => zoomAt(1 / 12));
+svg.addEventListener('wheel', e => {
+  if (!e.ctrlKey) return;
+  e.preventDefault();
+  const r = svg.getBoundingClientRect();
+  zoomAt(e.deltaY < 0 ? 1.25 : 0.8, e.clientX - r.left, e.clientY - r.top);
+}, { passive: false });
+
+// pointers: tap/click selects; a mouse drags the map at any zoom; touch drags once zoomed
+// (one finger at full view keeps scrolling the page); two fingers pinch
+const pts = new Map(); let moved = false, pinch0 = 0, start = null;
+svg.addEventListener('pointerdown', e => {
+  pts.set(e.pointerId, [e.clientX, e.clientY]); moved = false; start = [e.clientX, e.clientY];
+  if (pts.size === 2) { const [a, b] = [...pts.values()]; pinch0 = Math.hypot(a[0] - b[0], a[1] - b[1]); }
+});
+svg.addEventListener('pointermove', e => {
+  if (!pts.has(e.pointerId)) return;
+  const prev = pts.get(e.pointerId); pts.set(e.pointerId, [e.clientX, e.clientY]);
+  if (Math.hypot(e.clientX - start[0], e.clientY - start[1]) > 6) moved = true;
+  if (pts.size === 2) {
+    const [a, b] = [...pts.values()], d = Math.hypot(a[0] - b[0], a[1] - b[1]);
+    if (pinch0) { const r = svg.getBoundingClientRect(); zoomAt(d / pinch0, (a[0] + b[0]) / 2 - r.left, (a[1] + b[1]) / 2 - r.top); }
+    pinch0 = d;
+  } else if ((z > 1 || e.pointerType === 'mouse') && moved) {
+    if (svg.dataset.dragging !== 'true') { svg.dataset.dragging = 'true'; svg.setPointerCapture(e.pointerId); }
+    const s = k * z; cx -= (e.clientX - prev[0]) / s; cy -= (e.clientY - prev[1]) / s; clamp(); apply();
+  }
+});
+const up = e => {
+  const tapped = pts.size === 1 && !moved;
+  pts.delete(e.pointerId); if (pts.size < 2) pinch0 = 0;
+  if (!pts.size) delete svg.dataset.dragging;
+  if (tapped && e.type === 'pointerup') {
+    const code = e.target.closest && e.target.closest('path[data-code]')?.dataset.code;
+    if (code) choose(code, 'tap');
+  }
+};
+svg.addEventListener('pointerup', up);
+// Hover/focus outline: draw the shape under the pointer last, so neighbours do not cover half of its
+// outline (the selected shape stays on top). Order only; fills and strokes are the guide's.
+function raise(p) {
+  const g = p.parentNode; if (g.lastElementChild === p) return;
+  g.appendChild(p);
+  const s = g.querySelector('path[data-selected=true]'); if (s && s !== p) g.appendChild(s);
+}
+svg.addEventListener('pointerover', e => { const p = e.target.closest && e.target.closest('path[data-code]'); if (p) raise(p); });
+svg.addEventListener('focusin', e => { const p = e.target.closest && e.target.closest('path[data-code]'); if (p) raise(p); }); svg.addEventListener('pointercancel', up);
+
+// ---------- views ----------
+function nationalView() {
+  const N = D.nacional;
+  setHead({ kicker: 'Mapa de contratación pública', title: `${num(N.contratos)} contratos públicos firmados en Colombia`,
+    dek: `Del 1 ene ${V.desde} al ${corteFecha}. Elige un departamento para ver sus municipios. ${phase2 ? "Los colores de riesgo de esta vista previa son ficticios." : "Este mapa muestra dónde se firmaron los contratos; todavía no mide riesgo."}` });
+  $('back').replaceChildren();
+  $('map-title').textContent = 'Mapa de Colombia por departamento. Los valores están en la tabla de departamentos.';
+  view = {
+    box: D.mainland, inset: D.archi.box, national: true,
+    items: D.departamentos.map(d => ({ code: d.codigo, d: d.codigo === '88' ? D.archi.paths['88001'] + D.archi.paths['88564'] : D.depPaths[d.codigo], cls: fill(d.codigo), label: d.nombre + (phase2 ? ` · ${LVL_RISK[fict(d.codigo)]} (ficticio)` : ''), inset: d.codigo === '88' })),
+    labels: [{ text: 'San Andrés y Providencia', inset: true }],
+  };
+  draw();
+  $('legend').innerHTML = legend(false);
+  $('figure').hidden = true;
+  $('counts').innerHTML = `<h2 id="counts-h">Dónde quedó cada contrato</h2><div class="el-counts">${
+    count(N.contratosEnMunicipios, 'en un municipio', 'sabemos en qué municipio se firmaron') +
+    count(N.contratosSoloDepartamento, 'solo en un departamento', 'sabemos el departamento, no el municipio') +
+    count(N.contratosSinLugar, 'sin lugar identificado', 'no sabemos dónde')}</div>`;
+  table(`Contratos por departamento, ${periodoCorto}`,
+    ['Departamento', ['En sus municipios', 'Municipios'], ['Solo en el departamento', 'Solo depto.'], ...(phase2 ? [RISK_H] : [])],
+    D.departamentos.map(d => [`<a href="#${d.codigo === '11' ? 'mapa/' + BOGOTA : 'mapa/departamento/' + d.codigo}">${esc(d.nombre)}</a>`, num(d.contratosEnMunicipios), num(d.contratosSoloDepartamento), ...(phase2 ? [tag(d.codigo)] : [])]));
+}
+
+// Archipelago (88): both islands in one panel at the same scale, sea between them reduced (spec decision 12)
+const NOTE88 = '<p class="note">San Andrés y Providencia están a unos 90 km. En el mapa se acercan para verlas juntas a la misma escala, sin cambiar su forma.</p>';
+function deptView88(code, sel) {
+  const items = deptItems(code, sel);
+  if (code !== '88') return { box: D.depBox[code], items, labels: deptLabels(code, sel), inset: null };
+  items.forEach(i => { i.d = D.archi.paths[i.code]; });
+  const b = D.archi.box, room = (b[3] - b[1]) * 0.12;  // room under the islands for their names
+  return { box: [b[0], b[1], b[2], b[3] + room], items, inset: null,
+    labels: Object.entries(D.archi.boxes).map(([c, b]) => ({ text: MUN[c].nombre, x: (b[0] + b[2]) / 2, y: b[3], dy: 14 })) };
+}
+function deptItems(code, sel) {
+  return D.municipios.filter(m => m.departamento.codigo === code).map(m => ({
+    code: m.codigo, d: D.munPaths[m.codigo], sel: m.codigo === sel,
+    cls: m.contratosUbicados === null ? 'el-fill-unknown' : fill(m.codigo),
+    label: `${m.nombre}: ${m.contratosUbicados === null ? 'Sin datos' : num(m.contratosUbicados) + ' contratos' + (phase2 ? ` · ${LVL_RISK[fict(m.codigo)]} (ficticio)` : '')}`,
+  }));
+}
+function deptLabels(code, sel) {
+  const out = [];
+  if (code === '25') { const b = D.munBox[BOGOTA]; out.push({ text: 'Bogotá, D.C.', x: (b[0] + b[2]) / 2, y: (b[1] + b[3]) / 2 }); }
+  if (sel) { const b = D.munBox[sel]; out.push({ text: MUN[sel].nombre, x: (b[0] + b[2]) / 2, y: (b[1] + b[3]) / 2 }); }
+  return out;
+}
+
+function deptView(code) {
+  const d = DEP[code];
+  setHead({ kicker: `Código DANE ${code}`, title: d.nombre, dek: `Del 1 ene ${V.desde} al ${corteFecha}. Elige un municipio para ver cuántos contratos tiene.` });
+  $('back').innerHTML = '<a class="el-btn el-btn-secondary" href="#mapa">← Colombia</a>';
+  $('map-title').textContent = `Mapa de ${d.nombre} por municipio. Los valores están en la tabla de municipios.`;
+  view = deptView88(code);
+  const items = view.items;
+  draw();
+  $('legend').innerHTML = legend(items.some(i => i.cls === 'el-fill-unknown')) + (code === '88' ? NOTE88 : '');
+  $('figure').hidden = true;
+  deptCounts(code);
+  deptTable(code);
+}
+
+function deptCounts(code, bogota) {
+  const d = DEP[code];
+  $('counts').innerHTML = `<h2 id="counts-h">Contratos de ${esc(d.nombre)}</h2><div class="el-counts">${
+    bogota ? count(d.contratosSoloDepartamento, 'registrados solo como Bogotá, D.C. (departamento)')
+           : count(d.contratosEnMunicipios, 'en sus municipios', 'sabemos en qué municipio se firmaron') +
+             count(d.contratosSoloDepartamento, 'solo en el departamento', 'sabemos el departamento, no el municipio')}</div>`;
+}
+function deptTable(code, sel) {
+  const d = DEP[code];
+  table(`Contratos por municipio en ${d.nombre}, ${periodoCorto}`,
+    ['Municipio', 'Código DANE', ['Contratos ubicados', 'Contratos'], ...(phase2 ? [RISK_H] : [])],
+    D.municipios.filter(m => m.departamento.codigo === code).map(m => [
+      `<a href="#mapa/${m.codigo}">${esc(m.nombre)}</a>`, m.codigo,
+      m.contratosUbicados === null ? { nodata: true } : num(m.contratosUbicados),
+      ...(phase2 ? [m.contratosUbicados === null ? { nodata: true } : tag(m.codigo)] : [])]), sel);
+}
+
+function munView(code) {
+  const m = MUN[code], dc = m.departamento.codigo, bogota = code === BOGOTA;
+  const tipo = TIPO[m.tipo] ? ` · ${TIPO[m.tipo]}` : '';
+  setHead({ kicker: `${bogota ? 'Distrito Capital' : esc(m.departamento.nombre)} · Código DANE ${code}${tipo}`, title: m.nombre, dek: '' });
+  $('back').innerHTML = bogota ? '<a class="el-btn el-btn-secondary" href="#mapa">← Colombia</a>'
+    : `<a class="el-btn el-btn-secondary" href="#mapa/departamento/${dc}">← ${esc(m.departamento.nombre)}</a>`;
+  $('map-title').textContent = `Mapa de ${m.departamento.nombre} con ${m.nombre} seleccionado. Los valores están en la tabla de municipios.`;
+  view = deptView88(dc, code);
+  const items = view.items;
+  draw();
+  $('legend').innerHTML = legend(items.some(i => i.cls === 'el-fill-unknown')) + (dc === '88' ? NOTE88 : '');
+  const value = m.contratosUbicados === null
+    ? `<p class="value"><span class="pg-hatch" aria-hidden="true"></span>Sin datos</p><p class="context">No encontramos contratos ubicados con certeza en este lugar ${periodo}.</p>`
+    : `<p class="value">${num(m.contratosUbicados)}</p><p class="context">contratos firmados ${periodo} y ubicados en ${esc(m.nombre)}</p>`;
+  $('figure').innerHTML = `${phase2 && m.contratosUbicados !== null ? `<p>${tag(code, true)}</p>` : ''}<div class="el-figure">${value}<p class="source">SECOP II y SECOP I · ${periodoCorto} · datos al ${corteFecha}</p></div>
+    <div class="pg-copy"><button class="el-btn el-btn-secondary" type="button" id="copy"><i data-lucide="link" aria-hidden="true"></i>Copiar enlace</button><span class="done" role="status" id="copied"></span></div>`;
+  $('figure').hidden = false;
+  $('copy').addEventListener('click', copyLink);
+  deptCounts(dc, bogota);
+  deptTable(dc, code);
+}
+
+async function copyLink() {
+  const url = location.href;
+  try { await navigator.clipboard.writeText(url); $('copied').textContent = 'Enlace copiado'; }
+  catch {
+    const box = document.createElement('input'); box.readOnly = true; box.value = url; box.setAttribute('aria-label', 'Enlace para compartir');
+    $('copied').replaceWith(box); box.focus(); box.select();
+  }
+}
+
+const RISK_H = 'Riesgo (ficticio)';
+function table(caption, heads, rows, sel) {
+  const th = h => Array.isArray(h) ? `<span class="long">${h[0]}</span><span class="short">${h[1]}</span>` : h;
+  const numeric = i => i > 0 && heads[i] !== 'Código DANE' && heads[i] !== RISK_H;
+  $('table').innerHTML = `<h2 id="table-h">${esc(caption)}</h2>
+    <div class="pg-table-scroll" tabindex="0" role="region" aria-labelledby="table-h"><table class="el-table">
+    <caption class="pg-sr">${esc(caption)}. Datos al ${corteFecha}.</caption>
+    <thead><tr>${heads.map((h, i) => `<th scope="col"${numeric(i) ? ' class="el-num"' : ''}>${th(h)}</th>`).join('')}</tr></thead>
+    <tbody>${rows.map(r => {
+      const cur = sel && r[0].includes(`#mapa/${sel}"`) ? ' aria-current="true"' : '';
+      return `<tr${cur}><th scope="row">${r[0]}</th>${r.slice(1).map((c, i) => c && c.nodata
+        ? '<td class="el-num nodata"><span class="el-key el-key-unknown" aria-hidden="true"></span>Sin datos</td>'
+        : `<td${numeric(i + 1) ? ' class="el-num"' : ''}>${c}</td>`).join('')}</tr>`;
+    }).join('')}</tbody></table></div>
+    <p class="pg-source">${sourceLine()}</p>`;
+}
+
+function setHead({ kicker, title, dek }) {
+  $('kicker').innerHTML = kicker; $('title').textContent = title;
+  $('dek').textContent = dek; $('dek').hidden = !dek;
+}
+
+function errorView(kind) {
+  $('body').hidden = true; $('table').hidden = true; $('back').replaceChildren();
+  const danger = kind === '503';
+  setHead({ kicker: 'Mapa de contratación pública', title: danger ? 'Mapa de contratación pública' : 'No encontramos ese lugar', dek: '' });
+  $('alert').innerHTML = `<div class="el-alert ${danger ? 'el-alert-danger' : 'el-alert-warning'}" role="${danger ? 'alert' : 'status'}">
+    <span class="badge"><i data-lucide="${danger ? 'circle-alert' : 'triangle-alert'}" aria-hidden="true"></i></span>
+    <strong>${danger ? 'Los datos del mapa no están disponibles en este momento.' : 'Ese enlace no corresponde a un municipio de Colombia.'}</strong>
+    <p>${danger ? 'Vuelve a intentarlo en unos minutos.' : 'Revisa el enlace o busca el municipio en el mapa.'}</p>
+    <div class="actions">${danger ? '<button class="el-btn el-btn-primary" type="button" id="retry">Reintentar</button>' : '<a class="el-btn el-btn-primary" href="#mapa">Ver el mapa de Colombia</a>'}</div></div>`;
+  if (danger) $('retry').addEventListener('click', () => { $('mk-state').value = 'ok'; state = 'ok'; route(); });
+}
+
+// ---------- search ----------
+const INDEX = [
+  ...D.departamentos.filter(d => d.codigo !== '11').map(d => ({ key: fold(d.nombre), name: d.nombre, sub: 'departamento', hash: 'mapa/departamento/' + d.codigo })),
+  ...D.municipios.map(m => ({ key: fold(m.nombre), name: m.nombre, sub: m.codigo === BOGOTA ? 'Distrito Capital' : m.departamento.nombre, hash: 'mapa/' + m.codigo })),
+];
+const q = $('q'), results = $('results');
+function search() {
+  const raw = q.value.trim(), t = fold(raw);
+  $('qhelp').hidden = t.length >= 2;
+  if (t.length < 2) { q.removeAttribute('aria-describedby'); q.setAttribute('aria-describedby', 'qhelp'); results.hidden = true; $('qstatus').textContent = ''; return; }
+  q.removeAttribute('aria-describedby');
+  const hits = INDEX.filter(i => i.key.includes(t))
+    .sort((a, b) => (b.key.startsWith(t) - a.key.startsWith(t)) || a.name.localeCompare(b.name, 'es'))
+    .slice(0, 8);
+  results.innerHTML = hits.length
+    ? hits.map(i => `<li><button type="button" data-hash="${i.hash}">${esc(i.name)}<span>, ${esc(i.sub)}</span></button></li>`).join('')
+    : `<li class="el-results-empty">No encontramos «${esc(raw)}». Revisa la escritura o elige el departamento en el mapa.</li>`;
+  results.hidden = false;
+  $('qstatus').textContent = hits.length ? `${hits.length} ${hits.length === 1 ? 'resultado' : 'resultados'}` : 'Sin resultados';
+}
+q.setAttribute('aria-describedby', 'qhelp');
+q.addEventListener('input', search);
+q.addEventListener('keydown', e => { if (e.key === 'ArrowDown') { const b = results.querySelector('button'); if (b) { e.preventDefault(); b.focus(); } } });
+results.addEventListener('click', e => {
+  const b = e.target.closest('button[data-hash]'); if (!b) return;
+  pending = 'search'; location.hash = b.dataset.hash;
+});
+function clearSearch() { q.value = ''; search(); }
+
+// ---------- routing ----------
+let pending = null;
+function choose(code, how) {
+  pending = how;
+  if (view && view.national) location.hash = code === '11' ? 'mapa/' + BOGOTA : 'mapa/departamento/' + code;
+  else location.hash = 'mapa/' + code;
+}
+
+function route() {
+  $('alert').replaceChildren(); $('body').hidden = false; $('table').hidden = false;
+  clearSearch();
+  if (state === 'loading') {
+    setHead({ kicker: 'Mapa de contratación pública', title: 'Mapa de contratación pública', dek: '' });
+    $('frame').hidden = true; $('loading').hidden = false; $('legend').replaceChildren(); $('counts').replaceChildren();
+    $('figure').hidden = true; $('table').hidden = true; $('back').replaceChildren(); $('source').textContent = '';
+    return;
+  }
+  $('frame').hidden = false; $('loading').hidden = true;
+  if (state === '503') { errorView('503'); finish(); return; }
+  $('source').innerHTML = sourceLine();
+  const h = location.hash.replace(/^#/, '');
+  let m;
+  if (h === '' || h === 'mapa') nationalView();
+  else if ((m = /^mapa\/departamento\/(\d{2})$/.exec(h)) && DEP[m[1]] && m[1] !== '11') deptView(m[1]);
+  else if ((m = /^mapa\/(\d+)$/.exec(h))) {
+    if (!/^\d{5}$/.test(m[1]) || !MUN[m[1]]) errorView(/^\d{5}$/.test(m[1]) ? '404' : '400');
+    else munView(m[1]);
+  } else errorView('400');
+  if (phase2 && !$('body').hidden) $('alert').insertAdjacentHTML('afterbegin', `<div class="el-alert el-alert-warning" role="status"><span class="badge"><i data-lucide="triangle-alert" aria-hidden="true"></i></span><strong>Vista previa con datos ficticios.</strong><p>Los colores y niveles de riesgo de este mapa son inventados para mostrar cómo se verá la fase 2. Las cifras de contratos son reales.</p></div>`);
+  syncJump();
+  finish();
+}
+
+// ---------- dropdown navigation ----------
+const jd = $('jd'), jm = $('jm');
+jd.innerHTML = '<option value="">Toda Colombia</option>' + D.departamentos.map(d => `<option value="${d.codigo}">${esc(d.nombre)}</option>`).join('');
+function syncJump() {
+  const h = location.hash.replace(/^#/, '');
+  let dep = '', mun = '', m;
+  if ((m = /^mapa\/departamento\/(\d{2})$/.exec(h)) && DEP[m[1]]) dep = m[1];
+  else if ((m = /^mapa\/(\d{5})$/.exec(h)) && MUN[m[1]]) { mun = m[1]; dep = MUN[mun].departamento.codigo; }
+  jd.value = dep;
+  if (!dep) { jm.innerHTML = '<option value="">Elige primero un departamento</option>'; jm.disabled = true; return; }
+  jm.disabled = false;
+  jm.innerHTML = (dep === '11' ? '' : '<option value="">Todo el departamento</option>') + D.municipios.filter(x => x.departamento.codigo === dep).map(x => `<option value="${x.codigo}">${esc(x.nombre)}</option>`).join('');
+  jm.value = mun;
+}
+jd.addEventListener('change', () => { pending = 'search'; location.hash = !jd.value ? 'mapa' : jd.value === '11' ? 'mapa/' + BOGOTA : 'mapa/departamento/' + jd.value; });
+jm.addEventListener('change', () => { pending = 'search'; location.hash = jm.value ? 'mapa/' + jm.value : 'mapa/departamento/' + jd.value; });
+
+function finish() {
+  if (window.lucide) lucide.createIcons();
+  const how = pending; pending = null;
+  const title = $('title');
+  if (how) {
+    title.focus({ preventScroll: true });
+    const target = !$('figure').hidden ? $('figure') : $('frame');
+    if (innerWidth < 960 && !$('figure').hidden) target.scrollIntoView({ block: 'center', behavior: reduced ? 'auto' : 'smooth' });
+    else $('page').scrollIntoView({ block: 'start', behavior: 'auto' });
+    if (how === 'search' || how === 'tap') $('announce').textContent = `Seleccionado: ${title.textContent}`;
+  } else if (location.hash) {
+    $('page').scrollIntoView({ block: 'start', behavior: 'auto' });
+  }
+}
+
+addEventListener('hashchange', route);
+route();
+})();
+</script>
+</body>
+</html>
