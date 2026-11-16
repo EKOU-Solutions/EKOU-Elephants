@@ -25,6 +25,7 @@ npm run dev                       # web + API en http://localhost:5173
 | `npm run cf-typegen` | Regenera `worker-configuration.d.ts` tras cambiar `wrangler.jsonc`. |
 | `npm run storybook` | Levanta el [sistema de diseño en Storybook](#sistema-de-diseño-storybook) en http://localhost:6006. |
 | `npm run build-storybook` | Genera la versión estática de Storybook en `storybook-static/`. |
+| `npm run design:check` | Validación de diseño: `build.py` de la guía, build de Storybook y, por cada historia × tema × ancho (320, 390, 768 y 1280 px), render, axe y desplazamiento horizontal. Deja el reporte y las capturas en `.design-check/`. Con `-- --filter <texto>` revisa solo algunas historias. Con `-- --html <archivo>` solo captura un HTML local (los bocetos de una página). Si falta el navegador de Playwright, el comando lo descarga solo la primera vez (unos 100 MB). |
 
 Ruta de prueba: `GET /api/mapa/territorios/05/resumen` (código DIVIPOLA de 2 o 5 dígitos). Es una demostración arquitectónica con cifras ficticias; al tomar el módulo del mapa, se refinarán con Esteban las reglas y el contrato con la ingesta.
 
@@ -44,7 +45,7 @@ Cada preview de PR y producción publican la versión estática en `/storybook/`
 - Los componentes React reales llevan su historia al lado: `src/**/ComponentName.stories.tsx`.
 - Los tokens salen de `docs/design/guide/tokens.json`: `build.py` genera `tokens.css` y lo copia, con la fuente, a `src/styles/`. La app (`src/client/main.tsx`) y Storybook importan `src/styles/global.css`; no se edita a mano.
 - Cada componente de `src/components/ui/` trae su `Component.module.css` (CSS Modules de Vite); no hay hojas compartidas entre componentes.
-- Todo cambio de diseño pasa por la skill `elephants-design` (regla en `AGENTS.md`). Cómo entra un componente nuevo: página *Cómo trabajamos* dentro de Storybook.
+- Todo cambio de diseño pasa por la skill `elephant-designer` (regla en `AGENTS.md`). Cómo entra un componente nuevo: página *Cómo trabajamos* dentro de Storybook.
 - Storybook quita el plugin de Cloudflare de `vite.config.ts` (`.storybook/main.ts`): solo carga el cliente React, no el Worker.
 
 ## Entornos y bases de datos
