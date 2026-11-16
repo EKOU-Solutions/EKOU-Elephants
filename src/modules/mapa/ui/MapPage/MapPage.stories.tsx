@@ -38,6 +38,8 @@ const meta = {
           '',
           'Datos: muestra real del corte 2026-11 (datos al 7 nov 2026), con la forma del contrato de la API (`docs/design/pages/map/contract.md`). Especificación: `docs/design/pages/map/spec.md`.',
           '',
+          'Al pasar de Colombia a un departamento, el mapa se acerca hacia él (y se aleja al volver) con una View Transition; con movimiento reducido el cambio es inmediato. La transición solo corre en la app (`MapScreen`), no en estas historias.',
+          '',
           'La vista real es neutra: el corte no trae riesgo. La historia «Vista previa de la fase 2» pinta niveles **ficticios** y lo dice en cada lugar; la app nunca la muestra hasta que exista la metodología (TASK-07).',
         ].join('\n'),
       },

@@ -233,3 +233,20 @@
     order: 0;
   }
 }
+
+/* ---- zoom between views (spec, decision 15; mapZoom.ts animates the two snapshots) ---- */
+:global(::view-transition-group(map-zoom)) {
+  animation: none;
+}
+
+/* The zoom happens inside the map's frame, never over the rest of the page. */
+:global(::view-transition-image-pair(map-zoom)) {
+  overflow: clip;
+}
+
+:global(::view-transition-old(map-zoom)),
+:global(::view-transition-new(map-zoom)) {
+  animation: none;
+  transform-origin: 0 0;
+  mix-blend-mode: normal;
+}

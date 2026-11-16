@@ -1,7 +1,9 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { flushSync } from 'react-dom';
 import type { CorteVigente, DepartamentosDelCorte, MunicipiosDelCorte } from '../domain/mapa';
 import type { TopoJson } from './geometry';
 import { MapPage, type MapPageState } from './MapPage/MapPage';
+import { withMapZoom } from './mapZoom';
 import { type MapRoute, type PreparedMap, parseRoute, prepareMap, routePath } from './mapModel';
 
 type Fetch = (
@@ -72,17 +74,28 @@ export function MapScreen() {
     return () => control.abort();
   }, [attempt]);
 
-  useEffect(() => {
-    const onPop = () => setRoute(parseRoute(window.location.pathname));
-    window.addEventListener('popstate', onPop);
-    return () => window.removeEventListener('popstate', onPop);
+  // The current view, for the zoom between views (read when navigating, not rendered).
+  const current = useRef(route);
+  current.current = route;
+  /** Shows a new view, zooming in or out when it moves between Colombia and a department. */
+  const show = useCallback((next: MapRoute) => {
+    withMapZoom(current.current, next, () => flushSync(() => setRoute(next)));
   }, []);
 
-  const navigate = useCallback((next: MapRoute) => {
-    const path = routePath(next);
-    if (path !== window.location.pathname) window.history.pushState(null, '', path);
-    setRoute(next);
-  }, []);
+  const navigate = useCallback(
+    (next: MapRoute) => {
+      const path = routePath(next);
+      if (path !== window.location.pathname) window.history.pushState(null, '', path);
+      show(next);
+    },
+    [show],
+  );
+
+  useEffect(() => {
+    const onPop = () => show(parseRoute(window.location.pathname));
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, [show]);
 
   // The tab says where you are: «Medellín · Mapa de contratación pública».
   const place = useMemo(() => {

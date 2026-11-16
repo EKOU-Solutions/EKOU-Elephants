@@ -379,6 +379,7 @@ export function MapPage({ state, route, onNavigate, onRetry, fictionalLevel }: M
         <section className={styles.mapbox} aria-label="Mapa">
           <MapWithLegend
             {...view}
+            transitionName="map-zoom"
             onSelect={(code) =>
               go(
                 route.view === 'country' ? departmentRoute(code) : { view: 'municipality', code },

@@ -55,6 +55,11 @@ export interface MapWithLegendProps {
   onSelect?: (code: string) => void;
   /** Maximum height in px. By default 640 from 960 px wide, or 62 % of the window below. */
   maxHeight?: number;
+  /**
+   * `view-transition-name` of the map drawing, for a page that animates between views (the Map
+   * page uses `map-zoom`). Only one map on the page may carry a given name.
+   */
+  transitionName?: string;
 }
 
 const MAX_ZOOM = 12;
@@ -88,6 +93,7 @@ export function MapWithLegend({
   selected,
   onSelect,
   maxHeight,
+  transitionName,
 }: MapWithLegendProps) {
   const hatchId = `hatch-${useId().replace(/[^a-zA-Z0-9-]/g, '')}`;
   const titleId = `${hatchId}-title`;
@@ -274,6 +280,8 @@ export function MapWithLegend({
           height={H}
           viewBox={`0 0 ${W} ${H}`}
           data-zoomed={view.z > 1 ? 'true' : undefined}
+          data-view-transition={transitionName}
+          style={transitionName ? { viewTransitionName: transitionName } : undefined}
           data-dragging={dragging ? 'true' : undefined}
           onPointerDown={onPointerDown}
           onPointerMove={onPointerMove}
