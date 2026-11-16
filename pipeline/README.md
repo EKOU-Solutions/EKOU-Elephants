@@ -88,7 +88,7 @@ El workflow [`corte-mensual`](../.github/workflows/corte-mensual.yml) corre el d
 | Destino | Contenido |
 |---|---|
 | Release `corte-AAAA-MM` | Todos los archivos de `export` y el reporte de extracción: el histórico |
-| Worker `ekou-elephants-datos`: `datos/AAAA-MM/` | `mapa_municipios.json` y `calidad_corte.json` del corte vigente y del anterior, lo que consume la app |
+| Worker `ekou-elephants-datos`: `datos/AAAA-MM/` | Los JSON del Release del corte vigente y del anterior, con el mismo nombre (menos `reporte-extraccion.json`): lo que consume la app |
 | Worker `ekou-elephants-datos`: `datos/latest.json` | Puntero al corte vigente y a sus archivos |
 
 El Worker de datos ([`worker-datos/wrangler.jsonc`](worker-datos/wrangler.jsonc)) solo tiene archivos estáticos y no tiene URL pública: la API lo lee por el binding `DATOS` ([CI/CD](../docs/ci-cd.md#datos-del-corte-mensual)). No se usa R2 porque exige tarjeta de crédito.

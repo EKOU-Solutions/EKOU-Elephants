@@ -284,18 +284,20 @@ jobs:
           raiz=pipeline/worker-datos/publicacion
           rm -rf "$raiz"
           for corte in $CORTES; do
-            gh release download "corte-$corte" --dir "$raiz/datos/$corte" \
-              --pattern mapa_municipios.json --pattern calidad_corte.json
+            # Todos los JSON del Release con su nombre, menos el diagnóstico de la extracción:
+            # el Worker es un espejo de los Releases (también los del mapa, de export-mapa).
+            gh release download "corte-$corte" --dir "$raiz/datos/$corte" --pattern '*.json'
+            rm -f "$raiz/datos/$corte/reporte-extraccion.json"
           done
-          # Mismo formato que `npm run datos:descargar` (scripts/datos.mjs).
-          jq -n --arg corte "$VIGENTE" --arg publicado "$(date -u +%Y-%m-%dT%H:%M:%SZ)" '{
-            corte: $corte,
-            publicado: $publicado,
-            archivos: {
-              calidad_corte: "datos/\($corte)/calidad_corte.json",
-              mapa_municipios: "datos/\($corte)/mapa_municipios.json"
-            }
-          }' > "$raiz/datos/latest.json"
+          # El puntero sale de la misma función que `npm run datos:descargar` (scripts/datos.mjs).
+          RAIZ="$raiz" node --input-type=module -e '
+            import { readdirSync, writeFileSync } from "node:fs";
+            import { punteroLatest } from "./scripts/datos.mjs";
+            const { RAIZ, VIGENTE } = process.env;
+            const puntero = punteroLatest(VIGENTE, readdirSync(`${RAIZ}/datos/${VIGENTE}`));
+            writeFileSync(`${RAIZ}/datos/latest.json`, `${JSON.stringify(puntero, null, 2)}\n`);
+          '
+          cat "$raiz/datos/latest.json"
           find "$raiz" -type f | sort
           echo "Worker de datos: cortes $CORTES; latest.json → $VIGENTE" >> "$GITHUB_STEP_SUMMARY"
 
