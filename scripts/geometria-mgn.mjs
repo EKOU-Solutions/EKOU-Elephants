@@ -43,17 +43,38 @@ execFileSync(
   [
     '--max-old-space-size=8192',
     resolve('node_modules', 'mapshaper', 'bin', 'mapshaper'),
-    '-i', entrada, 'name=municipios',
-    '-filter-fields', 'mpio_cdpmp',
-    '-rename-fields', 'codigo=mpio_cdpmp',
-    '-simplify', 'visvalingam', 'weighted', 'keep-shapes', 'variable',
+    '-i',
+    entrada,
+    'name=municipios',
+    '-filter-fields',
+    'mpio_cdpmp',
+    '-rename-fields',
+    'codigo=mpio_cdpmp',
+    '-simplify',
+    'visvalingam',
+    'weighted',
+    'keep-shapes',
+    'variable',
     `percentage = codigo.slice(0, 2) === '88' ? '${SIMPLIFICACION_ISLAS}' : this.partCount > 1 ? '${SIMPLIFICACION_PARTES}' : '${SIMPLIFICACION}'`,
     '-clean',
-    '-each', 'dpto=codigo.slice(0,2)',
-    '-dissolve', 'dpto', '+', 'name=departamentos',
-    '-rename-fields', 'codigo=dpto', 'target=departamentos',
-    '-filter-fields', 'codigo', 'target=municipios',
-    '-o', 'format=topojson', 'bbox', `quantization=${CUANTIZACION}`, 'target=municipios,departamentos', salida,
+    '-each',
+    'dpto=codigo.slice(0,2)',
+    '-dissolve',
+    'dpto',
+    '+',
+    'name=departamentos',
+    '-rename-fields',
+    'codigo=dpto',
+    'target=departamentos',
+    '-filter-fields',
+    'codigo',
+    'target=municipios',
+    '-o',
+    'format=topojson',
+    'bbox',
+    `quantization=${CUANTIZACION}`,
+    'target=municipios,departamentos',
+    salida,
   ],
   { stdio: ['ignore', 'ignore', 'inherit'] },
 );
@@ -61,13 +82,16 @@ execFileSync(
 const errores = [];
 const bytes = readFileSync(salida);
 const brotli = brotliCompressSync(bytes).length;
-if (bytes.length > PRESUPUESTO.crudo) errores.push(`pesa ${bytes.length} B (máximo ${PRESUPUESTO.crudo})`);
-if (brotli > PRESUPUESTO.brotli) errores.push(`pesa ${brotli} B con Brotli (máximo ${PRESUPUESTO.brotli})`);
+if (bytes.length > PRESUPUESTO.crudo)
+  errores.push(`pesa ${bytes.length} B (máximo ${PRESUPUESTO.crudo})`);
+if (brotli > PRESUPUESTO.brotli)
+  errores.push(`pesa ${brotli} B con Brotli (máximo ${PRESUPUESTO.brotli})`);
 
 const topologia = JSON.parse(bytes.toString('utf-8'));
 for (const [objeto, total] of Object.entries(ESPERADO)) {
   const geometrias = topologia.objects[objeto]?.geometries ?? [];
-  if (geometrias.length !== total) errores.push(`${objeto}: ${geometrias.length} formas (esperadas ${total})`);
+  if (geometrias.length !== total)
+    errores.push(`${objeto}: ${geometrias.length} formas (esperadas ${total})`);
   if (geometrias.some((g) => g.type == null)) errores.push(`${objeto}: hay formas vacías`);
 }
 if (topologia.bbox?.length !== 4) errores.push('falta bbox');
@@ -78,11 +102,15 @@ const cortes = readdirSync(datos).filter((d) => /^\d{4}-\d{2}$/.test(d));
 for (const corte of cortes) {
   const archivo = join(datos, corte, 'mapa', 'municipios.json');
   if (!existsSync(archivo)) continue;
-  const codigos = new Set(JSON.parse(readFileSync(archivo, 'utf-8')).municipios.map((m) => m.codigo));
+  const codigos = new Set(
+    JSON.parse(readFileSync(archivo, 'utf-8')).municipios.map((m) => m.codigo),
+  );
   const sinForma = [...codigos].filter((c) => !codigosMgn.has(c));
   const sobrantes = [...codigosMgn].filter((c) => !codigos.has(c));
   if (sinForma.length || sobrantes.length) {
-    errores.push(`corte ${corte}: sin forma ${sinForma.join(',') || '-'}; formas sin municipio ${sobrantes.join(',') || '-'}`);
+    errores.push(
+      `corte ${corte}: sin forma ${sinForma.join(',') || '-'}; formas sin municipio ${sobrantes.join(',') || '-'}`,
+    );
   }
 }
 
@@ -90,4 +118,6 @@ if (errores.length) {
   console.error(`✗ ${salida}\n  - ${errores.join('\n  - ')}`);
   process.exit(1);
 }
-console.log(`✓ ${salida}: ${bytes.length} B, ${brotli} B con Brotli; cruce con ${cortes.length} corte(s) correcto`);
+console.log(
+  `✓ ${salida}: ${bytes.length} B, ${brotli} B con Brotli; cruce con ${cortes.length} corte(s) correcto`,
+);

@@ -9,7 +9,9 @@ import type {
 } from '../../domain/mapa';
 import type { ResumenTerritorial } from '../../domain/resumen-territorial';
 
-const params = z.object({ codigo: z.string().regex(/^(\d{2}|\d{5})$/, 'Código DIVIPOLA inválido') });
+const params = z.object({
+  codigo: z.string().regex(/^(\d{2}|\d{5})$/, 'Código DIVIPOLA inválido'),
+});
 const municipioParams = z.object({ codigo: z.string().regex(/^\d{5}$/) });
 const geometriaParams = z.object({ version: z.string().regex(/^[a-z0-9-]{1,40}$/) });
 

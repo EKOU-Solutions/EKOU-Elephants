@@ -33,7 +33,11 @@ const cacahual = {
   departamento: { codigo: '94', iso: 'CO-GUA', nombre: 'Guainía' },
   contratosUbicados: null,
 };
-const municipios = { corte: '2026-11', ventana: { desde: 2021, hasta: 2026 }, municipios: [medellin, cacahual] };
+const municipios = {
+  corte: '2026-11',
+  ventana: { desde: 2021, hasta: 2026 },
+  municipios: [medellin, cacahual],
+};
 const departamentos = {
   corte: '2026-11',
   ventana: { desde: 2021, hasta: 2026 },
@@ -44,7 +48,13 @@ const departamentos = {
     contratosSinLugar: 59305,
   },
   departamentos: [
-    { codigo: '81', iso: 'CO-ARA', nombre: 'Arauca', contratosEnMunicipios: 19268, contratosSoloDepartamento: 26863 },
+    {
+      codigo: '81',
+      iso: 'CO-ARA',
+      nombre: 'Arauca',
+      contratosEnMunicipios: 19268,
+      contratosSoloDepartamento: 26863,
+    },
   ],
 };
 const topojson = '{"type":"Topology","objects":{},"arcs":[]}';
@@ -82,7 +92,9 @@ describe('GET /api/mapa/corte', () => {
     const res = await app().app.request('/api/mapa/corte');
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual(corte);
-    expect(res.headers.get('cache-control')).toBe('public, max-age=300, stale-while-revalidate=86400');
+    expect(res.headers.get('cache-control')).toBe(
+      'public, max-age=300, stale-while-revalidate=86400',
+    );
   });
 
   it('responde 503 si no hay corte publicado', async () => {
@@ -151,7 +163,9 @@ describe('GET /api/mapa/departamentos', () => {
     const res = await app().app.request('/api/mapa/departamentos');
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual(departamentos);
-    expect(res.headers.get('cache-control')).toBe('public, max-age=300, stale-while-revalidate=86400');
+    expect(res.headers.get('cache-control')).toBe(
+      'public, max-age=300, stale-while-revalidate=86400',
+    );
   });
 
   it('responde 503 si el total nacional no cuadra con sus niveles', async () => {
@@ -175,7 +189,11 @@ describe('GET /api/mapa/municipios/:codigo', () => {
   it('devuelve un municipio con el corte y la ventana', async () => {
     const res = await app().app.request('/api/mapa/municipios/05001');
     expect(res.status).toBe(200);
-    expect(await res.json()).toEqual({ corte: '2026-11', ventana: { desde: 2021, hasta: 2026 }, ...medellin });
+    expect(await res.json()).toEqual({
+      corte: '2026-11',
+      ventana: { desde: 2021, hasta: 2026 },
+      ...medellin,
+    });
   });
 
   it('responde 404 si el código no está en DIVIPOLA', async () => {
@@ -184,13 +202,16 @@ describe('GET /api/mapa/municipios/:codigo', () => {
     expect(await res.json()).toEqual({ error: 'municipio_no_encontrado' });
   });
 
-  it.each(['5001', '050011', 'abcde', "05001'--"])('responde 400 sin leer R2 si el código es %s', async (codigo) => {
-    const { app: a, leidas } = app();
-    const res = await a.request(`/api/mapa/municipios/${encodeURIComponent(codigo)}`);
-    expect(res.status).toBe(400);
-    expect(await res.json()).toEqual({ error: 'codigo_invalido' });
-    expect(leidas).toHaveLength(0);
-  });
+  it.each(['5001', '050011', 'abcde', "05001'--"])(
+    'responde 400 sin leer R2 si el código es %s',
+    async (codigo) => {
+      const { app: a, leidas } = app();
+      const res = await a.request(`/api/mapa/municipios/${encodeURIComponent(codigo)}`);
+      expect(res.status).toBe(400);
+      expect(await res.json()).toEqual({ error: 'codigo_invalido' });
+      expect(leidas).toHaveLength(0);
+    },
+  );
 });
 
 describe('GET /api/mapa/geometria/:version', () => {

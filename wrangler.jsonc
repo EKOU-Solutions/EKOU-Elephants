@@ -7,8 +7,17 @@
     "not_found_handling": "single-page-application",
     "run_worker_first": ["/api/*"]
   },
-  // Published map data (pipeline → R2). `wrangler dev` emulates it locally in .wrangler/state;
-  // load it with `npm run datos:local`. bucket_name must match the R2_BUCKET secret of corte-mensual.
-  "r2_buckets": [{ "binding": "DATOS", "bucket_name": "ekou-datos" }],
-  "observability": { "enabled": true }
+  "observability": {
+    "enabled": true
+  },
+  // Datos del corte mensual: Worker solo de archivos estáticos que publica TASK-15 (docs/ci-cd.md).
+  "services": [{ "binding": "DATOS", "service": "ekou-elephants-datos" }],
+  "preview_urls": true,
+  "previews": {
+    "observability": {
+      "enabled": true
+    },
+    // Los previews no heredan los bindings; el workflow puede cambiarlo por el Worker de datos del PR.
+    "services": [{ "binding": "DATOS", "service": "ekou-elephants-datos" }]
+  }
 }

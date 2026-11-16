@@ -22,7 +22,8 @@ export function listarMunicipios(puerto: ConsultarMapa) {
   return async (): Promise<MunicipiosDelCorte> => {
     const vigente = await corte();
     const municipios = await puerto.municipios(vigente.corte);
-    if (!municipios) throw new CorteNoDisponible(`faltan los municipios del corte ${vigente.corte}`);
+    if (!municipios)
+      throw new CorteNoDisponible(`faltan los municipios del corte ${vigente.corte}`);
     return municipios;
   };
 }
@@ -32,7 +33,8 @@ export function listarDepartamentos(puerto: ConsultarMapa) {
   return async (): Promise<DepartamentosDelCorte> => {
     const vigente = await corte();
     const departamentos = await puerto.departamentos(vigente.corte);
-    if (!departamentos) throw new CorteNoDisponible(`faltan los departamentos del corte ${vigente.corte}`);
+    if (!departamentos)
+      throw new CorteNoDisponible(`faltan los departamentos del corte ${vigente.corte}`);
     return departamentos;
   };
 }

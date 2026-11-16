@@ -34,7 +34,18 @@ for (const archivo of lista) {
   const clave = `datos/${relative(origen, archivo).split(sep).join('/')}`;
   execFileSync(
     process.execPath,
-    [wrangler, 'r2', 'object', 'put', `${BUCKET}/${clave}`, '--file', archivo, '--content-type', 'application/json', '--local'],
+    [
+      wrangler,
+      'r2',
+      'object',
+      'put',
+      `${BUCKET}/${clave}`,
+      '--file',
+      archivo,
+      '--content-type',
+      'application/json',
+      '--local',
+    ],
     { stdio: ['ignore', 'ignore', 'inherit'] },
   );
   console.log(`✓ ${clave}`);

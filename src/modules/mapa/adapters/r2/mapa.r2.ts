@@ -87,7 +87,9 @@ const esquemaDepartamentos = z
       })
       .strict()
       .refine(
-        (n) => n.contratos === n.contratosEnMunicipios + n.contratosSoloDepartamento + n.contratosSinLugar,
+        (n) =>
+          n.contratos ===
+          n.contratosEnMunicipios + n.contratosSoloDepartamento + n.contratosSinLugar,
         'el total nacional no cuadra con sus niveles',
       ),
     departamentos: z.array(
@@ -124,20 +126,24 @@ export function mapaR2(almacen: AlmacenObjetos): ConsultarMapa {
       const puntero = await leerJson(claves.puntero, esquemaPuntero);
       if (!puntero) return null;
       const corte = await leerJson(claves.corte(puntero.corte), esquemaCorte);
-      if (!corte) throw new CorteNoDisponible(`el puntero apunta a ${puntero.corte}, que no existe`);
-      if (corte.corte !== puntero.corte) throw new CorteNoDisponible('el puntero y el corte no coinciden');
+      if (!corte)
+        throw new CorteNoDisponible(`el puntero apunta a ${puntero.corte}, que no existe`);
+      if (corte.corte !== puntero.corte)
+        throw new CorteNoDisponible('el puntero y el corte no coinciden');
       return corte;
     },
 
     async municipios(corte: string): Promise<MunicipiosDelCorte | null> {
       const datos = await leerJson(claves.municipios(corte), esquemaMunicipios);
-      if (datos && datos.corte !== corte) throw new CorteNoDisponible('los municipios son de otro corte');
+      if (datos && datos.corte !== corte)
+        throw new CorteNoDisponible('los municipios son de otro corte');
       return datos;
     },
 
     async departamentos(corte: string): Promise<DepartamentosDelCorte | null> {
       const datos = await leerJson(claves.departamentos(corte), esquemaDepartamentos);
-      if (datos && datos.corte !== corte) throw new CorteNoDisponible('los departamentos son de otro corte');
+      if (datos && datos.corte !== corte)
+        throw new CorteNoDisponible('los departamentos son de otro corte');
       return datos;
     },
 
