@@ -63,6 +63,8 @@ flowchart TB
     SECRETS -.-> DATA
 ```
 
+Para una ruta de la API, sigue la guía [Crear una API](how-to/crear-una-api.md).
+
 Las pruebas unitarias viven junto al código (`*.test.ts`).
 
 ## Puertos y adaptadores

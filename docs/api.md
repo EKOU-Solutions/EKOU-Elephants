@@ -99,28 +99,61 @@ Todo error responde JSON con la forma `{ "error": "<código>" }`. El código es 
 | 503 | `corte_no_disponible` | No hay corte publicado o sus archivos no son coherentes. |
 | 500 | `error_interno` | Error inesperado. |
 
-Un error nuevo nace como clase en el dominio del módulo y se traduce a estado y código en `app.onError` (`src/server/app.ts`). Después se documenta en `ENRIQUECIMIENTO` (ver abajo).
+Un error nuevo nace como clase en el dominio del módulo y se traduce a estado y código en `app.onError` (`src/server/app.ts`). Después se documenta en las respuestas de la ruta con `esquemaError('<código>')` (ver abajo).
 
 ## Cómo documentamos la API
 
 ### El principio: el código es la fuente
 
-Las rutas de Hono son la única definición de la API. De ellas se generan los documentos, se versionan en el repositorio y una prueba falla si quedan desactualizados. Así la documentación no puede contradecir lo que está desplegado.
+Cada ruta se documenta junto a su código, y de ahí se generan los documentos. Se versionan en el repositorio y una prueba falla si quedan desactualizados. Así la documentación no puede contradecir lo que está desplegado.
 
 | Ruta | Para quién | Contenido |
 | --- | --- | --- |
-| `/api/docs` | Personas | Interfaz de Scalar que lee `/api/openapi.json`: rutas, parámetros, errores y un cliente para probarlas. |
+| `/api/docs` | Personas | Interfaz de Scalar que lee `/api/openapi.json`: rutas, parámetros, el body de cada respuesta, errores y un cliente para probarlas. |
 | `/api/llms.txt` | Agentes de IA | El mismo OpenAPI en Markdown (`@scalar/openapi-to-markdown`), fácil de leer en un contexto de modelo. |
 | `/api/openapi.json` | Herramientas | OpenAPI 3.1 generado con `hono-openapi`: clientes, validadores, importar en Postman o Insomnia. |
 
 Cada preview de PR y producción las publican, así que se puede revisar la API de un PR en `<URL del preview>/api/docs`.
 
+### Las piezas de una ruta documentada
+
+```ts
+// src/modules/mapa/adapters/http/mapa.routes.ts
+.get(
+  '/municipios/:codigo',
+  describeRoute({                                   // 1. documentación de la ruta
+    summary: 'Detalle de un municipio',
+    tags: ['Mapa'],
+    responses: {
+      200: json('Municipio seleccionado.', esquemaMunicipioSeleccionado),
+      404: json('El municipio no está en el corte vigente.', esquemaError('municipio_no_encontrado')),
+    },
+  }),
+  validator('param', municipioParams, (r, c) => {   // 2. revisa y documenta los parámetros
+    if (!r.success) return c.json({ error: 'codigo_invalido' }, 400);
+  }),
+  async (c) => {
+    const municipio = await casos.obtenerMunicipio(c.req.valid('param').codigo);
+    return responder(c, esquemaMunicipioSeleccionado, municipio);   // 3. responde con su esquema
+  },
+)
+```
+
+| Pieza | Dónde | Qué hace |
+| --- | --- | --- |
+| Esquemas de respuesta | `adapters/http/<modulo>.schemas.ts` | Describen con zod el body público de cada respuesta, `.strict()`, con descripciones y ejemplos en español (`.meta`). Son del adaptador HTTP: el dominio no los conoce. |
+| `describeRoute` | En cada ruta | Resumen, descripción, etiqueta y el body de cada respuesta (200 y errores) con `json(descripción, esquema)`. |
+| `validator` de `hono-openapi` | En cada ruta con parámetros, consulta o body | Revisa la entrada igual que `zValidator` y además la documenta (tipo y patrón). |
+| `responder(c, esquema, valor)`, `json(descripción, esquema)`, `esquemaError(código)` | `src/server/http/respuestas.ts` | Compartidos por todos los módulos. `responder` envía el body y el typecheck falla si `valor` no trae un campo que el esquema promete; `json` y `esquemaError` describen una respuesta en `describeRoute`. |
+| Pruebas de contrato | Junto a las pruebas de rutas (`src/server/*.test.ts`) | Llaman la ruta con datos en memoria y validan el body real contra su esquema `.strict()`. Fallan si la respuesta envía un campo que la documentación no muestra. |
+
+**Regla del body:** la respuesta incluye como mínimo el tipo del dominio y puede agregar datos complementarios, siempre documentados en su esquema. Un dato del dominio que no deba salir no se manda en la respuesta: se traduce en el adaptador.
+
 ### Cómo se genera
 
 ```mermaid
 flowchart LR
-    R["Rutas Hono<br/>crearApp(sinDb)"] --> G["hono-openapi<br/>generateSpecs"]
-    E["ENRIQUECIMIENTO<br/>resúmenes en español<br/>y errores conocidos"] --> G
+    R["Rutas Hono<br/>describeRoute · validator"] --> G["hono-openapi<br/>generateSpecs"]
     G --> J["src/server/docs/openapi.json"]
     J --> M["@scalar/openapi-to-markdown"] --> L["src/server/docs/llms.txt"]
     J & L -->|"importados como archivos"| W["Worker: /api/openapi.json<br/>/api/llms.txt · /api/docs"]
@@ -128,27 +161,23 @@ flowchart LR
 ```
 
 - `npm run docs:api` (`scripts/generar-docs-api.mjs`) carga `src/server/docs/openapi.ts` con Vite, construye la app real sin base de datos y escribe `src/server/docs/openapi.json` y `src/server/docs/llms.txt`. `npm run build` lo ejecuta antes de `vite build`.
-- El Worker (`src/server/docs/index.ts`) importa esos archivos como JSON y texto. No se sirven como assets estáticos porque `run_worker_first: ["/api/*"]` envía todo `/api/*` al Worker. Así, `hono-openapi` y el conversor a Markdown son dependencias de desarrollo y no entran al bundle (+6,1 kB gzip en lugar de +1,09 MB si se generaran en runtime).
+- El Worker (`src/server/docs/index.ts`) importa esos archivos como JSON y texto. No se sirven como assets estáticos porque `run_worker_first: ["/api/*"]` envía todo `/api/*` al Worker.
 - Los dos archivos **se versionan**: las pruebas, el typecheck y `npm run dev` los necesitan antes de cualquier build, y el diff del PR muestra cómo cambia el contrato público.
-- Los resúmenes en español, las etiquetas y los errores conocidos se agregan en `ENRIQUECIMIENTO`, dentro de `src/server/docs/openapi.ts`, sobre lo generado. Las rutas de los módulos no llevan anotaciones de documentación.
+- **Peso:** `describeRoute`, `validator` y los esquemas viajan en el Worker (~190 kB gzip en total, frente a ~101 kB sin ellos). Lo aceptamos a propósito: la documentación queda pegada a la ruta, que es más fácil de leer y mantener. El generador de Markdown sigue fuera del bundle. El límite de Cloudflare es 3 MB gzip.
 
 ### Qué lo protege
 
-`src/server/docs/docs.test.ts` falla si:
-
-- `openapi.json` o `llms.txt` no coinciden con lo que se genera de las rutas actuales;
-- el OpenAPI documenta más o menos rutas `GET` de las que tiene la app, o incluye las rutas de documentación;
-- `ENRIQUECIMIENTO` nombra una ruta que ya no existe;
-- `/api/openapi.json`, `/api/llms.txt` o `/api/docs` dejan de responder lo esperado.
+- **Typecheck:** `responder` falla si la respuesta no trae un campo documentado.
+- **Pruebas de contrato:** fallan si el body real no coincide con su esquema, por ejemplo con un campo no documentado («Unrecognized key»).
+- **`src/server/docs/docs.test.ts`** falla si:
+  - `openapi.json` o `llms.txt` no coinciden con lo que se genera de las rutas actuales;
+  - una ruta no tiene resumen, etiqueta o el body JSON de alguna de sus respuestas;
+  - el OpenAPI documenta más o menos rutas `GET` de las que tiene la app, o incluye las rutas de documentación;
+  - `/api/openapi.json`, `/api/llms.txt` o `/api/docs` dejan de responder lo esperado.
 
 ### Agregar o cambiar una ruta
 
-1. Implementa la ruta en el adaptador HTTP de su módulo, con validación zod de los parámetros, y conéctala en `server/composition`.
-2. Si hay un error nuevo, agrégalo al dominio y a `app.onError`.
-3. Agrega la ruta a `ENRIQUECIMIENTO`: `summary` y `description` en español, `tags` y las respuestas de error que puede dar.
-4. Ejecuta `npm run docs:api` y haz commit de `openapi.json` y `llms.txt` junto con el cambio.
-5. `npm run check` y revisa `/api/docs` en el preview del PR.
-6. Si una pantalla depende de la ruta, actualiza el contrato de su página en `docs/design/pages/<pagina>/contract.md`.
+El paso a paso completo está en la guía [Crear una API](how-to/crear-una-api.md).
 
 ### Contrato de página y OpenAPI
 
@@ -166,10 +195,10 @@ El contrato de página es la especificación; el código la implementa (tipos de
 ## Para agentes de IA
 
 - Para conocer la API, lee `/api/llms.txt` del entorno o `src/server/docs/llms.txt` en el repositorio. Para generar un cliente, usa `/api/openapi.json`.
-- No edites `openapi.json` ni `llms.txt` a mano: cambia la ruta o `ENRIQUECIMIENTO` y ejecuta `npm run docs:api`.
-- Para el significado de cada campo, la fuente es el contrato de la página y los tipos del dominio (`src/modules/<modulo>/domain/`).
+- No edites `openapi.json` ni `llms.txt` a mano: cambia la ruta (su `describeRoute` o su esquema) y ejecuta `npm run docs:api`.
+- El significado de cada campo está en su descripción dentro del OpenAPI. El contrato de la página explica de dónde sale cada dato.
 
 ## Limitaciones
 
-- `hono-openapi` no lee los esquemas de `@hono/zod-validator`, así que las respuestas no incluyen el esquema del cuerpo y `{codigo}` aparece como `string`, sin el patrón DIVIPOLA. Para mientras, el esquema de los campos está en el contrato de la página y en los tipos del dominio. Si hace falta, se puede pasar la validación a los ayudantes de `hono-openapi` (`describeRoute`, `validator`, `resolver`) para que los esquemas zod entren al OpenAPI.
+- Las reglas que cruzan campos (por ejemplo, que el total nacional sea la suma de sus niveles) no se pueden expresar en JSON Schema: se explican en la descripción del campo.
 - La interfaz de `/api/docs` carga el script de Scalar desde su CDN (jsDelivr).
