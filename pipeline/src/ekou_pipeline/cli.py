@@ -5,6 +5,8 @@ Ejemplo::
     ekou-pipeline extract secop_contratos --corte 2026-11
     ekou-pipeline transform --corte 2026-11
     ekou-pipeline export-mapa --corte 2026-11
+    ekou-pipeline compuertas --corte 2026-11 --anterior calidad_corte_anterior.csv
+    ekou-pipeline export --corte 2026-11
 """
 
 import argparse
@@ -20,9 +22,11 @@ import duckdb
 
 from ekou_pipeline.bronze import extract_dataset
 from ekou_pipeline.catalog import CATALOG
+from ekou_pipeline.compuertas import evaluar, reporte
 from ekou_pipeline.config import Settings
 from ekou_pipeline.log_config import configure_logging
 from ekou_pipeline.mapa import export_mapa, fecha_de_los_datos
+from ekou_pipeline.publish import check_corte, export_corte, publication_dir
 from ekou_pipeline.socrata import SocrataClient
 from ekou_pipeline.transform import run_transform
 
@@ -62,6 +66,21 @@ def build_parser() -> argparse.ArgumentParser:
         type=Path,
         help="directorio de salida (por defecto, <data_dir>/publicacion/<corte>)",
     )
+
+    compuertas = commands.add_parser(
+        "compuertas", help="verifica las compuertas de calidad del corte antes de publicarlo"
+    )
+    _add_corte(compuertas)
+    compuertas.add_argument(
+        "--anterior",
+        type=Path,
+        help="calidad_corte.csv del corte publicado anterior, para comparar contra él",
+    )
+
+    export = commands.add_parser(
+        "export", help="exporta el corte transformado a Parquet, CSV y JSON para publicarlo"
+    )
+    _add_corte(export)
     return parser
 
 
@@ -97,11 +116,27 @@ def main(argv: Sequence[str] | None = None) -> int:
         sys.stdout.write("\n")
         return 0
 
+    database = settings.data_dir / "ekou.duckdb"
     if args.command == "export-mapa":
-        out_dir = args.out or settings.data_dir / "publicacion" / args.corte
-        with duckdb.connect(str(settings.data_dir / "ekou.duckdb"), read_only=True) as conn:
+        out_dir = args.out or publication_dir(settings.data_dir, args.corte)
+        with duckdb.connect(str(database), read_only=True) as conn:
             fecha = fecha_de_los_datos(conn, settings.data_dir / "bronze", args.corte)
             paths = export_mapa(conn, corte=args.corte, fecha_datos=fecha, out_dir=out_dir)
+        sys.stdout.write("".join(f"{p.as_posix()}\n" for p in paths))
+        return 0
+
+    if args.command == "compuertas":
+        with duckdb.connect(str(database), read_only=True) as conn:
+            check_corte(conn, args.corte)
+            resultados = evaluar(conn, settings, anterior=args.anterior)
+        sys.stdout.write(reporte(resultados, corte=args.corte))
+        return 0 if all(r.aprobada for r in resultados) else 1
+
+    if args.command == "export":
+        with duckdb.connect(str(database), read_only=True) as conn:
+            paths = export_corte(
+                conn, corte=args.corte, out_dir=publication_dir(settings.data_dir, args.corte)
+            )
         sys.stdout.write("".join(f"{p.as_posix()}\n" for p in paths))
         return 0
 

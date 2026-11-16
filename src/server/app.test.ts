@@ -87,6 +87,12 @@ describe('GET /api/mapa/territorios/:codigo/resumen', () => {
     });
   });
 
+  it('responde en la raíz de la API con sus rutas', async () => {
+    const res = await app([]).app.request('/api');
+    expect(res.status).toBe(200);
+    expect(await res.json()).toMatchObject({ rutas: expect.arrayContaining(['/api/salud']) });
+  });
+
   it('incluye cabeceras de seguridad', async () => {
     const res = await app([]).app.request('/api/salud');
     expect(res.headers.get('x-content-type-options')).toBe('nosniff');

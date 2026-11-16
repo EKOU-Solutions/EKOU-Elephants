@@ -185,14 +185,19 @@ export async function desplegarPreview({
     }
   });
 
-  const direccion = leerJsonDeWrangler(salida).preview_urls?.[0];
+  // Forma de `wrangler preview --json` (4.158.0): { preview: { urls }, deployment: { urls } }.
+  const { preview, deployment } = leerJsonDeWrangler(salida);
+  const direccion = preview?.urls?.[0] ?? deployment?.urls?.[0];
   if (typeof direccion !== 'string' || !direccion) {
     throw new Error('Cloudflare no devolvió la URL del preview.');
   }
   const url = new URL(direccion.startsWith('https://') ? direccion : `https://${direccion}`).href;
   console.log(`Preview: ${url}`);
   await verify(url);
-  resumen(env, `### ${env.PREVIEW_NAME}\n\nApp y API: [abrir preview](${url})`);
+  resumen(
+    env,
+    `### ${env.PREVIEW_NAME}\n\n- App: [abrir preview](${url})\n- API: [${url}api](${url}api)`,
+  );
   if (env.GITHUB_OUTPUT) appendFileSync(env.GITHUB_OUTPUT, `url=${url}\n`);
   return url;
 }
