@@ -7,7 +7,7 @@ Status: **Approved** 2026-11-15 (Approval 2). The handoff for development is thi
 | 0. Contract | [contract.md](contract.md) | Approved 2026-11-15 |
 | 1. Data | [data.md](data.md) | Done 2026-11-15 (pipeline export, cut 2026-11) |
 | 2. Spec | [spec.md](spec.md) | Approved 2026-11-15 (Approval 1) |
-| 3. Components | Guide v1.1.0 | Done 2026-11-15: Map with legend (neutral variant), Search results (new), Field placeholder (fix); each approved by the user |
+| 3. Components | Guide v1.1.0 (published as v1.3.0 when merging main) | Done 2026-11-15: Map with legend (neutral variant), Search results (new), Field placeholder (fix); each approved by the user |
 | 4. Mockup | [build.py](build.py) → `mockup.html` (git-ignored), data in [sample/](sample/) | Done 2026-11-15 |
 | 5. Validation | [validation.md](validation.md) | Done 2026-11-15; open points resolved |
 | 6. Approval 2 | — | Approved by the user 2026-11-15 (spec decisions 12–14 added in review) |

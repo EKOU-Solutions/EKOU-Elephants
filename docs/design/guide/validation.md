@@ -1,24 +1,26 @@
-# Validation: guide v1.0
+# Validación: guía v1.0
 
-Observed locally on 2026-11-08 with the output of `build.py`.
+Observado en local el 2026-11-08 con la salida de `build.py`.
 
-- The build succeeds with no unreplaced placeholders. Every class and token named in `components.json` exists in `components.css` / `tokens.css`, and every `var(--el-*)` used by the components is defined.
-- **Contrast** (`contrast-report.json`): all 17 text, control, focus, hatch and risk-tag pairs pass in light and dark. Risk fills are below 3:1 against the surface by design and rely on relief: borders, labels, legend and table. This is unchanged from Round 05, which also validated the fills with the `dataviz` palette validator.
-- **Overflow** (iframes at a fixed width, headless Chrome): no horizontal overflow at 320, 390, 768 or 1280 px on the three screens and on `preview.html`.
-  - `examples.html` overflowed by 4 px at 320 px because the laptop simulator had a 280 px minimum. I lowered it to 240 px, as in Round 06, and it now fits.
+- El build termina sin marcadores sin reemplazar. Cada clase y token que nombra `components.json` existe en `components.css` / `tokens.css`, y cada `var(--el-*)` que usan los componentes está definida.
+- **Contraste** (`contrast-report.json`): los 17 pares de texto, control, foco, trama y etiqueta de riesgo pasan en claro y en oscuro. Los rellenos de riesgo quedan por debajo de 3:1 frente a la superficie a propósito y se apoyan en el relieve: bordes, etiquetas, leyenda y tabla. No cambia respecto a la Ronda 05, que también validó los rellenos con el validador de paletas de `dataviz`.
+- **Desbordamiento** (iframes de ancho fijo, Chrome headless): sin desplazamiento horizontal a 320, 390, 768 ni 1280 px en las tres pantallas ni en `preview.html`.
+  - `examples.html` se desbordaba 4 px a 320 px porque el simulador de portátil tenía un mínimo de 280 px. Lo bajé a 240 px, como en la Ronda 06, y ahora cabe.
 - **`impeccable detect`:**
-  - On the three screens: 0 anti-patterns; only the grey-hatch advisory, which is the accepted missing-data semantics.
-  - On `preview.html`: 0 anti-patterns. Its advisories are the hatch and "em-dash overuse"; the latter comes from `--el-*` token names in code samples.
-  - On `examples.html`: only `cramped-padding` on the simulator bezel, screen and browser bar, which are flush by design and are not product components.
-- **Screenshots reviewed** (dark theme, the system setting):
-  - `preview.html` at 1280 px;
-  - `examples.html` at 1440 px, showing both simulators;
-  - the contract screen.
-  - Public Sans renders in every frame, and the theme carries into the simulators.
+  - En las tres pantallas: 0 antipatrones; solo la advertencia de la trama gris, que es la semántica aceptada para datos faltantes.
+  - En `preview.html`: 0 antipatrones. Sus advertencias son la trama y el «exceso de rayas largas», que viene de los nombres de tokens `--el-*` en los ejemplos de código.
+  - En `examples.html`: solo `cramped-padding` en el marco del simulador, la pantalla y la barra del navegador, que van al ras a propósito y no son componentes del producto.
+- **Capturas revisadas** (tema oscuro, la configuración del sistema):
+  - `preview.html` a 1280 px;
+  - `examples.html` a 1440 px, con ambos simuladores;
+  - la pantalla de contrato.
+  - Public Sans se ve en todos los marcos y el tema se aplica dentro de los simuladores.
 
-Limits:
+Límites:
 
-- Round 05's per-component review in light mode was not repeated for v1.0, because only the type switch and the works screen changed.
-- Not tested: real devices, a screen-reader walkthrough, a keyboard-only walkthrough, 200% zoom.
-- The simulators are CSS approximations, not device emulation.
-- The component markup is a specification, not a tested implementation.
+- No se repitió para la v1.0 la revisión por componente en tema claro de la Ronda 05, porque solo cambiaron el selector de tipografía y la pantalla de obra.
+- No se probó: dispositivos reales, un recorrido con lector de pantalla, un recorrido solo con teclado, zoom al 200 %.
+- Los simuladores son aproximaciones en CSS, no emulación de dispositivos.
+- El marcado de los componentes es una especificación, no una implementación probada.
+
+La validación de Storybook (2026-11-15: axe sin violaciones en las 32 historias, en claro y oscuro, e iframes reales de 320 px) se describe en el commit que lo introdujo.

@@ -1,30 +1,30 @@
-# Validation — Visual guide v0.1
+# Validación: guía visual v0.1
 
-Checked locally on 2026-11-07 against the generated standalone preview.
+Comprobado en local el 2026-11-07 sobre la vista previa independiente generada.
 
-## Observed checks
+## Comprobaciones observadas
 
-- Python build succeeds; placeholders resolved; integrated fragment approximately 40 KB; JavaScript syntax check passes.
-- All 10 configured contrast pairs pass their assigned 4.5:1 text or 3:1 non-text threshold. Exact pairs and ratios are in `contrast-report.json`; the build checks unrounded ratios.
-- Visually inspected all four sections on desktop, including risk swatches, message colours, icon gallery, buttons, alerts, numeric examples, tags and counters.
-- 23 initial Lucide icons rendered in the offline standalone preview; no unresolved initial icon placeholders.
-- Section navigation changes the visible content and active state.
-- Query demo returns local feedback; explanation action reveals text.
-- Year `20` is rejected with visible associated error and `aria-invalid=true`; `2025` is accepted and clears the error state.
-- Retry changes the error specimen to a success treatment, updates the label and icon, and announces local demonstration feedback. It does not claim a real network request occurred.
-- A keyboard Tab from the primary query button moves focus to the secondary action.
-- Removing the Antioquia filter chip hides it and announces the removal.
-- No document horizontal overflow in any of the four sections at 320 px; colour section also checked at 1024 px. On narrow screens the exact-value table has a contained horizontal scroll area.
-- Full mobile data/tag composition visually inspected. The observed primary button and field heights were 46 px, above the 44 px product minimum.
-- No captured browser JavaScript errors in these checks.
+- El build de Python funciona; los marcadores se resolvieron; el fragmento integrado pesa unos 40 KB; la comprobación de sintaxis de JavaScript pasa.
+- Los 10 pares de contraste configurados cumplen su umbral asignado: 4,5:1 para texto o 3:1 para elementos que no son texto. Los pares exactos y sus razones están en `contrast-report.json`; el build comprueba las razones sin redondear.
+- Se inspeccionaron visualmente las cuatro secciones en escritorio, incluidas las muestras de riesgo, los colores de mensajes, la galería de íconos, los botones, las alertas, los ejemplos numéricos, las etiquetas y los contadores.
+- Se muestran 23 íconos iniciales de Lucide en la vista previa independiente sin conexión; no quedan marcadores de íconos sin resolver.
+- La navegación entre secciones cambia el contenido visible y el estado activo.
+- La demostración de consulta devuelve una respuesta local; la acción de explicación muestra el texto.
+- El año `20` se rechaza con un error visible y asociado y `aria-invalid=true`; `2025` se acepta y quita el estado de error.
+- Reintentar cambia la muestra de error a un tratamiento de éxito, actualiza la etiqueta y el ícono, y anuncia una respuesta local de demostración. No afirma que haya ocurrido una solicitud de red real.
+- Un Tab del teclado desde el botón principal de consulta mueve el foco a la acción secundaria.
+- Quitar el filtro de Antioquia lo oculta y anuncia que se quitó.
+- Sin desplazamiento horizontal del documento en ninguna de las cuatro secciones a 320 px; la sección de color también se comprobó a 1024 px. En pantallas angostas, la tabla de valores exactos tiene un área contenida con desplazamiento horizontal.
+- Se inspeccionó visualmente la composición completa de datos y etiquetas en celular. El botón principal y el campo medían 46 px de alto, por encima del mínimo de 44 px del producto.
+- No se capturaron errores de JavaScript del navegador durante estas comprobaciones.
 
-## Data and decision integrity
+## Integridad de los datos y las decisiones
 
-- Fixture signal proportion: 36/120 = 30%; analysis coverage: 120/150 = 80%; change from 26% to 30% = +4 percentage points.
-- Formatted specimens: 2.500 contracts and COP 12.450 million (Spanish rendering), separate from the contracted-versus-paid meaning.
-- No numeric risk thresholds are assigned. Semantic tags are independent specimens, not classifications of the 30% example.
-- Existing selected visual direction remains selected; newly proposed component details are explicitly awaiting review.
+- Proporción de señales del fixture: 36/120 = 30 %; cobertura del análisis: 120/150 = 80 %; cambio de 26 % a 30 % = +4 puntos porcentuales.
+- Muestras con formato: 2.500 contratos y COP 12.450 millones (presentación en español), separadas del significado de contratado frente a pagado.
+- No se asignan umbrales numéricos de riesgo. Las etiquetas semánticas son muestras independientes, no clasificaciones del ejemplo de 30 %.
+- La dirección visual seleccionada sigue seleccionada; los detalles de componentes recién propuestos están marcados explícitamente como pendientes de revisión.
 
-## Limits
+## Límites
 
-These checks cover the documented specimens and token pairs, not a production application or a complete accessibility audit. No exhaustive screen-reader, zoom, colour-vision or cross-browser review. Geographic map contrast, full data methodology, contract/work aggregation, real sources and production request/error behaviour remain separate work. The integrated canvas uses the same fragment and the host's Lucide runtime; browser checks used the offline standalone wrapper.
+Estas comprobaciones cubren las muestras documentadas y los pares de tokens, no una aplicación de producción ni una auditoría completa de accesibilidad. No hubo revisión exhaustiva con lector de pantalla, zoom, visión del color ni distintos navegadores. El contraste del mapa geográfico, la metodología completa de datos, la agregación de contratos y obras, las fuentes reales y el comportamiento de producción ante solicitudes y errores siguen siendo trabajo aparte. El lienzo integrado usa el mismo fragmento y el Lucide del anfitrión; las comprobaciones de navegador usaron el contenedor independiente sin conexión.

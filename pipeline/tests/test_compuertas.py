@@ -1,8 +1,11 @@
+import json
 from pathlib import Path
 
 import duckdb
 import pytest
 
+from ekou_pipeline.bronze import SUCCESS_MARKER, dataset_dir
+from ekou_pipeline.catalog import CATALOG
 from ekou_pipeline.cli import main
 from ekou_pipeline.compuertas import Resultado, evaluar, reporte
 from ekou_pipeline.config import Settings
@@ -31,6 +34,21 @@ def _warehouse(
         )
 
 
+def _bronze(data_dir: Path, filas: dict[str, int | None] | None = None) -> None:
+    """Bronze del corte 2026-12 con el mínimo de filas de cada fuente, salvo las indicadas en
+    ``filas`` (``None``: fuente sin extraer)."""
+    filas = filas or {}
+    for key, spec in CATALOG.items():
+        rows = filas.get(key, spec.min_rows)
+        if rows is None:
+            continue
+        # Dos particiones, para comprobar que se suman.
+        for nombre, parte in (("a", rows // 2), ("b", rows - rows // 2)):
+            path = dataset_dir(data_dir, "2026-12", spec) / f"particion={nombre}"
+            path.mkdir(parents=True)
+            (path / SUCCESS_MARKER).write_text(json.dumps({"rows": parte}), encoding="utf-8")
+
+
 def _anterior(path: Path, filas: dict[str, tuple[int, float]]) -> Path:
     lines = ["fuente,corte,contratos,pct_en_mapa_municipal"]
     lines += [f"{f},2026-11,{c},{p}" for f, (c, p) in filas.items()]
@@ -45,18 +63,39 @@ def _fallidas(resultados: list[Resultado]) -> list[str]:
     return [r.compuerta for r in resultados if not r.aprobada]
 
 
-def _evaluar(tmp_path: Path, anterior: Path | None = None, **kwargs: object) -> list[Resultado]:
+def _evaluar(
+    tmp_path: Path,
+    anterior: Path | None = None,
+    filas: dict[str, int | None] | None = None,
+    **kwargs: object,
+) -> list[Resultado]:
     database = tmp_path / "ekou.duckdb"
     _warehouse(database, **kwargs)  # type: ignore[arg-type]
+    _bronze(tmp_path, filas)
     with duckdb.connect(str(database), read_only=True) as conn:
-        return evaluar(conn, Settings(), anterior=anterior)
+        return evaluar(conn, Settings(data_dir=tmp_path), corte="2026-12", anterior=anterior)
 
 
 def test_healthy_corte_passes_every_gate(tmp_path: Path) -> None:
     anterior = _anterior(tmp_path / "anterior.csv", SANO)
     resultados = _evaluar(tmp_path, anterior, fuentes=SANO)
     assert _fallidas(resultados) == []
-    assert len(resultados) == 9  # 2 por fuente, municipios y 2 comparaciones por fuente
+    # filas de cada fuente del catálogo, 2 por fuente de contratos, municipios y
+    # 2 comparaciones por fuente de contratos
+    assert len(resultados) == len(CATALOG) + 9
+
+
+def test_source_reloaded_half_way_fails(tmp_path: Path) -> None:
+    """15-nov-2026: SECOP II Procesos quedó con 1.000 filas en origen y su count(*) también."""
+    resultados = _evaluar(tmp_path, fuentes=SANO, filas={"secop_procesos": 1_000})
+    assert _fallidas(resultados) == ["secop_procesos: filas extraídas"]
+    detalle = next(r.detalle for r in resultados if not r.aprobada)
+    assert detalle == f"1,000 (mínimo {CATALOG['secop_procesos'].min_rows:,})"
+
+
+def test_source_not_extracted_fails(tmp_path: Path) -> None:
+    resultados = _evaluar(tmp_path, fuentes=SANO, filas={"divipola": None})
+    assert _fallidas(resultados) == ["divipola: filas extraídas"]
 
 
 def test_missing_source_fails(tmp_path: Path) -> None:
@@ -102,6 +141,7 @@ def test_cli_exit_code_follows_the_gates(
 ) -> None:
     monkeypatch.setenv("EKOU_DATA_DIR", str(tmp_path))
     _warehouse(tmp_path / "ekou.duckdb", fuentes=SANO)
+    _bronze(tmp_path)
     assert main(["compuertas", "--corte", "2026-12"]) == 0
     assert "Compuertas de calidad del corte 2026-12" in capsys.readouterr().out
 

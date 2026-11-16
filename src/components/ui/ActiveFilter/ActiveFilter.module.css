@@ -1,0 +1,24 @@
+.chip {
+  font: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: var(--el-control-height);
+  padding: 8px 12px;
+  border: 1px solid var(--el-color-control-border);
+  border-radius: var(--el-control-radius);
+  background: var(--el-color-surface);
+  color: var(--el-color-action);
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.chip svg {
+  width: 18px;
+  height: 18px;
+}
+
+.chip:hover {
+  background: var(--el-color-action-soft);
+}

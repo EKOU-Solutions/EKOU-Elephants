@@ -128,7 +128,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.command == "compuertas":
         with duckdb.connect(str(database), read_only=True) as conn:
             check_corte(conn, args.corte)
-            resultados = evaluar(conn, settings, anterior=args.anterior)
+            resultados = evaluar(conn, settings, corte=args.corte, anterior=args.anterior)
         sys.stdout.write(reporte(resultados, corte=args.corte))
         return 0 if all(r.aprobada for r in resultados) else 1
 

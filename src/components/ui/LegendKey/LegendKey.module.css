@@ -1,0 +1,38 @@
+.key {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: var(--el-mark-radius);
+  flex-shrink: 0;
+  box-shadow: inset 0 0 0 1px rgba(127, 127, 127, 0.4);
+  vertical-align: -2px;
+}
+
+.low {
+  background: var(--el-color-risk-low);
+}
+
+.medium {
+  background: var(--el-color-risk-medium);
+}
+
+.high {
+  background: var(--el-color-risk-high);
+}
+
+/* Signals and coverage use ink, not the risk red: red means «riesgo alto» only. */
+.flagged {
+  background: var(--el-color-text);
+}
+
+.clean {
+  background: var(--el-color-line);
+}
+
+.unknown {
+  background: repeating-linear-gradient(
+    135deg,
+    var(--el-color-unknown-surface) 0 3px,
+    var(--el-color-unknown) 3px 4px
+  );
+}

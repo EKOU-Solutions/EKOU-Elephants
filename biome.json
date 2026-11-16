@@ -4,12 +4,14 @@
   "files": {
     "includes": [
       "src/**",
+      ".storybook/**",
       "tests/**",
       "scripts/**",
       "*.ts",
       "*.json",
       "*.jsonc",
       "!worker-configuration.d.ts",
+      "!src/styles/tokens.css",
       "!package-lock.json"
     ]
   },

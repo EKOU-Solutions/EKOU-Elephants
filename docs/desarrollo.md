@@ -23,10 +23,29 @@ npm run dev                       # web + API en http://localhost:5173
 | `npm run migrate -- create nombre` | Crea una migración SQL (`-- Up Migration` / `-- Down Migration`). |
 | `npx hono request -P /api/salud scripts/cli-app.ts` | Prueba una ruta con el [Hono CLI](https://hono.dev/docs/agents/cli), sin servidor ni base de datos (datos en memoria). |
 | `npm run cf-typegen` | Regenera `worker-configuration.d.ts` tras cambiar `wrangler.jsonc`. |
+| `npm run storybook` | Levanta el [sistema de diseño en Storybook](#sistema-de-diseño-storybook) en http://localhost:6006. |
+| `npm run build-storybook` | Genera la versión estática de Storybook en `storybook-static/`. |
 
 Ruta de prueba: `GET /api/mapa/territorios/05/resumen` (código DIVIPOLA de 2 o 5 dígitos). Es una demostración arquitectónica con cifras ficticias; al tomar el módulo del mapa, se refinarán con Esteban las reglas y el contrato con la ingesta.
 
 La API devuelve los importes como `presupuestoAsignadoCentavos` y `gastoActualCentavos`: enteros exactos, no pesos decimales.
+
+## Sistema de diseño (Storybook)
+
+Storybook es la referencia viva del sistema de diseño: lineamientos para personas, fundamentos (color, tipografía, espacio, íconos, voz y tono, formato de datos), accesibilidad y el catálogo de componentes, en tema claro y oscuro.
+
+```bash
+npm run storybook          # http://localhost:6006
+```
+
+Cada preview de PR y producción publican la versión estática en `/storybook/`: `npm run build` la incluye en `dist/client/storybook/` (ver [CI/CD](ci-cd.md#storybook-en-el-preview-y-en-producción)).
+
+- Configuración y lineamientos: `.storybook/` (páginas MDX en `.storybook/docs/`, especificación de los candidatos en `.storybook/catalog/`). Los componentes del núcleo viven en `src/components/ui/`.
+- Los componentes React reales llevan su historia al lado: `src/**/ComponentName.stories.tsx`.
+- Los tokens salen de `docs/design/guide/tokens.json`: `build.py` genera `tokens.css` y lo copia, con la fuente, a `src/styles/`. La app (`src/client/main.tsx`) y Storybook importan `src/styles/global.css`; no se edita a mano.
+- Cada componente de `src/components/ui/` trae su `Component.module.css` (CSS Modules de Vite); no hay hojas compartidas entre componentes.
+- Todo cambio de diseño pasa por la skill `elephants-design` (regla en `AGENTS.md`). Cómo entra un componente nuevo: página *Cómo trabajamos* dentro de Storybook.
+- Storybook quita el plugin de Cloudflare de `vite.config.ts` (`.storybook/main.ts`): solo carga el cliente React, no el Worker.
 
 ## Entornos y bases de datos
 
@@ -88,6 +107,15 @@ pg_dump --data-only --no-owner "$ORIGEN_URL" -t gasto_territorial > datos.sql
 psql "$DESTINO_URL" -f datos.sql   # tras `npm run migrate -- up` en el destino
 ```
 
-## Avisos de dependencias conocidos
+## Dependencias y `npm audit`
 
-`npm audit` reporta 3 avisos moderados transitivos de `node-pg-migrate` (`glob`/`minimatch`). Es una herramienta de desarrollo que solo lee nuestro directorio `migrations/`; no se ejecuta en Workers ni procesa entrada externa. Revisar al actualizar.
+`npm audit` debe quedar en **0 vulnerabilidades**; no se dejan avisos pendientes en desarrollo. Si una dependencia transitiva trae una versión vulnerable y el paquete que la usa aún no publica la corrección, se fuerza la versión corregida en `overrides` de `package.json`, se comprueba que la API sea compatible y se corren las pruebas que la ejercitan.
+
+| Override | Motivo (2026-11-15) | Lo usan |
+| --- | --- | --- |
+| `glob` 14.0.3 | GHSA de cancelación con `AbortSignal` (glob 9.0.0–14.0.1) | `node-pg-migrate`, `@vercel/nft` (vía `neon`), docgen de Storybook |
+| `minimatch` 11.0.3 | GHSA-g3hv-75wg-m249, denegación de servicio (7.0.0–11.0.0) | `glob` |
+| `diff` 5.2.2 | GHSA-73rr-hh4g-fpgx, denegación de servicio (5.0.0–5.2.1) | `neon` |
+| `@hono/node-server` ^2.1.6 | Corrección previa del arquetipo | `@hono/cli` |
+
+La API de glob 14 es la misma que la de glob 13 (`glob`, `globSync`, `Glob`). Se verificó con las 44 pruebas, incluidas las de integración con PostgreSQL y las migraciones, y con el build de Storybook. Al actualizar `node-pg-migrate`, `neon` o Storybook, revisa si el override sigue siendo necesario y quítalo cuando el paquete ya traiga la versión corregida.

@@ -1,81 +1,84 @@
-# Visual direction
+# Dirección visual
 
-## Agreed intent
+## Intención acordada
 
-A clear, approachable and rigorous citizen tool for understanding Colombian public spending. Preserve a restrained relationship with EKOU: a light neutral reading surface, dark blue text and small brand accents. Geographic data should receive the strongest colour emphasis.
+Una herramienta ciudadana clara, cercana y rigurosa para entender el gasto público colombiano. Conservar una relación contenida con EKOU: una superficie de lectura neutra y clara, texto azul oscuro y acentos de marca pequeños. Los datos geográficos deben recibir el mayor énfasis de color.
 
-Brand, interaction and data have separate roles. Selection must retain the territory's data fill and use an outline plus an explicit name. Risk is an explainable signal, not a corruption verdict. Unknown data must never appear as zero or low risk.
+Marca, interacción y datos tienen roles separados. La selección debe conservar el relleno de datos del territorio y usar un contorno más un nombre explícito. El riesgo es una señal explicable, no un veredicto de corrupción. Los datos desconocidos nunca deben aparecer como cero ni como riesgo bajo.
 
-## Final selection (2026-11-08)
+## Selección final (2026-11-08)
 
-**Decision:** the user and Esteban selected the [Round 05](rounds/05-system-reference/README.md) editorial direction. It became the [design system guide v1.0](guide/README.md). The typeface is **Public Sans**, confirmed on the same day.
+**Decisión:** Jouler y Esteban seleccionaron la dirección editorial de la [Ronda 05](rounds/05-system-reference/README.md). Se convirtió en la [guía del sistema de diseño v1.0](guide/README.md). La tipografía es **Public Sans**, confirmada el mismo día.
 
-| Decided | Detail |
+| Decidido | Detalle |
 | --- | --- |
-| Visual language | Round 05 editorial: neutral surface, lines instead of cards, large figures with source, risk fills ordered light → dark, filled risk tags with a 1/2/3-bar glyph, light and dark themes |
-| Typeface | Public Sans 5.3.0, self-hosted, single family |
-| Not selected | [Round 06](rounds/06-clean-layer/README.md) clean layer (canvas with white cards, pill controls, Apple-like spacing). It is cleaner and more eye-catching, and it invites browsing. The product, though, wants to centre on the data, and the editorial version serves that better |
-| Kept from the Round 05 review | The "Pagado" / expected mark stays red as an alert cue (a recorded exception to "red means riesgo alto"). Candidate components enter the catalogue only once a page approves them |
-| Carried over from Round 06 | Bug fixes only: the phone full-screen view and the laptop simulator's width at 320 px |
-| Still open | Works (obra) vs contract as entities: decided when the business model is shaped with Esteban. Risk thresholds: TASK-07. Personal data: TASK-08 |
+| Lenguaje visual | Editorial de la Ronda 05: superficie neutra, líneas en lugar de tarjetas, cifras grandes con fuente, rellenos de riesgo ordenados de claro → oscuro, etiquetas de riesgo rellenas con un glifo de 1/2/3 barras, tema claro y oscuro |
+| Tipografía | Public Sans 5.3.0, alojada con la aplicación, una sola familia |
+| No seleccionado | La capa limpia de la [Ronda 06](rounds/06-clean-layer/README.md) (lienzo con tarjetas blancas, controles en píldora, espaciado estilo Apple). Es más limpia y llamativa, e invita a explorar. Pero el producto quiere centrarse en los datos, y la versión editorial lo sirve mejor |
+| Conservado de la revisión de la Ronda 05 | La marca de lo esperado frente a «Pagado» sigue en rojo como alerta (una excepción registrada a «rojo significa riesgo alto»). Los componentes candidatos entran al catálogo solo cuando una página los aprueba |
+| Trasladado de la Ronda 06 | Solo correcciones de errores: la vista a pantalla completa del celular y el ancho del simulador de portátil a 320 px |
+| Sigue abierto | Obra frente a contrato como entidades: se decide cuando se defina el modelo de negocio con Esteban. Umbrales de riesgo: TASK-07. Datos personales: TASK-08 |
 
-This confirms the brief's "data journalism" visual world. How pages are designed from now on: [design flow](design-flow.md).
+Esto confirma el mundo visual de «periodismo de datos» del brief. Cómo se diseñan las páginas de ahora en adelante: [flujo de diseño](design-flow.md).
 
-## Earlier selection — Round 02 (basis of the colour roles)
+## Referencia en Storybook (2026-11-15)
 
-The user selected Round 02's visual direction after comparing Transparency-inspired Round 03. The all-warm map suggested that everything was wrong; distinct blue, yellow and warm-red categories communicate the intended business meaning more clearly to the user. The native system font's legibility remains accepted.
+**Decisión (Jouler):** el sistema de diseño se consulta en Storybook (`npm run storybook`). Reúne los lineamientos para personas, los fundamentos, la accesibilidad y el catálogo, y en él se suman los componentes que se crean con la skill `elephants-design`. La guía HTML v1.0 y las rondas quedan como seguimiento histórico. Los tokens y el catálogo siguen saliendo de `docs/design/guide/`. Revierte la decisión del 2026-11-08 de descartar Storybook. La dirección visual no cambia.
 
-| Foundation | Selected direction / pending detail |
+## Selección anterior: Ronda 02 (base de los roles de color)
+
+Jouler seleccionó la dirección visual de la Ronda 02 después de compararla con la Ronda 03, inspirada en Transparencia. El mapa todo cálido sugería que todo estaba mal; las categorías diferenciadas de azul, amarillo y rojo cálido comunican con más claridad el significado de negocio buscado. Se mantiene aceptada la legibilidad de la fuente nativa del sistema.
+
+| Fundamento | Dirección seleccionada / detalle pendiente |
 | --- | --- |
-| Font | Native system sans serif, no external font download (superseded: Public Sans, 2026-11-08) |
-| Body / secondary text | Round 02 reference: 16 px / 14 px |
-| Heading / key figure | Round 02 reference: 30 px heading desktop, 26 px mobile; 52 px percentage |
-| Spacing | 4, 8, 12, 16, 24, 32 px |
-| Surface | White; quiet separators; minimal card styling |
-| Text / secondary text | Round 02: `#192C3C` / `#52626D` |
-| Functional accent | Restrained blue `#245B78` |
-| Lower risk | Blue, using Round 02's `#82B5D0` as the visual reference |
-| Intermediate risk | Yellow/amber, using `#E7AE46` as the visual reference |
-| Higher risk | Orange/red, using `#CF726B` as the current warm-red reference; exact production token pending |
-| Error | Restrained pale red surface, red edge, visible symbol, explicit wording and retry |
-| Partial information | Small amber warning, with coverage count |
-| Insufficient data | Neutral grey hatch and explicit label, never a low-risk blue fill |
+| Fuente | Sans serif nativa del sistema, sin descargar fuentes externas (reemplazada: Public Sans, 2026-11-08) |
+| Texto principal / secundario | Referencia de la Ronda 02: 16 px / 14 px |
+| Título / cifra clave | Referencia de la Ronda 02: título de 30 px en escritorio y 26 px en celular; porcentaje de 52 px |
+| Espaciado | 4, 8, 12, 16, 24, 32 px |
+| Superficie | Blanca; separadores discretos; estilo de tarjeta mínimo |
+| Texto / texto secundario | Ronda 02: `#192C3C` / `#52626D` |
+| Acento funcional | Azul contenido `#245B78` |
+| Riesgo bajo | Azul, con `#82B5D0` de la Ronda 02 como referencia visual |
+| Riesgo intermedio | Amarillo/ámbar, con `#E7AE46` como referencia visual |
+| Riesgo alto | Naranja/rojo, con `#CF726B` como referencia actual de rojo cálido; token de producción exacto pendiente |
+| Error | Superficie roja pálida y contenida, borde rojo, símbolo visible, redacción explícita y reintento |
+| Información parcial | Advertencia ámbar pequeña, con el conteo de cobertura |
+| Datos insuficientes | Trama gris neutra y etiqueta explícita, nunca un relleno azul de riesgo bajo |
 
-Acceptance covers the visual direction and semantic colour roles. It does not finalize every token, component state, threshold or label. Keep identity accents small and the map as the main use of colour. Avoid decorative gradients, glows, inclined cards and multicoloured backgrounds in consultation views.
+La aceptación cubre la dirección visual y los roles semánticos de color. No fija todos los tokens, estados de componentes, umbrales ni etiquetas. Mantén pequeños los acentos de identidad y el mapa como uso principal del color. Evita degradados decorativos, brillos, tarjetas inclinadas y fondos multicolores en las vistas de consulta.
 
-## Application to geographic data
+## Aplicación a los datos geográficos
 
-Blue must cover the agreed lower-risk category, not only the exact zero-signals case used in Round 02's fixture. Yellow/amber marks an intermediate category; orange/red marks higher risk. Numeric boundaries, whether three or more categories are needed, and the definitive risk calculation remain pending. Do not promote the illustrative 25% boundary to a business rule.
+El azul debe cubrir la categoría acordada de riesgo bajo, no solo el caso exacto de cero señales que usaba el fixture de la Ronda 02. Amarillo/ámbar marca una categoría intermedia; naranja/rojo marca riesgo alto. Siguen pendientes los límites numéricos, si se necesitan tres categorías o más, y el cálculo definitivo del riesgo. No conviertas el límite ilustrativo de 25 % en regla de negocio.
 
-Pair colour with a clear legend, selected territorial name, exact metric and explanation. Keep selection as a separate outline without changing the category fill. Missing analysis must remain distinct from zero detected signals. A lower-risk label is relative to the defined signals and available data; it is not a guarantee of absence of irregularities.
+Acompaña el color con una leyenda clara, el nombre del territorio seleccionado, la métrica exacta y una explicación. La selección es un contorno aparte que no cambia el relleno de la categoría. El análisis faltante debe distinguirse del caso de cero señales detectadas. Una etiqueta de riesgo bajo es relativa a las señales definidas y a los datos disponibles; no garantiza la ausencia de irregularidades.
 
-The existing prototype demonstrates flagged contracts divided by analyzed contracts, counting each flagged contract once. Coverage is displayed separately. The user requested contract-based semantics while the project README describes works; the definitive unit, aggregation/cascade and methodology remain open under TASK-07. A visual choice does not settle these business questions.
+El prototipo actual muestra los contratos con señales divididos por los contratos analizados, contando cada contrato con señales una sola vez. La cobertura se muestra aparte. Jouler pidió una semántica basada en contratos, mientras que el README del proyecto describe obras; la unidad definitiva, la agregación en cascada y la metodología siguen abiertas en TASK-07. Una elección visual no resuelve estas preguntas de negocio.
 
-Real, simplified departmental geography is used for composition only. Prototype ISO codes are not production DANE identifiers. A production map still needs geographic labeling, zoom/small-unit treatment and an accessible data alternative.
+La geografía departamental real y simplificada se usa solo para la composición. Los códigos ISO del prototipo no son identificadores DANE de producción. Un mapa de producción todavía necesita etiquetas geográficas, tratamiento de zoom y de unidades pequeñas, y una alternativa de datos accesible.
 
-## Review continuity
+## Continuidad de las revisiones
 
-- [Round 01](rounds/01-territory-overview/README.md): typography legibility accepted; amount-based map superseded.
-- [Round 02](rounds/02-risk-signals/README.md): initially rejected for mixed colours, then selected by the user after comparing references and Round 03. Its prototype remains a historical fixture with **unapproved 0%/25% bins**, which must be updated when the risk parameters are agreed.
-- [Round 03](rounds/03-warm-risk-map/README.md): not selected; the all-warm palette felt chaotic and conveyed that everything was wrong.
+- [Ronda 01](rounds/01-territory-overview/README.md): se aceptó la legibilidad de la tipografía; el mapa basado en montos fue reemplazado.
+- [Ronda 02](rounds/02-risk-signals/README.md): rechazada al principio por mezclar colores y luego seleccionada por Jouler tras comparar referencias y la Ronda 03. Su prototipo queda como fixture histórico con **rangos de 0 %/25 % no aprobados**, que deben actualizarse cuando se acuerden los parámetros de riesgo.
+- [Ronda 03](rounds/03-warm-risk-map/README.md): no seleccionada; la paleta toda cálida se sentía caótica y transmitía que todo estaba mal.
+- [Ronda 04](rounds/04-grounded-guide/README.md): estructura poco clara para construir; se mantiene la trama.
+- [Ronda 05](rounds/05-system-reference/README.md): **seleccionada (final)**, se convirtió en la guía v1.0 con Public Sans.
+- [Ronda 06](rounds/06-clean-layer/README.md): no seleccionada; más limpia e invita a explorar, pero menos centrada en los datos.
 
-- [Round 04](rounds/04-grounded-guide/README.md): structure not clear enough to build from; hatch kept.
-- [Round 05](rounds/05-system-reference/README.md): **selected (final)**, became guide v1.0 with Public Sans.
-- [Round 06](rounds/06-clean-layer/README.md): not selected; cleaner and invites browsing, but less centred on the data.
+Los textos del producto y la documentación del repositorio están en español para el público colombiano. La referencia viva es Storybook; su fuente es la [guía del sistema de diseño v1.0](guide/README.md). La [guía v0.1](archive/guide-v0.1/README.md) anterior, construida sobre la Ronda 02, está archivada. Los umbrales numéricos de riesgo siguen sin definirse.
 
-Product copy is Spanish for the Colombian audience; repository documentation is English. The accepted reference is the [design system guide v1.0](guide/README.md); the earlier [guide v0.1](archive/guide-v0.1/README.md), built on Round 02, is archived. Numeric risk thresholds remain undefined.
+## Accesibilidad y celular
 
-## Accessibility and mobile
+Usa suficiente contraste de texto, foco de teclado visible, controles nativos y alturas de control de al menos 44 px. No codifiques significado solo con color: acompaña la leyenda con rangos numéricos, un panel con el nombre y el valor seleccionados, y texto o trama para los datos faltantes. En pantallas angostas, apila el mapa y el detalle sin desplazamiento horizontal. Toda la información esencial debe estar disponible sin hover. Carga, error e información faltante tienen mensajes distintos.
 
-Use sufficient text contrast, visible keyboard focus, native controls and at least 44 px control heights. Do not encode meaning with colour alone: pair the legend with numeric ranges, a selected-name/value panel and missing-data text/hatching. On narrow screens stack map and detail without horizontal overflow. Keep all essential information available without hover. Loading, error and missing information have distinct messages.
+Este prototipo no es una auditoría completa de accesibilidad ni una especificación funcional del mapa.
 
-This prototype is not a complete accessibility audit or functional map specification.
+## Referencias consultadas el 2026-11-07
 
-## References inspected 2026-11-07
+- [Paleta de EKOU](https://github.com/EKOU-Solutions/ekou-landing/blob/4912a42c0df6fd729e7f80c737e3c326ac6d16db/src/styles/global.css).
+- [Composición de bienvenida de EKOU](https://github.com/EKOU-Solutions/ekou-landing/blob/4912a42c0df6fd729e7f80c737e3c326ac6d16db/src/components/Welcome.astro).
+- [WCAG: uso del color](https://www.w3.org/WAI/WCAG22/Understanding/use-of-color.html).
+- [WCAG: contraste mínimo del texto](https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html).
 
-- [EKOU palette](https://github.com/EKOU-Solutions/ekou-landing/blob/4912a42c0df6fd729e7f80c737e3c326ac6d16db/src/styles/global.css).
-- [EKOU welcome composition](https://github.com/EKOU-Solutions/ekou-landing/blob/4912a42c0df6fd729e7f80c737e3c326ac6d16db/src/components/Welcome.astro).
-- [WCAG use of colour](https://www.w3.org/WAI/WCAG22/Understanding/use-of-color.html).
-- [WCAG minimum text contrast](https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html).
-
-The deployment linked from the landing repository returned 404 when inspected; the reference analysis used its source code.
+El despliegue enlazado desde el repositorio de la landing devolvió 404 al consultarlo; el análisis de la referencia usó su código fuente.

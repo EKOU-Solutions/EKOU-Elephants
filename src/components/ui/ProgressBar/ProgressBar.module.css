@@ -1,0 +1,32 @@
+/* Same look as the v1.0 specs (.el-coverage and .el-bars .bar). */
+.track {
+  display: flex;
+  width: 100%;
+  border-radius: var(--el-mark-radius);
+  overflow: hidden;
+  background: var(--el-color-line);
+}
+
+.thin {
+  height: 8px;
+}
+
+.thick {
+  height: 12px;
+}
+
+.ink {
+  background: var(--el-color-text);
+}
+
+.line {
+  background: var(--el-color-line);
+}
+
+.unknown {
+  background: repeating-linear-gradient(
+    135deg,
+    var(--el-color-unknown-surface) 0 3px,
+    var(--el-color-unknown) 3px 4px
+  );
+}

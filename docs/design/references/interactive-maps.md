@@ -1,35 +1,35 @@
-# Interactive map references
+# Referentes de mapas interactivos
 
-Inspected 2026-11-07 in the browser. This is design research, not a tool/vendor selection. The user subsequently selected Transparency’s direction for an example; the resulting palette remains a proposal.
+Consultados el 2026-11-07 en el navegador. Es investigación de diseño, no una selección de herramientas ni de proveedores. Después, Jouler eligió la dirección de Transparencia para un ejemplo; la paleta resultante sigue siendo una propuesta.
 
-## Reason for this review
+## Motivo de esta revisión
 
-The user rejected Round 02: its mixture of colours did not feel professional. Preserve the previously accepted system-font legibility. Pause new mockups and compare actual data maps before selecting the next direction.
+Jouler rechazó la Ronda 02: su mezcla de colores no se sentía profesional. Se conserva la legibilidad de la fuente del sistema, ya aceptada. Se pausan las maquetas nuevas y se comparan mapas de datos reales antes de elegir la siguiente dirección.
 
-## Shortlist
+## Lista corta
 
-| Reference | Observed visual treatment | Candidate lesson for Elephants |
+| Referente | Tratamiento visual observado | Lección posible para Elephants |
 | --- | --- | --- |
-| [Our World in Data — government spending](https://ourworldindata.org/grapher/historical-gov-spending-gdp?tab=map) | White surface; sequential purple scale; numeric legend under map; separate no-data hatching; adjacent country list; map/table/chart views | A coherent scale can communicate quantity without unrelated categorical colours. Study hierarchy and legend simplicity. |
-| [Transparency International — CPI 2025](https://www.transparency.org/en/cpi/2025) | Yellow-to-dark-red scale; country list and map; selection reveals score and trend detail | Study a coherent warm progression and separation between overview and country detail. Its corruption-perception index measures a different construct from contract risk signals; do not inherit its methodology or verdict-like labels. |
-| [The Opportunity Atlas](https://www.opportunityatlas.org/) | Map fills the main workspace; lateral metrics; search; persistent bottom legend; selection and contextual filters | Study spatial hierarchy and navigation. Its diverging multihue palette and control density are not the recommended starting palette for Elephants. |
+| [Our World in Data: gasto del gobierno](https://ourworldindata.org/grapher/historical-gov-spending-gdp?tab=map) | Superficie blanca; escala secuencial morada; leyenda numérica bajo el mapa; trama aparte para la falta de datos; lista de países al lado; vistas de mapa, tabla y gráfico | Una escala coherente puede comunicar cantidad sin colores categóricos que no se relacionan. Estudiar la jerarquía y la simplicidad de la leyenda. |
+| [Transparency International: IPC 2025](https://www.transparency.org/en/cpi/2025) | Escala de amarillo a rojo oscuro; lista de países y mapa; la selección muestra el puntaje y el detalle de la tendencia | Estudiar una progresión cálida coherente y la separación entre el panorama y el detalle por país. Su índice de percepción de la corrupción mide un constructo distinto de las señales de riesgo en contratos; no heredar su metodología ni sus etiquetas con tono de veredicto. |
+| [The Opportunity Atlas](https://www.opportunityatlas.org/) | El mapa ocupa el espacio de trabajo principal; métricas laterales; búsqueda; leyenda fija abajo; selección y filtros de contexto | Estudiar la jerarquía espacial y la navegación. Su paleta divergente de varios tonos y la densidad de controles no son el punto de partida recomendado para Elephants. |
 
-These are observations and design interpretations, not claims of usability validation. Actual interactive views were inspected, including OWID's map, the CPI map and Colombian detail, and the Atlas neighborhood-mobility map after dismissing onboarding.
+Son observaciones e interpretaciones de diseño, no afirmaciones de usabilidad validada. Se revisaron las vistas interactivas reales, incluidos el mapa de OWID, el mapa del IPC y el detalle de Colombia, y el mapa de movilidad por barrio del Atlas después de cerrar la introducción.
 
-## Recommendation for discussion
+## Recomendación para discutir
 
-Start with OWID's restrained sequential treatment and compare it against CPI's coherent warm progression. Consider the Atlas only for the layout and territorial exploration model. Branding and interface state colours do not need to appear as competing classes in the geographic data scale.
+Empezar con el tratamiento secuencial y contenido de OWID y compararlo con la progresión cálida coherente del IPC. Considerar el Atlas solo por la maquetación y el modelo de exploración territorial. La marca y los colores de estado de la interfaz no necesitan aparecer como clases que compiten dentro de la escala de datos geográficos.
 
-Choose the visual treatment before drawing Round 03. Semantic risk aggregation, labels, thresholds and accessibility validation remain separate requirements; a chosen reference does not settle them.
+Elegir el tratamiento visual antes de dibujar la Ronda 03. La agregación semántica del riesgo, las etiquetas, los umbrales y la validación de accesibilidad siguen siendo requisitos aparte; elegir un referente no los resuelve.
 
-## Feedback pending
+## Comentarios pendientes
 
-Which feels closer to the intended product: an editorial data view (OWID), a thematic index (CPI), or a map-centred workspace (Atlas)? What should carry forward from its palette, hierarchy and territory detail?
+¿Qué se acerca más al producto buscado: una vista editorial de datos (OWID), un índice temático (IPC) o un espacio de trabajo centrado en el mapa (Atlas)? ¿Qué debería pasar de su paleta, su jerarquía y su detalle por territorio?
 
-## Selected direction
+## Dirección seleccionada
 
-2026-11-07: user requested an example following Transparency and supplied its CPI 2025 warm-map image. Continue with [Round 03](../rounds/03-warm-risk-map/README.md). This authorizes the exploration, not final acceptance of its palette or methodology.
+2026-11-07: Jouler pidió un ejemplo siguiendo a Transparencia y compartió su imagen del mapa cálido del IPC 2025. Se continúa con la [Ronda 03](../rounds/03-warm-risk-map/README.md). Esto autoriza la exploración, no la aceptación final de su paleta ni de su metodología.
 
-## Final comparison outcome
+## Resultado de la comparación final
 
-2026-11-07: the user did not select the resulting all-warm Round 03. They returned to Round 02's graphic direction: lower-risk blue, intermediate yellow, higher-risk orange/red, with numeric parameters to be defined later. The earlier selection of Transparency authorized an experiment, not lasting acceptance. See [current visual direction](../visual-direction.md).
+2026-11-07: Jouler no seleccionó la Ronda 03, toda cálida. Volvió a la dirección gráfica de la Ronda 02: azul para riesgo bajo, amarillo para intermedio, naranja/rojo para alto, con los parámetros numéricos por definir más adelante. La selección anterior de Transparencia autorizó un experimento, no una aceptación duradera. Ver la [dirección visual actual](../visual-direction.md).

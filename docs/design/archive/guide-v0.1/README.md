@@ -1,38 +1,37 @@
-# Visual guide — v0.1 (archived)
+# Guía visual v0.1 (archivada)
 
-> Archived on 2026-11-08 when [guide v1.0](../../guide/README.md) replaced it. Kept as history; relative links below were written for its original location `docs/design/guide/`.
+> Archivada el 2026-11-08, cuando la [guía v1.0](../../guide/README.md) la reemplazó. Se conserva como historia; los enlaces relativos de abajo se escribieron para su ubicación original, `docs/design/guide/`.
 
-Status: **Consolidated guide for review**. Based on the user-selected Round 02 direction and system-font legibility; newly specified tokens, icon conventions and component details remain proposed. Task: [#6](https://github.com/EKOU-Solutions/EKOU-Elephants/issues/6). Updated 2026-11-07.
+Estado: **Guía consolidada para revisión**. Basada en la dirección de la Ronda 02 que eligió Jouler y en la legibilidad de la fuente del sistema; los tokens recién especificados, las convenciones de íconos y los detalles de los componentes siguen siendo propuestas. Tarea: [#6](https://github.com/EKOU-Solutions/EKOU-Elephants/issues/6). Actualizada el 2026-11-07.
 
-## Purpose and source of truth
+## Propósito y fuente de verdad
 
-A practical reference for building citizen-facing interfaces. The visual guide is in Spanish; repository specifications and implementation names are in English. This is a documentation specimen, not a production component package. No services, publishing or application scaffolding are required.
+Una referencia práctica para construir interfaces dirigidas a la ciudadanía. La guía visual está en español; en ese momento, las especificaciones del repositorio y los nombres de implementación estaban en inglés. Es una muestra de documentación, no un paquete de componentes de producción. No requiere servicios, publicación ni estructura de aplicación.
 
-1. Read [the selected direction](../visual-direction.md).
-2. Use [tokens.json](tokens.json) for the candidate colour, typography, spacing and geometry values.
-3. Read [usage rules](usage.md) before interpreting or implementing a specimen.
-4. Inspect the generated visual guide and [validation](validation.md). Do not infer approved business thresholds from examples.
+1. Lee [la dirección seleccionada](../visual-direction.md).
+2. Usa [tokens.json](tokens.json) para los valores candidatos de color, tipografía, espacio y geometría.
+3. Lee las [reglas de uso](usage.md) antes de interpretar o implementar una muestra.
+4. Revisa la guía visual generada y la [validación](validation.md). No deduzcas umbrales de negocio aprobados a partir de los ejemplos.
 
-Editable source is `source.html`; `build.py` renders swatches and contrast evidence from `tokens.json`. Providers must change these sources, then rebuild. Do not edit generated previews or silently change accepted semantic colour roles. Review history stays in `../rounds/`.
+La fuente editable es `source.html`; `build.py` genera las muestras de color y la evidencia de contraste a partir de `tokens.json`. Quien aporte cambios debe modificar estas fuentes y volver a generar. No edites las vistas previas generadas ni cambies en silencio los roles semánticos de color aceptados. La historia de la revisión queda en `../rounds/`.
 
 ```sh
 python3 docs/design/guide/build.py
 ```
 
-Outputs, intentionally ignored: `guide.html` (integrated canvas fragment) and `preview.html` (self-contained standalone preview). The build also updates versionable `contrast-report.json`. Python standard library only. The standalone preview works offline and embeds the pinned local Lucide bundle; the integrated fragment uses the host's supplied Lucide icons.
+Salidas, ignoradas a propósito: `guide.html` (fragmento para el lienzo integrado) y `preview.html` (vista previa independiente y autocontenida). El build también actualiza `contrast-report.json`, que sí se versiona. Solo usa la biblioteca estándar de Python. La vista previa independiente funciona sin conexión e incrusta el paquete local fijado de Lucide; el fragmento integrado usa los íconos de Lucide que entrega el anfitrión.
 
-## Contents
+## Contenido
 
-- Principles and rationale; system typography and spacing scale.
-- Data palette, interaction colours, message colours and measured contrast pairs.
-- Buttons, disabled/loading examples, alerts, native form fields and error feedback.
-- Percentages with numerator/denominator; separate analysis coverage; counts, COP amounts, dates and percentage-point changes.
-- Risk tags, named counters, removable filter chips, missing-data treatment, selected-territory treatment and exact-value tables.
-- Icon family, size, stroke, visible labels and accessible names.
+- Principios y razones; tipografía del sistema y escala de espacio.
+- Paleta de datos, colores de interacción, colores de mensajes y pares de contraste medidos.
+- Botones, ejemplos deshabilitados y en carga, alertas, campos de formulario nativos y mensajes de error.
+- Porcentajes con numerador y denominador; cobertura del análisis por separado; conteos, montos en COP, fechas y cambios en puntos porcentuales.
+- Etiquetas de riesgo, contadores con nombre, filtros que se pueden quitar, tratamiento de los datos faltantes, tratamiento del territorio seleccionado y tablas con valores exactos.
+- Familia de íconos, tamaño, trazo, etiquetas visibles y nombres accesibles.
 
-## External resources
+## Recursos externos
 
+Referencia de íconos: Lucide, que ya usa la página de inicio de EKOU. Paquete sin conexión fijado en `lucide@0.468.0`, obtenido de la [distribución del paquete en jsDelivr](https://cdn.jsdelivr.net/npm/lucide@0.468.0/dist/umd/lucide.min.js). Se incluye con su [atribución ISC/Feather](assets/LUCIDE-LICENSE). Es una versión reproducible para la muestra, no una afirmación sobre la última versión ni una decisión de dependencias de la aplicación. No quites la licencia al distribuir la guía independiente.
 
-Icon reference: Lucide, already used by the EKOU landing. Offline bundle pinned to `lucide@0.468.0`, obtained from [jsDelivr package distribution](https://cdn.jsdelivr.net/npm/lucide@0.468.0/dist/umd/lucide.min.js). Included under its [ISC/Feather attribution](assets/LUCIDE-LICENSE). This is a reproducible specimen version, not a claim about the latest release or an application dependency decision. Do not remove the license when distributing the standalone guide.
-
-Normative targets and design guidance are linked in `usage.md` and the guide; inspected 2026-11-07. Full interface conformance, colour-vision assessment and tests on real user tasks remain pending.
+Las metas normativas y la guía de diseño están enlazadas en `usage.md` y en la guía; se revisaron el 2026-11-07. Siguen pendientes la conformidad completa de la interfaz, la evaluación de visión del color y las pruebas con tareas reales de personas usuarias.

@@ -5,7 +5,7 @@ import pyarrow.parquet as pq
 import pytest
 import respx
 
-from ekou_pipeline.bronze import SUCCESS_MARKER, dataset_dir, extract_dataset
+from ekou_pipeline.bronze import SUCCESS_MARKER, dataset_dir, extract_dataset, extracted_rows
 from ekou_pipeline.catalog import DatasetSpec
 from ekou_pipeline.socrata import VERSION_HEADER, DatasetReplacedError, SocrataClient, SocrataError
 
@@ -79,6 +79,58 @@ def test_skips_completed_partitions_and_redoes_incomplete(
     assert not (base / "particion=sin_fecha" / "basura.tmp").exists()
     # solo se repiten la planificación y la partición incompleta
     assert route.call_count - calls_first_run == 2
+
+
+@respx.mock
+def test_reextracts_cached_partition_when_source_count_changes(
+    client: SocrataClient, tmp_path: Path
+) -> None:
+    """Una recarga del origen que quedó a medias no se puede quedar en la caché: cuando el
+    origen se completa, cambia el conteo de la partición y se vuelve a extraer."""
+    plan = {"value": [{"anio": "2024", "filas": "3"}, {"filas": "1"}]}
+
+    def api(request: httpx.Request) -> httpx.Response:
+        if "$group" in request.url.params:
+            return httpx.Response(200, json=plan["value"])
+        return _fake_api(request)
+
+    respx.get(RESOURCE).mock(side_effect=api)
+    extract_dataset(client, SPEC, data_dir=tmp_path, corte="2026-11", max_workers=1)
+
+    plan["value"] = [{"anio": "2024", "filas": "5"}, {"filas": "1"}]
+    report = extract_dataset(client, SPEC, data_dir=tmp_path, corte="2026-11", max_workers=1)
+
+    by_name = {p.name: p for p in report.partitions}
+    assert not by_name["2024"].skipped
+    assert by_name["2024"].expected_rows == 5
+    assert by_name["sin_fecha"].skipped
+
+
+@respx.mock
+def test_removes_partitions_that_no_longer_exist(client: SocrataClient, tmp_path: Path) -> None:
+    """dbt lee todas las carpetas de la fuente: una partición vieja duplicaría o mezclaría filas."""
+    plan = {"value": [{"anio": "2024", "filas": "3"}, {"filas": "1"}]}
+
+    def api(request: httpx.Request) -> httpx.Response:
+        if "$group" in request.url.params:
+            return httpx.Response(200, json=plan["value"])
+        return _fake_api(request)
+
+    respx.get(RESOURCE).mock(side_effect=api)
+    extract_dataset(client, SPEC, data_dir=tmp_path, corte="2026-11", max_workers=1)
+    assert extracted_rows(tmp_path, "2026-11", SPEC) == 4
+
+    plan["value"] = [{"anio": "2024", "filas": "3"}]
+    report = extract_dataset(client, SPEC, data_dir=tmp_path, corte="2026-11", max_workers=1)
+
+    base = dataset_dir(tmp_path, "2026-11", SPEC)
+    assert [p.name for p in report.partitions] == ["2024"]
+    assert not (base / "particion=sin_fecha").exists()
+    assert extracted_rows(tmp_path, "2026-11", SPEC) == 3
+
+
+def test_extracted_rows_of_a_source_not_extracted_is_zero(tmp_path: Path) -> None:
+    assert extracted_rows(tmp_path, "2026-11", SPEC) == 0
 
 
 @respx.mock

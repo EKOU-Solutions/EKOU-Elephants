@@ -1,58 +1,79 @@
 ---
 name: elephants-design
-description: Use for any visual or interface design work on EKOU Elephants (design system, visual guide, rounds, map, components, copy, and designing a specific page for development). Runs the agreed flows - discover, audit against the brief, review rounds, and build-a-page (API contract check, data exploration, spec, components, mockup, validation, handoff) - and decides when to call the other design skills.
+description: Úsala para cualquier trabajo visual o de interfaz en EKOU Elephants, del ajuste más pequeño a una iteración profunda - sistema de diseño, Storybook, tokens, componentes, pantallas o páginas, mapa, textos de la interfaz, rondas y auditorías. Clasifica el pedido (ajuste, construir una página, auditoría, ronda, descubrimiento), aplica el flujo acordado y decide cuándo llamar a las otras skills de diseño. Obligatoria por la regla global de AGENTS.md.
 ---
 
 # Elephants design
 
-Owner flow for design in this repository. Other design skills (ours or third-party) are tools this flow calls; this skill decides when, how, and what wins.
+Flujo dueño del diseño en este repositorio. Las otras skills de diseño (propias o de terceros) son herramientas que este flujo llama; esta skill decide cuándo, cómo y qué prevalece.
 
-## Read first, every time
+**Regla global (`AGENTS.md`):** ningún cambio de diseño, de pantalla, de componente visual, de token o de texto de la interfaz se hace fuera de este flujo, por pequeño que sea. Si te piden saltártelo, no lo hagas: explica que debe pasar por aquí e indica el comando (`/elephants-design` en Claude, `$elephants-design` en Codex, la skill `elephants-design` en Antigravity).
 
-1. `docs/design/README.md` (index, round rules, review log).
-2. `docs/design/visual-direction.md` (accepted decisions).
-3. `docs/design/discovery/brief.md` if it exists (the yardstick).
-4. The accepted guide: `docs/design/guide/README.md`, `design-system.md` and `components.json` (v1.0, Round 05 editorial + Public Sans, accepted 2026-11-08). Read the latest round's README only if a round is in progress.
-5. For page work: `docs/design/pages/README.md` (page log and tentative reference) and `docs/fuentes-de-datos.md`.
+## Leer primero, siempre
 
-Do not ask the team for anything these files already answer.
+1. `docs/design/README.md` (índice, reglas de rondas, registro de revisiones).
+2. `docs/design/visual-direction.md` (decisiones aceptadas).
+3. `docs/design/discovery/brief.md` si existe (la vara de medir).
+4. La guía aceptada: `docs/design/guide/design-system.md` y `components.json` (v1.0, Ronda 05 editorial + Public Sans, aceptada el 2026-11-08). Lee el README de la última ronda solo si hay una ronda en curso.
+5. Storybook, la referencia visual viva: `.storybook/docs/HowWeWork.mdx` y la historia del componente o la página que vas a tocar (`.storybook/catalog/` o `src/**/*.stories.tsx`). Para verlo: `npm run storybook`.
+6. Para trabajo de páginas: `docs/design/pages/README.md` (registro de páginas y referencia tentativa) y `docs/fuentes-de-datos.md`.
 
-## Precedence
+No le preguntes al equipo nada que estos archivos ya respondan.
 
-1. Explicit user decisions recorded in the files above.
-2. The discovery brief.
-3. This skill's rules.
-4. Third-party skill advice (Impeccable, etc.).
+## Precedencia
 
-A third-party finding that contradicts 1 or 2 is reported as a question for the user, never applied silently. Fixed until TASK-07 decides otherwise: blue / yellow / warm-red risk roles, grey hatch for missing data, no invented risk thresholds, "signal, not verdict".
+1. Decisiones explícitas de las personas del equipo registradas en los archivos de arriba.
+2. El brief de descubrimiento.
+3. Las reglas de esta skill.
+4. Los consejos de skills de terceros (Impeccable, etc.).
 
-## Pick the phase
+Un hallazgo de terceros que contradiga 1 o 2 se reporta como pregunta para el equipo; nunca se aplica en silencio. Fijo hasta que TASK-07 decida otra cosa: roles de riesgo azul / amarillo / rojo cálido, trama gris para datos faltantes, ningún umbral de riesgo inventado, «señal, no veredicto».
 
-| Situation | Phase |
+## Elegir la ruta
+
+Clasifica el pedido y elige la ruta más corta que sea segura. Si durante una ruta aparece algo de una ruta más profunda, para y escala.
+
+| Situación | Ruta |
 | --- | --- |
-| No brief, or the business/audience changed | [Discover](references/discover.md) |
-| A round or the guide needs judging | [Audit](references/audit.md) |
-| Audit findings were accepted for action, or the user wants to change the system's direction (palette, type, layout language) | [Round](references/round.md); if accepted, it becomes the guide's next major version |
-| User asks for "everything" | Discover → Audit → Round, stopping for approval between phases |
-| A specific page/screen must be designed for development (map, search, contract, works, entities, contractors, alerts…) | [Build a page](references/build-page.md): starts by checking the API contract; one page at a time |
+| Cambio puntual que **mantiene la dirección**: un texto de la interfaz, un espaciado, un estado que falta, un bug visual, un contraste, confirmar un candidato ya usado por una página aprobada | [Ajuste](references/ajuste.md) |
+| Hay que diseñar una página o pantalla concreta para desarrollo (mapa, búsqueda, contrato, obras, entidades, contratistas, alertas…) | [Construir una página](references/build-page.md): empieza por el contrato de la API; una página a la vez |
+| Hace falta un **componente o token nuevo** | [Construir una página](references/build-page.md), paso 3: nace de la página que lo necesita |
+| Hay que juzgar una ronda, la guía o Storybook | [Auditoría](references/audit.md) |
+| Se aceptaron hallazgos de una auditoría, o se quiere cambiar la dirección del sistema (paleta, tipografía, lenguaje visual) | [Ronda](references/round.md); si se acepta, es la siguiente versión mayor |
+| No hay brief, o cambió el negocio o la audiencia | [Descubrimiento](references/discover.md) |
+| Piden «todo» | Descubrimiento → Auditoría → Ronda, con aprobación entre fases |
 
-State the chosen phase in one line before starting.
+Anuncia la ruta elegida en una línea antes de empezar, con el motivo.
 
-## Always
+## Storybook: todo componente queda documentado
 
-- Repository documents and implementation names in English; citizen-facing copy in Spanish (Colombia).
-- New directions are rounds under `docs/design/rounds/NN-short-name/`, never edits that overwrite an earlier round. The accepted guide changes only through its change process (`docs/design/guide/design-system.md#changing-the-system`): approved components and tokens, `build.py` passing, version bump.
-- Page designs live in `docs/design/pages/<page>/` and are built only on **our API's contract** (ingestion → database/JSON → our API → screens), the guide's tokens and its catalogue components. No contract, no design.
-- Label fictional data. Record external sources with date checked.
-- Do not commit, publish, or mark anything accepted without the user's instruction.
+Storybook es la referencia visual viva; la guía HTML (`preview.html`, `examples.html`) y las rondas son seguimiento histórico y no se amplían.
 
-## Tools this flow calls
+- Todo componente que se crea o se modifica con esta skill termina con su historia en Storybook, en español y entendible para personas: para qué sirve, cuándo usarlo, qué evitar, accesibilidad, y una historia por estado (normal, «Sin datos» o vacío, error, carga, y 320 px si aplica).
+- Dónde vive cada componente React (una carpeta por componente, con su historia al lado):
+  - **UI**, puro y transversal: `src/components/ui/<Component>/`, título `Componentes/UI/<Component>`.
+  - **De página**, incluidos los grandes: `src/modules/<módulo>/ui/<Component>/`, título `Componentes/<Página>/<Component>`.
+  - **Pantalla completa**: `src/modules/<módulo>/ui/<Page>Page/`, título `Pantallas/<Page>Page`.
+- Cada componente trae sus propios estilos en `ComponentName.module.css`; no hay hojas compartidas entre componentes. Lo único global son los tokens `--el-*`, la fuente y la base (`src/styles/global.css`).
+- La historia va al lado: `ComponentName.stories.tsx`, con `tags: ['autodocs']`. El código va en inglés (componente, props, variables, archivos); las secciones del título, el `name` de las historias y las descripciones van en español; el componente se nombra en el título con su nombre real en inglés (`Componentes/UI/Button`, no «Botón») para que se encuentre igual en Storybook y en el código. Si reemplaza una especificación de `.storybook/catalog/`, se retira esa especificación.
+- Un cambio de tokens, principios o reglas se refleja en la página MDX correspondiente de `.storybook/docs/`.
+- Validación mínima: `npm run build-storybook` sin errores, panel de accesibilidad sin fallas en claro y oscuro, y sin desbordamiento horizontal a 320 px.
 
-| Skill | Source | Used in |
+## Siempre
+
+- Textos de la interfaz en español (Colombia). La documentación nueva del proyecto, en español (regla de `AGENTS.md`).
+- Las direcciones nuevas son rondas en `docs/design/rounds/NN-nombre-corto/`; nunca se sobrescribe una ronda anterior. La guía aceptada cambia solo por su proceso de cambio (`docs/design/guide/design-system.md#cambiar-el-sistema`): componentes y tokens aprobados, `build.py` pasando, versión actualizada y Storybook al día.
+- Los diseños de página viven en `docs/design/pages/<pagina>/` y se construyen solo sobre **el contrato de nuestra API** (ingesta → base de datos/JSON → nuestra API → pantallas), los tokens de la guía y los componentes del catálogo. Sin contrato, no hay diseño.
+- Marca los datos ficticios. Registra las fuentes externas con su fecha de consulta.
+- No hagas commit, no publiques ni marques nada como aceptado sin la instrucción de una persona del equipo.
+
+## Herramientas que llama este flujo
+
+| Skill | Origen | Se usa en |
 | --- | --- | --- |
-| `design:design-critique`, `design:accessibility-review`, `design:ux-copy`, `design:design-system` | Anthropic design plugin | Audit, Build a page (validate) |
-| `dataviz` | Anthropic | Audit, Round (map, legend, charts) |
-| `frontend-design` | Anthropic | Round |
-| `impeccable` (`critique`, `audit`, `shape`, `polish`; detector CLI) | [pbakaus/impeccable](https://github.com/pbakaus/impeccable), Apache-2.0, installed project-scoped for Claude (`.claude/skills`) and Codex (`.agents/skills`) without hooks | Audit (second opinion, anti-pattern detector), Round (shape) |
+| `design:design-critique`, `design:accessibility-review`, `design:ux-copy`, `design:design-system` | Plugin de diseño de Anthropic | Auditoría, Construir una página (validar), Ajuste (si toca textos o accesibilidad) |
+| `dataviz` | Anthropic | Auditoría, Ronda (mapa, leyenda, gráficos) |
+| `frontend-design` | Anthropic | Ronda |
+| `impeccable` (`critique`, `audit`, `shape`, `polish`; CLI de detección) | [pbakaus/impeccable](https://github.com/pbakaus/impeccable), Apache-2.0, instalada en el proyecto para Claude (`.claude/skills`) y Codex/Antigravity (`.agents/skills`) sin hooks | Auditoría (segunda opinión, detector de antipatrones), Ronda (shape) |
 
-Impeccable is installed **without hooks** by team decision (2026-11-08): when installing or updating, always pass `--no-hooks` and never add its hook to `.claude/settings*.json` or `.codex/hooks.json`; run its detector explicitly during an audit instead. Do not run `impeccable init` or `document`: they write their own PRODUCT.md / DESIGN.md. Our brief and `docs/design/` are the single source; pass them to Impeccable as context instead. Add a third-party skill only after reading its full contents, checking its licence, and getting the user's approval; then list it here.
+Impeccable se instala **sin hooks** por decisión del equipo (2026-11-08): al instalarla o actualizarla, usa siempre `--no-hooks` y nunca agregues su hook a `.claude/settings*.json` ni a `.codex/hooks.json`; ejecuta su detector de forma explícita durante una auditoría. No ejecutes `impeccable init` ni `document`: escriben su propio PRODUCT.md / DESIGN.md. Nuestro brief y `docs/design/` son la única fuente; pásaselos a Impeccable como contexto. Agrega una skill de terceros solo después de leerla completa, revisar su licencia y obtener la aprobación del equipo; luego regístrala aquí.

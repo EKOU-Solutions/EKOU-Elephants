@@ -33,3 +33,7 @@ pipeline/.cache/
 datos-locales/
 # Publicación que el corte mensual arma para el Worker de datos
 pipeline/worker-datos/publicacion/
+
+# Storybook (estático generado)
+storybook-static/
+*storybook.log

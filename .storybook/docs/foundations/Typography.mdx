@@ -1,0 +1,29 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+import { Status, TypeScale } from '../../blocks';
+
+<Meta title="Fundamentos/Tipografía" />
+
+# Tipografía
+
+<Status status="accepted" detail="Public Sans 5.3.0 · decidida el 8 nov 2026" />
+
+Una sola familia: **Public Sans**, diseñada para servicios públicos digitales (USWDS). Es neutral, muy legible en tamaños pequeños, con cero sin barra y números claros y alineados. Se aloja con la aplicación (sin CDN), así que se ve igual en todos los dispositivos. Licencia OFL 1.1, un archivo variable de unos 27 KB.
+
+<TypeScale />
+
+## Reglas
+
+- **Display: uno por página.** Solo para el titular de una página de entrada, como la del Mapa. Frase corta, arriba de todo, 32 px en el celular. Las vistas de detalle (un contrato, la tabla de un territorio) empiezan con *Título*.
+- Pesos: 400 para texto, 600 para énfasis, 700 para títulos y cifras.
+- Interlineado: 1,5 en texto, 1,2 en títulos, 1,05 en cifras.
+- Los números usan dígitos tabulares (`--el-numbers`) para que se alineen en tablas.
+
+## Tokens
+
+| Token | Valor |
+| --- | --- |
+| `--el-font-ui` / `--el-font-display` | Familia de interfaz y de títulos (Public Sans + respaldo del sistema) |
+| `--el-size-*` | display 40 · title 30 (26 móvil) · section 22 · subsection 18 · body 16 · small 14 · figure 48 (40 móvil) |
+| `--el-weight-*` | body 400 · emphasis 600 · heading 700 |
+| `--el-line-*` | body 1,5 · heading 1,2 · figure 1,05 |
+| `--el-numbers` | `tabular-nums lining-nums` |

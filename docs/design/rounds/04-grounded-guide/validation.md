@@ -1,10 +1,10 @@
-# Validation — Round 04
+# Validación: Ronda 04
 
-Observed locally on 2026-11-08 using the generated standalone previews (both typeface variants).
+Observado en local el 2026-11-08 con las vistas previas independientes generadas (ambas variantes tipográficas).
 
-- Build succeeds; 10 contrast pairs pass; no unreplaced placeholders; fragments below 1 MB; JavaScript syntax check passes.
-- Map renders 33 territories with Antioquia selected and drawn last so its outline is not covered; Vaupés (no analysis) uses the grey hatch.
-- No horizontal document overflow at 320, 390 and 1024 px in any of the four sections, for both variants.
-- Desktop screenshot of the Atkinson variant inspected across all sections. A 390 px headless screenshot cropped the layout, but the overflow measurement above shows no overflow, so it is treated as a capture artefact.
+- El build funciona; pasan los 10 pares de contraste; no quedan marcadores sin reemplazar; fragmentos de menos de 1 MB; la comprobación de sintaxis de JavaScript pasa.
+- El mapa muestra 33 territorios con Antioquia seleccionado y dibujado de último para que su contorno no quede tapado; Vaupés (sin análisis) usa la trama gris.
+- Sin desplazamiento horizontal del documento a 320, 390 y 1024 px en ninguna de las cuatro secciones, para ambas variantes.
+- Se inspeccionó la captura de escritorio de la variante Atkinson en todas las secciones. Una captura sin interfaz a 390 px recortó la composición, pero la medición de desbordamiento de arriba no muestra desbordamiento, así que se trata como un artefacto de la captura.
 
-Limits: not inspected visually on a real phone; the system-font variant was measured but its screenshots were not reviewed in detail. Hero categories are an illustrative split, not a risk methodology. Contrast pairs cover tokens only, not map fills, hatch, disabled states or the whole interface. No screen-reader, colour-vision or user-task testing. Fictional data throughout.
+Límites: no se inspeccionó en un celular real; la variante con la fuente del sistema se midió, pero sus capturas no se revisaron en detalle. Las categorías del encabezado son un reparto ilustrativo, no una metodología de riesgo. Los pares de contraste cubren solo los tokens, no los rellenos del mapa, la trama, los estados deshabilitados ni toda la interfaz. No hubo pruebas con lector de pantalla, de visión del color ni de tareas con personas usuarias. Todos los datos son ficticios.

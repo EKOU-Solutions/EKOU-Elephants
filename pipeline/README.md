@@ -41,7 +41,7 @@ uv run ekou-pipeline extract secop_contratos secop_procesos secop_ubicaciones se
 
 Los datos quedan en `data/bronze/corte=2026-11/fuente=<fuente>/particion=<año>/`. Al terminar, el comando imprime un reporte JSON con filas extraídas, filas esperadas y tiempos por partición.
 
-Si la ejecución se interrumpe, al volver a lanzarla **solo se extraen las particiones que faltan**. Si cambian las columnas de una fuente en el catálogo, sus particiones se vuelven a extraer.
+Si la ejecución se interrumpe, al volver a lanzarla **solo se extraen las particiones que faltan**. Una partición ya extraída se vuelve a extraer si cambian sus columnas en el catálogo o si el origen tiene otro número de filas en ella (por ejemplo, porque una recarga de datos.gov.co que estaba a medias ya se completó). Las particiones que ya no existen en el origen se borran.
 
 Antes de extraer, el pipeline verifica que las particiones cubran exactamente el `count(*)` del dataset.
 
@@ -59,7 +59,7 @@ uv run python -c "import duckdb; print(duckdb.connect('data/ekou.duckdb', read_o
 
 Si una prueba de datos falla (por ejemplo, una cédula sin seudonimizar o un contrato que se pierde entre capas), el comando termina con código 1 y el corte no se publica.
 
-Después, `compuertas` revisa el corte en conjunto. Las pruebas de dbt detectan datos malos; las compuertas detectan un corte que se ve mal, como una vista de SECOP que queda vacía sin dar error. Con `--anterior` compara contra el `calidad_corte.csv` del corte publicado anterior. Imprime una tabla con cada compuerta y termina con código 1 si alguna falla.
+Después, `compuertas` revisa el corte en conjunto. Las pruebas de dbt detectan datos malos; las compuertas detectan un corte que se ve mal, como una vista de SECOP que queda vacía sin dar error. Por ejemplo, el 15 de noviembre de 2026 SECOP II Procesos quedó con 1.000 filas de 9,4 M en datos.gov.co, y su `count(*)` también decía 1.000. Con `--anterior` compara contra el `calidad_corte.csv` del corte publicado anterior. Imprime una tabla con cada compuerta y termina con código 1 si alguna falla.
 
 ```bash
 uv run ekou-pipeline compuertas --corte 2026-12 --anterior calidad_corte_2026-11.csv
@@ -67,6 +67,7 @@ uv run ekou-pipeline compuertas --corte 2026-12 --anterior calidad_corte_2026-11
 
 | Compuerta | Umbral por defecto | Variable |
 |---|---|---|
+| Cada fuente del catálogo trae al menos su mínimo de filas en bronze | ~90 % del corte 2026-11 (por ejemplo, 8,5 M en SECOP II Procesos) | `min_rows` en [`catalog.py`](src/ekou_pipeline/catalog.py) |
 | Cada fuente (SECOP I y II) tiene contratos | > 0 | — |
 | Contratos de cada fuente ubicados en un municipio del mapa | ≥ 80 % (2026-11: 88,3 % y 84,3 %) | `EKOU_GATE_MIN_PCT_MAPA` |
 | Municipios con al menos un contrato | ≥ 1.050 (2026-11: 1.106 de 1.122) | `EKOU_GATE_MIN_MUNICIPIOS` |
@@ -127,7 +128,7 @@ Variables de entorno (o archivo `.env`):
 | `EKOU_REQUEST_TIMEOUT_S` | `120` | Espera máxima de cada lectura de red |
 | `EKOU_MAX_REQUEST_S` | `300` | Duración máxima total de una petición; si se supera, se reintenta |
 | `EKOU_DUCKDB_MEMORY` | `6GB` | Memoria máxima de DuckDB en `transform`. Lo que no cabe se escribe en `data/ekou.duckdb.tmp` |
-| `EKOU_DUCKDB_TEMP` | `20GiB` | Espacio máximo de esos temporales |
+| `EKOU_DUCKDB_TEMP` | `20GiB` | Espacio máximo de esos temporales, compartido por toda la base. Por eso dbt construye un modelo a la vez (`threads: 1` en [`profiles.yml`](transform/profiles.yml)): en paralelo, dos modelos grandes agotaron los 20 GiB |
 | `EKOU_MAX_RETRIES` | `6` | Reintentos ante errores transitorios: 429 (respeta `Retry-After`), 5xx, fallas de red, JSON truncado y peticiones demasiado lentas |
 
 ## Desarrollo

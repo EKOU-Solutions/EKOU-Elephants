@@ -1,0 +1,17 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+import { CatalogTable } from '../blocks';
+
+<Meta title="Componentes/Catálogo" />
+
+# Catálogo de componentes
+
+Arma las pantallas solo con estas piezas. Cada componente tiene su página con propósito, controles, estados y accesibilidad.
+
+- **Núcleo**: aceptado con la Ronda 05 (guía v1.0). Ya son componentes React de la app, en `src/components/ui/`, cada uno con sus propios estilos, y se ven en **Componentes › UI**.
+- **Candidato**: se puede usar, pero la primera página que lo necesite lo confirma o lo descarta. Por ahora es una especificación (marcado y clases `el-*`) en **Componentes › Candidatos**.
+
+<CatalogTable />
+
+Cuando una página confirma un candidato, se implementa como componente React con el flujo `elephants-design` y su historia pasa a vivir junto al componente: en `src/components/ui/` si es transversal, o en el módulo de la página si es propio de ella (ver [Cómo trabajamos](?path=/docs/cómo-trabajamos--docs)).
+
+¿Ninguno sirve? No improvises: propón uno nuevo con la skill `elephants-design` (ruta *Construir una página*).

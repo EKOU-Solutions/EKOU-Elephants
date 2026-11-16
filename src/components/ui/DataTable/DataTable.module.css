@@ -1,0 +1,55 @@
+/* On small screens the table scrolls inside this box; it is focusable so keyboard users can scroll it. */
+.scroll {
+  overflow-x: auto;
+  /* Lets the caption size itself to the visible box, not to the (wider) table. */
+  container-type: inline-size;
+}
+
+.scroll:focus-visible {
+  outline: var(--el-focus-width) solid var(--el-color-focus);
+  outline-offset: var(--el-focus-offset);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15px;
+}
+
+.caption {
+  /* The caption stays in view and wraps inside the visible box while the table scrolls under it. */
+  position: sticky;
+  left: 0;
+  max-width: 100cqi;
+  text-align: left;
+  font-size: 14px;
+  color: var(--el-color-text-muted);
+  margin-bottom: 8px;
+}
+
+.table th,
+.table td {
+  text-align: left;
+  padding: 10px 12px 10px 0;
+  border-bottom: 1px solid var(--el-color-line);
+  font-weight: 400;
+}
+
+.table thead th {
+  font-weight: 700;
+  font-size: 14px;
+  border-bottom: var(--el-rule-strong) solid var(--el-color-line-strong);
+}
+
+.table tbody th {
+  font-weight: 600;
+}
+
+.table .numeric {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.key {
+  margin-right: 8px;
+}

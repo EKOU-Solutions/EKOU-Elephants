@@ -29,8 +29,12 @@ concurrency:
   group: corte-mensual
   cancel-in-progress: false
 
+# `shell: bash` hace que GitHub use `bash -eo pipefail`. Sin pipefail, un paso como
+# `compuertas | tee` termina con el código de tee y un corte que no pasa las compuertas se
+# publica igual (pasó en el ensayo del corte 2026-11).
 defaults:
   run:
+    shell: bash
     working-directory: pipeline
 
 jobs:
@@ -259,6 +263,7 @@ jobs:
       WRANGLER_SEND_METRICS: "false"
     defaults:
       run:
+        shell: bash
         working-directory: .
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
