@@ -1,8 +1,13 @@
-import { Scalar } from '@scalar/hono-api-reference';
 import { createMarkdownFromOpenApi } from '@scalar/openapi-to-markdown';
 import type { Hono } from 'hono';
 import { generateSpecs } from 'hono-openapi';
+import { crearApp } from '../app';
+import type { Queryable } from '../db';
 
+/**
+ * Build-time only (scripts/generar-docs-api.mjs and tests): the Worker serves the generated files,
+ * so neither hono-openapi nor the Markdown converter ends up in its bundle.
+ */
 export const RUTAS_DOCUMENTACION = ['/api/openapi.json', '/api/llms.txt', '/api/docs'] as const;
 
 type Respuestas = Record<string, { description: string }>;
@@ -110,31 +115,14 @@ export async function generarOpenApi(app: Hono): Promise<Spec> {
 
 export const ENRIQUECIMIENTO_RUTAS = Object.keys(ENRIQUECIMIENTO);
 
-// Routes are the same for every request, but index.ts builds a new app per request, so cache the
-// generated documents per isolate instead of per app.
-let openApi: Promise<Spec> | undefined;
-let markdown: Promise<string> | undefined;
+const sinDb: Queryable = {
+  query: async () => {
+    throw new Error('generating the API docs must not query the database');
+  },
+};
 
-/** Serves the OpenAPI JSON, its Markdown for agents (llms.txt) and the Scalar UI for people. */
-export function montarDocumentacion(app: Hono) {
-  const obtenerOpenApi = () => {
-    openApi ??= generarOpenApi(app).catch((err) => {
-      openApi = undefined;
-      throw err;
-    });
-    return openApi;
-  };
-  const [rutaJson, rutaLlms, rutaDocs] = RUTAS_DOCUMENTACION;
-
-  app.get(rutaJson, async (c) => c.json(await obtenerOpenApi()));
-  app.get(rutaLlms, async (c) => {
-    markdown ??= obtenerOpenApi()
-      .then((spec) => createMarkdownFromOpenApi(JSON.stringify(spec)))
-      .catch((err) => {
-        markdown = undefined;
-        throw err;
-      });
-    return c.text(await markdown, 200, { 'Content-Type': 'text/markdown; charset=utf-8' });
-  });
-  app.get(rutaDocs, Scalar({ url: rutaJson, pageTitle: 'API de EKOU Elephants' }));
+/** Builds both served documents from the real app: the OpenAPI JSON and its Markdown (llms.txt). */
+export async function generarDocumentos(): Promise<{ openApi: Spec; llms: string }> {
+  const openApi = await generarOpenApi(crearApp(sinDb));
+  return { openApi, llms: await createMarkdownFromOpenApi(JSON.stringify(openApi)) };
 }

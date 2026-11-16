@@ -1,7 +1,8 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { crearApp } from './app';
-import type { Queryable } from './db';
-import { ENRIQUECIMIENTO_RUTAS, RUTAS_DOCUMENTACION } from './docs';
+import { crearApp } from '../app';
+import type { Queryable } from '../db';
+import { ENRIQUECIMIENTO_RUTAS, generarDocumentos, RUTAS_DOCUMENTACION } from './openapi';
 
 const db: Queryable = {
   async query() {
@@ -17,6 +18,21 @@ const RUTAS_API = [
   '/api/mapa/departamentos',
   '/api/mapa/municipios/{codigo}',
 ];
+
+const versionado = (archivo: string) => readFileSync(new URL(archivo, import.meta.url), 'utf8');
+
+describe('documentos generados en build', () => {
+  it('openapi.json y llms.txt versionados coinciden con las rutas actuales (npm run docs:api)', async () => {
+    const { openApi, llms } = await generarDocumentos();
+    expect(JSON.parse(versionado('./openapi.json'))).toEqual(JSON.parse(JSON.stringify(openApi)));
+    expect(versionado('./llms.txt')).toBe(llms);
+  });
+
+  it('llms.txt contiene las 6 rutas de la API', () => {
+    const llms = versionado('./llms.txt');
+    for (const ruta of RUTAS_API) expect(llms).toContain(`GET ${ruta}`);
+  });
+});
 
 async function openApi() {
   const res = await crearApp(db).request('/api/openapi.json');

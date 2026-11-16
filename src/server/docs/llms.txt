@@ -1,0 +1,149 @@
+# API de EKOU Elephants
+
+- **OpenAPI Version:** `3.2.0`
+- **API Version:** `0.1.0`
+
+API pública de solo lectura con el presupuesto y las obras por territorio de Colombia. Todos los errores responden JSON con la forma `{ "error": "<código>" }`.
+
+## Contents
+
+**Operations**
+
+- [GET /api/salud](#scalar-operation-get-apisalud)
+- [GET /api/mapa/territorios/{codigo}/resumen](#scalar-operation-get-apimapaterritorioscodigoresumen)
+- [GET /api/mapa/corte](#scalar-operation-get-apimapacorte)
+- [GET /api/mapa/municipios](#scalar-operation-get-apimapamunicipios)
+- [GET /api/mapa/departamentos](#scalar-operation-get-apimapadepartamentos)
+- [GET /api/mapa/municipios/{codigo}](#scalar-operation-get-apimapamunicipioscodigo)
+
+## Tags
+
+### Salud
+
+Disponibilidad del servicio.
+
+### Mapa
+
+Datos territoriales del corte mensual vigente.
+
+## Operations
+
+<a id="scalar-operation-get-apisalud"></a>
+
+### Estado del servicio
+
+- **Method:** `GET`
+- **Path:** `/api/salud`
+- **Operation ID:** `getApiSalud`
+- **Tags:** Salud
+
+#### Responses
+
+##### 200 El Worker responde. Cuerpo: \`{ "ok": true }\`.
+
+<a id="scalar-operation-get-apimapaterritorioscodigoresumen"></a>
+
+### Resumen presupuestal de un territorio
+
+- **Method:** `GET`
+- **Path:** `/api/mapa/territorios/{codigo}/resumen`
+- **Operation ID:** `getApiMapaTerritoriosByCodigoResumen`
+- **Tags:** Mapa
+
+Presupuesto asignado, gasto actual (en centavos) y obras de un departamento (2 dígitos) o municipio (5 dígitos) según su código DIVIPOLA.
+
+#### Path parameters
+
+- **`codigo` (required)**: `string`
+
+#### Responses
+
+##### 200 Resumen del territorio.
+
+##### 400 El código DIVIPOLA no tiene el formato esperado. Cuerpo: \`{ "error": "codigo_invalido" }\`.
+
+##### 404 No existe un territorio con ese código. Cuerpo: \`{ "error": "territorio_no_encontrado" }\`.
+
+##### 500 Error inesperado del servidor. Cuerpo: \`{ "error": "error_interno" }\`.
+
+<a id="scalar-operation-get-apimapacorte"></a>
+
+### Corte mensual vigente
+
+- **Method:** `GET`
+- **Path:** `/api/mapa/corte`
+- **Operation ID:** `getApiMapaCorte`
+- **Tags:** Mapa
+
+Metadatos del corte de datos publicado y sus fuentes.
+
+#### Responses
+
+##### 200 Corte vigente.
+
+##### 500 Error inesperado del servidor. Cuerpo: \`{ "error": "error_interno" }\`.
+
+##### 503 No hay un corte mensual publicado o sus archivos no son coherentes. Cuerpo: \`{ "error": "corte_no_disponible" }\`.
+
+<a id="scalar-operation-get-apimapamunicipios"></a>
+
+### Municipios del corte vigente
+
+- **Method:** `GET`
+- **Path:** `/api/mapa/municipios`
+- **Operation ID:** `getApiMapaMunicipios`
+- **Tags:** Mapa
+
+#### Responses
+
+##### 200 Municipios del corte.
+
+##### 500 Error inesperado del servidor. Cuerpo: \`{ "error": "error_interno" }\`.
+
+##### 503 No hay un corte mensual publicado o sus archivos no son coherentes. Cuerpo: \`{ "error": "corte_no_disponible" }\`.
+
+<a id="scalar-operation-get-apimapadepartamentos"></a>
+
+### Departamentos del corte vigente
+
+- **Method:** `GET`
+- **Path:** `/api/mapa/departamentos`
+- **Operation ID:** `getApiMapaDepartamentos`
+- **Tags:** Mapa
+
+Departamentos con sus agregados y el total nacional.
+
+#### Responses
+
+##### 200 Departamentos del corte.
+
+##### 500 Error inesperado del servidor. Cuerpo: \`{ "error": "error_interno" }\`.
+
+##### 503 No hay un corte mensual publicado o sus archivos no son coherentes. Cuerpo: \`{ "error": "corte_no_disponible" }\`.
+
+<a id="scalar-operation-get-apimapamunicipioscodigo"></a>
+
+### Detalle de un municipio
+
+- **Method:** `GET`
+- **Path:** `/api/mapa/municipios/{codigo}`
+- **Operation ID:** `getApiMapaMunicipiosByCodigo`
+- **Tags:** Mapa
+
+Datos del municipio (código DIVIPOLA de 5 dígitos) en el corte vigente.
+
+#### Path parameters
+
+- **`codigo` (required)**: `string`
+
+#### Responses
+
+##### 200 Municipio seleccionado.
+
+##### 400 El código DIVIPOLA no tiene el formato esperado. Cuerpo: \`{ "error": "codigo_invalido" }\`.
+
+##### 404 El municipio no está en el corte vigente. Cuerpo: \`{ "error": "municipio_no_encontrado" }\`.
+
+##### 500 Error inesperado del servidor. Cuerpo: \`{ "error": "error_interno" }\`.
+
+##### 503 No hay un corte mensual publicado o sus archivos no son coherentes. Cuerpo: \`{ "error": "corte_no_disponible" }\`.

@@ -1,0 +1,156 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "API de EKOU Elephants",
+    "description": "API pública de solo lectura con el presupuesto y las obras por territorio de Colombia. Todos los errores responden JSON con la forma `{ \"error\": \"<código>\" }`.",
+    "version": "0.1.0"
+  },
+  "tags": [
+    {
+      "name": "Salud",
+      "description": "Disponibilidad del servicio."
+    },
+    {
+      "name": "Mapa",
+      "description": "Datos territoriales del corte mensual vigente."
+    }
+  ],
+  "components": {},
+  "paths": {
+    "/api/salud": {
+      "get": {
+        "operationId": "getApiSalud",
+        "responses": {
+          "200": {
+            "description": "El Worker responde. Cuerpo: `{ \"ok\": true }`."
+          }
+        },
+        "summary": "Estado del servicio",
+        "tags": ["Salud"]
+      }
+    },
+    "/api/mapa/territorios/{codigo}/resumen": {
+      "get": {
+        "operationId": "getApiMapaTerritoriosByCodigoResumen",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "codigo",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resumen del territorio."
+          },
+          "400": {
+            "description": "El código DIVIPOLA no tiene el formato esperado. Cuerpo: `{ \"error\": \"codigo_invalido\" }`."
+          },
+          "404": {
+            "description": "No existe un territorio con ese código. Cuerpo: `{ \"error\": \"territorio_no_encontrado\" }`."
+          },
+          "500": {
+            "description": "Error inesperado del servidor. Cuerpo: `{ \"error\": \"error_interno\" }`."
+          }
+        },
+        "summary": "Resumen presupuestal de un territorio",
+        "description": "Presupuesto asignado, gasto actual (en centavos) y obras de un departamento (2 dígitos) o municipio (5 dígitos) según su código DIVIPOLA.",
+        "tags": ["Mapa"]
+      }
+    },
+    "/api/mapa/corte": {
+      "get": {
+        "operationId": "getApiMapaCorte",
+        "responses": {
+          "200": {
+            "description": "Corte vigente."
+          },
+          "500": {
+            "description": "Error inesperado del servidor. Cuerpo: `{ \"error\": \"error_interno\" }`."
+          },
+          "503": {
+            "description": "No hay un corte mensual publicado o sus archivos no son coherentes. Cuerpo: `{ \"error\": \"corte_no_disponible\" }`."
+          }
+        },
+        "summary": "Corte mensual vigente",
+        "description": "Metadatos del corte de datos publicado y sus fuentes.",
+        "tags": ["Mapa"]
+      }
+    },
+    "/api/mapa/municipios": {
+      "get": {
+        "operationId": "getApiMapaMunicipios",
+        "responses": {
+          "200": {
+            "description": "Municipios del corte."
+          },
+          "500": {
+            "description": "Error inesperado del servidor. Cuerpo: `{ \"error\": \"error_interno\" }`."
+          },
+          "503": {
+            "description": "No hay un corte mensual publicado o sus archivos no son coherentes. Cuerpo: `{ \"error\": \"corte_no_disponible\" }`."
+          }
+        },
+        "summary": "Municipios del corte vigente",
+        "tags": ["Mapa"]
+      }
+    },
+    "/api/mapa/departamentos": {
+      "get": {
+        "operationId": "getApiMapaDepartamentos",
+        "responses": {
+          "200": {
+            "description": "Departamentos del corte."
+          },
+          "500": {
+            "description": "Error inesperado del servidor. Cuerpo: `{ \"error\": \"error_interno\" }`."
+          },
+          "503": {
+            "description": "No hay un corte mensual publicado o sus archivos no son coherentes. Cuerpo: `{ \"error\": \"corte_no_disponible\" }`."
+          }
+        },
+        "summary": "Departamentos del corte vigente",
+        "description": "Departamentos con sus agregados y el total nacional.",
+        "tags": ["Mapa"]
+      }
+    },
+    "/api/mapa/municipios/{codigo}": {
+      "get": {
+        "operationId": "getApiMapaMunicipiosByCodigo",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "codigo",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Municipio seleccionado."
+          },
+          "400": {
+            "description": "El código DIVIPOLA no tiene el formato esperado. Cuerpo: `{ \"error\": \"codigo_invalido\" }`."
+          },
+          "404": {
+            "description": "El municipio no está en el corte vigente. Cuerpo: `{ \"error\": \"municipio_no_encontrado\" }`."
+          },
+          "500": {
+            "description": "Error inesperado del servidor. Cuerpo: `{ \"error\": \"error_interno\" }`."
+          },
+          "503": {
+            "description": "No hay un corte mensual publicado o sus archivos no son coherentes. Cuerpo: `{ \"error\": \"corte_no_disponible\" }`."
+          }
+        },
+        "summary": "Detalle de un municipio",
+        "description": "Datos del municipio (código DIVIPOLA de 5 dígitos) en el corte vigente.",
+        "tags": ["Mapa"]
+      }
+    }
+  }
+}
