@@ -9,15 +9,15 @@ on:
   schedule:
     # Día 1 de cada mes, 11:17 UTC (06:17 en Colombia): después del reemplazo diario de
     # SECOP II Contratos en origen (~07:43 UTC), para que la extracción termine antes del siguiente.
-    - cron: "17 11 1 * *"
+    - cron: '17 11 1 * *'
   workflow_dispatch:
     inputs:
       corte:
-        description: "Corte AAAA-MM (vacío: el mes actual)"
+        description: 'Corte AAAA-MM (vacío: el mes actual)'
         required: false
-        default: ""
+        default: ''
       publicar:
-        description: "Publicar el corte: Release y Worker de datos (solo desde main)"
+        description: 'Publicar el corte: Release y Worker de datos (solo desde main)'
         type: boolean
         default: true
 
@@ -191,6 +191,9 @@ jobs:
       - name: exportar
         run: |
           uv run ekou-pipeline export --corte "${{ steps.corte.outputs.corte }}"
+          # Los JSON que lee la API del mapa (corte.json, municipios.json, departamentos.json; TASK-09),
+          # en la misma carpeta: entran al Release y al Worker de datos con el resto.
+          uv run ekou-pipeline export-mapa --corte "${{ steps.corte.outputs.corte }}"
           cp data/reporte-extraccion.json "data/publicacion/${{ steps.corte.outputs.corte }}/"
           ls -lh "data/publicacion/${{ steps.corte.outputs.corte }}"
           cat "data/publicacion/${{ steps.corte.outputs.corte }}/resumen.md" >> "$GITHUB_STEP_SUMMARY"
@@ -260,7 +263,7 @@ jobs:
     permissions:
       contents: read
     env:
-      WRANGLER_SEND_METRICS: "false"
+      WRANGLER_SEND_METRICS: 'false'
     defaults:
       run:
         shell: bash
