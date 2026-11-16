@@ -198,6 +198,16 @@ jobs:
           ls -lh "data/publicacion/${{ steps.corte.outputs.corte }}"
           cat "data/publicacion/${{ steps.corte.outputs.corte }}/resumen.md" >> "$GITHUB_STEP_SUMMARY"
 
+      - name: JSON del mapa (prueba sin publicar)
+        # Solo cuando el corte no publica (rama, o main sin «Publicar el corte»): deja los JSON
+        # del mapa para cargarlos en el preview de un PR con `npm run datos:preview`.
+        if: "!(github.ref == 'refs/heads/main' && (github.event_name == 'schedule' || inputs.publicar))"
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: mapa-${{ steps.corte.outputs.corte }}-${{ github.run_attempt }}
+          path: pipeline/data/publicacion/${{ steps.corte.outputs.corte }}/*.json
+          retention-days: 14
+
       - name: publicar Release
         if: github.ref == 'refs/heads/main' && (github.event_name == 'schedule' || inputs.publicar)
         env:
