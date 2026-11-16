@@ -9,6 +9,13 @@ export function crearApp(db: Queryable) {
   const app = new Hono();
 
   app.use(secureHeaders());
+  // API root: without it, `/api` falls through to the SPA and returns the app's HTML.
+  app.get('/api', (c) =>
+    c.json({
+      nombre: 'EKOU Elephants API',
+      rutas: ['/api/salud', '/api/mapa/territorios/:codigo/resumen'],
+    }),
+  );
   app.get('/api/salud', (c) => c.json({ ok: true }));
   app.route('/api/mapa', componerMapa(db));
 
