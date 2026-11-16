@@ -1,10 +1,10 @@
 # API: arquitectura y documentación
 
-> Cómo está construida la API de EKOU Elephants y cómo se documenta. Código en general: [arquitectura](arquitectura.md) · Datos: [arquitectura de datos](arquitectura-datos.md) · Despliegue: [CI/CD](ci-cd.md)
+> Lo propio de la API: qué expone, sus convenciones, cómo valida, sus errores y cómo se documenta. La organización del back (Worker, módulos, puertos y adaptadores) está en [arquitectura](arquitectura.md); el paso a paso para crear una ruta, en [la guía](how-to/crear-una-api.md). Despliegue: [CI/CD](ci-cd.md)
 
 ## En 30 segundos
 
-La API es REST, de solo lectura y responde JSON. Vive en el mismo Worker de Cloudflare que sirve la interfaz: todo `/api/*` llega a Hono y el resto devuelve la SPA. Lee el corte mensual desde el Worker de datos `ekou-elephants-datos` y, para el ejemplo del arquetipo, desde PostgreSQL.
+La API es REST, de solo lectura y responde JSON desde `/api/*` del Worker de la app ([arquitectura](arquitectura.md#en-30-segundos)). Cada ruta valida lo que entra, lo que lee y lo que responde.
 
 La documentación **no se escribe a mano**: se genera de las rutas registradas en Hono y el mismo Worker la publica en tres formatos, uno para cada lector.
 
@@ -31,42 +31,9 @@ flowchart LR
     RUTAS -->|"SQL parametrizado"| PG
 ```
 
-## Cómo está construida
+## Qué expone
 
-### Una petición, de punta a punta
-
-Cada ruta sigue el patrón de puertos y adaptadores de [arquitectura](arquitectura.md#puertos-y-adaptadores). Ejemplo: `GET /api/mapa/municipios/05001`.
-
-```mermaid
-sequenceDiagram
-    participant C as Cliente
-    participant H as Adaptador HTTP<br/>mapa.routes.ts
-    participant U as Caso de uso<br/>consultar-mapa.ts
-    participant A as Adaptador<br/>mapa.worker-datos.ts
-    participant D as Worker de datos
-
-    C->>H: GET /api/mapa/municipios/05001
-    H->>H: valida el código con zod (5 dígitos)
-    H->>U: obtenerMunicipio("05001")
-    U->>A: puerto ConsultarMapa
-    A->>D: datos/latest.json → corte vigente (2026-11)
-    A->>D: datos/2026-11/corte.json y municipios.json
-    D-->>A: JSON del corte
-    A->>A: valida cada archivo con zod
-    A-->>U: corte y municipios
-    U->>U: busca 05001 (si no está: MunicipioNoEncontrado → 404)
-    U-->>H: MunicipioSeleccionado
-    H-->>C: 200 JSON + Cache-Control
-```
-
-| Pieza | Dónde | Qué hace |
-| --- | --- | --- |
-| Entrada del Worker | `src/server/index.ts` | Crea las dependencias reales (base y Worker de datos) por petición. |
-| App HTTP | `src/server/app.ts` · `crearApp(db, datos)` | Registra los módulos, los encabezados de seguridad, la documentación y el manejo de errores. Recibe sus dependencias como argumentos, así que las pruebas usan dobles en memoria. |
-| Composición | `src/server/composition/<modulo>.ts` | Conecta casos de uso con sus adaptadores. |
-| Adaptador HTTP | `src/modules/<modulo>/adapters/http/*.routes.ts` | Define las rutas, valida los parámetros con zod y fija la caché. No tiene reglas de negocio. |
-| Caso de uso y dominio | `src/modules/<modulo>/application/` y `domain/` | Reglas y errores del dominio, sin Hono ni infraestructura. |
-| Adaptadores de salida | `src/modules/<modulo>/adapters/worker-datos/`, `postgres/` | Leen el corte o la base y validan lo que llega. |
+Cada ruta es el adaptador HTTP de un módulo y sigue el patrón de [puertos y adaptadores](arquitectura.md#puertos-y-adaptadores); el ejemplo de punta a punta está en [arquitectura](arquitectura.md#ejemplo-consultar-un-resumen-territorial).
 
 ### De dónde sale cada respuesta
 
@@ -99,7 +66,21 @@ Todo error responde JSON con la forma `{ "error": "<código>" }`. El código es 
 | 503 | `corte_no_disponible` | No hay corte publicado o sus archivos no son coherentes. |
 | 500 | `error_interno` | Error inesperado. |
 
-Un error nuevo nace como clase en el dominio del módulo y se traduce a estado y código en `app.onError` (`src/server/app.ts`). Después se documenta en las respuestas de la ruta con `esquemaError('<código>')` (ver abajo).
+Los errores de negocio son clases del dominio; `app.onError` (`src/server/app.ts`) es el único lugar que los traduce a estado y código. Cada ruta documenta los suyos en `describeRoute`.
+
+## Validación
+
+Una ruta valida en tres momentos. Cada uno tiene su herramienta y su forma de fallar:
+
+| Momento | Qué se valida | Con qué | Si falla |
+| --- | --- | --- | --- |
+| **Entrada** | Parámetros, consulta o body de la petición | `validator` de `hono-openapi` con un esquema zod, en la ruta | `400` con su código, sin llegar al caso de uso |
+| **Datos de la fuente** | Lo que lee el adaptador de salida | Esquemas zod en el adaptador del Worker de datos; conversiones estrictas en PostgreSQL ([importes](arquitectura.md#importes-exactitud-y-rechazo-de-datos-incorrectos)) | `503 corte_no_disponible` o `500`: nunca se responde un dato a medias |
+| **Salida** | El body que responde la ruta | El esquema de respuesta: `responder(c, esquema, valor)` al compilar y las pruebas de contrato al probar | El typecheck falla si falta un campo documentado; la prueba de contrato falla si sale uno no documentado («Unrecognized key») |
+
+La salida no se valida en ejecución: lo garantizan el typecheck y las pruebas, sin costo por petición.
+
+**Regla del body:** la respuesta incluye como mínimo el tipo del dominio y puede agregar datos complementarios, siempre documentados en su esquema. Un dato del dominio que no deba salir se traduce en el adaptador.
 
 ## Cómo documentamos la API
 
@@ -143,11 +124,8 @@ Cada preview de PR y producción las publican, así que se puede revisar la API 
 | --- | --- | --- |
 | Esquemas de respuesta | `adapters/http/<modulo>.schemas.ts` | Describen con zod el body público de cada respuesta, `.strict()`, con descripciones y ejemplos en español (`.meta`). Son del adaptador HTTP: el dominio no los conoce. |
 | `describeRoute` | En cada ruta | Resumen, descripción, etiqueta y el body de cada respuesta (200 y errores) con `json(descripción, esquema)`. |
-| `validator` de `hono-openapi` | En cada ruta con parámetros, consulta o body | Revisa la entrada igual que `zValidator` y además la documenta (tipo y patrón). |
-| `responder(c, esquema, valor)`, `json(descripción, esquema)`, `esquemaError(código)` | `src/server/http/respuestas.ts` | Compartidos por todos los módulos. `responder` envía el body y el typecheck falla si `valor` no trae un campo que el esquema promete; `json` y `esquemaError` describen una respuesta en `describeRoute`. |
-| Pruebas de contrato | Junto a las pruebas de rutas (`src/server/*.test.ts`) | Llaman la ruta con datos en memoria y validan el body real contra su esquema `.strict()`. Fallan si la respuesta envía un campo que la documentación no muestra. |
-
-**Regla del body:** la respuesta incluye como mínimo el tipo del dominio y puede agregar datos complementarios, siempre documentados en su esquema. Un dato del dominio que no deba salir no se manda en la respuesta: se traduce en el adaptador.
+| `validator` de `hono-openapi` | En cada ruta con parámetros, consulta o body | Valida la entrada ([validación](#validación)) y además la documenta (tipo y patrón). |
+| `responder(c, esquema, valor)`, `json(descripción, esquema)`, `esquemaError(código)` | `src/server/http/respuestas.ts` | Compartidos por todos los módulos. `json` y `esquemaError` describen una respuesta en `describeRoute`; `responder` envía el body atado a su esquema ([validación](#validación)). |
 
 ### Cómo se genera
 
@@ -165,19 +143,14 @@ flowchart LR
 - Los dos archivos **se versionan**: las pruebas, el typecheck y `npm run dev` los necesitan antes de cualquier build, y el diff del PR muestra cómo cambia el contrato público.
 - **Peso:** `describeRoute`, `validator` y los esquemas viajan en el Worker (~190 kB gzip en total, frente a ~101 kB sin ellos). Lo aceptamos a propósito: la documentación queda pegada a la ruta, que es más fácil de leer y mantener. El generador de Markdown sigue fuera del bundle. El límite de Cloudflare es 3 MB gzip.
 
-### Qué lo protege
+### Qué mantiene la documentación al día
 
-- **Typecheck:** `responder` falla si la respuesta no trae un campo documentado.
-- **Pruebas de contrato:** fallan si el body real no coincide con su esquema, por ejemplo con un campo no documentado («Unrecognized key»).
-- **`src/server/docs/docs.test.ts`** falla si:
-  - `openapi.json` o `llms.txt` no coinciden con lo que se genera de las rutas actuales;
-  - una ruta no tiene resumen, etiqueta o el body JSON de alguna de sus respuestas;
-  - el OpenAPI documenta más o menos rutas `GET` de las que tiene la app, o incluye las rutas de documentación;
-  - `/api/openapi.json`, `/api/llms.txt` o `/api/docs` dejan de responder lo esperado.
+`src/server/docs/docs.test.ts` falla si:
 
-### Agregar o cambiar una ruta
-
-El paso a paso completo está en la guía [Crear una API](how-to/crear-una-api.md).
+- `openapi.json` o `llms.txt` no coinciden con lo que se genera de las rutas actuales;
+- una ruta no tiene resumen, etiqueta o el body JSON de alguna de sus respuestas;
+- el OpenAPI documenta más o menos rutas `GET` de las que tiene la app, o incluye las rutas de documentación;
+- `/api/openapi.json`, `/api/llms.txt` o `/api/docs` dejan de responder lo esperado.
 
 ### Contrato de página y OpenAPI
 

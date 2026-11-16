@@ -4,4 +4,4 @@ Paso a paso para hacer cosas concretas en EKOU Elephants sin olvidar nuestros es
 
 | Guía | Para |
 | --- | --- |
-| [Crear una API](crear-una-api.md) | Agregar o cambiar una ruta de la API: arquitectura, validación, documentación y pruebas. |
+| [Crear una API](crear-una-api.md) | Agregar o cambiar una ruta de la API, de punta a punta. |
