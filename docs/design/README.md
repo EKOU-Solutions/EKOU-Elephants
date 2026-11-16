@@ -2,7 +2,7 @@
 
 Fuente de verdad, dentro del repositorio, de la dirección visual, el sistema de diseño y las rondas de revisión de [TASK-05](https://github.com/EKOU-Solutions/EKOU-Elephants/issues/6).
 
-Toda persona o agente, de cualquier proveedor, lee este índice y la [dirección visual](visual-direction.md) antes de hacer cambios. Todo cambio de diseño pasa por la skill `elephants-design` (regla global de `AGENTS.md`). Las vistas previas se generan a partir de archivos del repositorio. Los adjuntos de chat y los lienzos de los proveedores son vistas de esos archivos, no la fuente canónica. No publiques, no hagas commit ni marques una propuesta como aceptada sin la instrucción del equipo.
+Toda persona o agente, de cualquier proveedor, lee este índice y la [dirección visual](visual-direction.md) antes de hacer cambios. Todo cambio de diseño pasa por la skill `elephant-designer` (regla global de `AGENTS.md`). Las vistas previas se generan a partir de archivos del repositorio. Los adjuntos de chat y los lienzos de los proveedores son vistas de esos archivos, no la fuente canónica. No publiques, no hagas commit ni marques una propuesta como aceptada sin la instrucción del equipo.
 
 ## Dirección actual
 
@@ -15,7 +15,7 @@ Registro de la decisión: [dirección visual](visual-direction.md#selección-fin
 
 ## Referencia de la interfaz
 
-**Storybook es la referencia visual viva** del sistema de diseño (`npm run storybook`; ver [desarrollo](../desarrollo.md#sistema-de-diseño-storybook)). Reúne los lineamientos para personas, los fundamentos, la accesibilidad y todos los componentes que se crean con la skill `elephants-design`. Desde el 2026-11-15 revierte la decisión del 2026-11-08 de descartar Storybook.
+**Storybook es la referencia visual viva** del sistema de diseño (`npm run storybook`; ver [desarrollo](../desarrollo.md#sistema-de-diseño-storybook)). Reúne los lineamientos para personas, los fundamentos, la accesibilidad y todos los componentes que se crean con la skill `elephant-designer`. Desde el 2026-11-15 revierte la decisión del 2026-11-08 de descartar Storybook.
 
 La [guía del sistema de diseño v1.0](guide/README.md) sigue siendo la fuente de verdad que Storybook importa:
 - tokens (`tokens.json` es la fuente de verdad; `tokens.css` se genera);
@@ -30,13 +30,13 @@ Las páginas se diseñan de a una. Cada una parte del **contrato de nuestra API*
 - el [flujo de diseño](design-flow.md), con diagramas, para desarrollo;
 - los [diseños de página](pages/README.md): el registro de páginas y una referencia tentativa.
 
-Los agentes usan la ruta *Construir una página* de la skill `elephants-design`.
+Los agentes usan el comando `/crear-pantalla`. Qué hace cada comando de diseño: [comandos](comandos.md).
 
 ## Trabajar en rondas
 
 Las rondas sirven para cambiar el sistema mismo (una dirección nueva o una versión mayor), no para diseñar páginas. Los cambios pequeños que mantienen la dirección usan la ruta *Ajuste* de la skill.
 
-- Los agentes usan la skill del proyecto `elephants-design` (`.claude/skills/`, enlazada para Codex y Antigravity en `.agents/skills/`). Clasifica el pedido (ajuste, construir una página, auditoría, ronda o descubrimiento) y llama a las otras skills de diseño, incluida la skill de terceros `impeccable`, instalada en el proyecto.
+- Los agentes usan la skill del proyecto `elephant-designer` (`.claude/skills/`, enlazada para Codex y Antigravity en `.agents/skills/`). Clasifica el pedido (ajuste, construir una página, auditoría, ronda o descubrimiento) y llama a las otras skills de diseño, incluida la skill de terceros `impeccable`, instalada en el proyecto.
 - Cada ronda vive en `rounds/NN-nombre-corto/`, con un README que cubre propósito, estado, decisiones, fuentes, cómo reproducirla y validación.
 - La fuente editable y los recursos pequeños que necesita viven dentro de la ronda. Marca los datos ficticios y registra de dónde vienen los recursos externos.
 - Revisa la ronda actual mientras explore la misma hipótesis. Una dirección materialmente distinta empieza una ronda nueva, enlazada a la anterior.

@@ -23,7 +23,7 @@ Esto confirma el mundo visual de «periodismo de datos» del brief. Cómo se dis
 
 ## Referencia en Storybook (2026-11-15)
 
-**Decisión (Jouler):** el sistema de diseño se consulta en Storybook (`npm run storybook`). Reúne los lineamientos para personas, los fundamentos, la accesibilidad y el catálogo, y en él se suman los componentes que se crean con la skill `elephants-design`. La guía HTML v1.0 y las rondas quedan como seguimiento histórico. Los tokens y el catálogo siguen saliendo de `docs/design/guide/`. Revierte la decisión del 2026-11-08 de descartar Storybook. La dirección visual no cambia.
+**Decisión (Jouler):** el sistema de diseño se consulta en Storybook (`npm run storybook`). Reúne los lineamientos para personas, los fundamentos, la accesibilidad y el catálogo, y en él se suman los componentes que se crean con la skill `elephant-designer`. La guía HTML v1.0 y las rondas quedan como seguimiento histórico. Los tokens y el catálogo siguen saliendo de `docs/design/guide/`. Revierte la decisión del 2026-11-08 de descartar Storybook. La dirección visual no cambia.
 
 ## Selección anterior: Ronda 02 (base de los roles de color)
 

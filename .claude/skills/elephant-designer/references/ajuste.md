@@ -1,14 +1,17 @@
 # Ajuste
 
+**Lee** (además de [`contexto.md`](../contexto.md)): El archivo que vas a tocar y su historia. De `docs/design/guide/design-system.md`, solo la sección que aplique. Si tocas textos, «Voz del riesgo» de `docs/design/discovery/brief.md`.
+
 Ruta corta para cambios que **mantienen la dirección visual**: un texto de la interfaz, un espaciado, un estado que falta, un bug visual, un problema de contraste, o confirmar un componente candidato que una página aprobada ya usa. Es corta, no opcional: se cumplen todos los pasos.
 
 ## 1. Clasificar (y escalar si hace falta)
 
 Antes de tocar nada, confirma que el pedido es un ajuste. Para y cambia de ruta si:
 
-- hace falta un componente o un token **nuevo** → [Construir una página](build-page.md), paso 3;
+- hace falta un componente o un token **nuevo** → `/crear-componente` ([Crear un componente](component.md));
 - cambia la paleta, la tipografía o el lenguaje visual → [Ronda](round.md);
-- es una página o pantalla nueva, o cambia el contrato de la API que la alimenta → [Construir una página](build-page.md);
+- es una página o pantalla nueva, o cambia el contrato de la API que la alimenta → `/crear-pantalla` ([Construir una página](build-page.md));
+- solo quieren revisar, sin cambiar nada → `/revisar-implementacion`;
 - contradice una decisión registrada (`visual-direction.md`, el brief o las reglas fijas de TASK-07/TASK-08) → pregunta al equipo.
 
 Anuncia en una línea: «Ruta: Ajuste — motivo».
@@ -27,8 +30,8 @@ Anuncia en una línea: «Ruta: Ajuste — motivo».
 
 ## 4. Validar
 
-- `npm run build-storybook` sin errores.
-- La historia en tema claro y oscuro, a 320 px sin desplazamiento horizontal, y con el panel de accesibilidad sin fallas.
+- `npm run design:check -- --filter <componente o módulo>` sin fallas: comprueba el render, axe y el desplazamiento horizontal de cada historia a 320, 390, 768 y 1280 px, en claro y oscuro. Si cambiaste un token o un componente UI que usan otras historias, ejecuta el barrido completo (sin `--filter`).
+- Mira la captura del cambio en `.design-check/screenshots/` (al menos 320 px, claro y oscuro): confirma que se ve como se pidió.
 - `npm run typecheck` y `npm test` si se tocó código en `src/`.
 
 ## 5. Reportar

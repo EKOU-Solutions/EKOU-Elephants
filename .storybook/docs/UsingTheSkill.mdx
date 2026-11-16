@@ -3,25 +3,31 @@ import { DoAndDont, Status } from '../blocks';
 
 <Meta title="Cómo usar la skill" />
 
-# Cómo usar la skill `elephants-design`
+# Cómo usar los comandos de diseño
 
 <Status status="accepted" detail="Obligatoria para todo cambio de diseño (regla global de AGENTS.md)" />
 
-La skill `elephants-design` es el flujo de diseño del proyecto. Le cuentas qué necesitas en lenguaje normal; ella clasifica el pedido, elige la ruta y te dice en una línea cuál tomó y por qué. Esta página muestra cómo pedirle cosas en cada ruta y qué esperar de vuelta.
+El diseño del proyecto se trabaja con comandos. Le cuentas qué necesitas en lenguaje normal y el comando sigue su flujo, deteniéndose donde necesita tu decisión. Esta página muestra cómo pedir cada cosa y qué esperar de vuelta.
 
 ## Cómo llamarla
 
-| Herramienta | Cómo |
+Hay un comando por tipo de trabajo. Si no sabes cuál es, usa `/elephant-designer`: clasifica el pedido y elige el flujo.
+
+| Quiero… | Comando |
 | --- | --- |
-| Claude Code | `/elephants-design` seguido del pedido |
-| Codex | `$elephants-design` seguido del pedido |
-| Antigravity | «Usa la skill `elephants-design` para…» |
+| Una página o pantalla completa | `/crear-pantalla` |
+| Un componente nuevo | `/crear-componente` |
+| Revisar algo que ya está hecho | `/revisar-implementacion` |
+| Un cambio pequeño a algo que existe | `/ajuste` |
+| Otra cosa (auditoría, ronda, brief) o no sé cuál | `/elephant-designer` |
 
 ```text
-/elephants-design El botón «Consultar contratos» se corta en el celular de 320 px.
+/ajuste El botón «Consultar contratos» se corta en el celular de 320 px.
 ```
 
-No hace falta decir la ruta: la skill la elige. Si la nombras («ruta Ajuste: …»), la usa siempre que sea segura; si el pedido resulta más profundo, te avisa y escala.
+En Codex los comandos se llaman con `$` (`$ajuste`); en Antigravity, pidiendo usar la skill por su nombre. Si te equivocas de comando, él mismo te manda al correcto. Y si pides un cambio sin usar ningún comando, el agente carga `elephant-designer` igual.
+
+El paso a paso de cada comando, con diagramas, está en `docs/design/comandos.md`.
 
 ## Un buen pedido
 
@@ -49,15 +55,15 @@ Cuanto más concreto, más corta la ruta. Un buen pedido dice **qué**, **dónde
 Para un texto, un espaciado, un estado que falta, un bug visual, un contraste o un cambio de estado en el catálogo.
 
 ```text
-/elephants-design En Fundamentos › Íconos, el nombre sliders-horizontal se sale de su tarjeta. (captura adjunta)
+/ajuste En Fundamentos › Íconos, el nombre sliders-horizontal se sale de su tarjeta. (captura adjunta)
 ```
 
 ```text
-/elephants-design El Mapa con leyenda es candidato, no núcleo.
+/ajuste El Mapa con leyenda es candidato, no núcleo.
 ```
 
 ```text
-/elephants-design Cambia el texto del error de carga: «No cargaron los contratos» suena técnico. Propón dos opciones.
+/ajuste Cambia el texto del error de carga: «No cargaron los contratos» suena técnico. Propón dos opciones.
 ```
 
 **Qué te devuelve:** qué cambió, por qué era un ajuste y qué verificó (build de Storybook, accesibilidad en claro y oscuro, 320 px). No hace commit hasta que se lo pidas.
@@ -67,11 +73,11 @@ Para un texto, un espaciado, un estado que falta, un bug visual, un contraste o 
 Para diseñar una página concreta (mapa, búsqueda, contrato, obras, entidades, contratistas, alertas). Se trabaja una página a la vez, de los datos al diseño aprobado.
 
 ```text
-/elephants-design Construyamos la página del Mapa. El contrato está en docs/design/pages/mapa/contract.md.
+/crear-pantalla Construyamos la página del Mapa. El contrato está en docs/design/pages/mapa/contract.md.
 ```
 
 ```text
-/elephants-design Necesito la página de detalle de contrato. Revisa primero si ya hay contrato de la API.
+/crear-pantalla Necesito la página de detalle de contrato. Revisa primero si ya hay contrato de la API.
 ```
 
 **Qué pasa y dónde te pide aprobación:**
@@ -80,24 +86,24 @@ Para diseñar una página concreta (mapa, búsqueda, contrato, obras, entidades,
 | --- | --- | --- |
 | 0. Contrato | Revisa el contrato de nuestra API | Que exista y esté completo |
 | 1. Datos | Explora los datos que llegan | — |
-| 2. Especificación | Define la página: tareas, contenido y estados | **Aprobación 1** |
+| 2. Experiencia y especificación | Analiza qué viene a hacer la persona y propone dos o tres bocetos, con uno recomendado y su jerarquía visual. Sobre el que elijas, define contenido y estados | **Que elijas un boceto** y la **Aprobación 1** |
 | 3. Componentes | Usa el catálogo; si falta algo, propone el componente nuevo | **Aprobación por cada componente nuevo** |
-| 4. Maqueta | Arma la página con los componentes | — |
-| 5. Validar | Accesibilidad, 320 px, ambos temas | — |
+| 4. Maqueta en Storybook | Arma la pantalla real con los componentes, con una historia por estado | — |
+| 5. Validar | `npm run design:check` (accesibilidad, 320 a 1280 px, ambos temas) y revisión de las capturas | — |
 | 6. Entregar | Deja la página lista para desarrollo | **Aprobación 2** |
 
-Los componentes nuevos quedan en Storybook: en `Componentes/UI/…` si son transversales, o en `Componentes/<Página>/…` si son de esa página (ver la página **Cómo trabajamos**).
+Todo queda en Storybook. Los componentes transversales, en `Componentes/UI/…`. La pantalla y los componentes propios de la página quedan juntos en `Módulos/<Módulo>/…`, así Storybook refleja el módulo (ver la página **Cómo trabajamos**).
 
 ### Componente o token nuevo
 
-Siempre nace de la página que lo necesita, así que va por **Construir una página**, paso 3.
+Va por `/crear-componente`: se piensa, se muestran variantes, se implementa, se revisa y queda con su commit. El pedido dice para qué página o necesidad es.
 
 ```text
-/elephants-design La página del Mapa necesita un panel del territorio con las cifras y las señales. Propónlo.
+/crear-componente La página del Mapa necesita un panel del territorio con las cifras y las señales. Propónlo.
 ```
 
 ```text
-/elephants-design ¿Nos sirve la barra de progreso del catálogo para la página de entidades, o hace falta otra cosa?
+/crear-componente ¿Nos sirve la barra de progreso del catálogo para la página de entidades, o hace falta otra cosa?
 ```
 
 ### Auditoría: juzgar lo que ya existe
@@ -105,11 +111,11 @@ Siempre nace de la página que lo necesita, así que va por **Construir una pág
 Para revisar Storybook, la guía, una ronda o una página contra el brief, con las otras skills de diseño como segunda opinión.
 
 ```text
-/elephants-design Audita la página del Mapa antes de pasarla a desarrollo.
+/elephant-designer Audita la página del Mapa antes de pasarla a desarrollo.
 ```
 
 ```text
-/elephants-design Haz una auditoría de accesibilidad de los componentes del núcleo en tema oscuro.
+/elephant-designer Haz una auditoría de accesibilidad de los componentes del núcleo en tema oscuro.
 ```
 
 **Qué te devuelve:** una tabla de hallazgos con evidencia, gravedad y cambio propuesto. No aplica nada sin que lo aceptes.
@@ -119,11 +125,11 @@ Para revisar Storybook, la guía, una ronda o una página contra el brief, con l
 Para cambiar la paleta, la tipografía o el lenguaje visual, o para aplicar los hallazgos aceptados de una auditoría. Crea una ronda nueva en `docs/design/rounds/`; si se acepta, es la siguiente versión mayor del sistema.
 
 ```text
-/elephants-design Quiero explorar una versión más cálida del sistema sin perder el foco en los datos.
+/elephant-designer Quiero explorar una versión más cálida del sistema sin perder el foco en los datos.
 ```
 
 ```text
-/elephants-design Aplica los hallazgos 1, 3 y 4 de la última auditoría.
+/elephant-designer Aplica los hallazgos 1, 3 y 4 de la última auditoría.
 ```
 
 ### Descubrimiento: cuando falta el brief
@@ -131,24 +137,37 @@ Para cambiar la paleta, la tipografía o el lenguaje visual, o para aplicar los 
 Para cuando no hay brief o cambió el negocio o la audiencia. La skill pregunta solo lo que los documentos no responden y devuelve el brief.
 
 ```text
-/elephants-design Vamos a abrir el producto a periodistas de datos. Actualicemos el brief.
+/elephant-designer Vamos a abrir el producto a periodistas de datos. Actualicemos el brief.
 ```
 
 ### «Todo»
 
 ```text
-/elephants-design Revisa todo el sistema de diseño y propón cómo mejorarlo.
+/elephant-designer Revisa todo el sistema de diseño y propón cómo mejorarlo.
 ```
 
 Va por Descubrimiento → Auditoría → Ronda, y te pide aprobación entre cada fase.
 
+## Los roles
+
+`elephant-designer` es el orquestador: conversa contigo, propone las opciones y decide la composición. Para lo demás reparte el trabajo entre cuatro roles, que en Claude Code corren como sub-agentes. Cada uno también es un comando, por si lo necesitas suelto.
+
+| Rol | Qué hace | Ejemplo |
+| --- | --- | --- |
+| `elephant-data` | Revisa el contrato de la API y explora los datos reales | `/elephant-data mapa, contrato en docs/api/openapi.yaml` |
+| `elephant-ui` | Construye en React un componente o una pantalla ya definidos, con sus historias | La llaman los flujos de crear pantalla y crear componente |
+| `elephant-ux` | Critica la experiencia sobre capturas: tarea, jerarquía visual, prueba de 10 segundos, textos | `/elephant-ux los bocetos de la página del mapa` |
+| `elephant-tester` | Revisa tokens, catálogo, accesibilidad, movimiento reducido, contrato, peso y código | `/elephant-tester el módulo mapa` |
+
+`elephant-ux` y `elephant-tester` solo leen: no cambian nada y nunca revisa quien construyó.
+
 ## Lo que la skill no hace
 
-- **Saltarse el flujo.** Si alguien lo pide, responde que el cambio debe pasar por `elephants-design` y no lo hace.
+- **Saltarse el flujo.** Si alguien lo pide, responde que el cambio debe pasar por `elephant-designer` y no lo hace.
 - **Inventar umbrales de riesgo.** Los rangos, las etiquetas y la unidad contrato frente a obra los define TASK-07.
 - **Cambiar las decisiones registradas en silencio.** Si un consejo de otra skill contradice una decisión del equipo, te lo pregunta.
-- **Hacer commit, publicar o marcar algo como aceptado** sin que una persona del equipo lo pida.
+- **Hacer commit, publicar o marcar algo como aceptado** sin que una persona del equipo lo pida. La única excepción es `/crear-componente`, que hace el commit del componente después de tu aprobación.
 
 ## Si el pedido cambia de tamaño
 
-La skill empieza por la ruta más corta y escala cuando aparece algo más profundo. Por ejemplo, un ajuste de color que en realidad cambia la paleta pasa a Ronda, y un ajuste que necesita un componente nuevo pasa a Construir una página. Siempre te avisa antes de cambiar de ruta.
+Cada flujo empieza por el camino más corto y escala cuando aparece algo más profundo. Por ejemplo, un ajuste de color que en realidad cambia la paleta pasa a Ronda, y un ajuste que necesita un componente nuevo pasa a Construir una página. Siempre te avisa antes de cambiar de ruta.

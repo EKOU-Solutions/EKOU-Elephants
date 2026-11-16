@@ -2,7 +2,7 @@
 
 Estado: **Aceptada** (2026-11-08). Tarea: [#6](https://github.com/EKOU-Solutions/EKOU-Elephants/issues/6). Origen: [Ronda 05: referencia del sistema](../rounds/05-system-reference/README.md). Registro de la decisión: [dirección visual](../visual-direction.md#selección-final-2026-11-08).
 
-Este fue el entregable de TASK-05: una guía en HTML, documentación para desarrollo y agentes de IA, y la skill `elephants-design`, que construye cada página final a partir de su contrato de API. El 2026-11-08 se descartó Storybook.
+Este fue el entregable de TASK-05: una guía en HTML, documentación para desarrollo y agentes de IA, y la skill `elephant-designer`, que construye cada página final a partir de su contrato de API. El 2026-11-08 se descartó Storybook.
 
 > **Actualización 2026-11-15:** se revirtió esa decisión. La referencia visual viva es Storybook (`npm run storybook`). Esta carpeta conserva la fuente de verdad de tokens y catálogo (`tokens.json`, `components.css`, `components.json`, `build.py`), que Storybook importa. La página de referencia `preview.html` y los ejemplos `examples.html` quedan como seguimiento histórico de la v1.0: no se amplían con componentes nuevos.
 
@@ -12,7 +12,7 @@ Este fue el entregable de TASK-05: una guía en HTML, documentación para desarr
 | --- | --- |
 | Desarrollo o un agente de IA que implementa interfaz | Storybook (`npm run storybook`), [design-system.md](design-system.md) (reglas), `tokens.css` (impórtalo), [components.json](components.json) (catálogo), `tokens.md` (tabla de tokens) |
 | Diseño, o el equipo que revisa lo visual | Storybook: lineamientos, fundamentos y componentes en tema claro y oscuro |
-| Quien diseña una página nueva | [Flujo de diseño](../design-flow.md) y la ruta [Construir una página](../../../.claude/skills/elephants-design/references/build-page.md) de la skill |
+| Quien diseña una página nueva | [Flujo de diseño](../design-flow.md) y la ruta [Construir una página](../../../.claude/skills/elephant-designer/references/build-page.md) de la skill |
 | Quien quiere ver la referencia histórica v1.0 | `preview.html` y `examples.html` (pantallas en celular y portátil), después de generarlas |
 
 ```sh
@@ -47,6 +47,7 @@ Qué cambió frente a la Ronda 05, y por qué:
 | 1.0.1 | 2026-11-15 | El Mapa con leyenda pasa de núcleo a candidato: la página del Mapa lo confirma o lo ajusta | Jouler |
 | 1.1.0 | 2026-11-16 | Los componentes del núcleo son React en `src/components/ui/`, cada uno con su CSS Module; sale la Clave de leyenda (antes la clase `.el-key`). Sin cambios visuales: capturas idénticas antes y después | Jouler |
 | 1.2.0 | 2026-11-16 | Correcciones de la revisión del PR #41 y ajustes pedidos por Jouler. El Campo de formulario (`Field`) se separa en `Input` y `Select`, los dos sobre la base `FormField` (etiqueta, ayuda o error y `aria-describedby`), que acepta los atributos nativos. El `Button` recibe el ícono por composición (`icon`, antes `withIcon` con la lupa fija) y un texto de carga propio (`loadingLabel`). La acción del `Alert` es un enlace con `actionHref` o un botón con `onAction`, de al menos 24 px de alto; info y success llevan `role="status"`. Las cifras de `KeyFigure`, `Counter` y la barra de cobertura usan el formato es-CO. Nuevo componente `Icon`, que dibuja un ícono por su nombre (`<Icon name="search" />`) desde un registro único (`icons.ts`: hoy Lucide, mañana otro proveedor o SVG propios sin tocar las pantallas), con trazo de 2 px, decorativo por defecto y con `label` si va solo; se suma `download` al conjunto aprobado. Lo usan por dentro `Button`, `Alert`, `FormField` y `ActiveFilter`. La barra de cobertura pasa de especificación a un componente React puro y reutilizable, `ProgressBar` (sigue como candidato): una pista que se llena por tramos, con valor y color por tramo, que sirve para la cobertura y para el desglose en barras; la leyenda ya no es parte de la barra, la pone la página. Tras auditar los componentes puros: el `Button` acepta los atributos nativos (`type`, `aria-describedby`…) y mientras carga usa `aria-disabled` para no perder el foco; el `Alert` banner también es región viva; el `caption` de `DataTable` queda visible a 320 px. Los títulos de Storybook nombran cada componente con su nombre real en inglés (`Componentes/UI/Button`). Sin cambios de tokens ni de dirección visual | Jouler |
+| 1.2.1 | 2026-11-16 | El movimiento reducido pasa a ser una regla de la línea base de accesibilidad: `src/styles/global.css` anula animaciones y transiciones con `prefers-reduced-motion`. Sin cambios visuales | Jouler |
 
 ## Archivos
 

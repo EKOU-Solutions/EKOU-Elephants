@@ -2,7 +2,7 @@
 
 Aceptado el 2026-11-08: la dirección editorial de la [Ronda 05](../rounds/05-system-reference/README.md) con **Public Sans**. Este archivo es la versión corta y normativa de la guía. La referencia visual viva es Storybook (`npm run storybook`), que carga los mismos tokens que la app y muestra las mismas reglas con ejemplos interactivos. Si este archivo y Storybook no coinciden, repórtalo; no elijas uno en silencio.
 
-Todo cambio de diseño pasa por la skill `elephants-design` (regla global de `AGENTS.md`). Cada componente nuevo o modificado se documenta con su historia en Storybook. La página HTML `preview.html` queda como seguimiento histórico de la v1.0.
+Todo cambio de diseño pasa por la skill `elephant-designer` (regla global de `AGENTS.md`). Cada componente nuevo o modificado se documenta con su historia en Storybook. La página HTML `preview.html` queda como seguimiento histórico de la v1.0.
 
 ## Archivos
 
@@ -25,7 +25,7 @@ python3 docs/design/guide/build.py
 ## Reglas que no se negocian
 
 1. **Solo tokens.** Usa `var(--el-*)` en todo. Nunca un hex, un nombre de fuente o un valor en píxeles que un token ya cubra.
-2. **Solo el catálogo.** Arma las pantallas con las entradas de `components.json` (documentadas en Storybook). Un componente con `"status": "candidate"` se puede usar, pero la primera página que lo necesite lo confirma o lo descarta. Si nada sirve, no improvises: propón un componente por la ruta [Construir una página](../../../.claude/skills/elephants-design/references/build-page.md).
+2. **Solo el catálogo.** Arma las pantallas con las entradas de `components.json` (documentadas en Storybook). Un componente con `"status": "candidate"` se puede usar, pero la primera página que lo necesite lo confirma o lo descarta. Si nada sirve, no improvises: propón un componente por la ruta [Construir una página](../../../.claude/skills/elephant-designer/references/build-page.md).
 3. **El dato es lo primero.** Superficies neutras, líneas en lugar de tarjetas, sin sombras, degradados ni brillos. El color fuerte se reserva para los datos.
 4. **El color nunca va solo.** Todo color de riesgo va con una etiqueta de texto y el glifo de 1/2/3 barras, una leyenda o una tabla con los mismos valores.
 5. **«Sin datos» no es cero.** El análisis faltante usa la trama gris (`--el-color-unknown` sobre `--el-color-unknown-surface`) y las palabras «Sin datos». Nunca es 0 % ni riesgo bajo.
@@ -95,11 +95,12 @@ La página de cada componente en Storybook da su propósito, sus estados, qué h
 - Los rellenos de riesgo quedan por debajo de 3:1 frente a la superficie a propósito. Se apoyan en los bordes entre territorios, las etiquetas, la leyenda y una tabla equivalente.
 - Usa elementos nativos: `<button>`, `<a href>`, `<label for>`, `<table>` con `<caption>` y `scope`. Los errores de campo usan `aria-invalid` más `aria-describedby`.
 - Un mapa es un `<svg role="img">` con un `<title>`, y sus valores también están disponibles en una tabla.
+- **Movimiento reducido, siempre.** Toda animación o transición respeta `prefers-reduced-motion`: `src/styles/global.css` las anula cuando la persona lo pide. Nada parpadea ni se mueve solo sin forma de pausarlo, y ningún contenido depende de una animación para entenderse.
 
 ## Cambiar el sistema
 
-La guía tiene versión (`tokens.json` → `version`). Todo cambio pasa por la skill `elephants-design`.
+La guía tiene versión (`tokens.json` → `version`). Todo cambio pasa por la skill `elephant-designer`.
 
 - **Correcciones que mantienen la dirección visual** (un arreglo de contraste, un error, un componente candidato confirmado): ruta *Ajuste* de la skill. Se edita aquí, se regenera, se actualiza Storybook, se registra el cambio en `README.md` y se sube la versión menor o de parche.
-- **Componentes o tokens nuevos** salen de una página que los necesita (Construir una página, paso 3). Cada uno necesita la aprobación del equipo antes de entrar en `components.json` y Storybook, y se implementa como componente React con su propio CSS Module.
+- **Componentes o tokens nuevos** se crean con `/crear-componente`, para una página o necesidad concreta. Cada uno necesita la aprobación del equipo antes de entrar en `components.json` y Storybook, y se implementa como componente React con su propio CSS Module.
 - **Un cambio de dirección** (paleta, tipografía, lenguaje visual) es una ronda nueva en `docs/design/rounds/`. Si el equipo la acepta, se convierte en la siguiente versión mayor.

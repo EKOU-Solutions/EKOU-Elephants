@@ -4,34 +4,32 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
 # Cómo trabajamos el diseño
 
-**Regla global del proyecto** (`AGENTS.md`, la leen Claude, Codex y Antigravity): todo cambio de diseño, de una pantalla o de un componente visual pasa por el flujo de la skill **`elephants-design`**. No hay excepción para cambios pequeños: la skill decide qué tan profundo es el proceso.
+**Regla global del proyecto** (`AGENTS.md`, la leen Claude, Codex y Antigravity): todo cambio visual o de experiencia pasa por uno de los flujos de diseño. No hay excepción para cambios pequeños. Si alguien pide un cambio sin usar un comando, el agente carga `elephant-designer` igual y sigue el flujo que corresponda.
 
-Si una persona o un agente intenta saltarse el flujo, la respuesta es: *«Este cambio debe pasar por el flujo de diseño. Usa el comando `/elephants-design` (Claude), `$elephants-design` (Codex) o pídele a Antigravity que use la skill `elephants-design`.»*
+## Qué comando usa cada cambio
 
-## Qué ruta toma cada cambio
-
-La skill clasifica el pedido y elige la ruta más corta que es segura:
-
-| Pedido | Ruta | Qué pasa |
+| Pedido | Comando | Qué pasa |
 | --- | --- | --- |
-| Ajuste puntual que **mantiene la dirección** (un texto, un espaciado, un bug visual, un contraste) | **Ajuste** | Se revisa contra los tokens y el catálogo, se corrige, se actualiza la historia y se vuelve a validar. |
-| **Pantalla o página** para desarrollo (mapa, contrato, búsqueda…) | **Construir una página** | Parte del contrato de nuestra API, explora los datos, define la especificación y los componentes, valida y entrega. |
-| **Componente nuevo** o token nuevo | **Construir una página** (paso de componentes) | Nace de una página que lo necesita y requiere aprobación antes de entrar al catálogo. |
-| Juzgar una ronda o la guía | **Auditoría** | Revisión contra el brief, con las otras skills de diseño como segunda opinión. |
-| **Cambiar la dirección** (paleta, tipografía, lenguaje visual) | **Ronda** | Nueva ronda en `docs/design/rounds/`; si se acepta, es la siguiente versión mayor. |
-| No hay brief o cambió el negocio o la audiencia | **Descubrimiento** | Se construye el brief primero. |
+| Ajuste puntual que **mantiene la dirección** (un texto, un espaciado, un bug visual, un contraste) | `/ajuste` | Se revisa contra los tokens y el catálogo, se corrige, se actualiza la historia y se valida. |
+| **Pantalla o página** para desarrollo (mapa, contrato, búsqueda…) | `/crear-pantalla` | Parte del contrato de nuestra API, explora los datos, propone bocetos con uno recomendado, define la especificación, construye la pantalla en Storybook, valida y entrega. |
+| **Componente nuevo** | `/crear-componente` | Se piensa, se muestran variantes con una recomendada, se implementa, se revisa y queda con su commit. |
+| **Revisar** algo ya construido (página, componente, commit, rama, cambios sin confirmar) | `/revisar-implementacion` | Revisión de experiencia y de calidad técnica; devuelve hallazgos y no cambia nada. |
+| Juzgar todo el sistema, cambiar la dirección (paleta, tipografía) o actualizar el brief | `/elephant-designer` | Auditoría, ronda o descubrimiento. |
+| No sé cuál | `/elephant-designer` | Clasifica el pedido y elige el flujo. |
 
-Ninguna ruta publica, hace commit ni marca algo como aceptado sin la instrucción de una persona del equipo.
+Si un comando recibe un pedido que no es suyo, redirige al correcto. Ningún flujo publica ni marca algo como aceptado sin la instrucción de una persona del equipo; el único commit automático es el del componente al final de `/crear-componente`, después de la aprobación.
+
+El paso a paso de cada comando está en `docs/design/comandos.md` y en la página **Cómo usar la skill**.
 
 ## Dónde vive un componente
 
-Cada componente tiene su carpeta, con el componente y su historia al lado. Hay dos lugares, según quién lo usa:
+Cada componente tiene su carpeta, con el componente y su historia al lado. Hay dos lugares, según quién lo usa. **Storybook refleja el módulo:** la pantalla y los componentes que arma quedan juntos en `Módulos/<Módulo>/`, igual que en `src/modules/<módulo>/ui/`.
 
 | Tipo | Carpeta | Título en Storybook | Ejemplos |
 | --- | --- | --- | --- |
 | **UI**: puro y transversal; no conoce ninguna página ni pide datos | `src/components/ui/<Component>/` | `Componentes/UI/<Component>` | `Button`, `Alert`, `Input`, `Select`, `RiskTag`, `Counter` |
-| **De página**: nace en una página, incluidos los grandes (paneles, secciones, el mapa) | `src/modules/<módulo>/ui/<Component>/` | `Componentes/<Página>/<Component>` | `src/modules/mapa/ui/TerritoryPanel/` → `Componentes/Mapa/TerritoryPanel` |
-| **Pantalla**: la página completa, armada con los anteriores | `src/modules/<módulo>/ui/<Page>Page/` | `Pantallas/<Page>Page` | `Pantallas/MapPage` |
+| **De módulo** (organismo): lo arma una página con los componentes UI; incluye los grandes (paneles, secciones, el mapa) | `src/modules/<módulo>/ui/<Component>/` | `Módulos/<Módulo>/<Component>` | `src/modules/mapa/ui/TerritoryPanel/` → `Módulos/Mapa/TerritoryPanel` |
+| **Pantalla**: la página completa, armada con los anteriores. Es la maqueta que se aprueba y la que usa la aplicación | `src/modules/<módulo>/ui/<Page>Page/` | `Módulos/<Módulo>/<Page>Page` | `src/modules/mapa/ui/MapPage/` → `Módulos/Mapa/MapPage` |
 
 ```text
 src/components/ui/RiskTag/
@@ -50,12 +48,12 @@ Un componente de página que otra página necesita se mueve a `src/components/ui
 
 ## Cómo entra un componente a Storybook
 
-1. Nace en el flujo **Construir una página** y se aprueba.
+1. Nace con `/crear-componente` (solo, o dentro de `/crear-pantalla`) y se aprueba.
 2. Se implementa como componente React en su carpeta (ver la tabla de arriba), con **sus propios estilos** en `ComponentName.module.css` y usando solo tokens `--el-*`.
-3. Se escribe su historia **al lado** del componente: `ComponentName.stories.tsx`, con `tags: ['autodocs']`. El código va en inglés (nombre del componente, props, variables y archivos); lo que lee una persona va en español: el título (`Componentes/UI/…`, `Componentes/<Página>/…` o `Pantallas/<Página>`), el `name` de cada historia, la descripción de las props y los textos de la interfaz. Lleva una historia por estado: normal, vacío o «Sin datos», error, carga, y el caso de 320 px si aplica.
+3. Se escribe su historia **al lado** del componente: `ComponentName.stories.tsx`, con `tags: ['autodocs']`. El código va en inglés (nombre del componente, props, variables y archivos); lo que lee una persona va en español: el título (`Componentes/UI/…` o `Módulos/<Módulo>/…`), el `name` de cada historia, la descripción de las props y los textos de la interfaz. Lleva una historia por estado: normal, vacío o «Sin datos», error, carga, y el caso de 320 px si aplica.
 4. Se documenta en lenguaje claro: para qué sirve, cuándo usarlo, qué evitar y la accesibilidad.
 5. Se actualiza `components.json` y, si existía, se retira la historia de especificación de `.storybook/catalog/`.
-6. Se valida: `npm run build-storybook`, panel de accesibilidad sin fallas, tema claro y oscuro, 320 px.
+6. Se valida con `npm run design:check -- --filter <componente o módulo>`: render, accesibilidad (axe) y desplazamiento horizontal de cada historia a 320, 390, 768 y 1280 px, en claro y oscuro. Las capturas quedan en `.design-check/screenshots/`.
 
 ## Plantilla de historia
 
@@ -89,5 +87,5 @@ export const Unknown: Story = { name: 'Sin datos', args: { level: 'unknown' } };
 | Componentes UI transversales | `src/components/ui/<Component>/` |
 | Componentes y pantallas de cada página | `src/modules/<módulo>/ui/<Component>/` |
 | Tokens y catálogo (fuente de verdad) | `docs/design/guide/` |
-| Flujo de la skill | `.claude/skills/elephants-design/` (enlazada para Codex y Antigravity en `.agents/skills/`) |
+| Flujo de la skill | `.claude/skills/elephant-designer/` (enlazada para Codex y Antigravity en `.agents/skills/`) |
 | Historial de rondas | `docs/design/rounds/` |
