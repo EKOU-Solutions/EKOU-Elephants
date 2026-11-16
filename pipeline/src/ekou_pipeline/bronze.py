@@ -6,9 +6,11 @@ Estructura en disco::
                                                                       .../_SUCCESS.json
 
 - **Paralelo por partición:** cada año se extrae en su propio hilo, con paginación keyset.
-- **Reanudable e idempotente:** una partición con ``_SUCCESS.json`` se salta; una partición
-  incompleta (una ejecución que falló a mitad) o extraída con otras columnas se borra y se
-  vuelve a extraer.
+- **Reanudable e idempotente:** una partición con ``_SUCCESS.json`` se salta solo si el origen
+  sigue teniendo el mismo número de filas en ella; una partición incompleta (una ejecución que
+  falló a mitad), extraída con otras columnas o cuyo conteo cambió en el origen se borra y se
+  vuelve a extraer. Las particiones que ya no existen en el origen se borran, porque dbt lee
+  todas las carpetas de la fuente.
 - **Verificable:** cada partición registra cuántas filas esperaba según el origen y cuántas
   extrajo, para que las compuertas de calidad puedan comparar.
 - **Consistente:** si el origen se reemplaza durante el recorrido (SECOP se reconstruye a diario
@@ -161,6 +163,7 @@ def extract_dataset(
     target = dataset_dir(data_dir, corte, spec)
     partitions = plan_partitions(client, spec, corte)
     log.info("bronze.inicio", fuente=spec.key, corte=corte, particiones=len(partitions))
+    _remove_stale_partitions(target, {p.name for p in partitions}, spec)
 
     # Las particiones grandes primero: el tiempo total queda limitado por la más lenta.
     ordered = sorted(partitions, key=lambda p: p.expected_rows or 0, reverse=True)
@@ -196,10 +199,21 @@ def _extract_partition(
     marker = path / SUCCESS_MARKER
     if marker.exists():
         done = json.loads(marker.read_text(encoding="utf-8"))
-        if done.pop("esquema", None) == spec.schema_fingerprint:
+        if done.pop("esquema", None) != spec.schema_fingerprint:
+            log.info("bronze.particion_con_otro_esquema", fuente=spec.key, particion=partition.name)
+        elif done["expected_rows"] != partition.expected_rows:
+            # El origen cambió desde que se extrajo (por ejemplo, una recarga que lo dejó a
+            # medias y luego se completó): reutilizarla mezclaría dos versiones del dataset.
+            log.info(
+                "bronze.particion_con_otro_conteo",
+                fuente=spec.key,
+                particion=partition.name,
+                filas_en_cache=done["expected_rows"],
+                filas_esperadas=partition.expected_rows,
+            )
+        else:
             log.info("bronze.particion_en_cache", fuente=spec.key, particion=partition.name)
             return PartitionResult(**{**done, "skipped": True})
-        log.info("bronze.particion_con_otro_esquema", fuente=spec.key, particion=partition.name)
 
     for restart in range(MAX_REPLACEMENT_RESTARTS + 1):
         if path.exists():  # quedó a medias en una ejecución o intento anterior
@@ -239,6 +253,24 @@ def _extract_partition(
         filas_por_segundo=round(result.rows_per_second),
     )
     return result
+
+
+def _remove_stale_partitions(target: Path, planned: set[str], spec: DatasetSpec) -> None:
+    if not target.exists():
+        return
+    for path in target.glob("particion=*"):
+        name = path.name.removeprefix("particion=")
+        if name not in planned:
+            log.info("bronze.particion_obsoleta", fuente=spec.key, particion=name)
+            shutil.rmtree(path)
+
+
+def extracted_rows(data_dir: Path, corte: str, spec: DatasetSpec) -> int:
+    """Filas extraídas de una fuente en el corte, según los ``_SUCCESS.json`` de sus particiones.
+
+    Una fuente sin extraer cuenta 0 filas."""
+    markers = dataset_dir(data_dir, corte, spec).glob(f"particion=*/{SUCCESS_MARKER}")
+    return sum(int(json.loads(m.read_text(encoding="utf-8"))["rows"]) for m in markers)
 
 
 def _write_pages(
