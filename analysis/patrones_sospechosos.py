@@ -66,7 +66,9 @@ fraccion as (
     join smmlv as s on s.anio = k.anio_firma
     where k.contratista_id is not null and k.modalidad ilike '%nima cuant%' and k.valor_confiable
     group by k.nit_entidad, k.contratista_id, k.fecha_firma
-    having count(*) >= 2 and sum(k.valor_actual) > 100 * any_value(s.smmlv)::bigint
+    -- Valor adjudicado (inicial), no el actual: el fraccionamiento ocurre al adjudicar y
+    -- una adición posterior no debe convertir dos mínimas cuantías legítimas en alerta.
+    having count(*) >= 2 and sum(k.valor_inicial) > 100 * any_value(s.smmlv)::bigint
 ),
 entidad_anio as (
     select nit_entidad, anio_firma, count(*) as n, sum(valor_actual) as v
@@ -191,8 +193,9 @@ def main() -> int:
         con,
         """
         select fuente,
-               count(*) filter (where razon_valor > 1.40 and razon_valor <= 1.45) as "1,40-1,45",
-               count(*) filter (where razon_valor > 1.45 and razon_valor <= 1.50) as "1,45-1,50",
+               count(*) filter (where razon_valor >= 1.40 and razon_valor < 1.45) as "1,40-1,45",
+               -- Mismo rango que P4 (1,45 <= razón <= 1,5), para que las cifras coincidan.
+               count(*) filter (where razon_valor >= 1.45 and razon_valor <= 1.50) as "1,45-1,50",
                count(*) filter (where razon_valor > 1.50 and razon_valor <= 1.55) as "1,50-1,55"
         from obras where valor_confiable group by fuente order by fuente""",
     )
@@ -257,7 +260,9 @@ def main() -> int:
 
     titulo("Nivel de alerta por obra")
     graves = " or ".join(GRAVES)
-    medias = " + ".join(f"{m}::int" for m in MEDIAS)
+    # Una bandera NULL (dato no publicado) cuenta como no activada; si no, la suma entera
+    # sería NULL y la obra caería en sin_alerta aunque otra bandera media sea verdadera.
+    medias = " + ".join(f"coalesce({m}, false)::int" for m in MEDIAS)
     con.execute(f"""
         create temp table alertas as
         select *, case when {graves} then 'alta'
@@ -276,7 +281,9 @@ def main() -> int:
     titulo(
         "Nivel municipal: alertas observadas frente a esperadas (estandarización indirecta)"
     )
-    alguna = " or ".join(PATRONES[:7])
+    # Mismo criterio en esperadas y observadas: una obra sin datos para P1/P2/P5 y sin
+    # otra bandera cuenta como "sin alerta" en los dos lados, no se excluye de uno solo.
+    alguna = "coalesce(" + " or ".join(PATRONES[:7]) + ", false)"
     con.execute(f"""
         create temp table esperado as
         select fuente, competitiva, anio_firma, avg(({alguna})::int) as tasa

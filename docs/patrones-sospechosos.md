@@ -8,9 +8,9 @@ Qué patrones marcan una obra como sospechosa, cómo se calculan, con qué umbra
 
 - **7 patrones de alerta y 2 de seguimiento**, cada uno con base legal o en marcos internacionales (Open Contracting Partnership, índice de riesgo de Fazekas) y medido en 240.752 obras por $280 billones.
 - **El patrón más costoso es el oferente único.** Sin competencia, la obra se adjudica al precio del presupuesto oficial: un descuento mediano de 0,05 % frente a 3,7 % con competencia en licitación de obra. Se estiman **$282 mil millones** de sobrecosto en 9.825 obras de SECOP II.
-- **Las entidades usan el tope legal de adiciones como meta.** Hay 4 veces más obras con adiciones entre el 45 % y el 50 % que entre el 40 % y el 45 %.
+- **Las entidades usan el tope legal de adiciones como meta.** Hay casi 4 veces más obras con adiciones entre el 45 % y el 50 % que entre el 40 % y el 45 %.
 - **Los patrones se agrupan como predice la teoría:** oferente único y proceso exprés aparecen juntos 4,1 veces más de lo esperado por azar, y sobrecosto y prórroga excesiva, 2,7 veces.
-- **El mapa compara cada municipio contra lo esperado**, no con una tasa cruda. Sin esa corrección, el mapa pintaría qué plataforma usa cada municipio (SECOP I publica menos datos) y no su riesgo: la correlación con la plataforma pasa de −0,70 a −0,01.
+- **El mapa compara cada municipio contra lo esperado**, no con una tasa cruda. Sin esa corrección, el mapa pintaría qué plataforma usa cada municipio (SECOP I publica menos datos) y no su riesgo: la correlación con la plataforma pasa de −0,68 a −0,08.
 - **Una alerta no es una acusación.** Indica una obra que merece la mirada de un ciudadano o de un órgano de control.
 
 ## 1. Criterios para elegir un patrón
@@ -47,8 +47,8 @@ Se excluyen los contratos de prestación de servicios y los firmados por la caus
 | P2 | **Proceso exprés** | "El proceso fue tan rápido que casi nadie alcanzó a presentarse." | Días de publicación a adjudicación por debajo del percentil 10 de su modalidad y año | Percentil 10 calculado con los datos: es relativo, porque cada modalidad tiene plazos legales distintos | Media |
 | P3 | **Adición por encima del tope legal** | "La obra terminó costando más del 150 % de lo pactado, y la ley no lo permite." | `valor_actual / valor_inicial > 1,5` | Ley 80 de 1993, art. 40: los contratos no pueden adicionarse en más del 50 % de su valor inicial | Alta |
 | P4 | **Adición hasta el tope** | "Le subieron el precio casi hasta el máximo que permite la ley." | `1,45 ≤ valor_actual / valor_inicial ≤ 1,5` | El amontonamiento justo debajo del 50 % (sección 5) muestra que el tope se usa como meta | Media |
-| P5 | **Prórroga excesiva** | "La obra se demoró más del triple de lo prometido." | `fecha_fin − fecha_fin_original > 2 × plazo original` | Percentil 90 de las prórrogas en SECOP II: las prórrogas cortas son comunes, las que triplican el plazo no | Media |
-| P6 | **Fraccionamiento** | "Partieron la obra en contratos pequeños, el mismo día y al mismo contratista, para evitar un concurso más exigente." | ≥ 2 contratos de mínima cuantía de la misma entidad al mismo contratista el mismo día, que juntos superan 100 SMMLV | La mínima cuantía no puede superar el 10 % de la menor cuantía (Ley 1150 de 2007, art. 2), que nunca pasa de 100 SMMLV. Partir un contrato para eludir la modalidad viola la selección objetiva | Alta |
+| P5 | **Prórroga excesiva** | "La obra se demoró más del triple de lo prometido." | `fecha_fin − fecha_fin_original > 2 × plazo original` | Umbral fijo de 2×, elegido con el corte 2026-11 por ser cercano al percentil 90 de las prórrogas en SECOP II: las prórrogas cortas son comunes, las que triplican el plazo no. No se recalcula en cada corte | Media |
+| P6 | **Fraccionamiento** | "Partieron la obra en contratos pequeños, el mismo día y al mismo contratista, para evitar un concurso más exigente." | ≥ 2 contratos de mínima cuantía de la misma entidad al mismo contratista el mismo día, cuyo valor inicial (adjudicado) suma más de 100 SMMLV | La mínima cuantía no puede superar el 10 % de la menor cuantía (Ley 1150 de 2007, art. 2), que nunca pasa de 100 SMMLV. Partir un contrato para eludir la modalidad viola la selección objetiva | Alta |
 | P7 | **Contratista dominante** | "La misma empresa se queda con la mayor parte de las obras de la entidad, año tras año." | Un contratista recibe ≥ 50 % del valor de las obras de una entidad (con ≥ 5 obras) en 3 años o más | Un año dominante es común en municipios pequeños (38 % de los casos); 3 años o más es raro (36 pares entidad–contratista en todo el país) | Alta |
 
 ### Patrones de seguimiento
@@ -69,7 +69,7 @@ No son sospechosos por sí solos: se muestran como contexto y no suben el nivel 
 | P3 Adición sobre el tope | 502 (0,3 %) | 1.263 (1,7 %) | $16,5 billones |
 | P4 Adición hasta el tope | 3.668 (2,2 %) | 4.580 (6,1 %) | $13,0 billones |
 | P5 Prórroga excesiva | — | 7.436 (10,0 %) | $19,4 billones |
-| P6 Fraccionamiento | 611 (0,4 %) | 328 (0,4 %) | $48 mil millones |
+| P6 Fraccionamiento | 608 (0,4 %) | 311 (0,4 %) | $47 mil millones |
 | P7 Contratista dominante | 360 (0,2 %) | 680 (0,9 %) | $1,1 billones |
 | S1 Urgencia manifiesta | 2.757 (1,7 %) | 1.227 (1,6 %) | $4,1 billones |
 | S2 Suspendida | — | 1.206 (1,6 %) | $5,6 billones |
@@ -139,8 +139,10 @@ alerta si: prórroga > 2 × plazo original
 
 ```
 agrupar por: misma entidad + mismo contratista + mismo día de firma (solo mínima cuantía)
-alerta si: hay 2 o más contratos  Y  su suma > 100 SMMLV del año
+alerta si: hay 2 o más contratos  Y  la suma de su valor inicial > 100 SMMLV del año
 ```
+
+Se usa el valor inicial (adjudicado) y no el actual, porque el fraccionamiento ocurre al adjudicar: una adición posterior no debe convertir en alerta dos contratos que al firmarse no superaban el tope.
 
 *Ejemplo:* en 2025 el SMMLV es $1.423.500, así que 100 SMMLV son $142,35 millones. Un municipio firma el mismo día tres mínimas cuantías de $60 millones con la misma empresa: suman $180 millones, más de lo que permite cualquier mínima cuantía → alerta **alta** en los tres contratos.
 
@@ -168,6 +170,8 @@ Baja        → activó 1 patrón medio
 Sin alerta  → ninguno
 ```
 
+Un patrón que no se puede calcular por falta de datos (por ejemplo, P1 sin conteo de oferentes) cuenta como no activado. Así una obra con P4 y sin dato de oferentes queda en **baja**, no en sin alerta.
+
 *Ejemplo:* oferente único (P1) y proceso exprés (P2) → **media**. Si además tuvo una adición del 60 % (P3) → **alta**.
 
 ### Nivel de un municipio: razón observado / esperado
@@ -179,6 +183,8 @@ No se usa "% de obras con alerta", porque SECOP I no publica oferentes ni prórr
 ```
 tasa esperada = obras con alguna alerta / total de obras de esa combinación (a nivel nacional)
 ```
+
+Las obras sin datos para algún patrón cuentan en el denominador y, si no activaron otro, como "sin alerta". Se tratan igual en la tasa esperada y en las observadas del municipio.
 
 **Paso 2, sumas del municipio:**
 
@@ -256,14 +262,14 @@ En cambio, una vez controlados la modalidad, el año y el tamaño, el oferente �
 
 ### El tope legal se usa como meta
 
-Razón entre valor final y valor inicial de las obras:
+Razón entre valor final y valor inicial de las obras (la columna central usa el mismo rango que P4, 1,45 ≤ razón ≤ 1,5):
 
 | Fuente | 1,40 – 1,45 | **1,45 – 1,50** | 1,50 – 1,55 |
 |---|---|---|---|
-| SECOP I | 945 | **3.664** | 123 |
-| SECOP II | 1.126 | **4.575** | 404 |
+| SECOP I | 971 | **3.668** | 123 |
+| SECOP II | 1.151 | **4.580** | 404 |
 
-Sin el tope, la distribución bajaría de forma suave. El salto de 4 veces justo antes del 50 % y la caída después muestran que las adiciones se ajustan al máximo legal.
+Sin el tope, la distribución bajaría de forma suave. El salto de casi 4 veces justo antes del 50 % y la caída después muestran que las adiciones se ajustan al máximo legal.
 
 ### Los patrones se agrupan como predice la teoría
 
@@ -274,8 +280,8 @@ Si los patrones miden riesgo, deben aparecer juntos más de lo que predice el az
 | P1 Oferente único + P2 Proceso exprés | 1.695 | **4,13** | Los procesos rápidos espantan oferentes |
 | P3 Adición sobre tope + P5 Prórroga excesiva | 393 | **2,65** | La obra que se desborda en plata también se desborda en tiempo |
 | P4 Adición al tope + P7 Contratista dominante | 106 | **2,39** | El contratista "de la casa" recibe adiciones hasta el máximo |
-| P1 Oferente único + P6 Fraccionamiento | 87 | 1,93 | |
-| P4 Adición al tope + P6 Fraccionamiento | 39 | 1,83 | |
+| P1 Oferente único + P6 Fraccionamiento | 87 | 2,04 | |
+| P4 Adición al tope + P6 Fraccionamiento | 37 | 1,83 | |
 | P1 Oferente único + P3 Adición sobre tope | 124 | 0,67 | Confirma que el oferente único no anticipa problemas de ejecución |
 
 Salen dos familias: **falta de competencia** (P1, P2, P6) y **ejecución problemática** (P3, P4, P5), con P7 como puente.
@@ -287,15 +293,15 @@ Salen dos familias: **falta de competencia** (P1, P2, P6) y **ejecución problem
 | Nivel | Regla | SECOP I | SECOP II |
 |---|---|---|---|
 | **Alta** | Al menos un patrón grave (P3, P6 o P7) | 0,9 % | 3,0 % |
-| **Media** | Dos o más patrones medios (P1, P2, P4, P5) | — | 4,3 % |
-| **Baja** | Un patrón medio | 2,2 % | 18,7 % |
-| Sin alerta | Ninguno | 96,9 % | 74,0 % |
+| **Media** | Dos o más patrones medios (P1, P2, P4, P5) | — | 4,8 % |
+| **Baja** | Un patrón medio | 2,2 % | 22,3 % |
+| Sin alerta | Ninguno | 96,9 % | 69,9 % |
 
 La obra siempre muestra **qué patrones activó y por qué**, nunca solo un color.
 
 ### Municipio y departamento
 
-Una tasa cruda ("% de obras con alerta") sería injusta: SECOP I publica menos datos, así que un municipio que contrata por SECOP I se vería limpio por falta de información. **La correlación entre la proporción de obras en SECOP I y la tasa cruda es −0,70.**
+Una tasa cruda ("% de obras con alerta") sería injusta: SECOP I publica menos datos, así que un municipio que contrata por SECOP I se vería limpio por falta de información. **La correlación entre la proporción de obras en SECOP I y la tasa cruda es −0,68.**
 
 Por eso el mapa usa una **razón estandarizada**, el mismo método que se usa en salud pública para comparar mortalidad entre regiones:
 
@@ -304,19 +310,19 @@ alertas esperadas = Σ tasa nacional de alerta para la fuente, tipo de modalidad
 razón             = (alertas observadas + 5) / (alertas esperadas + 5)
 ```
 
-- **Estandarización:** cada obra se compara con obras de su misma fuente, tipo de modalidad (competitiva o directa) y año. La correlación con la plataforma baja a **−0,01**.
+- **Estandarización:** cada obra se compara con obras de su misma fuente, tipo de modalidad (competitiva o directa) y año. La correlación con la plataforma baja a **−0,08**.
 - **Contracción bayesiana (+5):** suma 5 alertas "virtuales" en la razón esperada (1,0), para que un municipio con 3 obras no aparezca en rojo por una sola alerta. Ningún municipio con menos de 10 obras llega a 2×.
 - **Departamento:** misma fórmula, sumando las alertas observadas y esperadas de sus municipios.
 - Solo cuentan las obras con ubicación de confianza media o mejor (ver [resultados de la ingesta](resultados-poc.md)).
 
-**Escala del mapa** (1.099 municipios con obras):
+**Escala del mapa** (1.110 municipios con obras):
 
 | Razón | Se lee como | Municipios |
 |---|---|---|
-| Menos de 0,8× | Menos alertas de lo esperado | 418 |
-| 0,8× a 1,25× | Lo esperado | 506 |
-| 1,25× a 2× | Más alertas de lo esperado | 159 |
-| 2× o más | Más del doble de lo esperado | 16 |
+| Menos de 0,8× | Menos alertas de lo esperado | 338 |
+| 0,8× a 1,25× | Lo esperado | 521 |
+| 1,25× a 2× | Más alertas de lo esperado | 225 |
+| 2× o más | Más del doble de lo esperado | 26 |
 
 La escala usa un solo color que se intensifica, no verde y rojo: "menos alertas" no significa "limpio", solo que los datos publicados no muestran estos patrones.
 
@@ -329,7 +335,7 @@ La escala usa un solo color que se intensifica, no verde y rojo: "menos alertas"
 | P1, P2 | SECOP II – Contratos (`jbjy-vk9h`) + Procesos (`p6dx-8zbt`) | `modalidad`, `proveedores_unicos_con_respuesta`, `precio_base`, `valor_adjudicado`, `fecha_publicacion`, `fecha_adjudicacion` |
 | P3, P4 | SECOP II – Contratos + Procesos · SECOP I (`f789-7hwg`) | `valor_actual`, `valor_inicial` |
 | P5, S2 | SECOP II – Contratos | `fecha_inicio`, `fecha_fin`, duración del proceso, `estado_contrato` |
-| P6, P7 | SECOP I y II | `nit_entidad`, `contratista_id` (seudónimo), `fecha_firma`, `valor_actual`; tabla `smmlv` |
+| P6, P7 | SECOP I y II | `nit_entidad`, `contratista_id` (seudónimo), `fecha_firma`, `valor_inicial` (P6), `valor_actual` (P7); tabla `smmlv` |
 | S1 | SECOP I y II | `justificacion_modalidad` |
 | Mapa | SECOP II – Ubicaciones (`gra4-pcp2`) + DIVIPOLA (`gdxc-w37w`) | `cod_mpio_ejecucion`, `confianza_ubicacion` |
 
@@ -350,7 +356,7 @@ La escala usa un solo color que se intensifica, no verde y rojo: "menos alertas"
 - **La calidad depende de lo que publica cada entidad.** Una entidad que no registra sus adiciones en SECOP nunca activará P3 ni P4.
 - **P2 mide de publicación a adjudicación**, que incluye la evaluación de ofertas. Con un solo oferente la evaluación es más corta, así que parte de la asociación P1–P2 puede ir en sentido contrario.
 - **P3 depende del valor inicial**, que en SECOP II sale del proceso; un error de digitación en ese campo puede activar o esconder la alerta.
-- **Los umbrales basados en percentiles (P2, P5)** se recalculan en cada corte; la tasa de esos patrones es estable por construcción y no sirve para medir tendencias.
+- **El umbral de P2 es un percentil** que se recalcula en cada corte; su tasa es estable por construcción y no sirve para medir tendencias. P5, en cambio, usa un umbral fijo (2×), así que su tasa sí puede compararse entre cortes.
 - **El oferente único en obras de menor cuantía sube del 10 % (2018) al 47 % (2025).** Una explicación probable es que los municipios pequeños, con menos competencia, entraron a SECOP II entre 2020 y 2022. No está demostrado; la razón esperada por año evita que esa tendencia se confunda con riesgo en el mapa.
 
 ## 9. Cómo reproducirlo
