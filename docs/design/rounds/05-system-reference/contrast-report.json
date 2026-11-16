@@ -1,0 +1,326 @@
+{
+  "light": [
+    {
+      "usage": "Texto principal sobre superficie",
+      "foreground": "#192C3C",
+      "background": "#FFFFFF",
+      "ratio": 14.32,
+      "minimum": 4.5,
+      "passes": true
+    },
+    {
+      "usage": "Texto secundario sobre superficie",
+      "foreground": "#52626D",
+      "background": "#FFFFFF",
+      "ratio": 6.31,
+      "minimum": 4.5,
+      "passes": true
+    },
+    {
+      "usage": "Texto secundario sobre fondo secundario",
+      "foreground": "#52626D",
+      "background": "#F4F6F8",
+      "ratio": 5.83,
+      "minimum": 4.5,
+      "passes": true
+    },
+    {
+      "usage": "Enlace sobre superficie",
+      "foreground": "#245B78",
+      "background": "#FFFFFF",
+      "ratio": 7.39,
+      "minimum": 4.5,
+      "passes": true
+    },
+    {
+      "usage": "Botón principal",
+      "foreground": "#FFFFFF",
+      "background": "#245B78",
+      "ratio": 7.39,
+      "minimum": 4.5,
+      "passes": true
+    },
+    {
+      "usage": "Botón principal (hover)",
+      "foreground": "#FFFFFF",
+      "background": "#19415A",
+      "ratio": 10.8,
+      "minimum": 4.5,
+      "passes": true
+    },
+    {
+      "usage": "Aviso informativo",
+      "foreground": "#245B78",
+      "background": "#EAF3F8",
+      "ratio": 6.57,
+      "minimum": 4.5,
+      "passes": true
+    },
+    {
+      "usage": "Aviso de advertencia",
+      "foreground": "#7A5000",
+      "background": "#FFF6E3",
+      "ratio": 6.57,
+      "minimum": 4.5,
+      "passes": true
+    },
+    {
+      "usage": "Aviso de error",
+      "foreground": "#A33A31",
+      "background": "#FDF1EF",
+      "ratio": 5.93,
+      "minimum": 4.5,
+      "passes": true
+    },
+    {
+      "usage": "Confirmación",
+      "foreground": "#23654A",
+      "background": "#EDF7F1",
+      "ratio": 6.32,
+      "minimum": 4.5,
+      "passes": true
+    },
+    {
+      "usage": "Texto deshabilitado",
+      "foreground": "#687781",
+      "background": "#E7ECEF",
+      "ratio": 3.88,
+      "minimum": 3,
+      "passes": true
+    },
+    {
+      "usage": "Borde de control",
+      "foreground": "#71818F",
+      "background": "#FFFFFF",
+      "ratio": 4.01,
+      "minimum": 3,
+      "passes": true
+    },
+    {
+      "usage": "Foco",
+      "foreground": "#245B78",
+      "background": "#FFFFFF",
+      "ratio": 7.39,
+      "minimum": 3,
+      "passes": true
+    },
+    {
+      "usage": "Trama sin datos",
+      "foreground": "#8B9499",
+      "background": "#FFFFFF",
+      "ratio": 3.09,
+      "minimum": 3,
+      "passes": true
+    },
+    {
+      "usage": "Etiqueta riesgo bajo",
+      "foreground": "#192C3C",
+      "background": "#7FB4D4",
+      "ratio": 6.4,
+      "minimum": 4.5,
+      "passes": true
+    },
+    {
+      "usage": "Etiqueta riesgo intermedio",
+      "foreground": "#192C3C",
+      "background": "#CF8721",
+      "ratio": 4.87,
+      "minimum": 4.5,
+      "passes": true
+    },
+    {
+      "usage": "Etiqueta riesgo alto",
+      "foreground": "#FFFFFF",
+      "background": "#A93F39",
+      "ratio": 6.07,
+      "minimum": 4.5,
+      "passes": true
+    },
+    {
+      "usage": "Relleno risk-low (relieve con borde, etiqueta y tabla)",
+      "foreground": "#7FB4D4",
+      "background": "#FFFFFF",
+      "ratio": 2.24,
+      "minimum": null,
+      "passes": null
+    },
+    {
+      "usage": "Relleno risk-medium (relieve con borde, etiqueta y tabla)",
+      "foreground": "#CF8721",
+      "background": "#FFFFFF",
+      "ratio": 2.94,
+      "minimum": null,
+      "passes": null
+    },
+    {
+      "usage": "Relleno risk-high (relieve con borde, etiqueta y tabla)",
+      "foreground": "#A93F39",
+      "background": "#FFFFFF",
+      "ratio": 6.07,
+      "minimum": null,
+      "passes": null
+    }
+  ],
+  "dark": [
+    {
+      "usage": "Texto principal sobre superficie",
+      "foreground": "#E6EDF2",
+      "background": "#121A21",
+      "ratio": 14.86,
+      "minimum": 4.5,
+      "passes": true
+    },
+    {
+      "usage": "Texto secundario sobre superficie",
+      "foreground": "#A6B4BF",
+      "background": "#121A21",
+      "ratio": 8.28,
+      "minimum": 4.5,
+      "passes": true
+    },
+    {
+      "usage": "Texto secundario sobre fondo secundario",
+      "foreground": "#A6B4BF",
+      "background": "#1A242D",
+      "ratio": 7.42,
+      "minimum": 4.5,
+      "passes": true
+    },
+    {
+      "usage": "Enlace sobre superficie",
+      "foreground": "#8CC4E3",
+      "background": "#121A21",
+      "ratio": 9.3,
+      "minimum": 4.5,
+      "passes": true
+    },
+    {
+      "usage": "Botón principal",
+      "foreground": "#0B1A24",
+      "background": "#8CC4E3",
+      "ratio": 9.36,
+      "minimum": 4.5,
+      "passes": true
+    },
+    {
+      "usage": "Botón principal (hover)",
+      "foreground": "#0B1A24",
+      "background": "#B3D9EE",
+      "ratio": 11.85,
+      "minimum": 4.5,
+      "passes": true
+    },
+    {
+      "usage": "Aviso informativo",
+      "foreground": "#8CC4E3",
+      "background": "#173141",
+      "ratio": 7.16,
+      "minimum": 4.5,
+      "passes": true
+    },
+    {
+      "usage": "Aviso de advertencia",
+      "foreground": "#F2C46D",
+      "background": "#2B2312",
+      "ratio": 9.54,
+      "minimum": 4.5,
+      "passes": true
+    },
+    {
+      "usage": "Aviso de error",
+      "foreground": "#F49A90",
+      "background": "#2E1A19",
+      "ratio": 7.72,
+      "minimum": 4.5,
+      "passes": true
+    },
+    {
+      "usage": "Confirmación",
+      "foreground": "#7FCFA2",
+      "background": "#13271D",
+      "ratio": 8.5,
+      "minimum": 4.5,
+      "passes": true
+    },
+    {
+      "usage": "Texto deshabilitado",
+      "foreground": "#8593A0",
+      "background": "#24303A",
+      "ratio": 4.28,
+      "minimum": 3,
+      "passes": true
+    },
+    {
+      "usage": "Borde de control",
+      "foreground": "#7D8D99",
+      "background": "#121A21",
+      "ratio": 5.14,
+      "minimum": 3,
+      "passes": true
+    },
+    {
+      "usage": "Foco",
+      "foreground": "#8CC4E3",
+      "background": "#121A21",
+      "ratio": 9.3,
+      "minimum": 3,
+      "passes": true
+    },
+    {
+      "usage": "Trama sin datos",
+      "foreground": "#6B7680",
+      "background": "#121A21",
+      "ratio": 3.79,
+      "minimum": 3,
+      "passes": true
+    },
+    {
+      "usage": "Etiqueta riesgo bajo",
+      "foreground": "#FFFFFF",
+      "background": "#34708F",
+      "ratio": 5.44,
+      "minimum": 4.5,
+      "passes": true
+    },
+    {
+      "usage": "Etiqueta riesgo intermedio",
+      "foreground": "#121A21",
+      "background": "#C08A2E",
+      "ratio": 5.79,
+      "minimum": 4.5,
+      "passes": true
+    },
+    {
+      "usage": "Etiqueta riesgo alto",
+      "foreground": "#121A21",
+      "background": "#F4A397",
+      "ratio": 8.81,
+      "minimum": 4.5,
+      "passes": true
+    },
+    {
+      "usage": "Relleno risk-low (relieve con borde, etiqueta y tabla)",
+      "foreground": "#34708F",
+      "background": "#121A21",
+      "ratio": 3.23,
+      "minimum": null,
+      "passes": null
+    },
+    {
+      "usage": "Relleno risk-medium (relieve con borde, etiqueta y tabla)",
+      "foreground": "#C08A2E",
+      "background": "#121A21",
+      "ratio": 5.79,
+      "minimum": null,
+      "passes": null
+    },
+    {
+      "usage": "Relleno risk-high (relieve con borde, etiqueta y tabla)",
+      "foreground": "#F4A397",
+      "background": "#121A21",
+      "ratio": 8.81,
+      "minimum": null,
+      "passes": null
+    }
+  ]
+}

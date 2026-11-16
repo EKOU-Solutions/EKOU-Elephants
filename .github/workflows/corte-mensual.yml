@@ -1,0 +1,344 @@
+name: corte-mensual
+
+# Extrae, transforma y publica el corte mensual de contratación pública (ADR 0002, decisión 4).
+# extract → transform (pruebas de dbt) → compuertas de calidad → export → Release → Worker de datos.
+# Cada ejecución queda pública en la pestaña Actions; cada corte aprobado, en un Release y en el
+# Worker `ekou-elephants-datos`, que la API lee por el binding DATOS (docs/ci-cd.md).
+
+on:
+  schedule:
+    # Día 1 de cada mes, 11:17 UTC (06:17 en Colombia): después del reemplazo diario de
+    # SECOP II Contratos en origen (~07:43 UTC), para que la extracción termine antes del siguiente.
+    - cron: "17 11 1 * *"
+  workflow_dispatch:
+    inputs:
+      corte:
+        description: "Corte AAAA-MM (vacío: el mes actual)"
+        required: false
+        default: ""
+      publicar:
+        description: "Publicar el corte: Release y Worker de datos (solo desde main)"
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+# Nunca dos cortes a la vez: compiten por la API y por la caché de bronze.
+concurrency:
+  group: corte-mensual
+  cancel-in-progress: false
+
+defaults:
+  run:
+    working-directory: pipeline
+
+jobs:
+  corte:
+    name: corte ${{ inputs.corte || 'del mes' }}
+    runs-on: ubuntu-latest
+    # El límite de GitHub es 6 h; se deja margen para guardar la caché y avisar si falla.
+    timeout-minutes: 340
+    permissions:
+      contents: write # crear el Release del corte
+    outputs:
+      corte: ${{ steps.corte.outputs.corte }}
+      cortes: ${{ steps.desplegar.outputs.cortes }}
+      vigente: ${{ steps.desplegar.outputs.vigente }}
+    env:
+      EKOU_PSEUDONYM_KEY: ${{ secrets.EKOU_PSEUDONYM_KEY }}
+      # Runner estándar: 4 CPU, 16 GB de RAM. Lo que no cabe en memoria va a disco temporal.
+      EKOU_DUCKDB_MEMORY: 10GB
+      EKOU_DUCKDB_TEMP: 20GiB
+      FUENTES: secop_contratos secop_procesos secop_ubicaciones secop_i divipola
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: corte a procesar
+        id: corte
+        env:
+          CORTE_INPUT: ${{ inputs.corte }}
+        run: |
+          corte="${CORTE_INPUT:-$(date -u +%Y-%m)}"
+          if ! [[ "$corte" =~ ^[0-9]{4}-(0[1-9]|1[0-2])$ ]]; then
+            echo "::error::el corte debe tener el formato AAAA-MM: '$corte'"
+            exit 1
+          fi
+          echo "corte=$corte" >> "$GITHUB_OUTPUT"
+          echo "Corte: $corte" >> "$GITHUB_STEP_SUMMARY"
+        working-directory: .
+
+      - name: App Token de datos.gov.co (opcional)
+        env:
+          TOKEN: ${{ secrets.EKOU_SOCRATA_APP_TOKEN }}
+        run: |
+          # Un token vacío se enviaría como cabecera vacía: solo se exporta si existe.
+          if [[ -n "$TOKEN" ]]; then
+            echo "EKOU_SOCRATA_APP_TOKEN=$TOKEN" >> "$GITHUB_ENV"
+          else
+            echo "::warning::sin EKOU_SOCRATA_APP_TOKEN: la API aplica límites más estrictos"
+          fi
+        working-directory: .
+
+      - name: liberar disco
+        # El corte necesita ~35 GB (bronze, base DuckDB y temporales); el runner trae ~14 GB libres.
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /usr/local/.ghcup \
+            /opt/hostedtoolcache/CodeQL /usr/local/share/boost /usr/share/swift
+          df -h /
+        working-directory: .
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          enable-cache: true
+          cache-dependency-glob: pipeline/uv.lock
+
+      - run: uv sync --locked --no-dev
+
+      # El bronze trae cédulas en claro tal como llegan de SECOP. En un repositorio público, un PR
+      # desde un fork puede leer las cachés de main, así que se guarda cifrado con un secreto, que
+      # esos PR no reciben (docs/datos-personales.md).
+      - name: restaurar bronze del corte
+        # Si un intento anterior del mismo corte se cortó, solo se extraen las particiones que faltan.
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: pipeline/.cache/bronze.tar.enc
+          key: bronze-${{ steps.corte.outputs.corte }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: bronze-${{ steps.corte.outputs.corte }}-
+
+      - name: descifrar bronze del corte
+        env:
+          CORTE: ${{ steps.corte.outputs.corte }}
+        run: |
+          mkdir -p data/bronze
+          if [[ ! -f .cache/bronze.tar.enc ]]; then
+            echo "Sin caché: se extrae el corte completo."
+            exit 0
+          fi
+          if ! openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 -pass env:EKOU_PSEUDONYM_KEY               -in .cache/bronze.tar.enc | tar -xf - -C data/bronze; then
+            echo "::warning::no se pudo descifrar la caché del bronze: se extrae el corte completo"
+            rm -rf "data/bronze/corte=$CORTE"
+          fi
+          rm -f .cache/bronze.tar.enc
+
+      - name: extraer
+        id: extraer
+        # Medido: ~2 h sin App Token. El límite deja tiempo para guardar lo extraído si se agota.
+        timeout-minutes: 270
+        run: |
+          mkdir -p data
+          uv run ekou-pipeline extract $FUENTES --corte "${{ steps.corte.outputs.corte }}" \
+            > data/reporte-extraccion.json
+
+      - name: cifrar bronze del corte
+        id: cifrar
+        if: always() && steps.extraer.outcome != 'skipped'
+        env:
+          CORTE: ${{ steps.corte.outputs.corte }}
+        run: |
+          if [[ ! -d "data/bronze/corte=$CORTE" ]]; then
+            echo "Nada que guardar."
+            exit 0
+          fi
+          mkdir -p .cache
+          tar -cf - -C data/bronze "corte=$CORTE"             | openssl enc -aes-256-cbc -pbkdf2 -iter 200000 -salt -pass env:EKOU_PSEUDONYM_KEY               -out .cache/bronze.tar.enc
+          echo "listo=true" >> "$GITHUB_OUTPUT"
+
+      - name: guardar bronze del corte
+        if: always() && steps.cifrar.outputs.listo == 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: pipeline/.cache/bronze.tar.enc
+          key: bronze-${{ steps.corte.outputs.corte }}-${{ github.run_id }}-${{ github.run_attempt }}
+
+      - name: transformar y probar
+        # Si una prueba de datos falla, termina con código 1 y el corte no se publica.
+        run: uv run ekou-pipeline transform --corte "${{ steps.corte.outputs.corte }}"
+
+      - name: calidad del corte anterior
+        id: anterior
+        env:
+          CORTE: ${{ steps.corte.outputs.corte }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          # El Release más reciente de un corte anterior a este; si no hay, no se compara.
+          tag=$(gh release list --limit 100 --json tagName --jq '.[].tagName' \
+            | grep -E '^corte-[0-9]{4}-[0-9]{2}$' | sort -r \
+            | awk -v actual="corte-$CORTE" '$0 < actual' | head -n 1 || true)
+          if [[ -z "$tag" ]]; then
+            echo "Sin corte anterior publicado: solo se aplican los umbrales absolutos."
+            exit 0
+          fi
+          gh release download "$tag" --pattern calidad_corte.csv --output data/calidad_corte_anterior.csv
+          echo "ruta=data/calidad_corte_anterior.csv" >> "$GITHUB_OUTPUT"
+          echo "Se compara contra $tag."
+
+      - name: compuertas de calidad
+        # Si la cobertura cae bajo el umbral o frente al corte anterior, el corte no se publica.
+        env:
+          ANTERIOR: ${{ steps.anterior.outputs.ruta }}
+        run: |
+          uv run ekou-pipeline compuertas --corte "${{ steps.corte.outputs.corte }}" \
+            ${ANTERIOR:+--anterior "$ANTERIOR"} | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: exportar
+        run: |
+          uv run ekou-pipeline export --corte "${{ steps.corte.outputs.corte }}"
+          cp data/reporte-extraccion.json "data/publicacion/${{ steps.corte.outputs.corte }}/"
+          ls -lh "data/publicacion/${{ steps.corte.outputs.corte }}"
+          cat "data/publicacion/${{ steps.corte.outputs.corte }}/resumen.md" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: publicar Release
+        if: github.ref == 'refs/heads/main' && (github.event_name == 'schedule' || inputs.publicar)
+        env:
+          CORTE: ${{ steps.corte.outputs.corte }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          dir="data/publicacion/$CORTE"
+          tag="corte-$CORTE"
+          notas="$dir/resumen.md"
+          printf '\nEjecución: %s/%s/actions/runs/%s\n' \
+            "$GITHUB_SERVER_URL" "$GITHUB_REPOSITORY" "$GITHUB_RUN_ID" >> "$notas"
+          if gh release view "$tag" > /dev/null 2>&1; then
+            # Reproceso del mismo mes: el corte es idempotente, se reemplazan sus archivos.
+            gh release upload "$tag" "$dir"/* --clobber
+            gh release edit "$tag" --notes-file "$notas"
+          else
+            gh release create "$tag" "$dir"/* --title "Corte $CORTE" \
+              --notes-file "$notas" --target "$GITHUB_SHA"
+          fi
+
+      - name: cortes del Worker de datos
+        # Cada despliegue reemplaza todos los archivos del Worker. Van el corte vigente y el anterior,
+        # para que una petición que leyó el latest.json previo encuentre todavía sus archivos. El
+        # histórico completo queda en los Releases.
+        id: desplegar
+        if: github.ref == 'refs/heads/main' && (github.event_name == 'schedule' || inputs.publicar)
+        env:
+          CORTE: ${{ steps.corte.outputs.corte }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          cortes=$(gh release list --limit 200 --json tagName --jq '.[].tagName' \
+            | sed -nE 's/^corte-([0-9]{4}-(0[1-9]|1[0-2]))$/\1/p' | sort -r | head -n 2)
+          if ! grep -qx "$CORTE" <<< "$cortes"; then
+            # Reprocesar un mes viejo no despliega: borraría el vigente y la app no lo muestra.
+            echo "El corte $CORTE es anterior a los publicados ($(echo $cortes)): solo se actualizó su Release." \
+              | tee -a "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          echo "cortes=$(echo $cortes)" >> "$GITHUB_OUTPUT"
+          echo "vigente=$(head -n 1 <<< "$cortes")" >> "$GITHUB_OUTPUT"
+        working-directory: .
+
+      - name: registros de la ejecución
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: registros-${{ steps.corte.outputs.corte }}-${{ github.run_attempt }}
+          path: |
+            pipeline/data/reporte-extraccion.json
+            pipeline/data/dbt/logs/
+          if-no-files-found: ignore
+          retention-days: 90
+
+  datos:
+    name: publicar en el Worker de datos
+    needs: corte
+    if: needs.corte.outputs.cortes != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # Los secretos de Cloudflare están en el environment `production`: cada publicación espera la
+    # aprobación de uno de sus revisores (Settings → Environments, no este archivo).
+    environment: production
+    permissions:
+      contents: read
+    env:
+      WRANGLER_SEND_METRICS: "false"
+    defaults:
+      run:
+        working-directory: .
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+
+      - run: npm ci
+
+      - name: armar la publicación
+        # Se arma desde los Releases, que ya incluyen el corte de esta ejecución: el vigente y el
+        # anterior salen siempre de la misma fuente, también al reprocesar uno de ellos.
+        env:
+          CORTES: ${{ needs.corte.outputs.cortes }}
+          VIGENTE: ${{ needs.corte.outputs.vigente }}
+          GH_REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          raiz=pipeline/worker-datos/publicacion
+          rm -rf "$raiz"
+          for corte in $CORTES; do
+            # Todos los JSON del Release con su nombre, menos el diagnóstico de la extracción:
+            # el Worker es un espejo de los Releases (también los del mapa, de export-mapa).
+            gh release download "corte-$corte" --dir "$raiz/datos/$corte" --pattern '*.json'
+            rm -f "$raiz/datos/$corte/reporte-extraccion.json"
+          done
+          # El puntero sale de la misma función que `npm run datos:descargar` (scripts/datos.mjs).
+          RAIZ="$raiz" node --input-type=module -e '
+            import { readdirSync, writeFileSync } from "node:fs";
+            import { punteroLatest } from "./scripts/datos.mjs";
+            const { RAIZ, VIGENTE } = process.env;
+            const puntero = punteroLatest(VIGENTE, readdirSync(`${RAIZ}/datos/${VIGENTE}`));
+            writeFileSync(`${RAIZ}/datos/latest.json`, `${JSON.stringify(puntero, null, 2)}\n`);
+          '
+          cat "$raiz/datos/latest.json"
+          find "$raiz" -type f | sort
+          echo "Worker de datos: cortes $CORTES; latest.json → $VIGENTE" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: desplegar ekou-elephants-datos
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          # Con una credencial a medias Wrangler fallaría sin explicar por qué: se comprueban las dos.
+          if [[ -z "$CLOUDFLARE_API_TOKEN" || -z "$CLOUDFLARE_ACCOUNT_ID" ]]; then
+            echo "::error::faltan CLOUDFLARE_API_TOKEN o CLOUDFLARE_ACCOUNT_ID en el environment production; el Release ya quedó publicado"
+            exit 1
+          fi
+          npx --no-install wrangler deploy --config pipeline/worker-datos/wrangler.jsonc
+
+  avisar:
+    name: avisar del fallo
+    needs: [corte, datos]
+    if: failure() && github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      issues: write # abrir un issue si el corte falla
+    steps:
+      - name: abrir o comentar el issue
+        env:
+          CORTE: ${{ needs.corte.outputs.corte }}
+          GH_REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          titulo="Falló el corte mensual $CORTE"
+          url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          cuerpo="La ejecución programada del corte $CORTE falló (extracción, pruebas de datos, compuertas de calidad o despliegue del Worker de datos). La app sigue con el corte anterior.
+
+          Registros: $url
+
+          Para reintentar: Actions → corte-mensual → Run workflow con corte \`$CORTE\`. Solo se extraen las particiones que falten."
+          existente=$(gh issue list --state open --search "\"$titulo\" in:title" --json number --jq '.[0].number')
+          if [[ -n "$existente" ]]; then
+            gh issue comment "$existente" --body "$cuerpo"
+          else
+            gh issue create --title "$titulo" --body "$cuerpo" --label bug
+          fi
+        working-directory: .
