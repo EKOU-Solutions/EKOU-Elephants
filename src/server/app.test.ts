@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
+import { esquemaResumenTerritorial } from '../modules/mapa/adapters/http/mapa.schemas';
 import { crearApp } from './app';
+import { esquemaError } from './http/respuestas';
 import type { Queryable } from './db';
 
 const fila = {
@@ -90,5 +92,19 @@ describe('GET /api/mapa/territorios/:codigo/resumen', () => {
   it('incluye cabeceras de seguridad', async () => {
     const res = await app([]).app.request('/api/salud');
     expect(res.headers.get('x-content-type-options')).toBe('nosniff');
+  });
+});
+
+describe('contrato de respuestas: el body real coincide con el documentado', () => {
+  it.each([
+    ['/api/mapa/territorios/05/resumen', [fila], 200, esquemaResumenTerritorial],
+    ['/api/mapa/territorios/0x/resumen', [fila], 400, esquemaError('codigo_invalido')],
+    ['/api/mapa/territorios/99/resumen', [], 404, esquemaError('territorio_no_encontrado')],
+    ['/api/mapa/territorios/05/resumen', new Error('x'), 500, esquemaError('error_interno')],
+  ] as const)('%s responde %#', async (ruta, filas, estado, esquema) => {
+    const res = await app(filas instanceof Error ? filas : [...filas]).app.request(ruta);
+    expect(res.status).toBe(estado);
+    const resultado = esquema.safeParse(await res.json());
+    expect(resultado.error?.issues ?? []).toEqual([]);
   });
 });

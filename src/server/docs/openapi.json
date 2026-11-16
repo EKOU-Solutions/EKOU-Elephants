@@ -1,0 +1,812 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "API de EKOU Elephants",
+    "description": "API pública de solo lectura con el presupuesto y las obras por territorio de Colombia. Todos los errores responden JSON con la forma `{ \"error\": \"<código>\" }`.",
+    "version": "0.1.0"
+  },
+  "tags": [
+    {
+      "name": "Salud",
+      "description": "Disponibilidad del servicio."
+    },
+    {
+      "name": "Mapa",
+      "description": "Datos territoriales del corte mensual vigente."
+    }
+  ],
+  "components": {
+    "schemas": {
+      "Salud": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "const": true
+          }
+        },
+        "required": ["ok"],
+        "additionalProperties": false
+      },
+      "ResumenTerritorial": {
+        "type": "object",
+        "properties": {
+          "codigo": {
+            "type": "string",
+            "pattern": "^(\\d{2}|\\d{5})$",
+            "description": "Código DIVIPOLA: 2 dígitos (departamento) o 5 (municipio).",
+            "example": "05"
+          },
+          "nombre": {
+            "type": "string",
+            "example": "Antioquia"
+          },
+          "presupuestoAsignadoCentavos": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "description": "Presupuesto asignado, en centavos de peso colombiano.",
+            "example": 100050
+          },
+          "gastoActualCentavos": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "description": "Gasto actual, en centavos de peso colombiano.",
+            "example": 40000
+          },
+          "totalObras": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "example": 10
+          },
+          "obrasConRetraso": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "example": 2
+          }
+        },
+        "required": [
+          "codigo",
+          "nombre",
+          "presupuestoAsignadoCentavos",
+          "gastoActualCentavos",
+          "totalObras",
+          "obrasConRetraso"
+        ],
+        "additionalProperties": false,
+        "description": "Ejemplo del arquetipo con cifras ficticias (docs/arquitectura.md)."
+      },
+      "Fuente": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Id del conjunto de datos.",
+            "example": "jbjy-vk9h"
+          },
+          "nombre": {
+            "type": "string",
+            "example": "SECOP II – Contratos"
+          },
+          "entidad": {
+            "type": "string",
+            "example": "Colombia Compra Eficiente"
+          },
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "example": "https://www.datos.gov.co/d/jbjy-vk9h"
+          },
+          "licencia": {
+            "type": "string",
+            "example": "CC BY-SA 4.0"
+          }
+        },
+        "required": ["id", "nombre", "entidad", "url", "licencia"],
+        "additionalProperties": false,
+        "description": "Fuente de datos abiertos del corte."
+      },
+      "CorteVigente": {
+        "type": "object",
+        "properties": {
+          "corte": {
+            "type": "string",
+            "pattern": "^\\d{4}-(0[1-9]|1[0-2])$",
+            "description": "Corte mensual, `AAAA-MM`.",
+            "example": "2026-11"
+          },
+          "fechaCorte": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+            "description": "Fecha hasta la que llegan los datos (hora de Colombia).",
+            "example": "2026-11-07"
+          },
+          "publicadoEn": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "description": "Fecha y hora (UTC) en que el pipeline publicó el corte.",
+            "example": "2026-11-15T17:43:18Z"
+          },
+          "geometria": {
+            "type": "string",
+            "description": "Versión de la geometría. La app la sirve como archivo estático en `/geometria/<versión>.topojson`.",
+            "example": "mgn-2025"
+          },
+          "fuentes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Fuente"
+            }
+          }
+        },
+        "required": ["corte", "fechaCorte", "publicadoEn", "geometria", "fuentes"],
+        "additionalProperties": false,
+        "description": "Corte mensual vigente y sus fuentes."
+      },
+      "Ventana": {
+        "type": "object",
+        "properties": {
+          "desde": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "example": 2021
+          },
+          "hasta": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "example": 2026
+          }
+        },
+        "required": ["desde", "hasta"],
+        "additionalProperties": false,
+        "description": "Años de firma que se cuentan, ambos incluidos."
+      },
+      "MunicipioDelMapa": {
+        "type": "object",
+        "properties": {
+          "codigo": {
+            "type": "string",
+            "pattern": "^\\d{5}$",
+            "description": "Código DIVIPOLA de 5 dígitos, con su cero inicial.",
+            "example": "05001"
+          },
+          "nombre": {
+            "type": "string",
+            "example": "Medellín"
+          },
+          "tipo": {
+            "type": "string",
+            "enum": ["municipio", "area_no_municipalizada", "isla"]
+          },
+          "departamento": {
+            "type": "object",
+            "properties": {
+              "codigo": {
+                "type": "string",
+                "pattern": "^\\d{2}$",
+                "description": "Código DIVIPOLA del departamento (2 dígitos).",
+                "example": "05"
+              },
+              "iso": {
+                "type": "string",
+                "pattern": "^CO-[A-Z]{2,3}$",
+                "description": "Código ISO 3166-2:CO del departamento.",
+                "example": "CO-ANT"
+              },
+              "nombre": {
+                "type": "string",
+                "example": "Antioquia"
+              }
+            },
+            "required": ["codigo", "iso", "nombre"],
+            "additionalProperties": false
+          },
+          "contratosUbicados": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Contratos ubicados en el municipio dentro de la ventana. `null` significa «Sin datos» (ninguno ubicado), nunca 0.",
+            "example": 356935
+          }
+        },
+        "required": ["codigo", "nombre", "tipo", "departamento", "contratosUbicados"],
+        "additionalProperties": false
+      },
+      "MunicipiosDelCorte": {
+        "type": "object",
+        "properties": {
+          "corte": {
+            "type": "string",
+            "pattern": "^\\d{4}-(0[1-9]|1[0-2])$",
+            "description": "Corte mensual, `AAAA-MM`.",
+            "example": "2026-11"
+          },
+          "ventana": {
+            "$ref": "#/components/schemas/Ventana"
+          },
+          "municipios": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MunicipioDelMapa"
+            }
+          }
+        },
+        "required": ["corte", "ventana", "municipios"],
+        "additionalProperties": false,
+        "description": "Municipios del corte vigente."
+      },
+      "TotalNacional": {
+        "type": "object",
+        "properties": {
+          "contratos": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "contratosEnMunicipios": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "description": "Ubicados en un municipio."
+          },
+          "contratosSoloDepartamento": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "description": "Ubicados solo en un departamento: gobernaciones, varios municipios o sede incierta."
+          },
+          "contratosSinLugar": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "description": "Sin municipio ni departamento."
+          }
+        },
+        "required": [
+          "contratos",
+          "contratosEnMunicipios",
+          "contratosSoloDepartamento",
+          "contratosSinLugar"
+        ],
+        "additionalProperties": false,
+        "description": "Cada contrato de la ventana cae en un solo nivel: `contratos` es la suma de los otros tres."
+      },
+      "DepartamentoDelMapa": {
+        "type": "object",
+        "properties": {
+          "codigo": {
+            "type": "string",
+            "pattern": "^\\d{2}$",
+            "description": "Código DIVIPOLA del departamento (2 dígitos).",
+            "example": "05"
+          },
+          "iso": {
+            "type": "string",
+            "pattern": "^CO-[A-Z]{2,3}$",
+            "description": "Código ISO 3166-2:CO del departamento.",
+            "example": "CO-ANT"
+          },
+          "nombre": {
+            "type": "string",
+            "example": "Antioquia"
+          },
+          "contratosEnMunicipios": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "description": "Suma de `contratosUbicados` de sus municipios. Es una medición: 0 es un cero real."
+          },
+          "contratosSoloDepartamento": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "codigo",
+          "iso",
+          "nombre",
+          "contratosEnMunicipios",
+          "contratosSoloDepartamento"
+        ],
+        "additionalProperties": false
+      },
+      "DepartamentosDelCorte": {
+        "type": "object",
+        "properties": {
+          "corte": {
+            "type": "string",
+            "pattern": "^\\d{4}-(0[1-9]|1[0-2])$",
+            "description": "Corte mensual, `AAAA-MM`.",
+            "example": "2026-11"
+          },
+          "ventana": {
+            "$ref": "#/components/schemas/Ventana"
+          },
+          "nacional": {
+            "$ref": "#/components/schemas/TotalNacional"
+          },
+          "departamentos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DepartamentoDelMapa"
+            }
+          }
+        },
+        "required": ["corte", "ventana", "nacional", "departamentos"],
+        "additionalProperties": false,
+        "description": "Departamentos del corte vigente con sus agregados y el total nacional."
+      },
+      "MunicipioSeleccionado": {
+        "type": "object",
+        "properties": {
+          "corte": {
+            "type": "string",
+            "pattern": "^\\d{4}-(0[1-9]|1[0-2])$",
+            "description": "Corte mensual, `AAAA-MM`.",
+            "example": "2026-11"
+          },
+          "ventana": {
+            "$ref": "#/components/schemas/Ventana"
+          },
+          "codigo": {
+            "type": "string",
+            "pattern": "^\\d{5}$",
+            "description": "Código DIVIPOLA de 5 dígitos, con su cero inicial.",
+            "example": "05001"
+          },
+          "nombre": {
+            "type": "string",
+            "example": "Medellín"
+          },
+          "tipo": {
+            "type": "string",
+            "enum": ["municipio", "area_no_municipalizada", "isla"]
+          },
+          "departamento": {
+            "type": "object",
+            "properties": {
+              "codigo": {
+                "type": "string",
+                "pattern": "^\\d{2}$",
+                "description": "Código DIVIPOLA del departamento (2 dígitos).",
+                "example": "05"
+              },
+              "iso": {
+                "type": "string",
+                "pattern": "^CO-[A-Z]{2,3}$",
+                "description": "Código ISO 3166-2:CO del departamento.",
+                "example": "CO-ANT"
+              },
+              "nombre": {
+                "type": "string",
+                "example": "Antioquia"
+              }
+            },
+            "required": ["codigo", "iso", "nombre"],
+            "additionalProperties": false
+          },
+          "contratosUbicados": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Contratos ubicados en el municipio dentro de la ventana. `null` significa «Sin datos» (ninguno ubicado), nunca 0.",
+            "example": 356935
+          }
+        },
+        "required": [
+          "corte",
+          "ventana",
+          "codigo",
+          "nombre",
+          "tipo",
+          "departamento",
+          "contratosUbicados"
+        ],
+        "additionalProperties": false,
+        "description": "Un municipio del corte vigente, con el corte y la ventana a los que pertenece."
+      }
+    }
+  },
+  "paths": {
+    "/api/salud": {
+      "get": {
+        "operationId": "getApiSalud",
+        "summary": "Estado del servicio",
+        "tags": ["Salud"],
+        "responses": {
+          "200": {
+            "description": "El Worker responde.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Salud"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/mapa/territorios/{codigo}/resumen": {
+      "get": {
+        "operationId": "getApiMapaTerritoriosByCodigoResumen",
+        "summary": "Resumen presupuestal de un territorio",
+        "description": "Presupuesto asignado, gasto actual (en centavos) y obras de un departamento o municipio según su código DIVIPOLA.",
+        "tags": ["Mapa"],
+        "responses": {
+          "200": {
+            "description": "Resumen del territorio.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResumenTerritorial"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "El código DIVIPOLA no tiene el formato esperado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "const": "codigo_invalido"
+                    }
+                  },
+                  "required": ["error"],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No existe un territorio con ese código.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "const": "territorio_no_encontrado"
+                    }
+                  },
+                  "required": ["error"],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error inesperado del servidor.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "const": "error_interno"
+                    }
+                  },
+                  "required": ["error"],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "in": "path",
+            "name": "codigo",
+            "schema": {
+              "type": "string",
+              "pattern": "^(\\d{2}|\\d{5})$",
+              "example": "05"
+            },
+            "required": true,
+            "description": "Código DIVIPOLA: 2 dígitos (departamento) o 5 (municipio)."
+          }
+        ]
+      }
+    },
+    "/api/mapa/corte": {
+      "get": {
+        "operationId": "getApiMapaCorte",
+        "summary": "Corte mensual vigente",
+        "description": "Metadatos del corte de datos publicado y sus fuentes.",
+        "tags": ["Mapa"],
+        "responses": {
+          "200": {
+            "description": "Corte vigente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CorteVigente"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error inesperado del servidor.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "const": "error_interno"
+                    }
+                  },
+                  "required": ["error"],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "No hay un corte mensual publicado o sus archivos no son coherentes.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "const": "corte_no_disponible"
+                    }
+                  },
+                  "required": ["error"],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/mapa/municipios": {
+      "get": {
+        "operationId": "getApiMapaMunicipios",
+        "summary": "Municipios del corte vigente",
+        "tags": ["Mapa"],
+        "responses": {
+          "200": {
+            "description": "Municipios del corte.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MunicipiosDelCorte"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error inesperado del servidor.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "const": "error_interno"
+                    }
+                  },
+                  "required": ["error"],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "No hay un corte mensual publicado o sus archivos no son coherentes.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "const": "corte_no_disponible"
+                    }
+                  },
+                  "required": ["error"],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/mapa/departamentos": {
+      "get": {
+        "operationId": "getApiMapaDepartamentos",
+        "summary": "Departamentos del corte vigente",
+        "description": "Departamentos con sus agregados y el total nacional.",
+        "tags": ["Mapa"],
+        "responses": {
+          "200": {
+            "description": "Departamentos del corte.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DepartamentosDelCorte"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error inesperado del servidor.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "const": "error_interno"
+                    }
+                  },
+                  "required": ["error"],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "No hay un corte mensual publicado o sus archivos no son coherentes.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "const": "corte_no_disponible"
+                    }
+                  },
+                  "required": ["error"],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/mapa/municipios/{codigo}": {
+      "get": {
+        "operationId": "getApiMapaMunicipiosByCodigo",
+        "summary": "Detalle de un municipio",
+        "description": "Datos del municipio en el corte vigente.",
+        "tags": ["Mapa"],
+        "responses": {
+          "200": {
+            "description": "Municipio seleccionado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MunicipioSeleccionado"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "El código DIVIPOLA no tiene el formato esperado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "const": "codigo_invalido"
+                    }
+                  },
+                  "required": ["error"],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "El municipio no está en el corte vigente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "const": "municipio_no_encontrado"
+                    }
+                  },
+                  "required": ["error"],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error inesperado del servidor.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "const": "error_interno"
+                    }
+                  },
+                  "required": ["error"],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "No hay un corte mensual publicado o sus archivos no son coherentes.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "const": "corte_no_disponible"
+                    }
+                  },
+                  "required": ["error"],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "in": "path",
+            "name": "codigo",
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d{5}$",
+              "example": "05001"
+            },
+            "required": true,
+            "description": "Código DIVIPOLA del municipio (5 dígitos)."
+          }
+        ]
+      }
+    }
+  }
+}

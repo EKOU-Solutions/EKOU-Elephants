@@ -1,21 +1,23 @@
 # Arquitectura y organización del código
 
-> Cómo se organiza y ejecuta el código de la app. Decisiones: [ADR-0001](adr/0001-arquitectura-inicial.md) · Comandos: [desarrollo local](desarrollo.md) · Datos: [arquitectura de datos](arquitectura-datos.md)
+> Cómo se organiza y ejecuta el código del back: el Worker, los módulos, los puertos y adaptadores y sus reglas. Lo propio de la API (lo que expone, validación, errores y documentación) está en [API](api.md); cómo crear una, en [la guía](how-to/crear-una-api.md). Decisiones: [ADR-0001](adr/0001-arquitectura-inicial.md) · Comandos: [desarrollo local](desarrollo.md) · Datos: [arquitectura de datos](arquitectura-datos.md)
 
 ## En 30 segundos
 
-Un solo Worker de Cloudflare sirve la interfaz React como archivos estáticos y responde la API REST con Hono. La API consulta PostgreSQL en Neon. Las migraciones se ejecutan con Node.js, fuera del Worker.
+Un solo Worker de Cloudflare sirve la interfaz React como archivos estáticos y responde la API REST con Hono. La API lee el corte mensual desde el Worker de datos `ekou-elephants-datos` (por service binding) y PostgreSQL en Neon. Las migraciones se ejecutan con Node.js, fuera del Worker.
 
 ```mermaid
 flowchart LR
     CIU["👥 Ciudadanía"]
     WEB["🖥️ Navegador<br/>React + Vite<br/>archivos estáticos"]
     API["⚙️ API REST<br/>Hono · Cloudflare Workers<br/>/api/*"]
+    DATOS[("📦 Worker de datos<br/>ekou-elephants-datos<br/>corte mensual en JSON")]
     DB[("🐘 PostgreSQL<br/>Neon · local con Docker")]
     MIG["🧱 Migraciones SQL<br/>node-pg-migrate<br/>Node.js local o CI"]
 
     CIU --> WEB
     WEB -->|"HTTP / JSON"| API
+    API -->|"service binding DATOS"| DATOS
     API -->|"SQL parametrizado"| DB
     MIG -.->|"up / down"| DB
 ```
@@ -44,7 +46,7 @@ flowchart TB
         subgraph MOD["src/modules/mapa"]
             DOM["domain/<br/>ResumenTerritorial<br/>errores de negocio"]
             APP["application/<br/>caso de uso<br/>ports/ ConsultarGastoTerritorial"]
-            ADP["adapters/<br/>http/ rutas Hono<br/>postgres/ SQL · importes"]
+            ADP["adapters/<br/>http/ rutas Hono · esquemas<br/>worker-datos/ corte mensual<br/>postgres/ SQL · importes"]
             UIM["ui/<br/>componentes React"]
         end
         subgraph SRV["src/server"]
@@ -52,6 +54,7 @@ flowchart TB
             APPS["app.ts<br/>rutas · cabeceras · errores"]
             DBT["db.ts<br/>conexión PostgreSQL"]
             CMP["composition/mapa.ts<br/>conecta dependencias"]
+            HTP["http/ · docs/<br/>respuestas compartidas<br/>documentación de la API"]
         end
         subgraph DATA["Esquema y pruebas"]
             MIGS["migrations/<br/>historial SQL común"]
@@ -63,8 +66,6 @@ flowchart TB
     SECRETS -.-> DATA
 ```
 
-Las pruebas unitarias viven junto al código (`*.test.ts`).
-
 ## Puertos y adaptadores
 
 | Parte | Responsabilidad | Ejemplo |
@@ -72,7 +73,8 @@ Las pruebas unitarias viven junto al código (`*.test.ts`).
 | Dominio | Conceptos y errores sin dependencias técnicas. | [ResumenTerritorial](../src/modules/mapa/domain/resumen-territorial.ts). |
 | Aplicación | Resolver una operación usando sus puertos. | [obtenerResumenTerritorial](../src/modules/mapa/application/obtener-resumen-territorial.ts). |
 | Puerto de salida | Contrato de la información necesaria. | [ConsultarGastoTerritorial](../src/modules/mapa/application/ports/consultar-gasto-territorial.ts): `porCodigo(codigo)`. |
-| Adaptador HTTP | Validar la petición e invocar el caso de uso. | [mapaRoutes](../src/modules/mapa/adapters/http/mapa.routes.ts). |
+| Adaptador HTTP | Validar la petición, invocar el caso de uso y responder con su forma pública ([API](api.md)). | [mapaRoutes](../src/modules/mapa/adapters/http/mapa.routes.ts). |
+| Adaptador del Worker de datos | Implementar el puerto leyendo los JSON del corte y validarlos con zod. | [mapaDesdeDatos](../src/modules/mapa/adapters/worker-datos/mapa.worker-datos.ts). |
 | Adaptador PostgreSQL | Implementar el puerto con SQL y mapear las filas. | [gastoTerritorialRepository](../src/modules/mapa/adapters/postgres/gasto-territorial.repository.ts). |
 | Composición | Crear y conectar las implementaciones. | [componerMapa](../src/server/composition/mapa.ts). |
 
@@ -187,10 +189,10 @@ PostgreSQL ajusta los valores a la escala de `NUMERIC(20,2)`. Si añadimos escri
 
 ## Cómo añadir una funcionalidad
 
-1. Ubicarla en el módulo dueño de esa capacidad; crear otro si tiene una responsabilidad distinta.
-2. Definir entrada, resultado y reglas; agregar los puertos necesarios.
-3. Implementar adaptadores y conectarlos en `server/composition`.
-4. Incorporar UI y una migración SQL si cambia el esquema.
-5. Probar el caso de uso con un puerto en memoria, las rutas y la integración con PostgreSQL cuando corresponda.
+Una funcionalidad vive en el módulo dueño de esa capacidad (o en uno nuevo si su responsabilidad es distinta) y recorre UI → API → caso de uso → persistencia → pruebas.
+
+- **API:** guía paso a paso [Crear una API](how-to/crear-una-api.md).
+- **Interfaz:** pasa por la skill `elephants-design` (regla de `AGENTS.md`).
+- **Esquema de la base:** una migración SQL nueva; nunca se reescribe una existente.
 
 Las pruebas unitarias viven junto al código (`*.test.ts`); la integración, en `tests/integration/`. Errores, seguridad y pruebas forman parte del DoD. La ingesta tiene su decisión y flujo separados.
