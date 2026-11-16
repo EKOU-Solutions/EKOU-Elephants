@@ -43,30 +43,30 @@
   padding: 2px 10px;
   border-radius: 999px;
   border: 1px solid var(--el-color-control-border);
-  font: 600 13px/1.5 var(--el-font-ui);
+  font: 600 13px / 1.5 var(--el-font-ui);
   color: var(--el-color-text);
   background: var(--el-color-surface);
 }
 
 .sb-el-status::before {
-  content: '';
+  content: "";
   width: 8px;
   height: 8px;
   border-radius: 50%;
   background: currentColor;
 }
 
-.sb-el-status[data-status='accepted'] {
+.sb-el-status[data-status="accepted"] {
   color: var(--el-color-success);
   border-color: var(--el-color-success);
 }
 
-.sb-el-status[data-status='candidate'] {
+.sb-el-status[data-status="candidate"] {
   color: var(--el-color-warning);
   border-color: var(--el-color-warning);
 }
 
-.sb-el-status[data-status='historical'] {
+.sb-el-status[data-status="historical"] {
   color: var(--el-color-text-muted);
 }
 
@@ -108,6 +108,12 @@
 .sb-el-table .num {
   text-align: right;
   font-variant-numeric: tabular-nums;
+}
+
+/* Icon names wrap inside their card (declared before the table rule: lower specificity first). */
+.sb-el-icons code {
+  max-width: 100%;
+  overflow-wrap: anywhere;
 }
 
 .sb-el-table td code,
@@ -167,11 +173,6 @@
   padding: 12px;
   border: 1px solid var(--el-color-line);
   border-radius: var(--el-control-radius);
-}
-
-.sb-el-icons code {
-  max-width: 100%;
-  overflow-wrap: anywhere;
 }
 
 .sb-el-icons svg {
@@ -251,7 +252,7 @@
 .sbdocs-content pre,
 .sbdocs-content pre code,
 .sbdocs-content pre span,
-.sbdocs-content [class*='language-'] {
+.sbdocs-content [class*="language-"] {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }

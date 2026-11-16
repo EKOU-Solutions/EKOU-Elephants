@@ -6,7 +6,10 @@ const meta = {
   title: 'Componentes/Candidatos/Desglose en barras',
   component: BreakdownBars,
   tags: ['autodocs'],
-  parameters: componentDocs('Breakdown bars', 'Ordena unos pocos conteos dentro de un panel. Datos y categorías de ejemplo.'),
+  parameters: componentDocs(
+    'Breakdown bars',
+    'Ordena unos pocos conteos dentro de un panel. Datos y categorías de ejemplo.',
+  ),
   args: {
     items: [
       { label: 'Solo una empresa se presentó', value: 18 },

@@ -23,8 +23,9 @@ function applyTheme(theme: unknown) {
 
 // Docs pages follow the same toolbar theme as the stories.
 function ThemedDocsContainer({ context, children }: PropsWithChildren<DocsContainerProps>) {
-  const initial = (context as unknown as { store?: { userGlobals?: { get(): { theme?: Theme } } } }).store?.userGlobals?.get()
-    .theme;
+  const initial = (
+    context as unknown as { store?: { userGlobals?: { get(): { theme?: Theme } } } }
+  ).store?.userGlobals?.get().theme;
   const [theme, setTheme] = useState<unknown>(initial ?? 'auto');
   useEffect(() => {
     const onChange = ({ globals }: { globals: { theme?: Theme } }) => setTheme(globals.theme);
@@ -33,7 +34,10 @@ function ThemedDocsContainer({ context, children }: PropsWithChildren<DocsContai
   }, [context]);
   useEffect(() => applyTheme(theme), [theme]);
   return (
-    <DocsContainer context={context} theme={effectiveTheme(theme) === 'dark' ? themes.dark : themes.light}>
+    <DocsContainer
+      context={context}
+      theme={effectiveTheme(theme) === 'dark' ? themes.dark : themes.light}
+    >
       {children}
     </DocsContainer>
   );
@@ -65,7 +69,10 @@ const preview: Preview = {
   parameters: {
     layout: 'padded',
     // The table of contents ignores the blocks' inner headings (e.g. «Hacer» / «Evitar»).
-    docs: { container: ThemedDocsContainer, toc: { ignoreSelector: '.docs-story *, .skip-toc, .sb-el *' } },
+    docs: {
+      container: ThemedDocsContainer,
+      toc: { ignoreSelector: '.docs-story *, .skip-toc, .sb-el *' },
+    },
     a11y: { test: 'todo' },
     viewport: {
       options: {

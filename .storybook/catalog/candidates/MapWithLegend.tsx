@@ -41,7 +41,9 @@ export function MapWithLegend({ selected }: Props) {
             <div>
               <dt>Con señales</dt>
               <dd className="el-num">
-                {t.analyzed ? `${t.flagged} de ${t.analyzed} (${formatNumber((100 * t.flagged) / t.analyzed)}%)` : 'Sin datos'}
+                {t.analyzed
+                  ? `${t.flagged} de ${t.analyzed} (${formatNumber((100 * t.flagged) / t.analyzed)}%)`
+                  : 'Sin datos'}
               </dd>
             </div>
             <div>

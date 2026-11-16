@@ -4,6 +4,7 @@
   "files": {
     "includes": [
       "src/**",
+      ".storybook/**",
       "tests/**",
       "scripts/**",
       "*.ts",

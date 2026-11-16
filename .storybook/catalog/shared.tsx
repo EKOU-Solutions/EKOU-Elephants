@@ -96,13 +96,17 @@ const A11Y_NOTES: Record<string, string> = {
   'Risk tag':
     'texto sobre el relleno con contraste ≥ 4,5:1 en ambos temas (`on-risk`); el glifo de 1/2/3 barras repite el nivel sin depender del color; «Sin datos» usa barras punteadas, nunca un «bajo» más claro.',
   Counter: 'número y etiqueta en el mismo elemento para que se lean juntos.',
-  'Active filter': '`button` con `aria-label` «Quitar filtro: …»; área táctil de al menos 44 px; anunciar el cambio al quitarlo.',
-  'Key figure': 'unidad y denominador escritos en texto, no solo visuales; la línea de fuente siempre está presente.',
-  'Data table': '`caption` y `th` con `scope`; en pantallas pequeñas, un contenedor con desplazamiento horizontal.',
+  'Active filter':
+    '`button` con `aria-label` «Quitar filtro: …»; área táctil de al menos 44 px; anunciar el cambio al quitarlo.',
+  'Key figure':
+    'unidad y denominador escritos en texto, no solo visuales; la línea de fuente siempre está presente.',
+  'Data table':
+    '`caption` y `th` con `scope`; en pantallas pequeñas, un contenedor con desplazamiento horizontal.',
   'Map with legend':
     '`svg` con `role="img"` y `title` descriptivo; siempre hay una tabla con los mismos valores y un selector nativo; la selección nunca se marca solo con color.',
   'Status pill': 'etiqueta en texto; el ícono es decorativo.',
-  'Coverage bar': 'la barra tiene `aria-label` con el reparto completo y una leyenda con los números en texto.',
+  'Coverage bar':
+    'la barra tiene `aria-label` con el reparto completo y una leyenda con los números en texto.',
   'Breakdown bars': 'los valores van en texto; las barras son decorativas.',
   'Progress vs expected': 'los dos porcentajes (avance y esperado) van escritos en texto.',
   'Signal item': 'lista ordenada; el número de cada señal no depende del color.',

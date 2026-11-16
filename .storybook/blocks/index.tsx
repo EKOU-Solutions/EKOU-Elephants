@@ -14,10 +14,12 @@ const palettes = tokens.colors as Record<Mode, Palette>;
 /** Horizontal scroll box that keyboard users can reach (tab stop) and screen readers can name. */
 function ScrollRegion({ label, children }: { label: string; children: ReactNode }) {
   return (
-    // A scrollable region must be focusable so keyboard users can scroll it (WCAG 2.1.1).
-    <div className="sb-el-scroll" role="region" aria-label={label} tabIndex={0}>
+    // A labelled <section> is a region landmark. It must be focusable so keyboard users can
+    // scroll it horizontally (WCAG 2.1.1, axe scrollable-region-focusable).
+    // biome-ignore lint/a11y/noNoninteractiveTabindex: scrollable region needs keyboard focus.
+    <section className="sb-el-scroll" aria-label={label} tabIndex={0}>
       {children}
-    </div>
+    </section>
   );
 }
 
@@ -178,18 +180,42 @@ export function ContrastTable() {
 }
 
 const TYPE_STYLES: [string, string, CSSProperties][] = [
-  ['Display · 40 px', 'La plata pública, a la vista', { fontSize: 'var(--el-size-display)', fontWeight: 700, lineHeight: 1.1 }],
-  ['Título · 30 / 26 px', 'Contratos de Antioquia', { fontSize: 'var(--el-size-title)', fontWeight: 700, lineHeight: 1.2 }],
+  [
+    'Display · 40 px',
+    'La plata pública, a la vista',
+    { fontSize: 'var(--el-size-display)', fontWeight: 700, lineHeight: 1.1 },
+  ],
+  [
+    'Título · 30 / 26 px',
+    'Contratos de Antioquia',
+    { fontSize: 'var(--el-size-title)', fontWeight: 700, lineHeight: 1.2 },
+  ],
   ['Sección · 22 px', 'Obras con retraso', { fontSize: 'var(--el-size-section)', fontWeight: 700 }],
-  ['Subtítulo · 18 px', 'Solo una empresa se presentó', { fontSize: 'var(--el-size-subsection)', fontWeight: 700 }],
-  ['Texto · 16 px', 'Esta obra lleva 2 años detenida y ya costó 40% más de lo firmado.', { fontSize: 'var(--el-size-body)' }],
+  [
+    'Subtítulo · 18 px',
+    'Solo una empresa se presentó',
+    { fontSize: 'var(--el-size-subsection)', fontWeight: 700 },
+  ],
+  [
+    'Texto · 16 px',
+    'Esta obra lleva 2 años detenida y ya costó 40% más de lo firmado.',
+    { fontSize: 'var(--el-size-body)' },
+  ],
   [
     'Secundario · 14 px',
     'Fuente: SECOP II · periodo 2025 · actualizado el 31 dic 2025',
     { fontSize: 'var(--el-size-small)', color: 'var(--el-color-text-muted)' },
   ],
-  ['Cifra · 48 / 40 px', '30% · 0% · 1.000', { fontSize: 'var(--el-size-figure)', fontWeight: 700, lineHeight: 1.05 }],
-  ['Dígitos tabulares', '0123456789 · $ 12.450.000.000', { fontVariantNumeric: 'tabular-nums lining-nums' }],
+  [
+    'Cifra · 48 / 40 px',
+    '30% · 0% · 1.000',
+    { fontSize: 'var(--el-size-figure)', fontWeight: 700, lineHeight: 1.05 },
+  ],
+  [
+    'Dígitos tabulares',
+    '0123456789 · $ 12.450.000.000',
+    { fontVariantNumeric: 'tabular-nums lining-nums' },
+  ],
 ];
 
 /** Type scale with Public Sans (fictional data). */
@@ -254,6 +280,7 @@ export function DoAndDont({ dos, donts }: { dos: ReactNode[]; donts: ReactNode[]
           </h3>
           <ul>
             {dos.map((item, i) => (
+              // biome-ignore lint/suspicious/noArrayIndexKey: static list from MDX, never reordered.
               <li key={i}>{item}</li>
             ))}
           </ul>
@@ -265,6 +292,7 @@ export function DoAndDont({ dos, donts }: { dos: ReactNode[]; donts: ReactNode[]
           </h3>
           <ul>
             {donts.map((item, i) => (
+              // biome-ignore lint/suspicious/noArrayIndexKey: static list from MDX, never reordered.
               <li key={i}>{item}</li>
             ))}
           </ul>
@@ -297,12 +325,17 @@ export function CatalogTable() {
                   <code>{c.name}</code>
                 </th>
                 <td>
-                  <span className="sb-el-status" data-status={c.status === 'core' ? 'accepted' : 'candidate'}>
+                  <span
+                    className="sb-el-status"
+                    data-status={c.status === 'core' ? 'accepted' : 'candidate'}
+                  >
                     {c.status === 'core' ? 'Núcleo' : 'Candidato'}
                   </span>
                 </td>
                 <td>
-                  <code>{'styles' in c ? c.styles : `components.css · ${c.classes.join(' · ')}`}</code>
+                  <code>
+                    {'styles' in c ? c.styles : `components.css · ${c.classes.join(' · ')}`}
+                  </code>
                 </td>
               </tr>
             ))}
