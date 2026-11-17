@@ -24,6 +24,7 @@ FILAS: dict[str, list[dict[str, str]]] = {
             "cod_mpio": "76001",
             "nom_mpio": "SANTIAGO DE CALI",
         },
+        {"cod_dpto": "81", "dpto": "ARAUCA", "cod_mpio": "81001", "nom_mpio": "ARAUCA"},
     ],
     "secop_contratos": [
         {  # obra de la gobernación que se ejecuta en otro municipio
@@ -151,6 +152,32 @@ FILAS: dict[str, list[dict[str, str]]] = {
             "cuantia_contrato": "5000000",
             "valor_contrato_con_adiciones": "5000000",
         },
+        {  # municipio que se llama igual que su departamento, declarado por su alcaldía
+            "uid": "25-81-1",
+            "nombre_entidad": "ARAUCA - ALCALDÍA MUNICIPIO DE ARAUCA",  # prefijo de SECOP I
+            "departamento_entidad": "Arauca",
+            "municipio_entidad": "Arauca",
+            "municipios_ejecucion": "Arauca",
+            "tipo_de_contrato": "Obra",
+            "fecha_de_firma_del_contrato": "2025-03-01T00:00:00.000",
+            "tipo_identifi_del_contratista": "NIT",
+            "identificacion_del_contratista": "900333444",
+            "cuantia_contrato": "30000000",
+            "valor_contrato_con_adiciones": "30000000",
+        },
+        {  # la gobernación con "Arauca»Arauca" puede significar todo el departamento
+            "uid": "25-81-2",
+            "nombre_entidad": "DEPARTAMENTO DE ARAUCA",
+            "departamento_entidad": "Arauca",
+            "municipio_entidad": "Arauca",
+            "municipios_ejecucion": "Arauca",
+            "tipo_de_contrato": "Obra",
+            "fecha_de_firma_del_contrato": "2025-03-01T00:00:00.000",
+            "tipo_identifi_del_contratista": "NIT",
+            "identificacion_del_contratista": "900333555",
+            "cuantia_contrato": "40000000",
+            "valor_contrato_con_adiciones": "40000000",
+        },
         {
             "uid": "25-12-1",
             "nombre_entidad": "MUNICIPIO DE MEDELLIN",  # repetido en origen
@@ -190,7 +217,10 @@ def _divipola_de_los_alias() -> list[dict[str, str]]:
 def _write_bronze(data_dir: Path) -> None:
     existentes = {r["cod_mpio"] for r in FILAS["divipola"]}
     extra = {r["cod_mpio"]: r for r in _divipola_de_los_alias() if r["cod_mpio"] not in existentes}
-    filas = {**FILAS, "divipola": FILAS["divipola"] + list(extra.values())}
+    divipola = [
+        {"tipo_municipio": "Municipio", **r} for r in FILAS["divipola"] + list(extra.values())
+    ]
+    filas = {**FILAS, "divipola": divipola}
     for key, rows in filas.items():
         spec = CATALOG[key]
         columns: dict[str, list[str | None]] = {
@@ -295,3 +325,53 @@ def test_gold_excludes_outliers_and_low_confidence(warehouse: duckdb.DuckDBPyCon
     assert ("05576", 1, 150_000_000) in rows
     cali = [r for r in rows if r[0] == "76001"]
     assert cali == [("76001", 1, None)]  # el contrato existe, pero su valor no se suma
+
+
+def test_homonym_municipality_is_located_when_its_own_mayoralty_declares_it(
+    warehouse: duckdb.DuckDBPyConnection,
+) -> None:
+    alcaldia = _contrato(warehouse, "25-81-1")
+    assert alcaldia["cod_mpio_ejecucion"] == "81001"
+    # SECOP I solo trae el nombre del municipio: su confianza nunca pasa de media.
+    assert alcaldia["confianza_ubicacion"] == "media"
+
+    gobernacion = _contrato(warehouse, "25-81-2")
+    assert gobernacion["cod_mpio_ejecucion"] is None
+    assert gobernacion["fuente_ubicacion"] == "ubicacion_ambigua"
+
+
+def test_map_has_one_row_per_municipality_with_null_when_nothing_is_located(
+    warehouse: duckdb.DuckDBPyConnection,
+) -> None:
+    filas = {
+        row[0]: row[1:]
+        for row in warehouse.execute(
+            "select cod_mpio, iso_3166_2, ventana_desde, ventana_hasta, contratos_ubicados "
+            "from mapa_municipios_corte"
+        ).fetchall()
+    }
+    total = warehouse.execute("select count(*) from stg_divipola").fetchone()
+    assert total is not None and len(filas) == total[0]
+    assert filas["81001"] == ("CO-ARA", 2021, 2026, 1)  # la alcaldía de Arauca, ya ubicada
+    assert filas["05001"][3] == 3
+    assert filas["13001"][3] is None  # sin contratos ubicados: null, nunca 0
+
+
+def test_every_contract_in_the_window_falls_in_one_level(
+    warehouse: duckdb.DuckDBPyConnection,
+) -> None:
+    niveles = dict(
+        warehouse.execute(
+            "select nivel, sum(contratos) from mapa_niveles_corte group by 1"
+        ).fetchall()
+    )
+    ventana = warehouse.execute(
+        "select count(*) from contratos where anio_firma between 2021 and 2026 "
+        "and estado_ejecucion not in ('antes_de_firma', 'cancelado') "
+        "and fecha_firma <= date '2026-11-30'"
+    ).fetchone()
+    assert ventana is not None and sum(niveles.values()) == ventana[0]
+    # La gobernación de Arauca ("Arauca»Arauca") queda en el departamento, no se pierde.
+    assert warehouse.execute(
+        "select contratos from mapa_niveles_corte where nivel = 'departamento' and cod_dpto = '81'"
+    ).fetchone() == (1,)

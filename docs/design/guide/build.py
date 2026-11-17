@@ -143,6 +143,43 @@ map_svg = ('<svg class="el-map" viewBox="0 0 600 560" role="img" aria-labelledby
 ranked = sorted([t for t in territories if t['analyzed']], key=lambda t: -t['flagged'] / t['analyzed'])[:5]
 
 
+# --- neutral map variant (v1.1, TASK-09): no value encoded, place layer only ------
+def bbox(element):
+    nums = [float(n) for n in re.findall(r'-?\d+(?:\.\d+)?', re.search(r'\sd="([^"]+)"', element).group(1))]
+    return min(nums[0::2]), min(nums[1::2]), max(nums[0::2]), max(nums[1::2])
+
+
+def bare(element):
+    element = re.sub(r'<title>.*?</title>', '', element, flags=re.S)
+    return re.sub(r'\sfill="[^"]*"', '', element)
+
+
+def neutral(element):
+    selected = ' data-selected="true"' if 'CO-ANT' in element else ''
+    return bare(element).replace('<path ', f'<path class="el-fill-neutral"{selected} ', 1)
+
+
+def at(x, y):
+    return f'left:{100 * x / 600:.1f}%;top:{100 * y / 560:.1f}%'
+
+
+ant = bbox(next(e for e in elements if 'CO-ANT' in e))
+sap = bbox(next(e for e in elements if 'CO-SAP' in e))
+inset = (sap[0] - 10, sap[1] - 10, sap[2] - sap[0] + 20, sap[3] - sap[1] + 20)
+map_neutral = (
+    '<div class="el-map-frame"><svg class="el-map" viewBox="0 0 600 560" role="img" aria-labelledby="el-map-neutral-title">'
+    '<title id="el-map-neutral-title">Mapa de ejemplo sin valores: departamentos de Colombia, Antioquia seleccionado. La tabla equivalente tiene los datos.</title>'
+    '<g class="el-map-outline">' + ''.join(neutral(e) for e in ordered) + '</g>'
+    + f'<rect class="el-map-inset" x="{inset[0]:.1f}" y="{inset[1]:.1f}" width="{inset[2]:.1f}" height="{inset[3]:.1f}"/></svg>'
+    f'<span class="el-map-label" style="{at((ant[0] + ant[2]) / 2, (ant[1] + ant[3]) / 2)}">Antioquia</span>'
+    f'<span class="el-map-label el-map-label-start" style="{at(inset[0], inset[1] + inset[3] + 12)}">San Andrés y Providencia</span>'
+    '<div class="el-map-zoom" role="group" aria-label="Zoom del mapa">'
+    '<button class="el-btn el-btn-secondary" type="button" aria-label="Acercar"><i data-lucide="plus" aria-hidden="true"></i></button>'
+    '<button class="el-btn el-btn-secondary" type="button" aria-label="Alejar"><i data-lucide="minus" aria-hidden="true"></i></button>'
+    '<button class="el-btn el-btn-secondary" type="button" aria-label="Ver todo"><i data-lucide="maximize" aria-hidden="true"></i></button>'
+    '</div></div>')
+
+
 def number(value, decimals=1):
     text = f'{value:,.{decimals}f}'
     if decimals:
@@ -192,6 +229,7 @@ replacements = {
     '__FONTFACES__': font_faces,
     '__TOKENS_CSS__': tokens_css,
     '__MAP__': map_svg,
+    '__MAP_NEUTRAL__': map_neutral,
     '__RANK_ROWS__': rank_rows,
     '__SWATCH_ROWS__': swatch_rows(),
     '__CONTRAST_ROWS__': contrast_rows,

@@ -21,6 +21,12 @@
   width: 100%;
 }
 
+/* The browser default placeholder is 3.8:1 in dark; muted text passes 4.5:1 (guide v1.3.0). */
+.control::placeholder {
+  color: var(--el-color-text-muted);
+  opacity: 1;
+}
+
 .control[aria-invalid="true"] {
   border: 2px solid var(--el-color-danger);
 }

@@ -1,0 +1,161 @@
+/* Map with legend (guide v1.3.0). Tokens only; same values as the guide's el-map-* classes. */
+.frame {
+  position: relative;
+  width: 100%;
+}
+
+.map {
+  display: block;
+  width: 100%;
+  height: auto;
+  /* One finger scrolls the page at full view; once zoomed, the map takes the gesture. */
+  touch-action: pan-x pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: grab;
+}
+
+.map[data-zoomed="true"] {
+  touch-action: none;
+}
+
+.map[data-dragging="true"] {
+  cursor: grabbing;
+}
+
+.map path {
+  stroke: var(--el-color-map-border);
+  stroke-width: 0.8;
+  vector-effect: non-scaling-stroke;
+}
+
+.neutral {
+  fill: var(--el-color-line);
+}
+
+.low {
+  fill: var(--el-color-risk-low);
+}
+
+.medium {
+  fill: var(--el-color-risk-medium);
+}
+
+.high {
+  fill: var(--el-color-risk-high);
+}
+
+/* `unknown` takes its fill from the hatch pattern (the path's fill attribute). */
+.unknown {
+  stroke-width: 0.8;
+}
+
+.hatchBg {
+  fill: var(--el-color-unknown-surface);
+}
+
+.map .hatchLine {
+  stroke: var(--el-color-unknown);
+  stroke-width: 1;
+  vector-effect: none;
+}
+
+/* Outline of the drawn set (country or department): neighbours read as one shape. */
+.outline {
+  filter: drop-shadow(1.5px 0 0 var(--el-color-control-border))
+    drop-shadow(-1.5px 0 0 var(--el-color-control-border))
+    drop-shadow(0 1.5px 0 var(--el-color-control-border))
+    drop-shadow(0 -1.5px 0 var(--el-color-control-border));
+}
+
+/* Hover outline on the neutral layer: a stroke, never an opacity change. */
+.map path.neutral:hover {
+  stroke: var(--el-color-control-border);
+  stroke-width: 2;
+}
+
+.map path[data-selected="true"] {
+  stroke: var(--el-color-text);
+  stroke-width: 2.5;
+  paint-order: stroke fill;
+}
+
+.insetFrame {
+  fill: none;
+  stroke: var(--el-color-line);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.label {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  font-size: var(--el-size-small);
+  font-weight: var(--el-weight-emphasis);
+  line-height: 1.2;
+  color: var(--el-color-text);
+  white-space: nowrap;
+  pointer-events: none;
+  text-shadow:
+    0 0 3px var(--el-color-surface),
+    0 0 3px var(--el-color-surface),
+    0 0 6px var(--el-color-surface);
+}
+
+.insetLabel {
+  transform: none;
+  white-space: normal;
+}
+
+.zoom {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.legend h2 {
+  font-size: 15px;
+  line-height: var(--el-line-heading);
+  margin: 0 0 8px;
+}
+
+.legend ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+  font-size: 15px;
+}
+
+.legend li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.note {
+  font-size: 13px;
+  color: var(--el-color-text-muted);
+  margin: 8px 0 0;
+  max-width: 62ch;
+  text-wrap: pretty;
+}

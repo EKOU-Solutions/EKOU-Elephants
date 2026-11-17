@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { componentDocs, levelOf, TERRITORIES } from '../../../../.storybook/catalog/shared';
 import { formatNumber } from '../format';
+import { LegendKey } from '../LegendKey/LegendKey';
 import { DataTable, type DataTableRow } from './DataTable';
 
 const percent = (part: number, total: number, decimals = 1) =>
@@ -64,5 +65,40 @@ export const WithUnknown: Story = {
         cells: ['Sin datos', '0 analizados', '0% de 80'],
       },
     ],
+  },
+};
+export const CurrentRow: Story = {
+  name: 'Fila del territorio elegido',
+  args: {
+    caption: 'Contratos por municipio en Guainía, 2021 – 7 nov 2026',
+    columns: [
+      { label: 'Municipio' },
+      { label: 'Código DANE' },
+      { label: 'Contratos', numeric: true },
+    ],
+    currentRowId: '94001',
+    rows: [
+      { id: '94001', header: 'Inírida', cells: ['94001', '17.632'] },
+      { id: '94343', header: 'Barrancominas', cells: ['94343', '1.577'] },
+      {
+        id: '94884',
+        header: 'Puerto Colombia',
+        cells: [
+          '94884',
+          <span key="sd" style={{ display: 'inline-flex', gap: 6, alignItems: 'center' }}>
+            <LegendKey kind="unknown" />
+            Sin datos
+          </span>,
+        ],
+      },
+    ],
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'La fila elegida va en negrita y con `aria-current`, nunca con color. «Sin datos» lleva su clave rayada en la celda, nunca 0. Corte 2026-11, datos reales al 7 nov 2026.',
+      },
+    },
   },
 };

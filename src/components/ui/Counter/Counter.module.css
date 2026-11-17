@@ -39,3 +39,38 @@
   gap: 6px;
   align-items: center;
 }
+
+.note {
+  font-size: 13px;
+  color: var(--el-color-text-muted);
+}
+
+/* layout="adaptive": stacked with horizontal rules under 600 px of its own width, a row from there. */
+.adaptive {
+  container-type: inline-size;
+}
+
+@container (max-width: 599px) {
+  .adaptive .counts {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .adaptive .count {
+    border-right: 0;
+    margin-right: 0;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--el-color-line);
+  }
+
+  .adaptive .count:last-child {
+    border-bottom: 0;
+  }
+}
+
+@container (min-width: 600px) {
+  .adaptive .counts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+  }
+}

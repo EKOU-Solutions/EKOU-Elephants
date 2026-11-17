@@ -29,6 +29,11 @@
   background: var(--el-color-line);
 }
 
+/* Map neutral variant (v1.3.0): a place with located contracts; it encodes no value. */
+.neutral {
+  background: var(--el-color-line);
+}
+
 .unknown {
   background: repeating-linear-gradient(
     135deg,

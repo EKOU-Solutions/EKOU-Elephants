@@ -1,0 +1,4 @@
+# Geometría del mapa (scripts/geometria-mgn.mjs): una versión nueva usa otro nombre, así que nunca cambia.
+/geometria/*
+  Cache-Control: public, max-age=31536000, immutable
+  Content-Type: application/json; charset=utf-8

@@ -1,6 +1,7 @@
 // The only place that knows which provider draws each icon. Screens ask for an icon by name, so switching
 // providers or adding our own SVG changes this file, not the components that use it.
 import {
+  ArrowLeft,
   Check,
   ChevronDown,
   CircleAlert,
@@ -8,8 +9,12 @@ import {
   Download,
   ExternalLink,
   Info,
+  Link,
   LoaderCircle,
   MapPin,
+  Maximize,
+  Minus,
+  Plus,
   Search,
   Share2,
   SlidersHorizontal,
@@ -38,6 +43,11 @@ export const ICONS = {
   'share-2': { glyph: Share2, label: 'Compartir' },
   download: { glyph: Download, label: 'Descargar' },
   x: { glyph: X, label: 'Quitar' },
+  plus: { glyph: Plus, label: 'Acercar' },
+  minus: { glyph: Minus, label: 'Alejar' },
+  maximize: { glyph: Maximize, label: 'Ver todo' },
+  link: { glyph: Link, label: 'Enlace' },
+  'arrow-left': { glyph: ArrowLeft, label: 'Volver' },
   check: { glyph: Check, label: 'Hecho' },
 } satisfies Record<string, { glyph: IconGlyph; label: string }>;
 

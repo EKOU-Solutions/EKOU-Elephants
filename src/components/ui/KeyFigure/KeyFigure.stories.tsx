@@ -37,3 +37,40 @@ export const NoData: Story = {
   name: 'Sin datos (no es cero)',
   args: { part: 0, total: 0, context: 'Aún no hay contratos analizados en este periodo.' },
 };
+export const Count: Story = {
+  name: 'Cantidad (municipio)',
+  args: {
+    label: undefined,
+    part: undefined,
+    total: undefined,
+    value: 356935,
+    context: 'contratos firmados del 1 ene 2021 al 7 nov 2026 y ubicados en Medellín',
+    source:
+      'Fuentes: SECOP II y SECOP I (Colombia Compra Eficiente), DIVIPOLA y Marco Geoestadístico 2025 (DANE). Datos al 7 nov 2026.',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Un conteo sin etiqueta encima: la frase de abajo nombra lo que se cuenta. Corte 2026-11, datos reales.',
+      },
+    },
+  },
+};
+export const CountNoData: Story = {
+  name: 'Cantidad sin datos',
+  args: {
+    label: undefined,
+    part: undefined,
+    total: undefined,
+    value: null,
+    context:
+      'No encontramos contratos ubicados con certeza en este lugar del 1 ene 2021 al 7 nov 2026.',
+    source: 'Fuentes: SECOP II y SECOP I, DIVIPOLA y MGN 2025 (DANE). Datos al 7 nov 2026.',
+  },
+  parameters: {
+    docs: {
+      description: { story: '`null` es «Sin datos» con la trama gris, nunca 0.' },
+    },
+  },
+};
