@@ -54,6 +54,17 @@ export function routePath(route: MapRoute): string {
   return '/mapa';
 }
 
+/**
+ * One address per place: the link to replace the current one with, or `undefined` if it is already
+ * canonical or does not name a place. «/mapa/departamento/11» → «/mapa/11001»; «/mapa/» → «/mapa».
+ */
+export function canonicalPath(path: string): string | undefined {
+  const route = parseRoute(path);
+  if (route.view === 'invalid') return undefined;
+  const canonical = routePath(route);
+  return canonical === path ? undefined : canonical;
+}
+
 /** Bogotá, D.C. is a department of one municipality: it goes straight to 11001 (spec, decision 4). */
 export const departmentRoute = (code: string): MapRoute =>
   code === '11' ? { view: 'municipality', code: BOGOTA } : { view: 'department', code };

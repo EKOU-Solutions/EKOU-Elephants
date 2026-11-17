@@ -48,6 +48,12 @@ type Props = {
   onDetentChange: (detent: Detent) => void;
   /** Avisa cada vez que la ficha queda en otra altura o cambia de medida (no durante el arrastre): el mapa de debajo se encuadra con ella. */
   onLayoutChange?: (frame: SheetFrame) => void;
+  /**
+   * Qué muestra la ficha (el lugar, v1.6.0). Cuando cambia, la ficha no anuncia la altura con la que
+   * llega el contenido nuevo (ni el ajuste que pida quien la usa al medirla): quien la usa ya anuncia
+   * el cambio de lugar, y dos anuncios a la vez se pisan. Los cambios siguientes sí se anuncian.
+   */
+  contentKey?: string;
 };
 
 const DETENT_NAME: Record<Detent, string> = {
@@ -85,6 +91,7 @@ export function BottomSheet({
   detent,
   onDetentChange,
   onLayoutChange,
+  contentKey,
 }: Props) {
   const layerRef = useRef<HTMLDivElement>(null);
   const sectionRef = useRef<HTMLElement>(null);
@@ -97,6 +104,8 @@ export function BottomSheet({
   const lastFocused = useRef<Element | null>(null);
   const lastEdge = useRef<Detent>('peek');
   const lastShown = useRef<Detent | null>(null);
+  const lastContent = useRef(contentKey);
+  const arriving = useRef(false);
   const [heights, setHeights] = useState<Heights>({ peek: 0, half: 0, full: 0 });
   const [headerFits, setHeaderFits] = useState(true);
   const [isPanel, setIsPanel] = useState(false);
@@ -157,17 +166,29 @@ export function BottomSheet({
       gripRef.current?.focus();
   }, [shown, isPanel]);
 
-  // Announces what is shown, only after a change: not on arrival, not in the panel.
+  // Announces what is shown, only after a change: not on arrival, not in the panel, not while new
+  // content arrives (the height it comes with, and any adjustment in the same task, stay silent).
   useEffect(() => {
     if (!isMeasured || isPanel) {
       lastShown.current = null;
       return;
     }
+    if (lastContent.current !== contentKey) {
+      lastContent.current = contentKey;
+      arriving.current = true;
+      // Not cancelled on the next run: an adjustment right after must still find it set.
+      requestAnimationFrame(() => {
+        arriving.current = false;
+      });
+      lastShown.current = shown;
+      if (shown !== 'half') lastEdge.current = shown;
+      return;
+    }
     if (shown !== 'half') lastEdge.current = shown;
-    if (lastShown.current !== null && lastShown.current !== shown)
+    if (lastShown.current !== null && lastShown.current !== shown && !arriving.current)
       setAnnouncement(DETENT_NAME[shown]);
     lastShown.current = shown;
-  }, [shown, isMeasured, isPanel]);
+  }, [shown, isMeasured, isPanel, contentKey]);
 
   const handleKeyDown = (event: KeyboardEvent<HTMLElement>) => {
     if (event.key !== 'Escape' || isPanel || !isFull) return;

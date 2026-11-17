@@ -36,6 +36,8 @@ export interface FullscreenMapProps extends FullscreenView {
   onSelect?: (code: string) => void;
   /** Alejar desde un departamento o municipio hasta cerca del encuadre del país: la página vuelve a Colombia. */
   onZoomToCountry?: () => void;
+  /** Oculta el zoom y el recuadro de esquina mientras algo los cubre, p. ej. la lista del buscador abierta (v1.6.0). */
+  controlsHidden?: boolean;
 }
 
 const DRAG_THRESHOLD = 6; // px: a press that moves less is a tap (spec §3)
@@ -98,6 +100,7 @@ export function FullscreenMap({
   sheet,
   onSelect,
   onZoomToCountry,
+  controlsHidden = false,
 }: FullscreenMapProps) {
   const id = useId().replace(/[^a-zA-Z0-9-]/g, '');
   const hatchId = `hatch-${id}`;
@@ -129,7 +132,7 @@ export function FullscreenMap({
   const isPanel = sheet?.isPanel ?? false;
   const sheetFull = !isPanel && sheet?.shown === 'full';
   // Nothing is framed yet before the map has a size (e.g. a hidden page): no controls to press either.
-  const hideControls = sheetFull || !size.w;
+  const hideControls = sheetFull || !size.w || controlsHidden;
 
   /** The free area and the cameras for the current props (read again on every frame of a flight). */
   const geometry = () => {

@@ -59,3 +59,16 @@
 .table .current td {
   font-weight: 700;
 }
+
+/* stickyHeader: no scroll box of its own (a sticky header would stick to it), so the header sticks to
+   the scrolling ancestor; `clip` keeps a too-wide table from widening the page. */
+.sticky {
+  overflow-x: clip;
+}
+
+.sticky .table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--el-color-surface);
+}

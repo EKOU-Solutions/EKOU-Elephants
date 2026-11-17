@@ -186,6 +186,34 @@ function PlaceSheet({ place, initialDetent }: { place: Place; initialDetent: Det
   );
 }
 
+/** Two places in one sheet: a new place comes at half height and its arrival is not announced (`contentKey`). */
+function SwitchingSheet() {
+  const [place, setPlace] = useState(MEDELLIN);
+  const [detent, setDetent] = useState<Detent>('full');
+  const other = place === MEDELLIN ? PUERTO_COLOMBIA : MEDELLIN;
+  return (
+    <BottomSheet
+      label="Ficha del lugar"
+      contentKey={place.code}
+      detent={detent}
+      onDetentChange={setDetent}
+      title={<h1 style={{ fontSize: 'var(--el-size-title-mobile)' }}>{place.name}</h1>}
+      header={() => (
+        <Button
+          variant="secondary"
+          label={`Ir a ${other.name}`}
+          onClick={() => {
+            setPlace(other);
+            setDetent('half');
+          }}
+        />
+      )}
+    >
+      <p style={{ marginTop: 'var(--el-space-16)' }}>{SOURCE}</p>
+    </BottomSheet>
+  );
+}
+
 type FrameProps = {
   place?: Place;
   initialDetent?: Detent;
@@ -248,6 +276,7 @@ const meta = {
         '**Cuándo usarla:** cuando un mapa o un lienzo ocupa toda la pantalla y la información del lugar elegido debe convivir con él. **Cuándo no:** para un aviso o una confirmación (usa `Alert`), para un formulario o una tarea que tapa la página (un diálogo), ni en una página que ya se desplaza: la ficha supone que la página no se mueve.',
         '**Props:** `label` (nombre accesible), `title` (lo que se ve recogida), `header` (el resto del encabezado, una función que recibe `{ shown, isPanel }`: la altura que se ve y si es el panel, para decir «Volver al mapa» con la ficha completa y quitar ese botón en el panel), `children` (el cuerpo), `detent` y `onDetentChange` (altura pedida, controlada) y, opcional, `onLayoutChange` (avisa `{ shown, isPanel, height }` cuando la ficha queda en otra altura o cambia de medida, para que el mapa de debajo se encuadre en lo que queda libre; v1.5.0). La ficha llena su contenedor posicionado y la completa ocupa todo ese contenedor: los 68 px de mapa que deben quedar a la vista los deja quien la posiciona (en el mapa, `inset: 124px 0 0`: buscador 12 + 44 px y 68 px de mapa).',
         '**Teclado y gestos:** el borde es un `button` de 44 px cuyo nombre dice la altura («Ficha a media altura. Cambiar altura»). Toque, Enter o Espacio mueven un paso, siempre volviendo a la media: media → completa → media → recogida → media (decisión 27 de la [especificación del mapa](https://github.com/EKOU-Solutions/EKOU-Elephants/blob/main/docs/design/pages/map/spec.md)). **Escape** con la ficha completa la baja a la media y deja el foco en el borde. Solo el borde y el encabezado arrastran; al soltar se ajusta a la altura más cercana y un movimiento rápido la empuja una más. Con la ficha completa, arrastrar el encabezado hacia arriba desplaza el cuerpo. Cada cambio se anuncia en `role="status"`; lo que queda oculto es `inert` y, si tenía el foco, el foco pasa al borde. Si el encabezado no cabe en la media (pantalla baja, texto al 200 %), la ficha se ve completa y todo se calcula sobre lo que se ve: el borde dice «Ficha completa», el ciclo es completa ↔ recogida y Escape no hace nada. En el panel no hay alturas ni anuncios.',
+        '**Cambio de contenido (v1.6.0):** `contentKey` dice qué muestra la ficha (el lugar). Cuando cambia, la ficha no anuncia la altura con la que llega el contenido nuevo, ni el ajuste que pida quien la usa al medirla: quien la usa ya anuncia el cambio de lugar, y dos anuncios a la vez se pisan. Los cambios siguientes sí se anuncian.',
         '**Movimiento:** cambia de altura con `--el-duration-short` y `--el-ease-standard`; mientras el dedo arrastra no hay transición. Con `prefers-reduced-motion` salta a su altura sin animar.',
       ].join('\n\n'),
       'src/components/ui/BottomSheet/',
@@ -316,6 +345,22 @@ export const Loading: Story = {
       </BottomSheet>
     </Frame>
   ),
+};
+export const ContentChange: Story = {
+  name: 'Cambio de lugar (sin anunciar la altura)',
+  render: () => (
+    <Frame>
+      <SwitchingSheet />
+    </Frame>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Con la ficha completa, «Ir a…» cambia el lugar y la baja a la media; con `contentKey`, ese cambio de altura no se anuncia (la página ya anuncia el lugar).',
+      },
+    },
+  },
 };
 export const LongestName: Story = {
   name: 'Nombre más largo',

@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import type { TopoJson } from './geometry';
 import {
+  canonicalPath,
   departmentRoute,
   fullscreenView,
   isKnownRoute,
@@ -44,6 +45,14 @@ describe('rutas del mapa', () => {
 
   it('lleva Bogotá directo al municipio 11001', () => {
     expect(departmentRoute('11')).toEqual({ view: 'municipality', code: '11001' });
+  });
+
+  it('una sola dirección por lugar: la canónica reemplaza a las demás', () => {
+    expect(canonicalPath('/mapa/departamento/11')).toBe('/mapa/11001');
+    expect(canonicalPath('/mapa/')).toBe('/mapa');
+    expect(canonicalPath('/')).toBe('/mapa');
+    expect(canonicalPath('/mapa/05001')).toBeUndefined();
+    expect(canonicalPath('/mapa/hola')).toBeUndefined();
   });
 
   it('distingue códigos que existen de los que no', () => {

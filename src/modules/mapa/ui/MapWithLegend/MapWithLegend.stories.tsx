@@ -92,7 +92,7 @@ const meta = {
           '',
           '**Gestos.** Un dedo o el ratón siempre arrastran (cursor de mano), a cualquier zoom; dos dedos, la rueda (sin Ctrl) o + / − acercan y alejan alrededor del punto, de 0,7 a 80 veces el encuadre del país. El país nunca sale de la zona libre. Un toque sin moverse elige; un arrastre de más de 6 px nunca elige. Alejar desde un departamento hasta cerca del encuadre del país avisa `onZoomToCountry`. La página nunca se desplaza.',
           '',
-          '**Qué se ve.** En un departamento, sus municipios aparecen con un fundido y los demás departamentos quedan atenuados y se pueden tocar. Un municipio llena como máximo cerca del 55 % de la zona libre, con su rótulo y contorno de 2,5 px en el color del texto; sus vecinos quedan atenuados y se pueden tocar. El lugar al que te vas a pasar se delinea con `--el-color-control-border` a 1,5 px con el puntero encima o el dedo apoyado. **San Andrés y Providencia:** en Colombia, un recuadro punteado dentro del mapa, al noroeste, con las islas ampliadas a una sola escala; en el archipiélago, las islas se quedan en ese recuadro, con su nombre debajo; en cualquier otro lugar, un recuadro fijo de 68 px en la esquina que lleva al archipiélago. Con la ficha completa se ocultan el zoom, el recuadro de esquina y los rótulos.',
+          '**Qué se ve.** En un departamento, sus municipios aparecen con un fundido y los demás departamentos quedan atenuados y se pueden tocar. Un municipio llena como máximo cerca del 55 % de la zona libre, con su rótulo y contorno de 2,5 px en el color del texto; sus vecinos quedan atenuados y se pueden tocar. El lugar al que te vas a pasar se delinea con `--el-color-control-border` a 1,5 px con el puntero encima o el dedo apoyado. **San Andrés y Providencia:** en Colombia, un recuadro punteado dentro del mapa, al noroeste, con las islas ampliadas a una sola escala; en el archipiélago, las islas se quedan en ese recuadro, con su nombre debajo; en cualquier otro lugar, un recuadro fijo de 68 px en la esquina que lleva al archipiélago. Con la ficha completa se ocultan el zoom, el recuadro de esquina y los rótulos; `controlsHidden` (v1.6.0) oculta el zoom y el recuadro de esquina mientras algo los cubre, como la lista del buscador abierta.',
           '',
           '**Accesibilidad.** El mapa es `role="img"` y su nombre remite a la tabla de la ficha, que es la ruta de teclado a cada lugar; cada forma lleva su nombre en `<title>`. El zoom y el recuadro de esquina son botones de 44 px o más con nombre. Nada depende del paso del puntero. El zoom y el recuadro de esquina se ocultan cuando la ficha llega a su franja (pantalla baja, texto al 200 %).',
           '',
@@ -234,9 +234,12 @@ function Screen({
   initial,
   desktop = false,
   height = 760,
+  controlsHidden = false,
 }: {
   initial: MapRoute;
   desktop?: boolean;
+  /** The zoom and the corner inset hidden, as under the open search list. */
+  controlsHidden?: boolean;
   /** Frame height in px (the short-screen case). */
   height?: number;
 }) {
@@ -268,6 +271,7 @@ function Screen({
         variant="fullscreen"
         {...view}
         sheet={sheet}
+        controlsHidden={controlsHidden}
         onSelect={handleSelect}
         onZoomToCountry={() => go({ view: 'country' })}
       />
@@ -399,6 +403,12 @@ export const FullscreenSmallMunicipality: Story = {
 export const FullscreenShortScreen: Story = {
   name: 'Pantalla completa · Pantalla baja (320 × 580, ficha en su altura máxima)',
   render: () => <Screen initial={{ view: 'municipality', code: '05001' }} height={580} />,
+  parameters: fullscreen,
+  tags,
+};
+export const FullscreenControlsHidden: Story = {
+  name: 'Pantalla completa · Zoom oculto (lista del buscador abierta)',
+  render: () => <Screen initial={{ view: 'department', code: '05' }} controlsHidden />,
   parameters: fullscreen,
   tags,
 };

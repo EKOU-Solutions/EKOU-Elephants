@@ -1,10 +1,15 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { flushSync } from 'react-dom';
+import { useEffect, useMemo, useState } from 'react';
 import type { CorteVigente, DepartamentosDelCorte, MunicipiosDelCorte } from '../domain/mapa';
 import type { TopoJson } from './geometry';
 import { MapPage, type MapPageState } from './MapPage/MapPage';
-import { withMapZoom } from './mapZoom';
-import { type MapRoute, type PreparedMap, parseRoute, prepareMap, routePath } from './mapModel';
+import {
+  canonicalPath,
+  type MapRoute,
+  type PreparedMap,
+  parseRoute,
+  prepareMap,
+  routePath,
+} from './mapModel';
 
 type Fetch = (
   url: string,
@@ -50,12 +55,10 @@ export async function loadMap(
  */
 export function MapScreen() {
   const [route, setRoute] = useState<MapRoute>(() => {
-    const parsed = parseRoute(window.location.pathname);
     // One address per place: «/mapa/departamento/11» or a trailing slash become the canonical link.
-    const canonical = parsed.view === 'invalid' ? undefined : routePath(parsed);
-    if (canonical && canonical !== window.location.pathname)
-      window.history.replaceState(null, '', canonical);
-    return parsed;
+    const canonical = canonicalPath(window.location.pathname);
+    if (canonical) window.history.replaceState(null, '', canonical);
+    return parseRoute(window.location.pathname);
   });
   const [state, setState] = useState<MapPageState>({ status: 'loading' });
   const [attempt, setAttempt] = useState(0);
@@ -74,28 +77,18 @@ export function MapScreen() {
     return () => control.abort();
   }, [attempt]);
 
-  // The current view, for the zoom between views (read when navigating, not rendered).
-  const current = useRef(route);
-  current.current = route;
-  /** Shows a new view, zooming in or out when it moves between Colombia and a department. */
-  const show = useCallback((next: MapRoute) => {
-    withMapZoom(current.current, next, () => flushSync(() => setRoute(next)));
-  }, []);
-
-  const navigate = useCallback(
-    (next: MapRoute) => {
-      const path = routePath(next);
-      if (path !== window.location.pathname) window.history.pushState(null, '', path);
-      show(next);
-    },
-    [show],
-  );
+  // Each place adds a history entry; the map flies to it (FullscreenMap), and Back flies back.
+  const navigate = (next: MapRoute) => {
+    const path = routePath(next);
+    if (path !== window.location.pathname) window.history.pushState(null, '', path);
+    setRoute(next);
+  };
 
   useEffect(() => {
-    const onPop = () => show(parseRoute(window.location.pathname));
+    const onPop = () => setRoute(parseRoute(window.location.pathname));
     window.addEventListener('popstate', onPop);
     return () => window.removeEventListener('popstate', onPop);
-  }, [show]);
+  }, []);
 
   // The tab says where you are: «Medellín · Mapa de contratación pública».
   const place = useMemo(() => {

@@ -1,46 +1,54 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
-import type { MapRoute } from '../mapModel';
-import { fictionalLevel, sampleMap } from '../sample';
+import { expect, userEvent, waitFor, within } from 'storybook/test';
+import { type MapRoute, parseRoute } from '../mapModel';
+import { sampleMap } from '../sample';
 import { MapPage, type MapPageProps } from './MapPage';
 
-/** The page with the real sample; navigating changes the view in place, as in the app. */
+/** The page with the real sample; choosing a place changes it in place, as in the app. */
 function Page({
   initial,
-  fictional = false,
-  state,
+  screen,
+  ...props
 }: {
   initial: MapRoute;
-  fictional?: boolean;
-  state?: MapPageProps['state'];
-}) {
+  /** A phone screen of this size (px) instead of the whole window: the short-screen cases. */
+  screen?: { width: number; height: number };
+} & Partial<MapPageProps>) {
   const [route, setRoute] = useState(initial);
-  return (
+  const page = (
     <MapPage
-      state={state ?? { status: 'ready', map: sampleMap }}
+      state={{ status: 'ready', map: sampleMap }}
+      onRetry={() => {}}
+      {...props}
       route={route}
       onNavigate={setRoute}
-      onRetry={() => {}}
-      fictionalLevel={fictional ? fictionalLevel : undefined}
     />
+  );
+  if (!screen) return page;
+  // A sized container named «screen»: the page fills it instead of the window (MapPage.module.css).
+  return (
+    <div style={{ ...screen, containerType: 'size', containerName: 'screen', overflow: 'hidden' }}>
+      {page}
+    </div>
   );
 }
 
+const SHORT_PHONE = { width: 320, height: 640 };
+
 const meta = {
-  title: 'Pantallas/MapPage',
+  title: 'Módulos/Mapa/MapPage',
   component: MapPage,
+  // Each story on its own page: in a Docs page the full-screen map would catch the wheel.
+  tags: ['!autodocs'],
   parameters: {
     layout: 'fullscreen',
     docs: {
       description: {
         component: [
-          'Página del Mapa (TASK-09), aprobada el 2026-11-15. Responde «¿Dónde se firmaron los contratos públicos de Colombia, y cuántos hay en mi departamento o municipio?». Tres vistas: Colombia (`/mapa`), un departamento (`/mapa/departamento/05`) y un municipio (`/mapa/05001`).',
+          'Página del Mapa (TASK-09) en una sola pantalla, según la especificación aprobada el 2026-11-17 (boceto A): el mapa a pantalla completa, el buscador y las migas arriba, y la ficha deslizable con el lugar. Desde 1024 px la ficha es un panel fijo de 400 px a la derecha. Tres estados del mismo mapa: Colombia (`/mapa`), un departamento (`/mapa/departamento/05`) y un municipio (`/mapa/05001`).',
           '',
-          'Datos: muestra real del corte 2026-11 (datos al 7 nov 2026), con la forma del contrato de la API (`docs/design/pages/map/contract.md`). Especificación: `docs/design/pages/map/spec.md`.',
-          '',
-          'Al pasar de Colombia a un departamento, el mapa se acerca hacia él (y se aleja al volver) con una View Transition; con movimiento reducido el cambio es inmediato. La transición solo corre en la app (`MapScreen`), no en estas historias.',
-          '',
-          'La vista real es neutra: el corte no trae riesgo. La historia «Vista previa de la fase 2» pinta niveles **ficticios** y lo dice en cada lugar; la app nunca la muestra hasta que exista la metodología (TASK-07).',
+          '**Datos de muestra:** el corte real 2026-11 (datos al 7 nov 2026) con la forma del contrato de la API, de `docs/design/pages/map/sample/` (`sample.ts`). Especificación: `docs/design/pages/map/spec.md`.',
         ].join('\n'),
       },
     },
@@ -56,43 +64,134 @@ export const Country: Story = {
   render: () => <Page initial={{ view: 'country' }} />,
 };
 export const Department: Story = {
-  name: 'Departamento con «Sin datos» (Guainía)',
-  render: () => <Page initial={{ view: 'department', code: '94' }} />,
+  name: 'Departamento (Antioquia)',
+  render: () => <Page initial={{ view: 'department', code: '05' }} />,
 };
 export const Municipality: Story = {
   name: 'Municipio (Medellín)',
   render: () => <Page initial={{ view: 'municipality', code: '05001' }} />,
 };
-export const MunicipalityNoData: Story = {
-  name: 'Municipio sin datos (Puerto Colombia, Guainía)',
-  render: () => <Page initial={{ view: 'municipality', code: '94884' }} />,
-};
 export const Bogota: Story = {
-  name: 'Bogotá, D.C.',
-  render: () => <Page initial={{ view: 'municipality', code: '11001' }} />,
+  name: 'Bogotá, D.C. (enlace del departamento 11)',
+  render: () => <Page initial={parseRoute('/mapa/departamento/11')} />,
+};
+export const BogotaFullSheet: Story = {
+  name: 'Bogotá, D.C. · ficha completa sin tabla',
+  render: () => <Page initial={{ view: 'municipality', code: '11001' }} defaultDetent="full" />,
 };
 export const Archipelago: Story = {
   name: 'San Andrés y Providencia',
   render: () => <Page initial={{ view: 'department', code: '88' }} />,
+};
+export const NoData: Story = {
+  name: '«Sin datos» (Puerto Colombia, Guainía)',
+  render: () => <Page initial={{ view: 'municipality', code: '94884' }} />,
+};
+export const NoDataDepartment: Story = {
+  name: 'Departamento con «Sin datos» (Guainía)',
+  render: () => <Page initial={{ view: 'department', code: '94' }} />,
 };
 export const Loading: Story = {
   name: 'Cargando',
   render: () => <Page initial={{ view: 'country' }} state={{ status: 'loading' }} />,
 };
 export const Unavailable: Story = {
-  name: 'Datos no disponibles (503)',
+  name: 'Error: datos no disponibles (Reintentar)',
   render: () => <Page initial={{ view: 'country' }} state={{ status: 'unavailable' }} />,
 };
 export const InvalidLink: Story = {
   name: 'Enlace que no corresponde a un municipio',
   render: () => <Page initial={{ view: 'municipality', code: '99999' }} />,
 };
-export const FictionalPreview: Story = {
-  name: 'Vista previa de la fase 2 (riesgo ficticio)',
-  render: () => <Page initial={{ view: 'municipality', code: '05001' }} fictional />,
+export const SearchResults: Story = {
+  name: 'Búsqueda con resultados («granada»)',
+  render: () => <Page initial={{ view: 'country' }} defaultQuery="granada" />,
 };
-export const Phone: Story = {
-  name: 'Celular (390 px)',
+export const SearchEmpty: Story = {
+  name: 'Búsqueda sin resultados («medelin»)',
+  render: () => <Page initial={{ view: 'country' }} defaultQuery="medelin" />,
+};
+export const SearchTooShort: Story = {
+  name: 'Búsqueda con una letra',
+  render: () => <Page initial={{ view: 'department', code: '05' }} defaultQuery="m" />,
+};
+export const Peek: Story = {
+  name: 'Ficha recogida (Medellín)',
+  render: () => <Page initial={{ view: 'municipality', code: '05001' }} defaultDetent="peek" />,
+};
+export const FullSheet: Story = {
+  name: 'Ficha completa con la tabla (Medellín)',
+  render: () => <Page initial={{ view: 'municipality', code: '05001' }} defaultDetent="full" />,
+};
+export const FullSheetCountry: Story = {
+  name: 'Ficha completa con la tabla (Colombia)',
+  render: () => <Page initial={{ view: 'country' }} defaultDetent="full" />,
+};
+export const ShortScreenMunicipality: Story = {
+  name: 'Pantalla baja 320 × 640: llega recogida (Medellín)',
+  render: () => <Page initial={{ view: 'municipality', code: '05001' }} screen={SHORT_PHONE} />,
+};
+export const ShortScreenBogota: Story = {
+  name: 'Pantalla baja 320 × 640: llega recogida (Bogotá, D.C.)',
+  render: () => <Page initial={{ view: 'municipality', code: '11001' }} screen={SHORT_PHONE} />,
+};
+export const LongestName: Story = {
+  name: 'Caso extremo: nombre más largo (Villa de San Diego de Ubaté)',
+  render: () => <Page initial={{ view: 'municipality', code: '25843' }} />,
+};
+export const LongestDepartment: Story = {
+  name: 'Caso extremo: departamento de nombre más largo (Providencia)',
+  render: () => <Page initial={{ view: 'municipality', code: '88564' }} />,
+};
+
+const status = (canvas: HTMLElement) =>
+  canvas.querySelector('main > [role="status"]')?.textContent ?? '';
+
+export const CopyRefused: Story = {
+  name: '«Copiar enlace» rechazado: el enlace en un campo',
   render: () => <Page initial={{ view: 'municipality', code: '05001' }} />,
-  globals: { viewport: { value: 'mobile2' } },
+  // The browser refuses the clipboard (no permission): the link shows in a field, selected.
+  beforeEach: () => {
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: { writeText: () => Promise.reject(new Error('Permiso denegado')) },
+    });
+    return () => {
+      Reflect.deleteProperty(navigator, 'clipboard');
+    };
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(await canvas.findByRole('button', { name: 'Copiar enlace' }));
+    const field = await canvas.findByRole('textbox', { name: 'Enlace para compartir' });
+    await waitFor(() => expect(field).toHaveFocus());
+  },
+};
+
+export const FocusAfterSearch: Story = {
+  name: 'Foco: elegir en el buscador lleva al título y lo anuncia',
+  render: () => <Page initial={{ view: 'country' }} />,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.type(
+      await canvas.findByRole('searchbox', { name: 'Busca tu municipio o departamento' }),
+      'medell',
+    );
+    await userEvent.click(await canvas.findByRole('button', { name: 'Medellín, Antioquia' }));
+    await waitFor(() =>
+      expect(canvas.getByRole('heading', { level: 1, name: 'Medellín' })).toHaveFocus(),
+    );
+    await waitFor(() => expect(status(canvasElement)).toBe('Seleccionado: Medellín, Antioquia'));
+  },
+};
+
+export const FocusAfterCrumb: Story = {
+  name: 'Foco: la miga que desaparece deja el foco en «← Colombia»',
+  render: () => <Page initial={{ view: 'municipality', code: '05001' }} />,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(await canvas.findByRole('button', { name: 'Antioquia' }));
+    await waitFor(() => expect(canvas.getByRole('button', { name: 'Colombia' })).toHaveFocus());
+    await waitFor(() => expect(status(canvasElement)).toBe('Seleccionado: Antioquia'));
+  },
 };

@@ -29,16 +29,25 @@ type Props = {
   rows: DataTableRow[];
   /** Fila del territorio elegido: se marca con peso y `aria-current`, nunca con color. */
   currentRowId?: string;
+  /**
+   * Encabezado fijo arriba mientras se desplaza el contenedor que la contiene (la ficha del mapa, v1.6.0).
+   * Sin desplazamiento horizontal propio: solo para tablas de pocas columnas que caben a 320 px.
+   */
+  stickyHeader?: boolean;
 };
 
 /** Para comparar y verificar; la alternativa accesible a cada mapa o gráfico. */
-export function DataTable({ caption, columns, rows, currentRowId }: Props) {
+export function DataTable({ caption, columns, rows, currentRowId, stickyHeader }: Props) {
   const [headerColumn, ...valueColumns] = columns;
   return (
     // A labelled <section> is a region landmark. It must be focusable so keyboard users can
-    // scroll it horizontally (WCAG 2.1.1, axe scrollable-region-focusable).
-    // biome-ignore lint/a11y/noNoninteractiveTabindex: scrollable region needs keyboard focus.
-    <section aria-label={caption} tabIndex={0} className={styles.scroll}>
+    // scroll it horizontally (WCAG 2.1.1, axe scrollable-region-focusable). With a sticky header it
+    // does not scroll: the scrolling ancestor takes the keyboard.
+    <section
+      aria-label={caption}
+      tabIndex={stickyHeader ? undefined : 0}
+      className={stickyHeader ? `${styles.scroll} ${styles.sticky}` : styles.scroll}
+    >
       <table className={styles.table}>
         <caption className={styles.caption}>{caption}</caption>
         <thead>
