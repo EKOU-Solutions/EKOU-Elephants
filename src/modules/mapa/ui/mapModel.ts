@@ -9,8 +9,10 @@ import type {
   MunicipiosDelCorte,
 } from '../domain/mapa';
 import {
+  archipelagoInset,
   archipelagoPanel,
   type Box,
+  type InsetIsland,
   type Shape,
   shapesOf,
   type TopoJson,
@@ -127,7 +129,11 @@ export interface PreparedMap {
   departmentShapes: Map<string, Shape>;
   municipalityShapes: Map<string, Shape>;
   archipelago: { shapes: Shape[]; box: Box };
+  /** The archipelago inset of the full-screen map (decision 24): islands enlarged at the mainland's north-west. */
+  inset: { islands: InsetIsland[]; box: Box; scale: number };
   mainland: Box;
+  /** The country's frame on the full-screen map: the mainland and the inset. */
+  home: Box;
   search: SearchEntry[];
 }
 
@@ -162,6 +168,8 @@ export function prepareMap(data: MapData): PreparedMap {
       route: { view: 'municipality', code: m.codigo } as const,
     })),
   ];
+  const archipelago = archipelagoPanel(data.topology);
+  const inset = archipelagoInset(archipelago, mainland);
   return {
     data,
     departments,
@@ -169,8 +177,10 @@ export function prepareMap(data: MapData): PreparedMap {
     byDepartment,
     departmentShapes,
     municipalityShapes,
-    archipelago: archipelagoPanel(data.topology),
+    archipelago,
+    inset,
     mainland,
+    home: unionBox([mainland, inset.box]),
     search,
   };
 }
@@ -339,5 +349,202 @@ export function mapView(
     withUnknown: drawn.some((t) => t.fill === 'unknown'),
     // Its note on the sea between the islands only applies when both are drawn.
     archipelago: archipelago && !selectedShape,
+  };
+}
+
+// ---------- full-screen map (spec of 2026-11-17, sketch A) ----------
+
+export interface FullscreenTerritory extends ViewTerritory {
+  /** Around the place in focus: still drawn and tappable, in the subtle surface (decisions 20 and 25). */
+  dimmed: boolean;
+  /** The archipelago's islands are drawn at the inset: their SVG transform. */
+  transform?: string;
+}
+
+/** A place name over the map, in projected units: above the chosen place, below an island, or centred. */
+export interface FullscreenLabel {
+  text: string;
+  x: number;
+  y: number;
+  anchor: 'above' | 'below' | 'below-start' | 'centre';
+  /** Horizontal bounds (projected units) the name never leaves: the archipelago's dashed frame. */
+  within?: readonly [number, number];
+}
+
+/** How much of the free area a view fills: a department or the country 90 %, a municipality 55 % (decision 20). */
+export const FILL = { place: 0.9, municipality: 0.55 } as const;
+
+export interface FullscreenView {
+  /** The map's accessible name: what it shows and where the values are. */
+  title: string;
+  /** Every department but the archipelago and the open one: dimmed around an open department. */
+  departments: FullscreenTerritory[];
+  /** Municipalities of the open department (none in Colombia). */
+  municipalities: FullscreenTerritory[];
+  /** Open department: its municipalities are drawn and its outline goes on top. */
+  department?: string;
+  outline?: string;
+  selected?: string;
+  /**
+   * The archipelago: `map` in Colombia (inside the map, at its approximate place), `outline` in the
+   * archipelago (its dashed frame outlines the department), `corner` anywhere else (fixed inset).
+   */
+  inset: {
+    islands: InsetIsland[];
+    box: Box;
+    /** The islands' enlargement: the «Sin datos» hatch is compensated by it. */
+    scale: number;
+    label: string;
+    placement: 'map' | 'outline' | 'corner';
+  };
+  /** The camera frames this box, filling `fill` of the free area. */
+  focus: Box;
+  fill: number;
+  /** A chosen municipality's department: the zoom never leaves it off screen (decision 20). */
+  context?: Box;
+  /** The country's frame: zoom limits and the way back to Colombia. */
+  home: Box;
+  labels: FullscreenLabel[];
+  /** Some drawn municipality has no data: the sheet adds the «Sin datos» legend. */
+  withUnknown: boolean;
+}
+
+const MAP_TITLE_END = 'Los valores están en la tabla de la ficha.';
+
+/**
+ * What the full-screen map draws for a route: one map with three levels (decision 17). The department
+ * in focus shows its municipalities and the others are dimmed around it; a chosen municipality keeps
+ * its fill and its neighbours are dimmed (decision 20).
+ */
+export function fullscreenView(map: PreparedMap, route: MapRoute): FullscreenView {
+  const inset = {
+    islands: map.inset.islands,
+    box: map.inset.box,
+    scale: map.inset.scale,
+    label: 'San Andrés y Providencia',
+  };
+  const departmentsBut = (open?: string): FullscreenTerritory[] =>
+    map.data.departments.departamentos
+      .filter((d) => d.codigo !== ARCHIPELAGO && d.codigo !== open)
+      .map((d) => ({
+        code: d.codigo,
+        d: map.departmentShapes.get(d.codigo)?.d ?? '',
+        fill: 'neutral',
+        description: d.nombre,
+        dimmed: open !== undefined,
+      }));
+
+  if (route.view !== 'department' && route.view !== 'municipality') {
+    return {
+      title: `Mapa de Colombia por departamento. ${MAP_TITLE_END}`,
+      departments: departmentsBut(),
+      municipalities: [],
+      inset: { ...inset, placement: 'map' },
+      focus: map.home,
+      fill: FILL.place,
+      home: map.home,
+      labels: [{ text: inset.label, x: inset.box[0], y: inset.box[3], anchor: 'below-start' }],
+      withUnknown: false,
+    };
+  }
+
+  const department =
+    route.view === 'department'
+      ? route.code
+      : (map.municipalities.get(route.code)?.departamento.codigo ?? '');
+  const archipelago = department === ARCHIPELAGO;
+  const islandOf = (c: string) => map.inset.islands.find((i) => i.code === c);
+  const shapeOf = (c: string) => (archipelago ? islandOf(c) : map.municipalityShapes.get(c));
+  // A municipality of the cut without a shape in this geometry version is listed in the table, not drawn.
+  const drawable = (map.byDepartment.get(department) ?? []).filter((m) => shapeOf(m.codigo));
+  const selected = route.view === 'municipality' ? route.code : undefined;
+  const selectedBox = selected ? shapeOf(selected)?.box : undefined;
+  const municipalities: FullscreenTerritory[] = drawable.map((m) => ({
+    code: m.codigo,
+    d: shapeOf(m.codigo)?.d ?? '',
+    fill: m.contratosUbicados === null ? 'unknown' : 'neutral',
+    description: `${m.nombre}: ${
+      m.contratosUbicados === null
+        ? 'Sin datos'
+        : `${formatNumber(m.contratosUbicados, 0)} contratos`
+    }`,
+    dimmed: selectedBox !== undefined && m.codigo !== selected,
+    ...(archipelago ? { transform: islandOf(m.codigo)?.transform } : {}),
+  }));
+  const boxes = drawable.flatMap((m) => {
+    const box = shapeOf(m.codigo)?.box;
+    return box ? [box] : [];
+  });
+  const [ix0, iy0, ix1, iy1] = map.inset.box;
+  // In the archipelago, room under the islands for their names, inside the dashed frame.
+  const departmentBox: Box = archipelago
+    ? [ix0, iy0, ix1, iy1 + (iy1 - iy0) * 0.12]
+    : boxes.length
+      ? unionBox(boxes)
+      : (map.departmentShapes.get(department)?.box ?? map.mainland);
+  const name = map.departments.get(department)?.nombre ?? department;
+  const selectedName = selected ? map.municipalities.get(selected)?.nombre : undefined;
+  const bogota = department === '25' ? map.municipalityShapes.get(BOGOTA)?.box : undefined;
+  // Decision 10: names only for the chosen place, the archipelago's islands and Bogotá.
+  const labels: FullscreenLabel[] = archipelago
+    ? drawable.flatMap((m) => {
+        const b = shapeOf(m.codigo)?.box;
+        return b
+          ? [
+              {
+                text: m.nombre,
+                x: (b[0] + b[2]) / 2,
+                y: b[3],
+                anchor: 'below' as const,
+                within: [ix0, ix1] as const,
+              },
+            ]
+          : [];
+      })
+    : [
+        ...(bogota
+          ? [
+              {
+                text: 'Bogotá, D.C.',
+                x: (bogota[0] + bogota[2]) / 2,
+                y: (bogota[1] + bogota[3]) / 2,
+                anchor: 'centre' as const,
+              },
+            ]
+          : []),
+        ...(selectedBox && selectedName
+          ? [
+              {
+                text: selectedName,
+                x: (selectedBox[0] + selectedBox[2]) / 2,
+                y: selectedBox[1],
+                anchor: 'above' as const,
+              },
+            ]
+          : []),
+      ];
+  return {
+    title: `${
+      selectedBox && selectedName
+        ? `Mapa de ${selectedName}, ${name}, con sus municipios vecinos`
+        : `Mapa de ${name} por municipio`
+    }. ${MAP_TITLE_END}`,
+    departments: departmentsBut(department),
+    municipalities,
+    department,
+    outline: archipelago ? undefined : map.departmentShapes.get(department)?.d,
+    selected,
+    // In the archipelago the dashed frame outlines the department, names included.
+    inset: archipelago
+      ? { ...inset, box: departmentBox, placement: 'outline' }
+      : { ...inset, placement: 'corner' },
+    // Without its shape in this geometry version, the department's frame stays (spec, municipality row 1).
+    focus: selectedBox ?? departmentBox,
+    fill: selectedBox ? FILL.municipality : FILL.place,
+    ...(selectedBox ? { context: departmentBox } : {}),
+    home: map.home,
+    labels,
+    // Only what is in focus: dimmed neighbours do not bring the «Sin datos» legend.
+    withUnknown: municipalities.some((m) => !m.dimmed && m.fill === 'unknown'),
   };
 }

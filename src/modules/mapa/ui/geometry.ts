@@ -157,3 +157,68 @@ export function archipelagoPanel(topo: TopoJson): { shapes: Shape[]; box: Box } 
   if (!providencia) throw new Error('Providencia missing from the geometry');
   return { shapes: [sanAndres, providencia], box: unionBox([sanAndres.box, providencia.box]) };
 }
+
+/** An island of the archipelago inset: its shape, where the inset puts it and the box it takes there. */
+export interface InsetIsland {
+  code: string;
+  d: string;
+  /** SVG transform that carries the shape to the inset: one uniform scale, never stretched. */
+  transform: string;
+  box: Box;
+}
+
+// Map spec, decision 24: the inset is about 18 % of the mainland's height, in the sea at its north-west corner.
+const INSET_HEIGHT = 0.18;
+const INSET_AT = [0.04, 0.03] as const; // shares of the mainland's width and height from its north-west corner
+const INSET_PAD = 0.015; // the dashed frame's margin, as a share of the mainland's height
+const INSET_SEA = 0.35; // sea kept between the islands, as a share of San Andrés' height
+const PROVIDENCIA_SHIFT = 0.6; // Providencia starts this share of San Andrés' width to the right
+
+/**
+ * Archipelago inset on the full-screen map (map spec, decision 24, as in the approved sketch): both
+ * islands enlarged with one factor, Providencia above and to the right of San Andrés with only the sea
+ * between them shortened, placed in the Caribbean at the mainland's north-west corner. Takes the
+ * shapes of `archipelagoPanel` (projected at their own latitude) and returns where each one goes in
+ * the mainland's projected units, plus the dashed frame around both.
+ */
+export function archipelagoInset(
+  panel: { shapes: Shape[] },
+  mainland: Box,
+): { islands: InsetIsland[]; box: Box; scale: number } {
+  const sanAndres = panel.shapes.find((s) => s.code === SAN_ANDRES);
+  const providencia = panel.shapes.find((s) => s.code === PROVIDENCIA);
+  if (!sanAndres || !providencia)
+    throw new Error('San Andrés or Providencia missing from the panel');
+  const size = (b: Box) => [b[2] - b[0], b[3] - b[1]] as const;
+  const [wS, hS] = size(sanAndres.box);
+  const [wP, hP] = size(providencia.box);
+  const sea = hS * INSET_SEA;
+  const height = mainland[3] - mainland[1];
+  const scale = (height * INSET_HEIGHT) / (hP + sea + hS);
+  const at = [
+    mainland[0] + (mainland[2] - mainland[0]) * INSET_AT[0],
+    mainland[1] + height * INSET_AT[1],
+  ] as const;
+  const place = (shape: Shape, ox: number, oy: number): InsetIsland => {
+    const x = at[0] + ox * scale;
+    const y = at[1] + oy * scale;
+    const [w, h] = size(shape.box);
+    return {
+      code: shape.code,
+      d: shape.d,
+      transform: `translate(${x - shape.box[0] * scale} ${y - shape.box[1] * scale}) scale(${scale})`,
+      box: [x, y, x + w * scale, y + h * scale],
+    };
+  };
+  const pad = height * INSET_PAD;
+  return {
+    scale,
+    islands: [place(providencia, wS * PROVIDENCIA_SHIFT, 0), place(sanAndres, 0, hP + sea)],
+    box: [
+      at[0] - pad,
+      at[1] - pad,
+      at[0] + Math.max(wS, wS * PROVIDENCIA_SHIFT + wP) * scale + pad,
+      at[1] + (hP + sea + hS) * scale + pad,
+    ],
+  };
+}

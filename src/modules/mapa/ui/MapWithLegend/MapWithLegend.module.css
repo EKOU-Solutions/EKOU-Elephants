@@ -54,7 +54,8 @@
   fill: var(--el-color-unknown-surface);
 }
 
-.map .hatchLine {
+.map .hatchLine,
+.screenMap .hatchLine {
   stroke: var(--el-color-unknown);
   stroke-width: 1;
   vector-effect: none;
@@ -158,4 +159,203 @@
   margin: 8px 0 0;
   max-width: 62ch;
   text-wrap: pretty;
+}
+
+/* ---------- Full-screen variant (map spec of 2026-11-17, sketch A) ---------- */
+
+/* Fills its positioned parent; the page never scrolls (map spec §3). */
+.screen {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
+  background: var(--el-color-surface);
+}
+
+/* One finger or the mouse always drags the map, at any zoom (decision 12c). */
+.screenMap {
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: grab;
+}
+
+.screenMap[data-dragging="true"] {
+  cursor: grabbing;
+}
+
+.screenMap path {
+  stroke: var(--el-color-map-border);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+/* Around the place in focus: neighbours and other departments, still tappable (decision 20). */
+.screenMap .dimmed {
+  fill: var(--el-color-surface-subtle);
+  stroke: var(--el-color-line);
+}
+
+/* The place you are about to switch to: a softer outline than the chosen one, never opacity (decision 25). */
+.screenMap [data-candidate="true"]:not([data-selected="true"]) {
+  stroke: var(--el-color-control-border);
+  stroke-width: 1.5;
+}
+
+.screenMap [data-selected="true"] {
+  stroke: var(--el-color-text);
+  stroke-width: 2.5;
+}
+
+/* The open department's outline, above its municipalities. */
+.screenMap .regionOutline {
+  fill: none;
+  stroke: var(--el-color-control-border);
+  stroke-width: 1.5;
+  pointer-events: none;
+}
+
+/* The archipelago inset inside the map: a dashed frame around the enlarged islands (decision 24). */
+.insetBox {
+  fill: var(--el-color-surface);
+  stroke: var(--el-color-control-border);
+  stroke-width: 1;
+  stroke-dasharray: 4 3;
+  vector-effect: non-scaling-stroke;
+  cursor: pointer;
+}
+
+/* A department's municipalities fade in when it opens; reduced motion drops it (global.css). */
+.appear {
+  animation: appear var(--el-duration-short) var(--el-ease-standard);
+}
+
+@keyframes appear {
+  from {
+    opacity: 0;
+  }
+}
+
+/* Names over the map: positioned by the camera (a transform from 0 0). */
+.placeLabel,
+.islandLabel,
+.islandName,
+.insetName {
+  position: absolute;
+  left: 0;
+  top: 0;
+  font-size: var(--el-size-small);
+  line-height: var(--el-line-heading);
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.placeLabel {
+  padding: 0 var(--el-space-4);
+  font-weight: var(--el-weight-emphasis);
+  color: var(--el-color-text);
+  background: var(--el-color-surface);
+  border: var(--el-rule) solid var(--el-color-text);
+}
+
+.islandLabel {
+  padding: 0 var(--el-space-4);
+  color: var(--el-color-text);
+  background: var(--el-color-surface);
+}
+
+/* Decision 29: the only exception to 14 px. Names inside the archipelago inset (in the map and in the
+   corner) are ≈11 px, in the text colour, because 68 px fit no more; the sheet gives them in full. */
+.islandName,
+.insetName,
+.corner {
+  font-size: calc(var(--el-size-small) * 0.8);
+  color: var(--el-color-text);
+}
+
+.islandName {
+  padding: 0 var(--el-space-4);
+  background: var(--el-color-surface);
+}
+
+.insetName {
+  max-width: calc(2 * var(--el-space-48));
+  white-space: normal;
+}
+
+/* Zoom buttons: right of the map, below the search on a phone; next to the side panel on a desktop. */
+.screenZoom {
+  position: absolute;
+  top: calc(var(--el-space-12) + var(--el-control-height) + var(--el-space-8));
+  right: var(--el-space-12);
+  display: grid;
+  gap: var(--el-space-8);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+/* 400 px: the BottomSheet's side panel (map spec decision 22; camera.test.ts checks it against PANEL_WIDTH). */
+.screenZoom[data-panel="true"] {
+  top: var(--el-space-12);
+  right: calc(400px + var(--el-space-12));
+}
+
+/* Outside Colombia and the archipelago: a fixed 68 px corner inset under the crumbs (decision 23). */
+.corner {
+  position: absolute;
+  left: var(--el-space-12);
+  top: calc(var(--el-space-12) + 2 * var(--el-control-height) + 2 * var(--el-space-8));
+  width: calc(var(--el-control-height) + var(--el-space-24));
+  padding: var(--el-space-4) 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--el-space-4) / 2);
+  border: var(--el-rule) dashed var(--el-color-control-border);
+  border-radius: 0;
+  background: var(--el-color-surface);
+  font-family: inherit;
+  line-height: var(--el-line-heading);
+  text-align: center;
+  cursor: pointer;
+}
+
+/* «San Andrés y» measures 69 px at 11 px: a slightly tighter tracking keeps it on one line in 66 px. */
+.corner span {
+  letter-spacing: -0.03em;
+}
+
+.corner[data-panel="true"] {
+  top: calc(var(--el-space-12) + var(--el-control-height) + var(--el-space-16));
+}
+
+.corner:hover {
+  border-color: var(--el-color-text);
+}
+
+.corner svg {
+  width: 100%;
+  height: calc(var(--el-space-48) + var(--el-space-8));
+  pointer-events: none;
+}
+
+.corner path {
+  /* Decision 23: never an empty box; the islands need contrast against the surface in both themes. */
+  fill: var(--el-color-control-border);
+}
+
+.screenZoom[hidden],
+.corner[hidden] {
+  display: none;
+}
+
+/* The sheet reaches the control's strip: hidden, never drawn over the sheet. */
+.screenZoom[data-covered="true"],
+.corner[data-covered="true"] {
+  visibility: hidden;
 }

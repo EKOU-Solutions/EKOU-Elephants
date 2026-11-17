@@ -27,6 +27,12 @@ export type SheetLayout = {
   isPanel: boolean;
 };
 
+/** Cómo se ve la ficha y cuánto tapa desde abajo, para encuadrar lo que queda libre encima. */
+export type SheetFrame = SheetLayout & {
+  /** Alto que tapa la ficha, en px (0 en el panel). */
+  height: number;
+};
+
 type Props = {
   /** Nombre accesible de la ficha («Ficha del lugar»). */
   label: string;
@@ -40,6 +46,8 @@ type Props = {
   detent: Detent;
   /** Pide otra altura: borde, arrastre o Escape. Los botones del encabezado la piden por su cuenta. */
   onDetentChange: (detent: Detent) => void;
+  /** Avisa cada vez que la ficha queda en otra altura o cambia de medida (no durante el arrastre): el mapa de debajo se encuadra con ella. */
+  onLayoutChange?: (frame: SheetFrame) => void;
 };
 
 const DETENT_NAME: Record<Detent, string> = {
@@ -69,7 +77,15 @@ type Drag = {
 };
 
 /** Ficha deslizable sobre un mapa: tres alturas con un borde que es botón; desde 1024 px de ancho, panel fijo a la derecha. */
-export function BottomSheet({ label, title, header, children, detent, onDetentChange }: Props) {
+export function BottomSheet({
+  label,
+  title,
+  header,
+  children,
+  detent,
+  onDetentChange,
+  onLayoutChange,
+}: Props) {
   const layerRef = useRef<HTMLDivElement>(null);
   const sectionRef = useRef<HTMLElement>(null);
   const gripRef = useRef<HTMLButtonElement>(null);
@@ -90,6 +106,17 @@ export function BottomSheet({ label, title, header, children, detent, onDetentCh
   const isMeasured = heights.full > 0;
   const shown = shownDetent(detent, headerFits);
   const isFull = shown === 'full';
+  // The latest callback, so an inline function does not re-run the report on every render.
+  const layoutListener = useRef(onLayoutChange);
+  useLayoutEffect(() => {
+    layoutListener.current = onLayoutChange;
+  });
+  const shownHeight = isPanel ? 0 : heights[shown];
+
+  // Before paint, so the map under the sheet never shows a frame framed for the previous height.
+  useLayoutEffect(() => {
+    if (isMeasured) layoutListener.current?.({ shown, isPanel, height: shownHeight });
+  }, [isMeasured, shown, isPanel, shownHeight]);
 
   // Collapsed and half heights come from the content; full is the whole layer.
   useLayoutEffect(() => {

@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type { TopoJson } from './geometry';
 import {
   departmentRoute,
+  fullscreenView,
   isKnownRoute,
   type MapData,
   mapView,
@@ -116,5 +117,80 @@ describe('mapView of a municipality', () => {
     expect(width(medellin.box)).toBeLessThan(width(department.box) / 5);
     expect(medellin.labels).toEqual([]);
     expect(medellin.title).toContain('Mapa de Medellín, Antioquia');
+  });
+});
+
+describe('fullscreenView: un solo mapa con tres niveles', () => {
+  it('en Colombia dibuja los departamentos sin el archipiélago, que va en el recuadro dentro del mapa', () => {
+    const view = fullscreenView(map, { view: 'country' });
+    expect(view.departments).toHaveLength(32);
+    expect(view.departments.some((d) => d.code === '88' || d.dimmed)).toBe(false);
+    expect(view.municipalities).toEqual([]);
+    expect(view.inset.placement).toBe('map');
+    expect(view.focus).toEqual(view.home);
+    // El encuadre del país incluye el recuadro, para que siempre se vea al llegar.
+    expect(view.home[1]).toBeLessThanOrEqual(view.inset.box[1]);
+    expect(view.labels.map((l) => l.text)).toEqual(['San Andrés y Providencia']);
+  });
+
+  it('en un departamento atenúa los demás y deja el recuadro en la esquina', () => {
+    const view = fullscreenView(map, { view: 'department', code: '05' });
+    expect(view.departments.every((d) => d.dimmed)).toBe(true);
+    expect(view.departments.some((d) => d.code === '05')).toBe(false);
+    expect(view.municipalities.length).toBe(125);
+    expect(view.municipalities.some((m) => m.dimmed)).toBe(false);
+    expect(view.outline).toBeTruthy();
+    expect(view.inset.placement).toBe('corner');
+    expect(view.fill).toBe(0.9);
+    expect(view.labels).toEqual([]);
+  });
+
+  it('en un municipio atenúa los vecinos, lo rotula encima y lo encuadra con tope (decisión 20)', () => {
+    const view = fullscreenView(map, { view: 'municipality', code: '05001' });
+    const medellin = view.municipalities.find((m) => m.code === '05001');
+    expect(medellin?.dimmed).toBe(false);
+    expect(view.municipalities.filter((m) => m.dimmed)).toHaveLength(124);
+    expect(view.selected).toBe('05001');
+    expect(view.fill).toBe(0.55);
+    expect(view.labels).toEqual([expect.objectContaining({ text: 'Medellín', anchor: 'above' })]);
+    expect(view.title).toContain('Mapa de Medellín, Antioquia');
+    // Decisión 20 ampliada: el departamento sigue a la vista.
+    expect(view.context).toEqual(fullscreenView(map, { view: 'department', code: '05' }).focus);
+  });
+
+  it('la leyenda «Sin datos» solo cuenta lo que está en foco, no los vecinos atenuados', () => {
+    const inirida = fullscreenView(map, { view: 'municipality', code: '94001' });
+    expect(inirida.municipalities.some((m) => m.dimmed && m.fill === 'unknown')).toBe(true);
+    expect(inirida.withUnknown).toBe(false);
+  });
+
+  it('en el archipiélago dibuja las islas en el recuadro, con su nombre debajo', () => {
+    const view = fullscreenView(map, { view: 'department', code: '88' });
+    expect(view.inset.placement).toBe('outline');
+    expect(view.outline).toBeUndefined();
+    // El marco punteado es el contorno del departamento y deja sitio bajo las islas para sus nombres.
+    expect(view.focus).toEqual(view.inset.box);
+    expect(view.inset.box[3]).toBeGreaterThan(Math.max(...view.inset.islands.map((i) => i.box[3])));
+    expect(view.labels.every((l) => l.within?.[0] === view.inset.box[0])).toBe(true);
+    expect(view.municipalities.every((m) => m.transform?.includes('scale('))).toBe(true);
+    expect(view.labels.map((l) => [l.text, l.anchor])).toEqual([
+      ['San Andrés', 'below'],
+      ['Providencia', 'below'],
+    ]);
+  });
+
+  it('marca «Sin datos» con la trama, nunca como cero', () => {
+    const view = fullscreenView(map, { view: 'department', code: '94' });
+    expect(view.withUnknown).toBe(true);
+    const nulo = view.municipalities.find((m) => m.code === '94884');
+    expect(nulo?.fill).toBe('unknown');
+    expect(nulo?.description).toBe('Puerto Colombia: Sin datos');
+  });
+
+  it('rotula Bogotá en Cundinamarca', () => {
+    const view = fullscreenView(map, { view: 'department', code: '25' });
+    expect(view.labels).toEqual([
+      expect.objectContaining({ text: 'Bogotá, D.C.', anchor: 'centre' }),
+    ]);
   });
 });

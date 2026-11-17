@@ -12,6 +12,7 @@ import { Button } from '../../../../components/ui/Button/Button';
 import { Icon } from '../../../../components/ui/Icon/Icon';
 import { LegendKey } from '../../../../components/ui/LegendKey/LegendKey';
 import type { Box } from '../geometry';
+import { FullscreenMap, type FullscreenMapProps } from './FullscreenMap';
 import styles from './MapWithLegend.module.css';
 
 /** Fill of a territory: neutral (locates, measures nothing), a risk level, or «Sin datos» (hatch). */
@@ -42,6 +43,8 @@ export interface MapInset {
 }
 
 export interface MapWithLegendProps {
+  /** `inline` (por defecto): el mapa en un marco dentro de la página. `fullscreen`: ver `FullscreenMapProps`. */
+  variant?: 'inline';
   /** The map's `<title>`: what it shows and where the values are («… en la tabla de municipios»). */
   title: string;
   territories: MapTerritory[];
@@ -79,12 +82,19 @@ function defaultMaxHeight() {
   return window.innerWidth >= 960 ? 640 : Math.round(window.innerHeight * 0.62);
 }
 
+export type { FullscreenMapProps } from './FullscreenMap';
+
+/** Map of territories: inline in a page (default) or at full screen under a sheet (`variant="fullscreen"`). */
+export function MapWithLegend(props: MapWithLegendProps | FullscreenMapProps) {
+  return props.variant === 'fullscreen' ? <FullscreenMap {...props} /> : <InlineMap {...props} />;
+}
+
 /**
  * Map of territories. Zoom with buttons, Ctrl + wheel and pinch; a mouse drags at any zoom; a click
  * without moving chooses. On touch, one finger scrolls the page at full view. The keyboard reaches
  * every territory through the data table that always comes with the map.
  */
-export function MapWithLegend({
+function InlineMap({
   title,
   territories,
   box,

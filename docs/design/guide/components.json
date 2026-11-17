@@ -1,5 +1,5 @@
 {
-  "version": "1.4.0",
+  "version": "1.5.0",
   "about": "Catálogo legible por máquina de los componentes de Elephants. 'core' = revisado y aceptado (Ronda 05); 'candidate' = se puede usar, pero lo debe confirmar la primera página que lo necesite (ver .claude/skills/elephant-designer/references/build-page.md). Los componentes con 'component' ya son React en src/components/ui/ y traen sus propios estilos ('styles', CSS Modules); los demás son especificación con clases de components.css. build.py comprueba que los archivos, las clases y los tokens existan.",
   "components": [
     {
@@ -356,7 +356,8 @@
       "variants": [
         "por defecto",
         "territorio seleccionado",
-        "neutra (v1.3.0): un solo relleno, contorno del conjunto, nombres de lugar y zoom"
+        "neutra (v1.3.0): un solo relleno, contorno del conjunto, nombres de lugar y zoom",
+        "pantalla completa (v1.5.0, variant=\"fullscreen\"): un solo mapa con tres niveles bajo la BottomSheet; cámara con vuelos, arrastre con un dedo, pellizco y rueda, encuadre en la zona libre, lugares atenuados alrededor, contorno del candidato, rótulo del elegido y recuadro del archipiélago dentro del mapa o fijo en la esquina"
       ],
       "tokens": [
         "--el-color-risk-low",
@@ -370,14 +371,21 @@
         "--el-color-text",
         "--el-color-surface",
         "--el-size-small",
-        "--el-control-height"
+        "--el-control-height",
+        "--el-color-surface-subtle",
+        "--el-color-text-muted",
+        "--el-duration-short",
+        "--el-duration-base",
+        "--el-duration-long",
+        "--el-ease-standard"
       ],
       "a11y": [
         "<svg role=img> con <title>",
         "Siempre se puede llegar a una tabla de datos con los mismos valores",
         "La selección nunca se marca solo con color",
         "Variante neutra: contorno del conjunto y contorno al pasar o enfocar en --el-color-control-border (3:1 o más), nunca con opacidad",
-        "Los botones de zoom miden 44 px y llevan aria-label; los gestos nunca son la única forma"
+        "Los botones de zoom miden 44 px y llevan aria-label; los gestos nunca son la única forma",
+        "Pantalla completa: el nombre del mapa remite a la tabla de la ficha; el recuadro de esquina es un botón con nombre; con prefers-reduced-motion el encuadre cambia de una vez, sin vuelo ni fundido"
       ],
       "component": "src/modules/mapa/ui/MapWithLegend/MapWithLegend.tsx",
       "styles": "src/modules/mapa/ui/MapWithLegend/MapWithLegend.module.css"
