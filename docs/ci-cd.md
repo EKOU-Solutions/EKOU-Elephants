@@ -31,9 +31,13 @@ flowchart LR
 | `npm run datos:corte -- [AAAA-MM]` | Lanza el workflow `corte-mensual` en GitHub Actions (sin mes: el actual). |
 | `npm run datos:descargar -- [AAAA-MM]` | Baja un corte publicado (por defecto el último Release) a `datos-locales/`, que git ignora. `--forzar` reemplaza la carpeta. |
 | `npm run datos:preview -- <pr>` | Sube `datos-locales/` al Worker de datos de ese PR (`ekou-elephants-datos-pr-<pr>`). Requiere `wrangler login` en la cuenta de EKOU. |
+| `npm run paginas -- --sitio <URL> [--carpeta <ruta>]` | Genera con Astro la página de cada lugar y `sitemap.xml` en `<carpeta>/paginas/` (por defecto `datos-locales/`). Ver [páginas de cada lugar](#páginas-de-cada-lugar-en-el-corte-adr-0003). |
+| `npm run corte:referencia -- <AAAA-MM> --publicado <ISO>` | Pone ese corte como vigente en `pipeline/worker-datos/corte-vigente.json` (lo hace el workflow del corte). Ver [publicación del corte](#publicación-del-corte-con-pr-y-preview). |
+| `npm run corte:armar -- [--carpeta <ruta>]` | Arma la publicación del Worker de datos desde los Releases según esa referencia (por defecto en `pipeline/worker-datos/publicacion`). Requiere `gh` autenticado. |
+| `npm run corte:verificar -- [--carpeta <ruta>] [--url <sitio>]` | Bot de verificación del corte: conteos, cambios frente al corte anterior, páginas y, con `--url`, el sitio desplegado. Sale con 1 si algo falla. |
 | `npm run datos:local -- [AAAA-MM]` | Copia a `datos-locales/` un corte exportado en tu máquina (`ekou-pipeline export-mapa`), con la misma estructura que el Worker de datos. Con `datos-locales/`, `npm run dev` también sirve esos datos por el binding `DATOS`. |
 
-Biome es la única herramienta de lint y formato de la app. Su alcance es `src/`, `.storybook/`, `tests/`, `scripts/` y la configuración TypeScript/JSON de la raíz. Markdown, SQL y HTML quedan fuera. El pipeline de Python usa Ruff.
+Biome es la única herramienta de lint y formato de la app. Su alcance es `src/`, `.storybook/`, `tests/`, `scripts/`, los `.ts` y `.mjs` de `paginas/` y la configuración TypeScript/JSON de la raíz. Markdown, SQL y HTML quedan fuera. El pipeline de Python usa Ruff.
 
 ## Preview por PR
 
@@ -74,7 +78,7 @@ Un PR abierto antes de este cambio no trae Storybook en su build: su enlace mues
 
 ## Datos del corte mensual
 
-No se usa R2 (exige tarjeta de crédito). El corte mensual (TASK-15) publica los JSON (`datos/latest.json` y `datos/AAAA-MM/`) en un **Worker solo de archivos estáticos, `ekou-elephants-datos`**, sin URL pública, y guarda el histórico en los Releases `corte-AAAA-MM`. La API lo lee con el binding `DATOS` (`env.DATOS.fetch(...)`, TASK-09).
+No se usa R2 (exige tarjeta de crédito). El corte mensual (TASK-15) publica los JSON (`datos/latest.json` y `datos/AAAA-MM/`) en un **Worker solo de archivos estáticos, `ekou-elephants-datos`**, sin URL pública, y guarda el histórico en los Releases `corte-AAAA-MM`. Desde el ADR 0003 no lo publica directamente: abre un PR que cambia la referencia al corte vigente y `app-deploy` lo publica al hacer merge (ver [publicación del corte](#publicación-del-corte-con-pr-y-preview)). La API lo lee con el binding `DATOS` (`env.DATOS.fetch(...)`, TASK-09).
 
 No pueden ir en el Worker de la app: los archivos estáticos pertenecen a cada versión desplegada, así que el siguiente merge a `main` los borraría. Con un Worker aparte, el corte despliega solo los datos y un merge despliega solo la app. Se validó el 2026-11-15 en la cuenta de EKOU: el binding funciona con un Worker solo de archivos estáticos, también sin URL pública, y un preview puede apuntar su binding a otro Worker. Un binding no puede apuntar al *preview* de otro Worker ([documentación](https://developers.cloudflare.com/workers/previews/)), por eso los datos propios de un PR van en un Worker aparte.
 
@@ -88,6 +92,278 @@ Cloudflare rechaza un despliegue con un binding a un Worker que no existe. Por e
 El frontend no depende de los datos del corte: la app funciona sin el binding.
 
 El Worker de datos es un espejo de los Releases: `datos/AAAA-MM/` tiene los JSON del Release `corte-AAAA-MM` con el mismo nombre (los del mapa: `corte.json`, `municipios.json` y `departamentos.json`, de `ekou-pipeline export-mapa`), y `datos/latest.json` apunta al corte vigente. La geometría del mapa no va ahí: casi nunca cambia, así que es un archivo estático de la app (`public/geometria/mgn-2025.topojson`, generado con `scripts/geometria-mgn.mjs`), con caché inmutable (`public/_headers`). Una versión nueva del MGN usa otro nombre.
+
+## Páginas de cada lugar en el corte (ADR 0003)
+
+Con cada corte, `npm run paginas` genera con Astro una página HTML por lugar del mapa (`/mapa`, 32 departamentos —Bogotá, D.C. abre 11001— y 1.122 municipios: 1.155) y `sitemap.xml`, a partir de los mismos JSON que lee la API. Las escribe en `paginas/` dentro de la carpeta de publicación del Worker de datos, que las sube junto a los datos con el mismo `wrangler deploy`:
+
+| Archivo en `publicacion/` | Lo sirve el Worker de datos en | Lo entrega la app en |
+| --- | --- | --- |
+| `paginas/mapa.html` | `/paginas/mapa` | `/mapa` |
+| `paginas/mapa/departamento/05.html` | `/paginas/mapa/departamento/05` | `/mapa/departamento/05` |
+| `paginas/mapa/05001.html` | `/paginas/mapa/05001` | `/mapa/05001` (y `/mapa/departamento/11` → 11001) |
+| `paginas/sitemap.xml` | `/paginas/sitemap.xml` | `/sitemap.xml` |
+
+El Worker de la app atiende primero esas rutas (`assets.run_worker_first` en `wrangler.jsonc`), pide la página por el binding `DATOS`, le agrega los `<script type="module">`, `<link rel="modulepreload">` y `<link rel="stylesheet">` de su `index.html` actual (binding `ASSETS`) y la entrega con `Cache-Control: public, max-age=60, s-maxage=300, stale-while-revalidate=600`. Si no hay página, si `DATOS` falla o si no hay binding, entrega la SPA de siempre. La API no cambia.
+
+Con el corte de noviembre de 2026: 1.155 páginas, 28,8 MB en total (25,5 KB de media, 4,1 KB con Brotli; la más grande, 37,8 KB). Generarlas tarda unos 40 s.
+
+**URL del sitio.** El repositorio no fija todavía el dominio de producción, así que la URL base (canonical, `og:url` y `sitemap.xml`) es obligatoria: `--sitio https://<dominio>` o la variable `EKOU_SITIO_URL`. En el workflow sale de la variable del repositorio `EKOU_SITIO_URL` (Settings → Secrets and variables → Actions → Variables), que hay que crear. Cuando exista el dominio, también hay que activar la línea `Sitemap:` de `public/robots.txt` con la URL completa (Google no acepta una relativa).
+
+### Publicación del corte con PR y preview
+
+Decisión del equipo (ADR 0003, 2026-11-17): **ningún corte llega solo a producción.** El corte mensual abre un PR «Corte AAAA-MM»; su preview arma el Worker de datos del PR con las páginas, el bot de verificación deja su resumen y una persona revisa y aprueba. Al hacer merge, `app-deploy` publica el corte y la app.
+
+```mermaid
+flowchart LR
+  corte[corte-mensual: extracción, pruebas, compuertas, Release] --> ref[Actualiza la referencia y abre el PR «Corte AAAA-MM»]
+  ref --> prev[app-preview: arma la publicación, Worker de datos del PR, páginas, preview]
+  prev --> bot[corte:verificar --url: resumen en el PR]
+  bot --> persona{Revisión de una persona}
+  persona -- merge --> prod[app-deploy: arma la publicación, páginas, Worker de datos y app]
+```
+
+**La referencia al corte vigente** es `pipeline/worker-datos/corte-vigente.json`, lo único que cambia el PR del corte (los JSON siguen en los Releases y las páginas no entran a Git):
+
+```json
+{
+  "corte": "2026-11",
+  "publicado": "2026-11-16T00:29:23Z",
+  "cortes": ["2026-11"]
+}
+```
+
+| Campo | Qué es |
+| --- | --- |
+| `corte` | El corte vigente: el que apunta `datos/latest.json`. |
+| `publicado` | `publicadoEn` del `corte.json` de su Release. Cambia al reprocesar el mismo mes, así que un reproceso también abre su PR; y `armar` se niega a publicar un Release que cambió después de la revisión. |
+| `cortes` | Los cortes que publica el Worker de datos, del más reciente al anterior (a lo sumo 2, como hoy: una petición que leyó el `latest.json` previo encuentra todavía sus archivos). |
+
+Sin este archivo, ni el preview ni el despliegue tienen cómo saber qué corte se aprobó: hoy el único registro del corte vigente es el `latest.json` que `corte-mensual` despliega directo en `ekou-elephants-datos`, y el Release más reciente no es necesariamente uno revisado.
+
+| Comando | Qué hace |
+| --- | --- |
+| `node scripts/corte.mjs referencia <AAAA-MM> --publicado <ISO>` (`npm run corte:referencia`) | Pone ese corte como vigente y conserva el anterior. Un mes anterior al vigente no cambia nada (solo su Release, como antes). |
+| `node scripts/corte.mjs armar [--carpeta <ruta>]` (`npm run corte:armar`) | Lo que hacía en línea «armar la publicación»: borra la carpeta (por defecto `pipeline/worker-datos/publicacion`), baja de los Releases los JSON de `cortes` (menos `reporte-extraccion.json`) y escribe `datos/latest.json` con `punteroLatest`. Falla si el Release vigente no trae `corte.json`, `departamentos.json` y `municipios.json`, o si su `publicadoEn` no es el de la referencia. Requiere `gh` con `GH_TOKEN`. |
+| `npm run paginas -- --carpeta <ruta> --sitio <URL>` | Las 1.155 páginas y el sitemap en `<ruta>/paginas/`. |
+| `npm run corte:verificar -- --carpeta <ruta> [--url <sitio>]` | El bot de verificación (abajo). |
+
+**Pendiente antes del primer PR de corte:** el Release `corte-2026-11` publicado no trae los JSON del mapa (`export-mapa` llegó después; solo tiene `calidad_corte.json` y `mapa_municipios.json`). `armar` falla con ese Release. Hay que reprocesar 2026-11 (o esperar el corte de diciembre) para que el PR del corte traiga una referencia publicable. El `publicado` del archivo inicial es el del `corte.json` de `datos-locales/` (exportado en local) y lo reemplaza el primer PR de corte.
+
+#### Bot de verificación (`npm run corte:verificar`)
+
+Revisa una publicación armada y escribe un resumen en Markdown (en la salida y, si existe, en `GITHUB_STEP_SUMMARY`). Sale con 1 si algo falla.
+
+| Revisa | Falla si |
+| --- | --- |
+| Lugares y totales | No son 33 departamentos y 1.122 municipios sin repetidos; un municipio no tiene su departamento; el total nacional no cuadra con sus niveles ni con la suma de municipios y departamentos; los tres JSON no son del mismo corte. |
+| Frente al corte anterior | Una cifra (nacional, de un departamento o de un municipio) cambia más del umbral (`--umbral`, por defecto 0,25 = 25 %) entre cifras desde `--minimo` (por defecto 100 contratos); pasar a «Sin datos» cuenta como −100 %; o falta un lugar del corte anterior. Siempre lista las 10 mayores variaciones. El anterior es el otro corte de la misma publicación o `--anterior <carpeta>`; sin él, no compara. Si la ventana cambió (enero), lo advierte. |
+| Páginas generadas | No hay una por lugar (1.155), el sitemap no tiene 1.155 URL, o hay títulos o descripciones repetidos o vacíos. |
+| Sitio (`--url`) | `/mapa`, `/mapa/05001` o `/mapa/11001` no responden 200 con la página generada (con `canonical`) y su nombre y cifra en el HTML; `/api/salud` no responde; `/api/mapa/corte` no da el mismo corte. Reintenta 3 veces cada petición. |
+
+El umbral es una primera propuesta: el corte acumula desde el 1 de enero de la ventana, así que de un mes a otro una cifra sube pocos puntos. Ajústalo con lo que muestren los primeros cortes revisados.
+
+### Cambios pendientes en los workflows
+
+Los agentes no tocan `.github/workflows/`: una persona del equipo aplica estos cambios. Nada de esto se ha ejecutado en GitHub Actions; lo marcado **(sin verificar)** depende de Actions o de Cloudflare y hay que comprobarlo en el primer corte.
+
+**Configuración nueva**
+
+| Qué | Dónde | Para qué |
+| --- | --- | --- |
+| Variable `EKOU_SITIO_URL` | Settings → Secrets and variables → Actions → Variables | URL del sitio para `canonical`, `og:url` y `sitemap.xml` en producción. |
+| Secreto `EKOU_CORTE_TOKEN` | Environment o secretos del repositorio | Token de una GitHub App (o PAT de grano fino) con `contents: write` y `pull-requests: write`. Un PR creado con `GITHUB_TOKEN` **no dispara** `pull_request`, así que sin él el PR del corte no tendría preview. **(sin verificar)** |
+| Protección de `main` | Settings → Branches | Que el PR del corte exija el check «Desplegar preview» (incluye el bot) y una aprobación. |
+
+#### `corte-mensual.yml`: abrir el PR en lugar de publicar
+
+1. En el job `corte`, quitar el paso `cortes del Worker de datos` (id `desplegar`) y las salidas `cortes` y `vigente`; ya no se usan.
+2. Reemplazar el job `datos` (publicar en el Worker de datos) por `pr`:
+
+```diff
+-  datos:
+-    name: publicar en el Worker de datos
+-    needs: corte
+-    if: needs.corte.outputs.cortes != ''
+-    ...                                   # todo el job, hasta «desplegar ekou-elephants-datos»
++  pr:
++    name: abrir el PR del corte
++    needs: corte
++    # Solo cortes que se publican (los de main), como antes el Release.
++    if: github.ref == 'refs/heads/main' && (github.event_name == 'schedule' || inputs.publicar)
++    runs-on: ubuntu-latest
++    timeout-minutes: 10
++    permissions:
++      contents: read # el push y el PR van con EKOU_CORTE_TOKEN
++    defaults:
++      run:
++        shell: bash
++        working-directory: .
++    steps:
++      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
++        with:
++          token: ${{ secrets.EKOU_CORTE_TOKEN }}
++
++      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
++        with:
++          node-version-file: .nvmrc
++          package-manager-cache: false
++
++      - name: actualizar la referencia y abrir el PR «Corte AAAA-MM»
++        env:
++          CORTE: ${{ needs.corte.outputs.corte }}
++          GH_REPO: ${{ github.repository }}
++          GH_TOKEN: ${{ secrets.EKOU_CORTE_TOKEN }}
++          EJECUCION: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
++        run: |
++          # El Release de esta ejecución ya está publicado: su corte.json dice cuándo.
++          publicado=$(gh release download "corte-$CORTE" --pattern corte.json --output - | jq -r .publicadoEn)
++          node scripts/corte.mjs referencia "$CORTE" --publicado "$publicado"
++          if git diff --quiet -- pipeline/worker-datos/corte-vigente.json; then
++            echo "El corte $CORTE no cambia la referencia: no se abre PR." | tee -a "$GITHUB_STEP_SUMMARY"
++            exit 0
++          fi
++          rama="corte/$CORTE"
++          git config user.name "ekou-corte[bot]"
++          git config user.email "ekou-corte[bot]@users.noreply.github.com"
++          git switch -C "$rama"
++          git commit -m "datos(corte): corte $CORTE" -- pipeline/worker-datos/corte-vigente.json
++          # Un reproceso del mismo mes reemplaza la rama y actualiza el PR abierto.
++          git push --force origin "$rama"
++          if [[ -z "$(gh pr list --head "$rama" --state open --json number --jq '.[0].number')" ]]; then
++            gh pr create --base main --head "$rama" --title "Corte $CORTE" --body "Corte $CORTE publicado en el Release \`corte-$CORTE\` ($publicado). Ejecución: $EJECUCION
++
++          El preview de este PR arma el Worker de datos con este corte y sus páginas y deja el resumen del bot de verificación. Revisa el preview y el resumen antes de aprobar: al hacer merge se publica en producción (ADR 0003)."
++          fi
++          echo "PR del corte $CORTE: rama $rama" >> "$GITHUB_STEP_SUMMARY"
+
+   avisar:
+     name: avisar del fallo
+-    needs: [corte, datos]
++    needs: [corte, pr]
+```
+
+También hay que cambiar el texto del issue de `avisar` («…o despliegue del Worker de datos») por «…o apertura del PR del corte», y el comentario de cabecera del archivo (`… → Release → PR del corte`).
+
+**(sin verificar)** el permiso del token para crear la rama y el PR, y que el PR creado con él dispare `app-preview`.
+
+#### `app-preview.yml`: el preview del PR del corte
+
+En el job `desplegar`, después de `npm run build` y antes de «Migrar (solo con copia propia) y desplegar». El preview de un PR que cambia la referencia usa siempre su propio Worker de datos (`ekou-elephants-datos-pr-<n>`), que se arma desde los Releases, aunque la casilla «Datos propios» no esté marcada:
+
+```diff
+       - run: npm run build
+         working-directory: app
++      - name: ¿Es un PR de corte?
++        id: corte
++        run: |
++          if cmp -s app/pipeline/worker-datos/corte-vigente.json base/pipeline/worker-datos/corte-vigente.json; then
++            echo "cambia=false" >> "$GITHUB_OUTPUT"
++          else
++            echo "cambia=true" >> "$GITHUB_OUTPUT"
++          fi
++      - name: Worker de datos del PR con el corte (sin páginas todavía)
++        # Tiene que existir antes de desplegar la app: Cloudflare rechaza un binding a un Worker que no existe.
++        if: steps.corte.outputs.cambia == 'true'
++        working-directory: app
++        env:
++          GH_TOKEN: ${{ github.token }}
++          GH_REPO: ${{ github.repository }}
++          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
++          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
++        run: |
++          npm run corte:armar
++          npm run datos:preview -- "$PR" --carpeta pipeline/worker-datos/publicacion
+       - name: Migrar (solo con copia propia) y desplegar
+         id: despliegue
+         working-directory: app
+         run: node ../base/scripts/despliegue.mjs preview
+         env:
+           ...
+-          DATOS_SERVICIO: ${{ needs.opciones.outputs.datos_propios == 'true' && format('ekou-elephants-datos-pr-{0}', needs.opciones.outputs.pr) || '' }}
++          DATOS_SERVICIO: ${{ (needs.opciones.outputs.datos_propios == 'true' || steps.corte.outputs.cambia == 'true') && format('ekou-elephants-datos-pr-{0}', needs.opciones.outputs.pr) || '' }}
+           ...
++      - name: Páginas con la URL del preview y verificación del corte
++        id: verificar
++        if: steps.corte.outputs.cambia == 'true' && steps.despliegue.outcome == 'success'
++        working-directory: app
++        env:
++          URL: ${{ steps.despliegue.outputs.url }}
++          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
++          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
++        run: |
++          # Ya con la URL del preview: canonical y sitemap apuntan a él. Se vuelve a subir el
++          # Worker de datos del PR, ahora con las páginas (el binding apunta a él por nombre).
++          npm run paginas -- --carpeta pipeline/worker-datos/publicacion --sitio "$URL"
++          npm run datos:preview -- "$PR" --carpeta pipeline/worker-datos/publicacion
++          set +e
++          npm run --silent corte:verificar -- --carpeta pipeline/worker-datos/publicacion --url "$URL" > ../resumen-corte.md
++          resultado=$?
++          set -e
++          cat ../resumen-corte.md >> "$GITHUB_STEP_SUMMARY"
++          exit $resultado
++      - name: Comentar el resumen del bot en el PR
++        if: always() && steps.verificar.outcome != 'skipped'
++        env:
++          GH_TOKEN: ${{ github.token }}
++          GH_REPO: ${{ github.repository }}
++        run: gh pr comment "$PR" --body-file resumen-corte.md --edit-last --create-if-none
+       - name: Publicar resultado
+```
+
+Notas:
+
+- `npm run datos:preview` sube la carpeta que se le indica con la configuración del Worker de datos del PR (`scripts/datos.mjs`, `configWorkerPr`), y `limpiar` ya borra ese Worker al cerrar el PR.
+- El paso «Publicar resultado» sigue mostrando el estado del despliegue; si el bot falla, el job queda en rojo y el resumen explica por qué.
+- `--edit-last` edita el último comentario del token (`github-actions[bot]`). Ese bot también publica el comentario de control «Preview de este PR»; si el último fuera ese, lo reemplazaría. **(sin verificar)** Si pasa, cambia este paso por un comentario con su propia marca (`<!-- ekou-corte-resumen -->`), como hace `scripts/preview/github.mjs`.
+- El `design:check` de siempre no corre en CI hoy (`app-ci.yml` hace lint, formato, tipos, pruebas, build y `deploy:dry-run`); el ADR lo menciona como parte de la revisión: córrelo en local sobre el preview si el corte llega con cambios de pantalla.
+- **(sin verificar)** que la URL que devuelve `wrangler preview --json` sirva como `--sitio` y que el preview ya responda en el primer intento del bot (reintenta 3 veces).
+
+#### `app-deploy.yml`: publicar el corte al hacer merge
+
+En el job `produccion`, después de `npm run build` y antes de «Migrar producción y desplegar». Se arma y se despliega el Worker de datos en cada push a `main`: así las páginas se regeneran también cuando cambia la pantalla, con los nombres de clase de la app que se despliega en el mismo job.
+
+```diff
+       - run: npm ci
+       - run: npm run build
++      - name: Publicación del corte vigente (ADR 0003)
++        # La referencia aprobada en el PR del corte; páginas con la URL de producción.
++        if: vars.DATOS_CORTE_ENABLED == 'true'
++        env:
++          GH_TOKEN: ${{ github.token }}
++          GH_REPO: ${{ github.repository }}
++          EKOU_SITIO_URL: ${{ vars.EKOU_SITIO_URL }}
++        run: |
++          if [ -z "$EKOU_SITIO_URL" ]; then echo "::error::Falta la variable EKOU_SITIO_URL"; exit 1; fi
++          npm run corte:armar
++          npm run paginas -- --carpeta pipeline/worker-datos/publicacion
++          npm run --silent corte:verificar -- --carpeta pipeline/worker-datos/publicacion >> "$GITHUB_STEP_SUMMARY"
++      - name: Desplegar ekou-elephants-datos
++        # Antes que la app: su binding DATOS necesita que el Worker de datos exista.
++        if: vars.DATOS_CORTE_ENABLED == 'true'
++        env:
++          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
++          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
++        run: npx --no-install wrangler deploy --config pipeline/worker-datos/wrangler.jsonc
+       - name: Migrar producción y desplegar
+         run: node scripts/despliegue.mjs produccion
+         env:
+           ...
++      - name: Verificar producción
++        if: vars.DATOS_CORTE_ENABLED == 'true'
++        env:
++          EKOU_SITIO_URL: ${{ vars.EKOU_SITIO_URL }}
++        run: npm run --silent corte:verificar -- --carpeta pipeline/worker-datos/publicacion --url "$EKOU_SITIO_URL" >> "$GITHUB_STEP_SUMMARY"
+```
+
+Notas:
+
+- El job `produccion` ya tiene `permissions: contents: read` (heredado), suficiente para `gh release download` con `github.token`. Los secretos de Cloudflare ya están en el environment `production`.
+- Si alguien reprocesa el mes vigente, su Release cambia y `armar` falla en `main` hasta que se apruebe el PR del reproceso: producción nunca publica datos sin revisar, pero tampoco se despliega la app mientras tanto. Si eso molesta, la alternativa es saltar los dos pasos del corte cuando el push no cambia `corte-vigente.json` ni la pantalla del mapa (y perder la regeneración de páginas en cada despliegue).
+- El verificador sin `--url` antes del despliegue y con `--url` después. Si el segundo falla, el despliegue ya ocurrió: se revierte con un PR que restaure la referencia anterior.
+- **(sin verificar)** el tiempo del job: armar (~10 s), páginas (~40 s) y subir unas 1.160 entradas al Worker de datos.
+
+Para probar con datos propios en un preview, como antes: `npm run datos:descargar`, `npm run paginas -- --sitio <URL del preview>` y `npm run datos:preview -- <pr>`, que sube `datos-locales/` completa, páginas incluidas, y marcar «Datos propios».
 
 ## Producción
 
