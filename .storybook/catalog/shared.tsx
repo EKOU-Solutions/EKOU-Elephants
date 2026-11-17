@@ -50,6 +50,8 @@ const A11Y_NOTES: Record<string, string> = {
   'Breakdown bars': 'los valores van en texto; las barras son decorativas.',
   'Progress vs expected': 'los dos porcentajes (avance y esperado) van escritos en texto.',
   'Signal item': 'lista ordenada; el número de cada señal no depende del color.',
+  BottomSheet:
+    'el borde es un `button` de 44 px cuyo nombre dice la altura; toque, Enter o Espacio mueven un paso y Escape baja la completa a la media. Nunca depende del arrastre. Cada cambio se anuncia en `role="status"`; lo que no se ve es `inert` y el foco que quedaba ahí pasa al borde. Con `prefers-reduced-motion` no se anima.',
 };
 
 /**

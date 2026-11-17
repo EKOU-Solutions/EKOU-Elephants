@@ -1,5 +1,5 @@
 {
-  "version": "1.3.0",
+  "version": "1.4.0",
   "about": "Catálogo legible por máquina de los componentes de Elephants. 'core' = revisado y aceptado (Ronda 05); 'candidate' = se puede usar, pero lo debe confirmar la primera página que lo necesite (ver .claude/skills/elephant-designer/references/build-page.md). Los componentes con 'component' ya son React en src/components/ui/ y traen sus propios estilos ('styles', CSS Modules); los demás son especificación con clases de components.css. build.py comprueba que los archivos, las clases y los tokens existan.",
   "components": [
     {
@@ -381,6 +381,36 @@
       ],
       "component": "src/modules/mapa/ui/MapWithLegend/MapWithLegend.tsx",
       "styles": "src/modules/mapa/ui/MapWithLegend/MapWithLegend.module.css"
+    },
+    {
+      "name": "BottomSheet",
+      "label_es": "Ficha deslizable",
+      "status": "core",
+      "use": "Ficha del lugar sobre un mapa a pantalla completa: recogida, media y completa con un borde que es botón; desde 1024 px, panel fijo a la derecha.",
+      "variants": [
+        "recogida (rótulo y h1)",
+        "media (encabezado completo; la de llegada)",
+        "completa (cuerpo con desplazamiento; 68 px de mapa a la vista)",
+        "panel lateral de 400 px desde 1024 px"
+      ],
+      "tokens": [
+        "--el-color-surface",
+        "--el-rule-strong",
+        "--el-color-line-strong",
+        "--el-color-control-border",
+        "--el-control-height",
+        "--el-duration-short",
+        "--el-ease-standard",
+        "--el-space-12"
+      ],
+      "a11y": [
+        "Borde: <button> de 44 px cuyo nombre dice la altura; toque, Enter o Espacio mueven un paso (decisión 27); Escape baja la completa a la media",
+        "Cada cambio se anuncia en role=status; lo oculto es inert y el foco que quedaba ahí pasa al borde",
+        "Nunca depende del arrastre; con prefers-reduced-motion no se anima"
+      ],
+      "component": "src/components/ui/BottomSheet/BottomSheet.tsx",
+      "styles": "src/components/ui/BottomSheet/BottomSheet.module.css",
+      "notes": "Esquinas superiores con --el-space-12: ningún token de radio sirve para una superficie de este tamaño (--el-control-radius es de 6 px, para controles); así se aprobó en el boceto."
     },
     {
       "name": "Status pill",

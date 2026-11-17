@@ -77,6 +77,17 @@ Familia: **Public Sans 5.3.0** (OFL-1.1), alojada en el proyecto. Respaldo: `sys
 | `--el-rule` | 1 px |
 | `--el-rule-strong` | 2 px |
 
+## Movimiento
+
+Con `prefers-reduced-motion: reduce` nada se anima: el cambio ocurre de una vez.
+
+| Token | Valor |
+| --- | --- |
+| `--el-ease-standard` | `cubic-bezier(0.2, 0.7, 0.2, 1)` |
+| `--el-duration-short` | `300ms` |
+| `--el-duration-base` | `450ms` |
+| `--el-duration-long` | `750ms` |
+
 ## Contraste
 
 Todos los pares de texto, controles, foco, trama y etiquetas de riesgo pasan en ambos temas; ver `contrast-report.json`.
