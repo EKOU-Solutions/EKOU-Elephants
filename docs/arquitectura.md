@@ -20,7 +20,7 @@ flowchart LR
     MIG -.->|"up / down"| DB
 ```
 
-El mismo Worker atiende las dos rutas: `/api/*` llega primero a Hono y el resto devuelve la SPA (`wrangler.jsonc`).
+El mismo Worker atiende las dos rutas: `/api/*` llega primero a Hono y el resto devuelve la SPA (`wrangler.jsonc`). Para `/mapa…` y `/sitemap.xml`, el Worker entrega primero la página de ese lugar generada con Astro en el corte mensual y publicada en el Worker de datos, con los scripts de la versión actual de la app; sin página, la SPA ([ADR-0003](adr/0003-migracion-astro.md), [desarrollo](desarrollo.md#páginas-de-cada-lugar-astro)). Al cargar el JavaScript, React monta la pantalla como siempre.
 
 ## Alcance del ejemplo y refinamiento del mapa
 

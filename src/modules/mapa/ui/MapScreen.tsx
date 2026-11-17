@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { tituloDelLugar } from '../../../../paginas/src/lib/sitio';
 import type { CorteVigente, DepartamentosDelCorte, MunicipiosDelCorte } from '../domain/mapa';
 import type { TopoJson } from './geometry';
 import { MapPage, type MapPageState } from './MapPage/MapPage';
@@ -50,21 +51,43 @@ export async function loadMap(
 }
 
 /**
+ * The state to start with when `#root` already shows a place's generated page (ADR 0003): the data
+ * are read first, so the app replaces that page with the same place, never with «Cargando el mapa…».
+ * If they fail, the usual error. Without a generated page (the SPA), nothing: the screen loads them.
+ */
+export async function initialState(
+  generated: boolean,
+  fetcher: Fetch = fetch,
+): Promise<MapPageState | undefined> {
+  if (!generated) return undefined;
+  return loadMap(new AbortController().signal, fetcher).then(
+    (map) => ({ status: 'ready', map }),
+    () => ({ status: 'unavailable' }),
+  );
+}
+
+export interface MapScreenProps {
+  /** Data already read (`initialState`): the first load is skipped; «Reintentar» still loads. */
+  initial?: MapPageState;
+}
+
+/**
  * The map page in the app: reads the cut from our API (contract: docs/design/pages/map/contract.md)
  * and the geometry file it names, and keeps the view in the address bar so every place has a link.
  */
-export function MapScreen() {
+export function MapScreen({ initial }: MapScreenProps) {
   const [route, setRoute] = useState<MapRoute>(() => {
     // One address per place: «/mapa/departamento/11» or a trailing slash become the canonical link.
     const canonical = canonicalPath(window.location.pathname);
     if (canonical) window.history.replaceState(null, '', canonical);
     return parseRoute(window.location.pathname);
   });
-  const [state, setState] = useState<MapPageState>({ status: 'loading' });
+  const [state, setState] = useState<MapPageState>(initial ?? { status: 'loading' });
   const [attempt, setAttempt] = useState(0);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: `attempt` re-runs the load on «Reintentar»
+  // `attempt` re-runs the load on «Reintentar»; with data already read, the first load is skipped.
   useEffect(() => {
+    if (initial && attempt === 0) return;
     const control = new AbortController();
     const { signal } = control;
     setState({ status: 'loading' });
@@ -75,7 +98,7 @@ export function MapScreen() {
       },
     );
     return () => control.abort();
-  }, [attempt]);
+  }, [attempt, initial]);
 
   // Each place adds a history entry; the map flies to it (FullscreenMap), and Back flies back.
   const navigate = (next: MapRoute) => {
@@ -90,16 +113,14 @@ export function MapScreen() {
     return () => window.removeEventListener('popstate', onPop);
   }, []);
 
-  // The tab says where you are: «Medellín · Mapa de contratación pública».
-  const place = useMemo(() => {
-    if (state.status !== 'ready') return undefined;
-    if (route.view === 'municipality') return state.map.municipalities.get(route.code)?.nombre;
-    if (route.view === 'department') return state.map.departments.get(route.code)?.nombre;
-    return undefined;
-  }, [state, route]);
+  // The tab says where you are, with the generated page's own title, so it never changes on mount.
+  const title = useMemo(
+    () => (state.status === 'ready' ? tituloDelLugar(state.map, route) : undefined),
+    [state, route],
+  );
   useEffect(() => {
-    document.title = `${place ? `${place} · ` : ''}Mapa de contratación pública · EKOU Elephants`;
-  }, [place]);
+    document.title = title ?? 'Mapa de contratación pública · EKOU Elephants';
+  }, [title]);
 
   return (
     <MapPage

@@ -38,6 +38,8 @@ export interface FullscreenMapProps extends FullscreenView {
   onZoomToCountry?: () => void;
   /** Oculta el zoom y el recuadro de esquina mientras algo los cubre, p. ej. la lista del buscador abierta (v1.6.0). */
   controlsHidden?: boolean;
+  /** Página generada sin JavaScript (ADR 0003): `StaticFullscreenMap`, encuadrado solo con CSS. */
+  prerendered?: boolean;
 }
 
 const DRAG_THRESHOLD = 6; // px: a press that moves less is a tap (spec §3)
@@ -128,6 +130,8 @@ export function FullscreenMap({
   const gesture = useRef<Gesture | null>(null);
   const wheelTimer = useRef(0);
   const last = useRef<{ view: string; department?: string; layout: string } | null>(null);
+  // Until the first frame is painted, the sheet may still settle (decision 32): the map jumps with it.
+  const painted = useRef(false);
 
   const isPanel = sheet?.isPanel ?? false;
   const sheetFull = !isPanel && sheet?.shown === 'full';
@@ -233,10 +237,13 @@ export function FullscreenMap({
     flight.current = requestAnimationFrame(step);
   };
 
-  useEffect(() => {
+  // Measured before the first paint too, so the map never shows a frame without its camera.
+  useLayoutEffect(() => {
     const el = frameRef.current;
     if (!el) return;
-    const observer = new ResizeObserver(() => setSize({ w: el.clientWidth, h: el.clientHeight }));
+    const measure = () => setSize({ w: el.clientWidth, h: el.clientHeight });
+    measure();
+    const observer = new ResizeObserver(measure);
     observer.observe(el);
     return () => {
       observer.disconnect();
@@ -256,6 +263,9 @@ export function FullscreenMap({
     if (!previous) {
       cam.current = target();
       apply();
+      requestAnimationFrame(() => {
+        painted.current = true;
+      });
       return;
     }
     if (previous.view !== view) {
@@ -266,8 +276,9 @@ export function FullscreenMap({
     if (movedRef.current || flight.current) return; // a running flight already follows the new frame
     const [size0, sheet0] = previous.layout.split('|');
     const [size1] = layout.split('|');
-    // A resize, or the sheet's first measure, frames at once; a sheet that changes height, with a short flight.
-    if (size0 !== size1 || sheet0 === '0') {
+    // A resize, or the sheet's first measures (before the first paint), frame at once; a sheet that
+    // changes height later, with a short flight.
+    if (size0 !== size1 || sheet0 === '0' || !painted.current) {
       cam.current = target();
       apply();
     } else if (previous.layout !== layout) fly(target, 'short');

@@ -25,7 +25,8 @@
   transition: transform var(--el-duration-short) var(--el-ease-standard);
 }
 
-/* While the finger moves the sheet, it follows without delay; the transition comes back on release. */
+/* While the finger moves the sheet, it follows without delay; the transition comes back on release.
+   Also until the first measured height is painted: the sheet never slides on mount. */
 .dragging {
   transition: none;
 }
@@ -107,4 +108,87 @@
   cursor: auto;
   touch-action: auto;
   user-select: auto;
+}
+
+/* ---- Generated page, before JavaScript (prop `prerendered`, ADR 0003): no measures ----
+   The page (MapPage `prerendered`) is a wrapping column, and on a phone the sheet's parts become its
+   items: grip, title and header stand at the bottom at half height; when they would leave the map less
+   than the page's minimum, the header wraps to a second column out of sight and the sheet arrives
+   collapsed (decision 32). The body hangs below, out of sight. From 1024 px, the panel. The app
+   measures the sheet on mount. Container queries read the page's width (the nearest container). */
+.static .sheet {
+  transition: none;
+}
+
+@container (max-width: 1023.98px) {
+  .static,
+  .static .sheet,
+  .static .scroll,
+  .static .head {
+    display: contents;
+  }
+
+  .static .grip,
+  .static .title,
+  .static .head > :last-child {
+    flex: none;
+    align-self: center;
+    width: min(560px, 100%);
+    background: var(--el-color-surface);
+  }
+
+  .static .grip {
+    min-height: calc(var(--el-control-height) + var(--el-rule-strong));
+    border-top: var(--el-rule-strong) solid var(--el-color-line-strong);
+    border-radius: var(--el-space-12) var(--el-space-12) 0 0;
+  }
+
+  .static .title,
+  .static .head > :last-child {
+    padding-inline: var(--el-space-16);
+  }
+
+  /* The measured heights count from inside the top rule, so the last pixels of the sheet's visible
+     part stay below the page: the title goes past the bottom by that much when the header wraps away. */
+  .static .title {
+    margin-bottom: calc(-1 * var(--el-rule-strong));
+  }
+
+  .static .head > :last-child {
+    margin-top: var(--el-rule-strong);
+    padding-bottom: calc(var(--el-space-16) - var(--el-rule-strong));
+  }
+
+  .static .body {
+    position: absolute;
+    top: 100%;
+  }
+}
+
+@container (min-width: 1024px) {
+  .static .sheet {
+    top: 0;
+    left: auto;
+    width: 400px;
+    max-width: none;
+    height: 100%;
+    border-top: 0;
+    border-left: var(--el-rule-strong) solid var(--el-color-line-strong);
+    border-radius: 0;
+  }
+
+  .static .grip {
+    display: none;
+  }
+
+  .static .scroll {
+    overflow-y: auto;
+    padding-top: var(--el-space-16);
+  }
+
+  .static .head {
+    cursor: auto;
+    touch-action: auto;
+    user-select: auto;
+  }
 }

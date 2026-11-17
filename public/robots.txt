@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+
+# Mapa del sitio: una página por lugar, generada en cada corte (ADR 0003). Google exige la URL
+# completa; se activa cuando el dominio de producción esté definido (docs/ci-cd.md):
+# Sitemap: https://<dominio de producción>/sitemap.xml

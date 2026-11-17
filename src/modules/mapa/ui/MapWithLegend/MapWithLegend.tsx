@@ -13,6 +13,7 @@ import { Icon } from '../../../../components/ui/Icon/Icon';
 import { LegendKey } from '../../../../components/ui/LegendKey/LegendKey';
 import type { Box } from '../geometry';
 import { FullscreenMap, type FullscreenMapProps } from './FullscreenMap';
+import { StaticFullscreenMap } from './StaticFullscreenMap';
 import styles from './MapWithLegend.module.css';
 
 /** Fill of a territory: neutral (locates, measures nothing), a risk level, or «Sin datos» (hatch). */
@@ -81,7 +82,8 @@ export type { FullscreenMapProps } from './FullscreenMap';
 
 /** Map of territories: inline in a page (default) or at full screen under a sheet (`variant="fullscreen"`). */
 export function MapWithLegend(props: MapWithLegendProps | FullscreenMapProps) {
-  return props.variant === 'fullscreen' ? <FullscreenMap {...props} /> : <InlineMap {...props} />;
+  if (props.variant !== 'fullscreen') return <InlineMap {...props} />;
+  return props.prerendered ? <StaticFullscreenMap {...props} /> : <FullscreenMap {...props} />;
 }
 
 /**

@@ -174,3 +174,33 @@ describe('MapPage layout', () => {
     expect(css).not.toContain(`${PANEL_WIDTH}px`);
   });
 });
+
+describe('MapPage in a generated page (prerendered, ADR 0003)', () => {
+  const medellin: MapRoute = { view: 'municipality', code: '05001' };
+
+  it('draws the department and the place with CSS framing, the name over it, no camera map', () => {
+    const html = page(medellin, undefined, { prerendered: true });
+    expect(html).toMatch(/class="[^"]*staticScreen/);
+    expect(html).toMatch(/<path class="[^"]*staticRegion[^"]*" d="M/);
+    expect(html).toMatch(/<path d="M[^"]*" data-selected="true"/);
+    expect(html).toMatch(/<span class="[^"]*placeLabel[^"]*staticLabel[^"]*" style="[^"]*--lx/);
+    // The free area of camera.ts, with the corner column and the room for the name.
+    expect(html).toContain('--top-phone:148;--left-phone:88');
+    expect(html).not.toMatch(/class="[^"]*screenMap/);
+  });
+
+  it('the sheet stands at half height with CSS alone; decision 32 comes as the map minimum', () => {
+    const html = page(medellin, undefined, { prerendered: true });
+    expect(html).toMatch(/class="[^"]*page[^"]*prerendered[^"]*"/);
+    expect(html).toContain('--static-map-min:288px');
+    expect(html).toMatch(/<div class="[^"]*layer[^"]*static[^"]*">/);
+    expect(html).not.toContain('translateY');
+  });
+
+  it('the app never renders it: the camera map and the measured sheet', () => {
+    const html = page(medellin);
+    expect(html).not.toContain('staticScreen');
+    expect(html).not.toContain('--static-map-min');
+    expect(html).toContain('translateY');
+  });
+});

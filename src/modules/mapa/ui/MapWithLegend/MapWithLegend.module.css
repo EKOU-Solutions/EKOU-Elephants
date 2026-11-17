@@ -359,3 +359,84 @@
 .corner[data-covered="true"] {
   visibility: hidden;
 }
+
+/* ---------- Generated page, before JavaScript (ADR 0003): StaticFullscreenMap ---------- */
+
+/* In the map page's column, over the sheet (phone) or under the panel (desktop): the sheet's top is
+   this frame's bottom, so CSS knows the free area without measuring. */
+.staticScreen {
+  container: static-map / inline-size;
+  position: relative;
+  /* The page's minimum map height (MapPage --static-map-min, decision 32); then it takes what is left. */
+  flex: 1 0 var(--static-map-min, 0px);
+  overflow: hidden;
+  background: var(--el-color-surface);
+}
+
+/* The free area of camera.ts (`freeInsets`): the place is framed in it like `frameWithin` frames it.
+   --k is the camera's scale in px per projected unit; --x and --y place the drawn box. */
+.staticArea {
+  container-type: size;
+  position: absolute;
+  top: calc(var(--top-phone) * 1px);
+  left: calc(var(--left-phone) * 1px);
+  right: calc(var(--right-phone) * 1px);
+  bottom: calc(var(--bottom-phone) * 1px);
+  min-height: calc(var(--min-phone) * 1px);
+  --k: min(100cqw / var(--wv), 100cqh / var(--hv));
+  --x: clamp(0px, 50cqw - var(--k) * var(--cx), 100cqw - var(--k) * var(--dw));
+  --y: clamp(0px, 50cqh - var(--k) * var(--cy), 100cqh - var(--k) * var(--dh));
+}
+
+@container static-map (min-width: 1024px) {
+  .staticArea {
+    top: calc(var(--top-panel) * 1px);
+    right: calc(var(--right-panel) * 1px);
+    bottom: calc(var(--bottom-panel) * 1px);
+    min-height: 0;
+  }
+}
+
+.staticWorld {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: calc(var(--k) * var(--dw));
+  height: calc(var(--k) * var(--dh));
+  overflow: visible;
+}
+
+.staticWorld path {
+  fill: var(--el-color-line);
+  stroke: var(--el-color-map-border);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.staticWorld [data-dimmed="true"] {
+  fill: var(--el-color-surface-subtle);
+  stroke: var(--el-color-line);
+}
+
+.staticWorld .staticRegion {
+  stroke: var(--el-color-control-border);
+  stroke-width: 1.5;
+}
+
+.staticWorld [data-selected="true"] {
+  stroke: var(--el-color-text);
+  stroke-width: 2.5;
+}
+
+.staticWorld .hatchBg {
+  stroke: none;
+}
+
+.staticWorld .hatchLine {
+  stroke: var(--el-color-unknown);
+}
+
+.staticLabel {
+  left: calc(var(--x) + var(--k) * var(--lx));
+  top: calc(var(--y) + var(--k) * var(--ly));
+}

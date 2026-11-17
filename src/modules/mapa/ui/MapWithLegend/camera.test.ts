@@ -10,6 +10,7 @@ import {
   flightDuration,
   flightFrame,
   frameWithin,
+  freeInsets,
   PANEL_WIDTH,
   freeRect,
   isNearCountry,
@@ -181,5 +182,26 @@ describe('medidas compartidas con el CSS', () => {
     const sheet = readFileSync('src/components/ui/BottomSheet/BottomSheet.module.css', 'utf8');
     expect(map).toContain(`right: calc(${PANEL_WIDTH}px + var(--el-space-12))`);
     expect(sheet).toMatch(new RegExp(`\\.panel \\{[^}]*width: ${PANEL_WIDTH}px`));
+  });
+});
+
+describe('zona libre sin JavaScript (página generada)', () => {
+  it('los márgenes de freeInsets dan la misma zona que freeRect, en celular y en el panel', () => {
+    for (const corner of [false, true])
+      for (const roomAbove of [false, true]) {
+        const { phone: p, panel: q } = freeInsets(corner, roomAbove);
+        const flags = { corner, roomAbove };
+        // Phone: the frame ends at the sheet's top edge (760 − 240).
+        expect(freeRect({ ...phone, ...flags, sheetHeight: 240 })).toEqual({
+          x: p.left,
+          y: p.top,
+          w: 390 - p.left - p.right,
+          h: 760 - 240 - p.bottom - p.top,
+        });
+        expect(freeRect({ ...phone, ...flags, sheetHeight: 700 }).h).toBe(p.minHeight);
+        expect(
+          freeRect({ ...phone, ...flags, width: 1280, isPanel: true, sheetHeight: 0 }),
+        ).toEqual({ x: q.left, y: q.top, w: 1280 - q.left - q.right, h: 760 - q.top - q.bottom });
+      }
   });
 });

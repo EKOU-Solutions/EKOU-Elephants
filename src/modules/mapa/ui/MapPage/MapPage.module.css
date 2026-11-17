@@ -149,6 +149,22 @@
   text-wrap: balance;
 }
 
+/* ---- generated page, before JavaScript (ADR 0003): a wrapping column, the map over the sheet ----
+   On a phone the sheet's grip, title and header are items of this column (BottomSheet `prerendered`),
+   so the map's frame (StaticFullscreenMap) ends at the sheet's top edge and frames the place with CSS
+   alone. The map keeps --static-map-min: else the header wraps out of sight (decision 32). From
+   1024 px the sheet is the panel again. */
+.prerendered {
+  display: flex;
+  flex-flow: column wrap;
+}
+
+@container page (max-width: 1023.98px) {
+  .prerendered .sheetArea {
+    display: contents;
+  }
+}
+
 /* ---- 600 to 1023 px: the search as wide as the sheet (BottomSheet's 560 px), centred ---- */
 @container page (min-width: 600px) and (max-width: 1023.98px) {
   .search {
@@ -184,5 +200,11 @@
 
   .sheetArea {
     top: calc(var(--el-space-12) * 2 + var(--el-control-height));
+  }
+
+  /* The panel has no height button (spec §6); the generated page cannot ask the sheet, so CSS hides it. */
+  .prerendered [data-height-button],
+  .prerendered .actions:has(> [data-height-button]:only-child) {
+    display: none;
   }
 }

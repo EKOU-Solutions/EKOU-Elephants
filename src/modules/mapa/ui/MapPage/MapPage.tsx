@@ -34,13 +34,14 @@ import {
   searchPlaces,
   sourceParts,
 } from '../mapModel';
-import { PANEL_WIDTH } from '../MapWithLegend/camera';
+import { freeInsets, PANEL_WIDTH } from '../MapWithLegend/camera';
 import { MapWithLegend } from '../MapWithLegend/MapWithLegend';
 import { SearchResults } from '../SearchResults/SearchResults';
 import styles from './MapPage.module.css';
 import {
   arrivalDetent,
   crumbFocus,
+  MIN_FREE_MAP,
   crumbsFor,
   lowered,
   mapTap,
@@ -51,6 +52,7 @@ import {
 declare module 'react' {
   interface CSSProperties {
     '--map-panel-width'?: string;
+    '--static-map-min'?: string;
   }
 }
 
@@ -82,6 +84,11 @@ export interface MapPageProps {
    * le quedarían menos de 160 px (decisión 32).
    */
   defaultDetent?: Detent;
+  /**
+   * Página generada sin JavaScript (ADR 0003): el mapa y la ficha se acomodan solo con CSS, en la misma
+   * posición que toman al montar. Solo la usa `paginas/`; la app nunca la pasa.
+   */
+  prerendered?: boolean;
 }
 
 const KICKER = 'Mapa de contratación pública';
@@ -136,6 +143,7 @@ export function MapPage({
   onRetry,
   defaultQuery = '',
   defaultDetent,
+  prerendered = false,
 }: MapPageProps) {
   const pageRef = useRef<HTMLElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
@@ -277,6 +285,12 @@ export function MapPage({
         body: null,
       };
 
+  // Decision 32 in the generated page (arrivalDetent's free area): the sheet arrives collapsed unless
+  // the map keeps MIN_FREE_MAP px free over it at half height. CSS alone: the map's minimum height.
+  const { phone } = freeInsets(false, false);
+  const style = prerendered
+    ? { ...pageStyle, '--static-map-min': `${phone.top + MIN_FREE_MAP + phone.bottom}px` }
+    : pageStyle;
   const found = searchPlaces(map, query);
   const sheetFull = sheet?.shown === 'full' && !sheet.isPanel;
   // The results (or the 2-letter hint) cover the zoom: it hides while they are open (validation, item 10).
@@ -289,7 +303,11 @@ export function MapPage({
   };
 
   return (
-    <main ref={pageRef} className={styles.page} style={pageStyle}>
+    <main
+      ref={pageRef}
+      className={prerendered ? `${styles.page} ${styles.prerendered}` : styles.page}
+      style={style}
+    >
       <p className={styles.srOnly} role="status">
         {announcement}
       </p>
@@ -338,6 +356,7 @@ export function MapPage({
         {...view}
         sheet={sheet}
         controlsHidden={searchOpen}
+        prerendered={prerendered}
         onSelect={handleSelect}
         onZoomToCountry={() => go({ view: 'country' }, 'map')}
       />
@@ -345,6 +364,7 @@ export function MapPage({
         <BottomSheet
           label="Ficha del lugar"
           contentKey={routeKey}
+          prerendered={prerendered}
           detent={detent}
           onDetentChange={setDetent}
           onLayoutChange={setSheet}
@@ -360,6 +380,7 @@ export function MapPage({
                   {/* In the panel the table is already in view (spec §6): no height button. */}
                   {text.more && !isPanel ? (
                     <Button
+                      data-height-button
                       variant="secondary"
                       label={shown === 'full' ? 'Volver al mapa' : text.more}
                       aria-expanded={shown === 'full'}

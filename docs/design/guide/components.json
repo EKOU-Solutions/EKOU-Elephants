@@ -1,5 +1,5 @@
 {
-  "version": "1.6.0",
+  "version": "1.6.1",
   "about": "Catálogo legible por máquina de los componentes de Elephants. 'core' = revisado y aceptado (Ronda 05); 'candidate' = se puede usar, pero lo debe confirmar la primera página que lo necesite (ver .claude/skills/elephant-designer/references/build-page.md). Los componentes con 'component' ya son React en src/components/ui/ y traen sus propios estilos ('styles', CSS Modules); los demás son especificación con clases de components.css. build.py comprueba que los archivos, las clases y los tokens existan.",
   "components": [
     {
@@ -372,7 +372,8 @@
         "territorio seleccionado",
         "neutra (v1.3.0): un solo relleno, contorno del conjunto, nombres de lugar y zoom",
         "pantalla completa (v1.5.0, variant=\"fullscreen\"): un solo mapa con tres niveles bajo la BottomSheet; cámara con vuelos, arrastre con un dedo, pellizco y rueda, encuadre en la zona libre, lugares atenuados alrededor, contorno del candidato, rótulo del elegido y recuadro del archipiélago dentro del mapa o fijo en la esquina",
-        "pantalla completa con controles ocultos (controlsHidden, v1.6.0): el zoom y el recuadro de esquina se ocultan mientras algo los cubre, como la lista del buscador"
+        "pantalla completa con controles ocultos (controlsHidden, v1.6.0): el zoom y el recuadro de esquina se ocultan mientras algo los cubre, como la lista del buscador",
+        "estática de la página generada (prerendered, v1.6.1): contorno simplificado del departamento con el lugar marcado y el mismo encuadre que la cámara, sin JavaScript (ADR 0003)"
       ],
       "tokens": [
         "--el-color-risk-low",
@@ -415,7 +416,8 @@
         "media (encabezado completo; la de llegada)",
         "completa (cuerpo con desplazamiento; 68 px de mapa a la vista)",
         "panel lateral de 400 px desde 1024 px",
-        "cambio de contenido (contentKey, v1.6.0): la altura con la que llega un lugar nuevo no se anuncia, porque la página ya anuncia el lugar"
+        "cambio de contenido (contentKey, v1.6.0): la altura con la que llega un lugar nuevo no se anuncia, porque la página ya anuncia el lugar",
+        "prerendered (v1.6.1): ficha a media altura solo con CSS en la página generada; la reemplaza la medida real al montar (ADR 0003)"
       ],
       "tokens": [
         "--el-color-surface",

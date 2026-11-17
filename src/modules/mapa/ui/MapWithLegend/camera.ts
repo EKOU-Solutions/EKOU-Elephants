@@ -59,6 +59,42 @@ export function freeRect({
   return { x: left, y: top, w: width - ZOOM_COLUMN - left, h: bottom - top };
 }
 
+/** Distances (px) from the map's edges to the free area, for a page without JavaScript (CSS only). */
+export interface FreeInsets {
+  top: number;
+  left: number;
+  right: number;
+  /** From the sheet's top edge (phone) or the map's bottom (panel). */
+  bottom: number;
+  /** The free area never gets lower than this (phone). */
+  minHeight: number;
+}
+
+/** `freeRect` as insets, for the phone (over the sheet) and the desktop panel: the same lines. */
+export function freeInsets(
+  corner: boolean,
+  roomAbove: boolean,
+): Record<'phone' | 'panel', FreeInsets> {
+  const left = corner ? CORNER_COLUMN : EDGE;
+  const above = roomAbove ? LABEL_ROOM : 0;
+  return {
+    phone: {
+      top: PHONE_TOP + above,
+      left,
+      right: ZOOM_COLUMN,
+      bottom: SHEET_GAP,
+      minHeight: MIN_HEIGHT,
+    },
+    panel: {
+      top: PANEL_TOP + above,
+      left,
+      right: PANEL_WIDTH + ZOOM_COLUMN,
+      bottom: EDGE,
+      minHeight: 0,
+    },
+  };
+}
+
 /** The camera that centres `box` in `rect`, filling `fill` of it on its tighter side. */
 export function fitCamera(box: Box, rect: Rect, fill: number): Camera {
   const k = Math.min(rect.w / (box[2] - box[0] || 1), rect.h / (box[3] - box[1] || 1)) * fill;

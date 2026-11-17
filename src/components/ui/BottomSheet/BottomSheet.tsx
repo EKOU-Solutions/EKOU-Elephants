@@ -54,6 +54,12 @@ type Props = {
    * el cambio de lugar, y dos anuncios a la vez se pisan. Los cambios siguientes sí se anuncian.
    */
   contentKey?: string;
+  /**
+   * HTML generado sin JavaScript (páginas de ADR 0003): sin medidas, la ficha queda a media altura solo
+   * con CSS (desde 1024 px, el panel) y su cuerpo debajo, fuera de la vista. En el navegador no se usa:
+   * al montar, la ficha se mide como siempre.
+   */
+  prerendered?: boolean;
 };
 
 const DETENT_NAME: Record<Detent, string> = {
@@ -92,6 +98,7 @@ export function BottomSheet({
   onDetentChange,
   onLayoutChange,
   contentKey,
+  prerendered = false,
 }: Props) {
   const layerRef = useRef<HTMLDivElement>(null);
   const sectionRef = useRef<HTMLElement>(null);
@@ -111,6 +118,8 @@ export function BottomSheet({
   const [isPanel, setIsPanel] = useState(false);
   const [dragHeight, setDragHeight] = useState<number | null>(null);
   const [announcement, setAnnouncement] = useState('');
+  // No transition until the first measured height has been painted: the sheet never slides on mount.
+  const [settled, setSettled] = useState(false);
 
   const isMeasured = heights.full > 0;
   const shown = shownDetent(detent, headerFits);
@@ -126,6 +135,14 @@ export function BottomSheet({
   useLayoutEffect(() => {
     if (isMeasured) layoutListener.current?.({ shown, isPanel, height: shownHeight });
   }, [isMeasured, shown, isPanel, shownHeight]);
+
+  useEffect(() => {
+    if (!isMeasured) return;
+    let frame = requestAnimationFrame(() => {
+      frame = requestAnimationFrame(() => setSettled(true));
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [isMeasured]);
 
   // Collapsed and half heights come from the content; full is the whole layer.
   useLayoutEffect(() => {
@@ -270,22 +287,27 @@ export function BottomSheet({
     onPointerCancel: handlePointerUp,
   };
   const offset = heights.full - (dragHeight ?? heights[shown]);
+  // Only in the generated HTML: the first measure in the browser replaces it before paint.
+  const staticLayout = prerendered && !isMeasured;
   const sheetClass = [
     styles.sheet,
     isPanel && styles.panel,
     isFull && !isPanel && styles.full,
-    dragHeight !== null && styles.dragging,
+    (dragHeight !== null || !settled) && styles.dragging,
   ]
     .filter(Boolean)
     .join(' ');
 
   return (
-    <div ref={layerRef} className={styles.layer}>
+    <div
+      ref={layerRef}
+      className={staticLayout ? `${styles.layer} ${styles.static}` : styles.layer}
+    >
       <section
         ref={sectionRef}
         aria-label={label}
         className={sheetClass}
-        style={isPanel ? undefined : { transform: `translateY(${offset}px)` }}
+        style={isPanel || staticLayout ? undefined : { transform: `translateY(${offset}px)` }}
         onKeyDown={handleKeyDown}
         onFocus={(event) => {
           lastFocused.current = event.target;
@@ -313,7 +335,9 @@ export function BottomSheet({
             </div>
             <div inert={!isPanel && shown === 'peek'}>{header({ shown, isPanel })}</div>
           </div>
-          <div inert={!isPanel && !isFull}>{children}</div>
+          <div className={styles.body} inert={!isPanel && !isFull}>
+            {children}
+          </div>
         </div>
       </section>
     </div>
