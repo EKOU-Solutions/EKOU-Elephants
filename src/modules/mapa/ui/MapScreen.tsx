@@ -50,32 +50,41 @@ export async function loadMap(
   return prepareMap({ cut, departments, municipalities, topology });
 }
 
+// A generated page waits this long for the data before the app takes over anyway (it then loads them).
+const INITIAL_TIMEOUT_MS = 8000;
+
 /**
  * The state to start with when `#root` already shows a place's generated page (ADR 0003): the data
  * are read first, so the app replaces that page with the same place, never with «Cargando el mapa…».
- * If they fail, the usual error. Without a generated page (the SPA), nothing: the screen loads them.
+ * If they fail, the usual error; if they take longer than `timeout`, nothing: the app mounts and loads
+ * them itself (its usual loading state), so the page never stays static. Without a generated page (the
+ * SPA), nothing: the screen loads them.
  */
 export async function initialState(
   generated: boolean,
   fetcher: Fetch = fetch,
+  timeout = INITIAL_TIMEOUT_MS,
 ): Promise<MapPageState | undefined> {
   if (!generated) return undefined;
-  return loadMap(new AbortController().signal, fetcher).then(
+  const signal = AbortSignal.timeout(timeout);
+  return loadMap(signal, fetcher).then(
     (map) => ({ status: 'ready', map }),
-    () => ({ status: 'unavailable' }),
+    () => (signal.aborted ? undefined : { status: 'unavailable' }),
   );
 }
 
 export interface MapScreenProps {
   /** Data already read (`initialState`): the first load is skipped; «Reintentar» still loads. */
   initial?: MapPageState;
+  /** What the person had typed in the generated page's search before the app took over. */
+  initialQuery?: string;
 }
 
 /**
  * The map page in the app: reads the cut from our API (contract: docs/design/pages/map/contract.md)
  * and the geometry file it names, and keeps the view in the address bar so every place has a link.
  */
-export function MapScreen({ initial }: MapScreenProps) {
+export function MapScreen({ initial, initialQuery }: MapScreenProps) {
   const [route, setRoute] = useState<MapRoute>(() => {
     // One address per place: «/mapa/departamento/11» or a trailing slash become the canonical link.
     const canonical = canonicalPath(window.location.pathname);
@@ -126,6 +135,7 @@ export function MapScreen({ initial }: MapScreenProps) {
     <MapPage
       state={state}
       route={route}
+      defaultQuery={initialQuery}
       onNavigate={navigate}
       onRetry={() => setAttempt((n) => n + 1)}
     />

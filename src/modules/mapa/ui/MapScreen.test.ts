@@ -80,6 +80,15 @@ describe('initialState (a generated page already in view)', () => {
     const { fetcher } = fakeFetch({ '/api/mapa/corte': 503 });
     await expect(initialState(true, fetcher)).resolves.toEqual({ status: 'unavailable' });
   });
+
+  it('if the API hangs, it gives up in time: the app mounts and loads the data itself', async () => {
+    // A request that only ends when it is cancelled.
+    const hanging = (_url: string, { signal }: { signal: AbortSignal }) =>
+      new Promise<Response>((_, reject) =>
+        signal.addEventListener('abort', () => reject(signal.reason)),
+      );
+    await expect(initialState(true, hanging, 20)).resolves.toBeUndefined();
+  });
 });
 
 describe('MapScreen first render', () => {

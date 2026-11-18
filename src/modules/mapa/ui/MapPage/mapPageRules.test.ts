@@ -3,6 +3,7 @@ import { type MapRoute, parseRoute } from '../mapModel';
 import { sampleMap } from '../sample';
 import {
   arrivalDetent,
+  arrivalState,
   crumbFocus,
   crumbsFor,
   lowered,
@@ -62,16 +63,64 @@ describe('a tap on the map (spec §3)', () => {
 
 describe('arrival height (decision 32)', () => {
   it('collapsed when the map keeps under 160 px free over the half sheet (320 × 640)', () => {
-    expect(arrivalDetent({ shown: 'half', isPanel: false, height: 400 }, 320, 640)).toBe('peek');
+    expect(arrivalDetent({ shown: 'half', isPanel: false, height: 400 }, 320, 640, false)).toBe(
+      'peek',
+    );
   });
 
   it('half on a 390 × 844 phone, and always in the desktop panel', () => {
-    expect(arrivalDetent({ shown: 'half', isPanel: false, height: 400 }, 390, 844)).toBe('half');
-    expect(arrivalDetent({ shown: 'half', isPanel: true, height: 0 }, 1280, 500)).toBe('half');
+    expect(arrivalDetent({ shown: 'half', isPanel: false, height: 400 }, 390, 844, true)).toBe(
+      'half',
+    );
+    expect(arrivalDetent({ shown: 'half', isPanel: true, height: 0 }, 1280, 500, true)).toBe(
+      'half',
+    );
   });
 
   it('collapsed when the header does not even fit at half', () => {
-    expect(arrivalDetent({ shown: 'full', isPanel: false, height: 700 }, 390, 844)).toBe('peek');
+    expect(arrivalDetent({ shown: 'full', isPanel: false, height: 700 }, 390, 844, false)).toBe(
+      'peek',
+    );
+  });
+
+  it('a municipality counts the room for its name above it (320 × 640)', () => {
+    // 640 − 340 − 12 − 116 = 172 px free for a department; 32 px less for a municipality's name.
+    const half = { shown: 'half', isPanel: false, height: 340 } as const;
+    expect(arrivalDetent(half, 320, 640, false)).toBe('half');
+    expect(arrivalDetent(half, 320, 640, true)).toBe('peek');
+  });
+});
+
+describe('arrival state (decision 32, on a change of place)', () => {
+  const page = { width: 390, height: 844, roomAbove: true };
+  const fullOld = { shown: 'full', isPanel: false, height: 700, contentKey: '/mapa/05' } as const;
+  const halfNew = {
+    shown: 'half',
+    isPanel: false,
+    height: 400,
+    contentKey: '/mapa/05001',
+  } as const;
+
+  it('from the full sheet, the frame of the previous place never makes the new one arrive collapsed', () => {
+    // The person had opened the full sheet in Antioquia, then chose Medellín from the table.
+    let state = arrivalState(
+      { key: '/mapa/05', detent: 'full', auto: false },
+      fullOld,
+      '/mapa/05001',
+      page,
+    );
+    const detents: string[] = [state.key === '/mapa/05001' ? state.detent : 'half'];
+    state = arrivalState(state, halfNew, '/mapa/05001', page);
+    detents.push(state.detent);
+    expect(detents).toEqual(['half', 'half']);
+    expect(state).toEqual({ key: '/mapa/05001', detent: 'half', auto: true });
+  });
+
+  it('keeps a height the person chose, and ignores a collapsed frame', () => {
+    const chosen = { key: '/mapa/05001', detent: 'full', auto: false } as const;
+    expect(arrivalState(chosen, halfNew, '/mapa/05001', page)).toBe(chosen);
+    const auto = { key: '/mapa/05001', detent: 'peek', auto: true } as const;
+    expect(arrivalState(auto, { ...halfNew, shown: 'peek' }, '/mapa/05001', page)).toBe(auto);
   });
 });
 

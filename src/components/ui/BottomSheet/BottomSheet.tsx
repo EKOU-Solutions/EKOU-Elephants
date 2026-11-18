@@ -31,6 +31,8 @@ export type SheetLayout = {
 export type SheetFrame = SheetLayout & {
   /** Alto que tapa la ficha, en px (0 en el panel). */
   height: number;
+  /** El `contentKey` con el que se midió: al cambiar de contenido, el marco anterior llega antes que el suyo. */
+  contentKey?: string;
 };
 
 type Props = {
@@ -56,7 +58,8 @@ type Props = {
   contentKey?: string;
   /**
    * HTML generado sin JavaScript (páginas de ADR 0003): sin medidas, la ficha queda a media altura solo
-   * con CSS (desde 1024 px, el panel) y su cuerpo debajo, fuera de la vista. En el navegador no se usa:
+   * con CSS (desde 1024 px, el panel, con sus enlaces activos) y su cuerpo debajo, fuera de la vista y
+   * del orden del foco. En el navegador no se usa:
    * al montar, la ficha se mide como siempre.
    */
   prerendered?: boolean;
@@ -114,6 +117,7 @@ export function BottomSheet({
   const lastContent = useRef(contentKey);
   const arriving = useRef(false);
   const [heights, setHeights] = useState<Heights>({ peek: 0, half: 0, full: 0 });
+  const [measuredKey, setMeasuredKey] = useState(contentKey);
   const [headerFits, setHeaderFits] = useState(true);
   const [isPanel, setIsPanel] = useState(false);
   const [dragHeight, setDragHeight] = useState<number | null>(null);
@@ -133,8 +137,9 @@ export function BottomSheet({
 
   // Before paint, so the map under the sheet never shows a frame framed for the previous height.
   useLayoutEffect(() => {
-    if (isMeasured) layoutListener.current?.({ shown, isPanel, height: shownHeight });
-  }, [isMeasured, shown, isPanel, shownHeight]);
+    if (isMeasured)
+      layoutListener.current?.({ shown, isPanel, height: shownHeight, contentKey: measuredKey });
+  }, [isMeasured, shown, isPanel, shownHeight, measuredKey]);
 
   useEffect(() => {
     if (!isMeasured) return;
@@ -144,7 +149,8 @@ export function BottomSheet({
     return () => cancelAnimationFrame(frame);
   }, [isMeasured]);
 
-  // Collapsed and half heights come from the content; full is the whole layer.
+  // Collapsed and half heights come from the content; full is the whole layer. Measured again, before
+  // paint, when the content changes: its first frame already carries its own heights.
   useLayoutEffect(() => {
     const layer = layerRef.current;
     const titleBox = titleRef.current;
@@ -159,13 +165,14 @@ export function BottomSheet({
       setIsPanel(layer.clientWidth >= PANEL_MIN_WIDTH);
       setHeaderFits(measured.headerFits);
       setHeights(measured.heights);
+      setMeasuredKey(contentKey);
     };
     measure();
     const observer = new ResizeObserver(measure);
     observer.observe(layer);
     observer.observe(head);
     return () => observer.disconnect();
-  }, []);
+  }, [contentKey]);
 
   // Runs before the browser blurs a newly inert element, so focus can still be moved to the grip.
   useLayoutEffect(() => {
@@ -335,7 +342,9 @@ export function BottomSheet({
             </div>
             <div inert={!isPanel && shown === 'peek'}>{header({ shown, isPanel })}</div>
           </div>
-          <div className={styles.body} inert={!isPanel && !isFull}>
+          {/* The generated HTML has no inert body: the panel's links work without JavaScript, and on a
+              phone CSS hides the body out of sight (visibility), so it stays out of the focus order. */}
+          <div className={styles.body} inert={!staticLayout && !isPanel && !isFull}>
             {children}
           </div>
         </div>

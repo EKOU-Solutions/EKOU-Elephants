@@ -39,12 +39,13 @@ import { MapWithLegend } from '../MapWithLegend/MapWithLegend';
 import { SearchResults } from '../SearchResults/SearchResults';
 import styles from './MapPage.module.css';
 import {
-  arrivalDetent,
+  arrivalState,
   crumbFocus,
-  MIN_FREE_MAP,
   crumbsFor,
   lowered,
+  MIN_FREE_MAP,
   mapTap,
+  type SheetState,
   selectedText,
 } from './mapPageRules';
 
@@ -128,13 +129,6 @@ interface SheetText {
   body: ReactNode;
 }
 
-/** The sheet's height for one place; `auto` until the person moves it (decision 32 may still adjust it). */
-interface SheetState {
-  key: string;
-  detent: Detent;
-  auto: boolean;
-}
-
 /** Map page (TASK-09, spec of 2026-11-17): the full-screen map with the search, the crumbs and the sheet. */
 export function MapPage({
   state,
@@ -165,19 +159,19 @@ export function MapPage({
   const setDetent = (next: Detent) => setSheetState({ key: routeKey, detent: next, auto: false });
   const map = state.status === 'ready' ? state.map : undefined;
   const crumbs = map ? crumbsFor(map, route) : [];
+  const known = map ? isKnownRoute(map, route) : false;
+  const view = map && fullscreenView(map, known ? route : { view: 'country' });
+  // A chosen municipality carries its name above it: that room is not free map (decision 32).
+  const roomAbove = view?.labels.some((l) => l.anchor === 'above') ?? false;
 
   // Decision 32, on arrival: once the sheet has measured the new place, before paint. Here and not in
   // the sheet's callback, which runs before the page's own ref is attached.
   useLayoutEffect(() => {
     const page = pageRef.current;
-    if (!page || !sheet || sheet.shown === 'peek') return;
-    const next = arrivalDetent(sheet, page.clientWidth, page.clientHeight);
-    setSheetState((s) =>
-      s.key === routeKey && (!s.auto || s.detent === next)
-        ? s
-        : { key: routeKey, detent: next, auto: true },
-    );
-  }, [sheet, routeKey]);
+    if (!page) return;
+    const box = { width: page.clientWidth, height: page.clientHeight, roomAbove };
+    setSheetState((s) => arrivalState(s, sheet, routeKey, box));
+  }, [sheet, routeKey, roomAbove]);
 
   const announce = (text: string) => {
     clearTimeout(announceTimer.current);
@@ -222,13 +216,14 @@ export function MapPage({
   );
   const pageStyle = { '--map-panel-width': `${PANEL_WIDTH}px` };
 
-  if (!map) {
+  if (!map || !view) {
     return (
       <main ref={pageRef} className={styles.page} style={pageStyle}>
         <div className={styles.placeholder} />
         <div className={styles.sheetArea}>
           <BottomSheet
             label="Ficha del lugar"
+            contentKey={routeKey}
             detent={detent}
             onDetentChange={setDetent}
             onLayoutChange={setSheet}
@@ -255,8 +250,6 @@ export function MapPage({
     );
   }
 
-  const known = isKnownRoute(map, route);
-  const view = fullscreenView(map, known ? route : { view: 'country' });
   /** Table names are real links (new tab, shareable), handled in place on a plain click. */
   const link = (next: MapRoute) => ({
     href: routePath(next),
@@ -287,7 +280,7 @@ export function MapPage({
 
   // Decision 32 in the generated page (arrivalDetent's free area): the sheet arrives collapsed unless
   // the map keeps MIN_FREE_MAP px free over it at half height. CSS alone: the map's minimum height.
-  const { phone } = freeInsets(false, false);
+  const { phone } = freeInsets(false, roomAbove);
   const style = prerendered
     ? { ...pageStyle, '--static-map-min': `${phone.top + MIN_FREE_MAP + phone.bottom}px` }
     : pageStyle;

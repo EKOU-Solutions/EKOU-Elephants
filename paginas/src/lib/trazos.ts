@@ -101,9 +101,16 @@ export function trazosDeLaPagina(map: PreparedMap, route: MapRoute): PreparedMap
   const municipio = route.view === 'municipality' ? map.municipalities.get(route.code) : undefined;
   const departamento = route.view === 'department' ? route.code : municipio?.departamento.codigo;
   const vacio = <T extends { d: string }>(s: T): T => ({ ...s, d: '' });
-  const formas = (m: Map<string, Shape>, conservar: (codigo: string) => boolean, tol: number) =>
+  const formas = (
+    m: Map<string, Shape>,
+    conservar: (codigo: string) => boolean,
+    tolerancia: (s: Shape) => number,
+  ) =>
     new Map(
-      [...m].map(([k, s]) => [k, conservar(k) ? { ...s, d: simplificar(s.d, tol) } : vacio(s)]),
+      [...m].map(([k, s]) => [
+        k,
+        conservar(k) ? { ...s, d: simplificar(s.d, tolerancia(s)) } : vacio(s),
+      ]),
     );
   // The box the page frames: the department (its municipalities), or the country.
   const caja =
@@ -119,9 +126,14 @@ export function trazosDeLaPagina(map: PreparedMap, route: MapRoute): PreparedMap
     departmentShapes: formas(
       map.departmentShapes,
       (k) => (departamento ? k === departamento && k !== ARCHIPELAGO : true),
-      tol,
+      () => tol,
     ),
-    municipalityShapes: formas(map.municipalityShapes, (k) => k === municipio?.codigo, tol),
+    // The chosen municipality with its own detail: at the department's, a small one would be dropped.
+    municipalityShapes: formas(
+      map.municipalityShapes,
+      (k) => k === municipio?.codigo,
+      (s) => largo(s.box) * DETALLE,
+    ),
     archipelago: { ...map.archipelago, shapes: map.archipelago.shapes.map(vacio) },
     inset: {
       ...map.inset,

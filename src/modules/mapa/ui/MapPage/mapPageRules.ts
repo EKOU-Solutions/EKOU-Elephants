@@ -63,9 +63,15 @@ export function mapTap(
 /**
  * Decision 32: the height a place arrives at, from how the sheet looks at half. If the map keeps less
  * than about 160 px free over it (320 × 640), or the header does not even fit at half, it arrives
- * collapsed. The desktop panel has no heights.
+ * collapsed. A chosen municipality takes its name's room above it (`roomAbove`). The desktop panel has
+ * no heights.
  */
-export function arrivalDetent(frame: SheetFrame, width: number, height: number): Detent {
+export function arrivalDetent(
+  frame: SheetFrame,
+  width: number,
+  height: number,
+  roomAbove: boolean,
+): Detent {
   if (frame.isPanel) return 'half';
   if (frame.shown === 'full') return 'peek';
   const free = freeRect({
@@ -74,9 +80,33 @@ export function arrivalDetent(frame: SheetFrame, width: number, height: number):
     sheetHeight: frame.height,
     isPanel: false,
     corner: false,
-    roomAbove: false,
+    roomAbove,
   });
   return free.h < MIN_FREE_MAP ? 'peek' : 'half';
+}
+
+/** The sheet's height for one place; `auto` until the person moves it (decision 32 may still adjust it). */
+export interface SheetState {
+  key: string;
+  detent: Detent;
+  auto: boolean;
+}
+
+/**
+ * Decision 32 on arrival at the place `key`: the sheet state once the sheet has measured it. A frame of
+ * the previous place (it still arrives first) or a collapsed one changes nothing, so the sheet never
+ * bounces through collapsed; a height the person chose is kept.
+ */
+export function arrivalState(
+  state: SheetState,
+  frame: SheetFrame | undefined,
+  key: string,
+  page: { width: number; height: number; roomAbove: boolean },
+): SheetState {
+  if (!frame || frame.contentKey !== key || frame.shown === 'peek') return state;
+  const detent = arrivalDetent(frame, page.width, page.height, page.roomAbove);
+  if (state.key === key && (!state.auto || state.detent === detent)) return state;
+  return { key, detent, auto: true };
 }
 
 /** What the status region says after a change of place: «Seleccionado: Medellín, Antioquia». */

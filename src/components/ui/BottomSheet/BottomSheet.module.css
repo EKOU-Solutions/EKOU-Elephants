@@ -159,9 +159,11 @@
     padding-bottom: calc(var(--el-space-16) - var(--el-rule-strong));
   }
 
+  /* Out of sight and out of the focus order (decision 25), as the inert body of the app. */
   .static .body {
     position: absolute;
     top: 100%;
+    visibility: hidden;
   }
 }
 

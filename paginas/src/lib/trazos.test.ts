@@ -98,6 +98,21 @@ describe('trazosDeLaPagina', () => {
     });
   });
 
+  it('the chosen municipality never vanishes, however small next to its department', () => {
+    // Medellín shrunk to a square smaller than twice the department's tolerance.
+    const shape = sampleMap.municipalityShapes.get('05001');
+    if (!shape) throw new Error('05001 missing from the sample');
+    const [x, y] = shape.box;
+    const tiny = { ...shape, d: `M${x} ${y}L${x + 0.1} ${y}L${x + 0.1} ${y + 0.1}Z` };
+    tiny.box = [x, y, x + 0.1, y + 0.1];
+    const map = {
+      ...sampleMap,
+      municipalityShapes: new Map([...sampleMap.municipalityShapes, ['05001', tiny]]),
+    };
+    const m = trazosDeLaPagina(map, { view: 'municipality', code: '05001' });
+    expect(m.municipalityShapes.get('05001')?.d).not.toBe('');
+  });
+
   it('keeps names, boxes and figures, and leaves the prepared map untouched', () => {
     const m = trazosDeLaPagina(sampleMap, { view: 'municipality', code: '05001' });
     expect(m.municipalityShapes.get('05002')?.box).toEqual(

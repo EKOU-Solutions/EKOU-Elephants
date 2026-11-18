@@ -1,26 +1,11 @@
 import type { CSSProperties } from 'react';
 import { FILL } from '../mapModel';
 import { freeInsets } from './camera';
-import type { FullscreenMapProps } from './FullscreenMap';
+import { ANCHOR_TRANSFORM, type FullscreenMapProps, HATCH, LABEL_CLASS } from './FullscreenMap';
 import styles from './MapWithLegend.module.css';
 
-const HATCH = 7; // «Sin datos» hatch size in screen pixels, as in FullscreenMap
 // Phone width of the free area used to size the hatch, which CSS cannot scale (390 − 88 − 68).
 const HATCH_WIDTH = 234;
-
-// Where a name sits around its point, as in FullscreenMap.
-const ANCHOR_TRANSFORM: Record<string, string> = {
-  above: 'translate(-50%, calc(-100% - var(--el-space-4)))',
-  below: 'translate(-50%, var(--el-space-4))',
-  'below-start': 'translateY(var(--el-space-4))',
-  centre: 'translate(-50%, -50%)',
-};
-const LABEL_CLASS: Record<string, string | undefined> = {
-  above: styles.placeLabel,
-  below: styles.islandName,
-  'below-start': styles.insetName,
-  centre: styles.islandLabel,
-};
 
 /** CSS custom properties (unitless numbers) read by `.staticArea` and its children. */
 const vars = (values: Record<string, number>) =>

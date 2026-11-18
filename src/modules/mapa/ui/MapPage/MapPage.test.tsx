@@ -192,9 +192,17 @@ describe('MapPage in a generated page (prerendered, ADR 0003)', () => {
   it('the sheet stands at half height with CSS alone; decision 32 comes as the map minimum', () => {
     const html = page(medellin, undefined, { prerendered: true });
     expect(html).toMatch(/class="[^"]*page[^"]*prerendered[^"]*"/);
-    expect(html).toContain('--static-map-min:288px');
+    // 116 + 160 + 12, plus the 32 px a chosen municipality keeps above it for its name.
+    expect(html).toContain('--static-map-min:320px');
+    const department = page({ view: 'department', code: '05' }, undefined, { prerendered: true });
+    expect(department).toContain('--static-map-min:288px');
     expect(html).toMatch(/<div class="[^"]*layer[^"]*static[^"]*">/);
     expect(html).not.toContain('translateY');
+  });
+
+  it('the body is never inert without JavaScript: the links of the panel work (CSS hides it on a phone)', () => {
+    expect(page(medellin, undefined, { prerendered: true })).not.toContain('inert');
+    expect(page(medellin)).toMatch(/<div class="[^"]*body[^"]*" inert="">/);
   });
 
   it('the app never renders it: the camera map and the measured sheet', () => {

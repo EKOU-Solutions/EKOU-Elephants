@@ -46,7 +46,7 @@ const DRAG_THRESHOLD = 6; // px: a press that moves less is a tap (spec §3)
 const ZOOM_STEP = 1.8;
 const WHEEL_RATE = 0.0022; // zoom factor per wheel delta unit: e^(−delta · rate)
 const WHEEL_SETTLE_MS = 250; // after the last wheel tick, check whether the map went back to the country
-const HATCH = 7; // «Sin datos» hatch size in screen pixels
+export const HATCH = 7; // «Sin datos» hatch size in screen pixels
 const LABEL_INSET = 4; // px between an island's name and the dashed frame
 const SHEET_CLEARANCE = 8; // px the sheet keeps clear below a floating control
 const REDUCED_MOTION = '(prefers-reduced-motion: reduce)';
@@ -59,13 +59,13 @@ const DURATION_TOKEN: Record<Duration, string> = {
 };
 
 // Where a name sits around its point: above the chosen place, below an island, centred on Bogotá.
-const ANCHOR_TRANSFORM: Record<string, string> = {
+export const ANCHOR_TRANSFORM: Record<string, string> = {
   above: 'translate(-50%, calc(-100% - var(--el-space-4)))',
   below: 'translate(-50%, var(--el-space-4))',
   'below-start': 'translateY(var(--el-space-4))',
   centre: 'translate(-50%, -50%)',
 };
-const LABEL_CLASS: Record<string, string | undefined> = {
+export const LABEL_CLASS: Record<string, string | undefined> = {
   above: styles.placeLabel,
   below: styles.islandName,
   'below-start': styles.insetName,
