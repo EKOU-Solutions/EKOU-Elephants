@@ -44,7 +44,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.6.8",
-    "@cloudflare/vite-plugin": "^1.67.0",
+    "@cloudflare/vite-plugin": "^1.69.1",
     "@hono/cli": "^0.1.11",
     "@storybook/addon-a11y": "10.6.5",
     "@storybook/addon-docs": "10.6.5",
