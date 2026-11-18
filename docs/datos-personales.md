@@ -71,10 +71,10 @@ El objeto de la veeduría es el dinero, la entidad y el contrato, no las persona
 
 | # | Pendiente | Dónde |
 |---|---|---|
-| 1 | Búsqueda por contratista solo para personas jurídicas; ranking de *Principales contratistas* sin personas naturales | Buscador y rankings |
+| 1 | Búsqueda por contratista solo para personas jurídicas; ranking de *Principales contratistas* sin personas naturales | Buscador y rankings (TASK-20, #48) |
 | 2 | Ficha de contrato: persona natural como *"Persona natural"*, con enlace a SECOP | TASK-12 (#19) |
 | 3 | Alertas SIRI: solo sanciones vigentes al corte (`fecha_efectos_juridicos` + duración) y solo agregadas | TASK-13 (#20) y TASK-14 (#21) |
-| 4 | Conflictos de interés: extraer solo las columnas del indicador por entidad, nunca las del cónyuge, los parientes ni los fideicomisos | Catálogo, cuando se agregue la fuente |
+| 4 | Conflictos de interés: extraer solo las columnas del indicador por entidad, nunca las del cónyuge, los parientes ni los fideicomisos | Catálogo, cuando se agregue la fuente (TASK-21, #49) |
 | 5 | Política de tratamiento de datos, canal de reclamos (respuesta en 15 días hábiles) y aviso legal | TASK-17 (#24) |
 | 6 | Bronze en la caché de GitHub Actions: cifrarlo, porque en un repositorio público un PR desde un fork puede leer las cachés de `main` | TASK-15 (#22, PR #26) |
 | 7 | Revisión de un abogado o consulta a la SIC sobre este documento | Antes de TASK-18 (#25) |
