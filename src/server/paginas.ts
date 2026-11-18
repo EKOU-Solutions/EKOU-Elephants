@@ -10,10 +10,16 @@ export interface EntornoPaginas {
 }
 
 /**
- * The browser keeps a page a minute and shared caches five; then it is revalidated. Short on
- * purpose: the page names the app's hashed scripts, which change with every deploy.
+ * A page may be stored but is revalidated on every use: it names the app's hashed scripts, so a copy
+ * from before a deploy would load `/assets/index-OLD.js`, which is gone (the SPA fallback answers it
+ * as HTML and the app never starts). Its `ETag` joins the page's version and the app's (`etagPagina`),
+ * so while neither changes the revalidation is a 304 without body; after a cut or a deploy, the new
+ * page. The same as the SPA's own index.html, which is always revalidated.
  */
-export const CACHE_PAGINA = 'public, max-age=60, s-maxage=300, stale-while-revalidate=600';
+export const CACHE_PAGINA = 'public, no-cache';
+
+/** The sitemap names no scripts: a minute in the browser, five in shared caches. */
+export const CACHE_SITEMAP = 'public, max-age=60, s-maxage=300, stale-while-revalidate=600';
 
 /** Paths the Worker answers before the static assets (`assets.run_worker_first` in wrangler.jsonc). */
 export function esRutaDePagina(pathname: string): boolean {
@@ -61,42 +67,113 @@ export async function etiquetasDeLaApp(indice: Response): Promise<string> {
   return etiquetas.map((e) => `${e.abre}${e.cuerpo.join('')}${e.cierre}`).join('');
 }
 
+/** An ETag's value without `W/` and quotes; undefined if there is none. */
+const valorEtag = (etag: string | null) => etag?.replace(/^W\//, '').replace(/"/g, '') || undefined;
+
+/** A short SHA-256 of a text: the version of something that has no ETag of its own. */
+async function resumen(texto: string): Promise<string> {
+  const hash = new Uint8Array(
+    await crypto.subtle.digest('SHA-256', new TextEncoder().encode(texto)),
+  );
+  return [...hash.slice(0, 8)].map((b) => b.toString(16).padStart(2, '0')).join('');
+}
+
+/** The page's ETag: the page's version and the app's, so a new cut or a new deploy changes it. */
+export const etagPagina = (pagina: string, app: string) => `W/"${pagina}-${app}"`;
+
+/** If-None-Match as the browser sends it (a list, `*`, weak or strong): weak comparison. */
+function coincide(cabecera: string | null, etag: string): boolean {
+  if (!cabecera) return false;
+  const valor = valorEtag(etag);
+  return cabecera.split(',').some((v) => v.trim() === '*' || valorEtag(v.trim()) === valor);
+}
+
+interface App {
+  /** The deployed index.html's ETag this was read from. */
+  indice: string;
+  etiquetas: string;
+  /** Hash of `etiquetas`: what the page's ETag takes from the app. */
+  version: string;
+}
+
+/** Kept by the isolate: the index only changes with a deploy, and a deploy starts new isolates. */
+let appLeida: App | undefined;
+
+/**
+ * The app's tags (`etiquetasDeLaApp`) and their version, read once per deployed index.html (its
+ * ETag). An index without an ETag (`npm run dev`) is read every time. Undefined if it fails.
+ */
+export async function laApp(assets: Fetcher, url: URL): Promise<App | undefined> {
+  const indice = await assets.fetch(new Request(new URL('/', url)));
+  const etag = indice.headers.get('ETag');
+  if (!indice.ok || (etag && appLeida?.indice === etag)) {
+    await indice.body?.cancel();
+    return indice.ok ? appLeida : undefined;
+  }
+  const etiquetas = await etiquetasDeLaApp(indice);
+  const app = { indice: etag ?? '', etiquetas, version: await resumen(etiquetas) };
+  if (etag) appLeida = app;
+  return app;
+}
+
 export async function servirPagina(request: Request, env: EntornoPaginas): Promise<Response> {
   const deSiempre = () => env.ASSETS.fetch(request);
   const url = new URL(request.url);
   const clave = clavePagina(url.pathname);
   if ((request.method !== 'GET' && request.method !== 'HEAD') || !clave || !env.DATOS)
     return deSiempre();
-  const esSitemap = clave.endsWith('.xml');
   try {
-    const [pagina, indice] = await Promise.all([
-      env.DATOS.fetch(`https://datos/${clave}`, { redirect: 'manual' }),
-      esSitemap ? undefined : env.ASSETS.fetch(new Request(new URL('/', url))),
-    ]);
-    if (pagina.status !== 200) return deSiempre();
+    // The page first: without one, the index is not even read.
+    const pagina = await env.DATOS.fetch(`https://datos/${clave}`, { redirect: 'manual' });
+    if (pagina.status !== 200) {
+      await pagina.body?.cancel();
+      return deSiempre();
+    }
     const sinCuerpo = request.method === 'HEAD';
-    if (esSitemap)
+    if (clave.endsWith('.xml'))
       return new Response(sinCuerpo ? null : pagina.body, {
         headers: {
           'Content-Type': 'application/xml; charset=utf-8',
-          'Cache-Control': CACHE_PAGINA,
+          'Cache-Control': CACHE_SITEMAP,
         },
       });
     // Without the app's scripts the page would never become the map: serve the SPA instead.
-    const etiquetas = indice?.ok ? await etiquetasDeLaApp(indice) : '';
-    if (!etiquetas.includes('<script')) return deSiempre();
+    const app = await laApp(env.ASSETS, url);
+    if (!app?.etiquetas.includes('<script')) {
+      await pagina.body?.cancel();
+      return deSiempre();
+    }
+    // The data Worker's static files bring an ETag; if not (`npm run dev`), the page's own hash.
+    let cuerpo: ReadableStream | string | null = pagina.body;
+    let version = valorEtag(pagina.headers.get('ETag'));
+    if (!version) {
+      cuerpo = await pagina.text();
+      version = await resumen(cuerpo);
+    }
+    const etag = etagPagina(version, app.version);
+    if (coincide(request.headers.get('If-None-Match'), etag)) {
+      if (typeof cuerpo !== 'string') await cuerpo?.cancel();
+      return new Response(null, {
+        status: 304,
+        headers: { ETag: etag, 'Cache-Control': CACHE_PAGINA },
+      });
+    }
     const headers = {
       'Content-Type': 'text/html; charset=utf-8',
       'Cache-Control': CACHE_PAGINA,
+      ETag: etag,
     };
-    if (sinCuerpo) return new Response(null, { headers });
+    if (sinCuerpo) {
+      if (typeof cuerpo !== 'string') await cuerpo?.cancel();
+      return new Response(null, { headers });
+    }
     return new HTMLRewriter()
       .on('head', {
         element(e) {
-          e.append(etiquetas, { html: true });
+          e.append(app.etiquetas, { html: true });
         },
       })
-      .transform(new Response(pagina.body, { headers }));
+      .transform(new Response(cuerpo, { headers }));
   } catch (error) {
     console.error('Página generada no disponible:', (error as Error).name); // no URLs or data
     return deSiempre();

@@ -3,8 +3,13 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { afterEach, describe, expect, it } from 'vitest';
+import { paginasDelSitio } from '../paginas/src/lib/sitio';
+import { departmentRoute, routePath } from '../src/modules/mapa/ui/mapModel';
 import {
+  ESPERADO,
+  expectedPagePaths,
   leerArgs,
+  loadPageRules,
   revisarConteos,
   revisarPaginas,
   revisarSitio,
@@ -22,10 +27,15 @@ const muestra = () => ({
   municipios: leer('municipios.json'),
 });
 
+/** The modules the bot loads through Vite (`loadPageRules`), here imported by Vitest. */
+const RULES = { paginasDelSitio, departmentRoute, routePath };
+const rutas = () => expectedPagePaths(RULES, muestra());
+
 const carpetas = [];
+// Deleting 1.155 pages can take longer than the default 10 s on Windows when the suite runs in parallel.
 afterEach(() => {
   for (const c of carpetas.splice(0)) rmSync(c, { recursive: true, force: true });
-});
+}, 60_000);
 
 /** A publication folder: `datos/` with the given cuts (the first is current) and, optionally, pages. */
 function publicacion(cortes, { paginas = true, cambiarPagina } = {}) {
@@ -46,6 +56,7 @@ function publicacion(cortes, { paginas = true, cambiarPagina } = {}) {
   }
   writeFileSync(join(raiz, 'datos', 'latest.json'), JSON.stringify({ corte: cortes[0].corte }));
   if (paginas) {
+    // Written by hand on purpose: an oracle independent of `paginasDelSitio`.
     const { departamentos, municipios } = cortes[0];
     const rutas = [
       'mapa',
@@ -126,19 +137,51 @@ describe('variaciones', () => {
   });
 });
 
+describe('expectedPagePaths', () => {
+  it("the generator's own list: Colombia, each department but Bogotá, D.C., each municipality", () => {
+    const lista = rutas();
+    expect(lista).toHaveLength(ESPERADO.paginas);
+    expect(new Set(lista).size).toBe(lista.length);
+    expect(lista[0]).toBe('/mapa');
+    expect(lista).toContain('/mapa/departamento/05');
+    expect(lista).toContain('/mapa/05001');
+    expect(lista).toContain('/mapa/11001');
+    expect(lista).not.toContain('/mapa/departamento/11');
+    expect(lista.filter((r) => r.startsWith('/mapa/departamento/'))).toHaveLength(32);
+  });
+
+  it('the modules loaded through Vite give the same list', { timeout: 60_000 }, async () => {
+    expect(expectedPagePaths(await loadPageRules(), muestra())).toEqual(rutas());
+  });
+});
+
 // Writing 1.155 small pages takes a few seconds on Windows.
 describe('revisarPaginas', { timeout: 60_000 }, () => {
   it('1.155 pages, the sitemap and unique titles', () => {
-    expect(revisarPaginas(publicacion([muestra()]), muestra()).every((r) => r.ok)).toBe(true);
+    expect(revisarPaginas(publicacion([muestra()]), rutas()).every((r) => r.ok)).toBe(true);
+  });
+
+  it('a missing page, or a list that is not the 1.155 places, fails', () => {
+    const carpeta = publicacion([muestra()]);
+    rmSync(join(carpeta, 'paginas', 'mapa', '05001.html'));
+    const fallos = revisarPaginas(carpeta, rutas()).filter((r) => !r.ok);
+    expect(fallos.map((r) => r.texto).join('\n')).toContain('faltan: mapa/05001.html');
+    // Pages and list agree, but the list is not the 1.155 places of ESPERADO.paginas.
+    const corta = revisarPaginas(
+      carpeta,
+      rutas().filter((r) => r !== '/mapa/05001'),
+    ).filter((r) => !r.ok);
+    expect(corta).toHaveLength(2); // the places and the sitemap's 1.155 URL
+    expect(corta[0]?.texto).toMatch(/^1\.154 lugares con página/);
   });
 
   it('no pages, or a repeated title, fails', () => {
-    const sin = revisarPaginas(publicacion([muestra()], { paginas: false }), muestra());
+    const sin = revisarPaginas(publicacion([muestra()], { paginas: false }), rutas());
     expect(sin).toEqual([{ ok: false, texto: expect.stringContaining('npm run paginas') }]);
     const repetido = publicacion([muestra()], {
       cambiarPagina: (ruta) => (ruta === 'mapa/05002' ? 'mapa/05001' : undefined),
     });
-    const fallos = revisarPaginas(repetido, muestra()).filter((r) => !r.ok);
+    const fallos = revisarPaginas(repetido, rutas()).filter((r) => !r.ok);
     expect(fallos.map((r) => r.texto).join('\n')).toContain(
       'Títulos repetidos o vacíos: mapa/05001',
     );
@@ -159,6 +202,7 @@ describe('revisarSitio', () => {
     const revisiones = await revisarSitio(
       'https://pr-1.example.dev',
       muestra(),
+      RULES,
       sitio({
         '/mapa': pagina('Colombia 7.456.749'),
         '/mapa/05001': pagina('Medellín 356.935'),
@@ -166,10 +210,11 @@ describe('revisarSitio', () => {
       }),
     );
     expect(revisiones.every((r) => r.ok)).toBe(true);
+    expect(revisiones[2]?.texto).toMatch(/^\/mapa\/11001: 200/);
   });
 
   it('the SPA without the generated page fails', async () => {
-    const revisiones = await revisarSitio('https://pr-1.example.dev', muestra(), sitio({}));
+    const revisiones = await revisarSitio('https://pr-1.example.dev', muestra(), RULES, sitio({}));
     expect(revisiones.filter((r) => !r.ok)).toHaveLength(3);
     expect(revisiones[1]?.texto).toContain('sin página generada');
   });

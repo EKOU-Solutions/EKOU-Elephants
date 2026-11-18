@@ -13,11 +13,12 @@
 import { appendFileSync, existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { runnerImport } from 'vite';
 
 export const ESPERADO = { departamentos: 33, municipios: 1122, paginas: 1155 };
 export const POR_DEFECTO = { umbral: 0.25, minimo: 100 };
-const BOGOTA = '11001';
 const MEDELLIN = '05001';
+const RAIZ_REPO = fileURLToPath(new URL('..', import.meta.url));
 const CORTE = /^\d{4}-(0[1-9]|1[0-2])$/;
 
 const leerJson = (ruta) => JSON.parse(readFileSync(ruta, 'utf8'));
@@ -149,23 +150,49 @@ export function variaciones(actual, anterior, { umbral, minimo } = POR_DEFECTO) 
   return { lista, marcadas: lista.filter((v) => v.marcada), faltan };
 }
 
+/**
+ * Which places get a page and their paths, from the same TypeScript modules the pages are generated
+ * with (`paginasDelSitio` in paginas/src/lib/sitio.ts, the routes of mapModel.ts), loaded through
+ * Vite so the rule is never copied here. Takes about half a second.
+ */
+export async function loadPageRules() {
+  const importar = async (ruta) =>
+    (await runnerImport(join(RAIZ_REPO, ruta), { configFile: false, logLevel: 'silent' })).module;
+  const [sitio, mapa] = await Promise.all([
+    importar('paginas/src/lib/sitio.ts'),
+    importar('src/modules/mapa/ui/mapModel.ts'),
+  ]);
+  return {
+    paginasDelSitio: sitio.paginasDelSitio,
+    departmentRoute: mapa.departmentRoute,
+    routePath: mapa.routePath,
+  };
+}
+
+/**
+ * The paths of the pages the cut must have (`/mapa`, `/mapa/departamento/05`, `/mapa/05001`…).
+ * `paginasDelSitio` only reads the cut's places, so the JSONs are enough (no map outlines needed).
+ */
+export function expectedPagePaths(rules, { departamentos, municipios }) {
+  return rules
+    .paginasDelSitio({ data: { departments: departamentos, municipalities: municipios } })
+    .map((p) => p.ruta);
+}
+
 const archivosHtml = (dir) =>
   readdirSync(dir, { recursive: true, withFileTypes: true })
     .filter((e) => e.isFile() && e.name.endsWith('.html'))
     .map((e) => join(e.parentPath, e.name));
 
-/** Las páginas generadas: una por lugar, el sitemap con todas y títulos y descripciones únicos. */
-export function revisarPaginas(carpeta, { departamentos, municipios }) {
+/**
+ * The generated pages: one per path of `rutas` (`expectedPagePaths`, which must be the 1.155 of
+ * `ESPERADO.paginas`), the sitemap with all of them, and unique titles and descriptions.
+ */
+export function revisarPaginas(carpeta, rutas) {
   const dir = join(carpeta, 'paginas');
   if (!existsSync(dir))
     return [{ ok: false, texto: 'No hay páginas generadas: falta `npm run paginas`' }];
-  const esperadas = [
-    'mapa.html',
-    ...departamentos.departamentos
-      .filter((d) => d.codigo !== '11')
-      .map((d) => `mapa/departamento/${d.codigo}.html`),
-    ...municipios.municipios.map((m) => `mapa/${m.codigo}.html`),
-  ];
+  const esperadas = rutas.map((r) => `${r.slice(1)}.html`);
   const html = archivosHtml(dir);
   const presentes = new Set(html.map((f) => relative(dir, f).replaceAll('\\', '/')));
   const faltan = esperadas.filter((e) => !presentes.has(e));
@@ -186,6 +213,10 @@ export function revisarPaginas(carpeta, { departamentos, municipios }) {
   const tRep = repetidos(titulos);
   const dRep = repetidos(descripciones);
   return [
+    {
+      ok: esperadas.length === ESPERADO.paginas,
+      texto: `${numero(esperadas.length)} lugares con página (se esperan ${numero(ESPERADO.paginas)}: Colombia, los departamentos menos Bogotá, D.C. y los municipios)`,
+    },
     {
       ok: html.length === esperadas.length && faltan.length === 0,
       texto: `${numero(html.length)} páginas (se esperan ${numero(esperadas.length)})${faltan.length ? `; faltan: ${faltan.slice(0, 5).join(', ')}${faltan.length > 5 ? '…' : ''}` : ''}`,
@@ -226,14 +257,21 @@ async function pedir(url, fetcher, intentos = 3) {
  * El sitio desplegado: cada página trae en su HTML su nombre y su cifra (no la SPA vacía) y la API
  * sigue respondiendo con el mismo corte.
  */
-export async function revisarSitio(url, { info, departamentos, municipios }, fetcher = fetch) {
+export async function revisarSitio(
+  url,
+  { info, departamentos, municipios },
+  rules,
+  fetcher = fetch,
+) {
   const muni = (c) => municipios.municipios.find((m) => m.codigo === c);
+  // Medellín and the page Bogotá, D.C.'s link opens (11001, by the app's own rule).
+  const bogota = rules.departmentRoute('11');
   const paginas = [
     { ruta: '/mapa', nombre: 'Colombia', cifra: departamentos.nacional.contratos },
-    ...[MEDELLIN, BOGOTA].map((c) => ({
-      ruta: `/mapa/${c}`,
-      nombre: muni(c)?.nombre ?? c,
-      cifra: muni(c)?.contratosUbicados,
+    ...[{ view: 'municipality', code: MEDELLIN }, bogota].map((route) => ({
+      ruta: rules.routePath(route),
+      nombre: muni(route.code)?.nombre ?? route.code,
+      cifra: muni(route.code)?.contratosUbicados,
     })),
   ];
   const revisiones = [];
@@ -312,7 +350,8 @@ export function resumenMarkdown({ vigente, anterior, conteos, cambio, paginas, s
   return { ok, markdown: `${out.join('\n')}\n` };
 }
 
-export async function verificarCorte(opciones, fetcher = fetch) {
+export async function verificarCorte(opciones, fetcher = fetch, rules = undefined) {
+  rules ??= await loadPageRules();
   const carpeta = resolve(opciones.carpeta);
   const { vigente, anterior: otro } = leerPublicacion(carpeta);
   let anterior;
@@ -327,8 +366,8 @@ export async function verificarCorte(opciones, fetcher = fetch) {
     anterior,
     conteos: revisarConteos(vigente),
     cambio: anterior ? variaciones(vigente, anterior, opciones) : undefined,
-    paginas: revisarPaginas(carpeta, vigente),
-    sitio: opciones.url ? await revisarSitio(opciones.url, vigente, fetcher) : undefined,
+    paginas: revisarPaginas(carpeta, expectedPagePaths(rules, vigente)),
+    sitio: opciones.url ? await revisarSitio(opciones.url, vigente, rules, fetcher) : undefined,
     opciones,
   };
   return resumenMarkdown(resultado);

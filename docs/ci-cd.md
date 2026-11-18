@@ -104,7 +104,7 @@ Con cada corte, `npm run paginas` genera con Astro una página HTML por lugar de
 | `paginas/mapa/05001.html` | `/paginas/mapa/05001` | `/mapa/05001` (y `/mapa/departamento/11` → 11001) |
 | `paginas/sitemap.xml` | `/paginas/sitemap.xml` | `/sitemap.xml` |
 
-El Worker de la app atiende primero esas rutas (`assets.run_worker_first` en `wrangler.jsonc`), pide la página por el binding `DATOS`, le agrega los `<script type="module">`, `<link rel="modulepreload">` y `<link rel="stylesheet">` de su `index.html` actual (binding `ASSETS`) y la entrega con `Cache-Control: public, max-age=60, s-maxage=300, stale-while-revalidate=600`. Si no hay página, si `DATOS` falla o si no hay binding, entrega la SPA de siempre. La API no cambia.
+El Worker de la app atiende primero esas rutas (`assets.run_worker_first` en `wrangler.jsonc`), pide la página por el binding `DATOS`, le agrega los `<script type="module">`, `<link rel="modulepreload">` y `<link rel="stylesheet">` de su `index.html` actual (binding `ASSETS`) y la entrega con `Cache-Control: public, no-cache` y un `ETag` que une la versión de la página (su `ETag` en el Worker de datos) y la de la app (un resumen de las etiquetas de su `index.html`). Así el navegador nunca usa una página con los scripts de otro despliegue: siempre revalida y, mientras no cambien ni el corte ni la app, recibe un 304 sin cuerpo. Las etiquetas de la app se leen una vez por despliegue (por el `ETag` del `index.html`) y el `index.html` ni se pide si no hay página. `sitemap.xml` no lleva scripts y conserva `public, max-age=60, s-maxage=300, stale-while-revalidate=600`. Si no hay página, si `DATOS` falla o si no hay binding, entrega la SPA de siempre. La API no cambia.
 
 Con el corte de noviembre de 2026: 1.155 páginas, 28,8 MB en total (25,5 KB de media, 4,1 KB con Brotli; la más grande, 37,8 KB). Generarlas tarda unos 40 s.
 
@@ -158,8 +158,8 @@ Revisa una publicación armada y escribe un resumen en Markdown (en la salida y,
 | --- | --- |
 | Lugares y totales | No son 33 departamentos y 1.122 municipios sin repetidos; un municipio no tiene su departamento; el total nacional no cuadra con sus niveles ni con la suma de municipios y departamentos; los tres JSON no son del mismo corte. |
 | Frente al corte anterior | Una cifra (nacional, de un departamento o de un municipio) cambia más del umbral (`--umbral`, por defecto 0,25 = 25 %) entre cifras desde `--minimo` (por defecto 100 contratos); pasar a «Sin datos» cuenta como −100 %; o falta un lugar del corte anterior. Siempre lista las 10 mayores variaciones. El anterior es el otro corte de la misma publicación o `--anterior <carpeta>`; sin él, no compara. Si la ventana cambió (enero), lo advierte. |
-| Páginas generadas | No hay una por lugar (1.155), el sitemap no tiene 1.155 URL, o hay títulos o descripciones repetidos o vacíos. |
-| Sitio (`--url`) | `/mapa`, `/mapa/05001` o `/mapa/11001` no responden 200 con la página generada (con `canonical`) y su nombre y cifra en el HTML; `/api/salud` no responde; `/api/mapa/corte` no da el mismo corte. Reintenta 3 veces cada petición. |
+| Páginas generadas | La lista de lugares con página no son 1.155 (sale de `paginasDelSitio`, la misma regla con la que se generan, cargada con Vite); no hay una página por lugar, el sitemap no tiene 1.155 URL, o hay títulos o descripciones repetidos o vacíos. |
+| Sitio (`--url`) | `/mapa`, `/mapa/05001` o `/mapa/11001` (la que abre el enlace de Bogotá, D.C.) no responden 200 con la página generada (con `canonical`) y su nombre y cifra en el HTML; `/api/salud` no responde; `/api/mapa/corte` no da el mismo corte. Reintenta 3 veces cada petición. |
 
 El umbral es una primera propuesta: el corte acumula desde el 1 de enero de la ventana, así que de un mes a otro una cifra sube pocos puntos. Ajústalo con lo que muestren los primeros cortes revisados.
 
