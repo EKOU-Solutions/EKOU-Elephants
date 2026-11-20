@@ -25,7 +25,7 @@ const A11Y_NOTES: Record<string, string> = {
   Button:
     'elemento `button` nativo (con `href`, un `a` nativo; si es `external`, abre otra pestaña con `rel="noopener"` y su nombre accesible termina en «(abre en otra pestaña)»), mínimo 44 px de alto; foco visible de 3 px; `disabled` real (no solo opacidad), con el motivo cerca y ligado con `aria-describedby`; mientras carga, `aria-disabled` y `aria-busy` (no `disabled`, para que no pierda el foco); un botón solo con ícono necesita `aria-label`.',
   Alert:
-    'el significado está en el título y el ícono, no solo en el color. Error nuevo: `role="alert"`; información y confirmación: `aria-live="polite"`. No se anuncian las alertas que ya estaban al cargar. La flotante monta su región viva vacía desde el inicio para que el mensaje se anuncie al llegar; su botón «Cerrar» mide 44 px y tiene nombre accesible; no se anima.',
+    'el significado está en el título y el ícono, no solo en el color. Error nuevo: `role="alert"`; información y confirmación: `aria-live="polite"`. No se anuncian las alertas que ya estaban al cargar. La flotante monta su región viva vacía desde el inicio para que el mensaje se anuncie al llegar; su botón «Cerrar» mide 44 px y tiene nombre accesible; no se anima; un error no se cierra solo, la confirmación detiene su tiempo con el puntero o el foco encima, y Escape la cierra sin mover el foco.',
   Input:
     '`label` asociado con `for`; con error, `aria-invalid="true"` y `aria-describedby` apuntando al mensaje; la ayuda también va en `aria-describedby`; el borde de error es de 2 px y va con ícono y texto. `inputMode="numeric"` solo si el dato es un número.',
   Select:

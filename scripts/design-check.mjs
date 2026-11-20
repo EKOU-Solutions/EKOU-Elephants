@@ -89,7 +89,9 @@ export function selectStories(index, filters = []) {
 }
 
 export function storyUrl(base, id, theme) {
-  return `${base}/iframe.html?id=${encodeURIComponent(id)}&viewMode=story&globals=theme:${theme}`;
+  // a11y.manual: the accessibility addon does not start its own axe run, which collided with ours
+  // («Axe is already running») in a different story on every sweep.
+  return `${base}/iframe.html?id=${encodeURIComponent(id)}&viewMode=story&globals=theme:${theme};a11y.manual:!true`;
 }
 
 export function summarize(results) {

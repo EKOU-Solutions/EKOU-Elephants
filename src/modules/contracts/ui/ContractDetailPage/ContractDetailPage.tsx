@@ -1,5 +1,5 @@
-import { type ReactNode, type Ref, useEffect, useRef, useState } from 'react';
-import { Alert, TOAST_DURATION_MS } from '../../../../components/ui/Alert/Alert';
+import { type ReactNode, type Ref, useRef, useState } from 'react';
+import { Alert } from '../../../../components/ui/Alert/Alert';
 import { Button } from '../../../../components/ui/Button/Button';
 import { Icon } from '../../../../components/ui/Icon/Icon';
 import { LegendKey } from '../../../../components/ui/LegendKey/LegendKey';
@@ -96,11 +96,6 @@ export function ContractDetailPage({
     setNotice(undefined);
     setNotice(await result);
   };
-  useEffect(() => {
-    if (!notice) return;
-    const timer = setTimeout(() => setNotice(undefined), TOAST_DURATION_MS);
-    return () => clearTimeout(timer);
-  }, [notice]);
 
   if (state.status === 'loading') {
     return (
@@ -353,9 +348,10 @@ export function ContractDetailPage({
         tone={notice?.tone ?? 'success'}
         title={notice?.title ?? ''}
         message={notice?.message}
-        onDismiss={() => {
+        onDismiss={(how) => {
           setNotice(undefined);
-          trigger.current?.focus();
+          // «Cerrar» disappears with the notice: focus goes back to what the person had touched.
+          if (how === 'close') trigger.current?.focus();
         }}
       />
     </main>

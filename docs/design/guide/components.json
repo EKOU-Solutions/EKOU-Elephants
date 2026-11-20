@@ -48,7 +48,7 @@
         "bloque (el-alert)",
         "banner de página (el-banner)",
         "nota en línea (el-inline-note)",
-        "flotante (toast: fija abajo, confirma una acción; se cierra sola a los 5 segundos, TOAST_DURATION_MS, o con «Cerrar»; v1.4.0)",
+        "flotante (toast: fija abajo; la confirmación se cierra sola a los 5 segundos, TOAST_DURATION_MS; el error no se cierra solo; «Cerrar» o Escape la quitan; v1.4.0)",
         "tonos: info, warning, danger, success"
       ],
       "tokens": [
@@ -65,7 +65,7 @@
       "a11y": [
         "El color va en el ícono y el borde; el texto queda en --el-color-text",
         "Las alertas dinámicas usan role=status (información) o role=alert (error)",
-        "Flotante: la región viva se monta vacía desde el inicio; «Cerrar» es un botón de 44 px con nombre accesible; sin animación"
+        "Flotante: la región viva se monta vacía desde el inicio; «Cerrar» es un botón de 44 px con nombre accesible; sin animación; el tiempo se detiene con el puntero o el foco encima (WCAG 2.2.1); Escape la cierra sin mover el foco (WCAG 2.4.11)"
       ],
       "component": "src/components/ui/Alert/Alert.tsx",
       "styles": "src/components/ui/Alert/Alert.module.css"

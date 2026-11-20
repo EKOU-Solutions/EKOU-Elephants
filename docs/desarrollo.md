@@ -18,6 +18,7 @@ npm run dev                       # web + API en http://localhost:5173
 | `npm run lint` / `npm run format` | Lint y formato con Biome. `npm run check` corre todo lo que valida CI. |
 | `npm run typecheck` | Verifica tipos (cliente y servidor). |
 | `npm test` | Pruebas unitarias y de rutas. Las de integración se omiten sin `TEST_DATABASE_URL`. |
+| `npm run test:stories` | Corre cada historia de Storybook en un navegador real (Chromium, con Playwright); la función `play` de la historia es la prueba: foco, teclado, mensajes de estado. No es parte de `npm run check`: CI todavía no instala el navegador. La primera vez: `npx playwright install chromium`. |
 | `TEST_DATABASE_URL=… npm test` | Añade integración HTTP → caso de uso → PostgreSQL y migraciones. Usar una base desechable. |
 | `npm run build` | Compila cliente y Worker en `dist/`. |
 | `npm run migrate -- create nombre` | Crea una migración SQL (`-- Up Migration` / `-- Down Migration`). |

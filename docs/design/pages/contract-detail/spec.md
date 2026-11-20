@@ -113,7 +113,7 @@ El «(con ofertas)» que SECOP II agrega a algunas modalidades no se explica: no
 - **Compartir esta ficha:** abre el menú de compartir del sistema con el título y la dirección. Si el navegador no lo tiene, copia el enlace y lo dice («Enlace copiado.»). Si falla: «No se pudo compartir. Copia la dirección de la página.»
 - **Copiar** (número en SECOP): copia el id y lo dice («Número copiado.»).
 - **Leer completo:** abre el objeto en su lugar, sin salir de la página, y el botón pasa a «Leer menos». `aria-expanded` refleja el estado. Solo aparece si el objeto pasa de 220 caracteres. El foco se queda en el botón.
-- **Anuncios:** los mensajes de copiar y compartir salen en una alerta flotante (`Alert`, variante flotante), fija abajo de la ventana. Se cierra sola a los 5 segundos (la constante `TOAST_DURATION_MS` de `Alert`), sea éxito o falla, y antes con «Cerrar». Puede tapar por unos segundos lo que queda debajo: no se reserva espacio en blanco. El foco se queda en el botón que se tocó.
+- **Anuncios:** los mensajes de copiar y compartir salen en una alerta flotante (`Alert`, variante flotante), fija abajo de la ventana. La confirmación se cierra sola a los 5 segundos (`TOAST_DURATION_MS`); el tiempo se detiene mientras el puntero o el foco están sobre ella. El mensaje de falla no se cierra solo, porque trae qué hacer (WCAG 2.2.1). Las dos se cierran con «Cerrar» o con Escape; Escape no mueve el foco, así que la alerta nunca deja tapado un control enfocado (WCAG 2.4.11). No se reserva espacio en blanco para ella. El foco se queda en el botón que se tocó; «Cerrar» lo devuelve a ese botón.
 - **Foco al llegar:** en el `h1`. Título de la pestaña: «{titular} · {entidad} · EKOU Elephants».
 - **Movimiento:** ninguno.
 

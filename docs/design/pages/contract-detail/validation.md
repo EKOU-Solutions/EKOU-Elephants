@@ -80,12 +80,18 @@ Corregido:
 | El patrón del id en `contract.md` no era el del código | Corregido |
 | Una historia de `SignalItem` conservaba la señal «Se contrató sin concurso», retirada de la vista previa | Cambiada |
 
-**Pendiente: decisiones de Jouler.**
+**Alerta flotante, rehecha por accesibilidad** (Jouler, 2026-11-20: «el sitio es público y la accesibilidad es prioridad»):
 
-1. **El mensaje de falla se cierra solo a los 5 segundos.** No cumple WCAG 2.2.1, tiempo ajustable (nivel A): el mensaje trae la instrucción de qué hacer («Selecciona el número y cópialo.») y la persona no puede extender el tiempo. Propuesta: que solo la confirmación se cierre sola.
-2. **La alerta tapa «Ver el registro en SECOP» al final de la página en celular** (por completo a 320 px). Con teclado, el foco puede caer en un control tapado (WCAG 2.4.11, foco no oculto, nivel AA).
+| Hallazgo | Corrección |
+| --- | --- |
+| El mensaje de falla se cerraba solo a los 5 segundos (WCAG 2.2.1, tiempo ajustable, nivel A) | El error no se cierra solo. La confirmación sí, y su tiempo se detiene mientras el puntero o el foco están sobre ella |
+| La alerta podía tapar un control enfocado al final de la página en celular (WCAG 2.4.11, foco no oculto, nivel AA) | Escape la cierra sin mover el foco; no se reserva espacio en blanco |
 
-Sin prueba automática: el cierre a los 5 segundos y que el mismo mensaje se vuelva a anunciar (las pruebas corren sin DOM). El enlace a SECOP no se limita a los dominios de SECOP: no se conoce la lista completa de dominios del corte.
+**Pruebas en navegador real.** `npm run test:stories` corre cada historia en Chromium y usa su función `play` como prueba: 121 pruebas pasan. Las nuevas comprueban que la confirmación se cierra sola, que el error se queda pasado ese tiempo, que Escape cierra sin mover el foco, que el tiempo se detiene con el foco encima, que el mismo mensaje se vuelve a anunciar al repetir la acción, y el recorrido de la ficha con Tab (orden de lectura, foco visible y nombre accesible en cada control).
+
+**Falla intermitente de `design:check`, corregida.** El complemento de accesibilidad de Storybook ya no arranca su propio axe en las páginas que revisa el script (`a11y.manual`).
+
+Sigue sin comprobarse: el enlace a SECOP no se limita a los dominios de SECOP (no se conoce la lista completa de dominios del corte).
 
 ## Peso
 

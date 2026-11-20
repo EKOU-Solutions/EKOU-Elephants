@@ -160,7 +160,7 @@ export const CopyAndShare: Story = {
     docs: {
       description: {
         story:
-          'La historia toca «Compartir esta ficha» (aquí sin menú del sistema: copia el enlace) y luego «Copiar», y comprueba cada mensaje en la alerta flotante (`role="status"`). El foco se queda en el botón tocado. La confirmación se cierra sola a los 5 segundos o con «Cerrar».',
+          'La historia toca «Compartir esta ficha» (aquí sin menú del sistema: copia el enlace) y luego «Copiar», y comprueba cada mensaje en la alerta flotante (`role="status"`). El foco se queda en el botón tocado. La confirmación se cierra sola a los 5 segundos, o antes con «Cerrar» o Escape. Al repetir la acción, el mensaje se vuelve a anunciar.',
       },
     },
   },
@@ -174,6 +174,14 @@ export const CopyAndShare: Story = {
     await userEvent.click(copy);
     await waitFor(() => expect(notice).toHaveTextContent('Número copiado.'));
     await expect(copy).toHaveFocus();
+    // The same message again: the region empties first, so it is announced and seen again.
+    const seen: string[] = [];
+    const observer = new MutationObserver(() => seen.push(notice.textContent ?? ''));
+    observer.observe(notice, { childList: true, subtree: true, characterData: true });
+    await userEvent.click(copy);
+    await waitFor(() => expect(seen.at(-1)).toContain('Número copiado.'));
+    observer.disconnect();
+    await expect(seen).toContain('');
     await expect(canvas.getByRole('button', { name: 'Cerrar' })).toBeVisible();
   },
 };
@@ -188,7 +196,7 @@ export const CopyAndShareFail: Story = {
     docs: {
       description: {
         story:
-          'Cuando falla, la alerta flotante es de error (`role="alert"`) y también se cierra sola a los 5 segundos. La historia comprueba los dos mensajes y que «Cerrar» devuelve el foco al botón tocado.',
+          'Cuando falla, la alerta flotante es de error (`role="alert"`) y no se cierra sola. La historia comprueba los dos mensajes, que «Cerrar» devuelve el foco al botón tocado y que Escape la quita sin mover el foco.',
       },
     },
   },
@@ -208,6 +216,41 @@ export const CopyAndShareFail: Story = {
         'No se pudo copiar. Selecciona el número y cópialo.',
       ),
     );
+    await userEvent.keyboard('{Escape}');
+    await expect(canvas.queryByRole('alert')).toBeNull();
+    await expect(canvas.getByRole('button', { name: 'Copiar el número en SECOP' })).toHaveFocus();
+  },
+};
+export const KeyboardWalk: Story = {
+  name: 'Con teclado: orden de lectura y foco visible',
+  args: { state: ready(pastoContract) },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'La historia recorre la ficha con Tab y comprueba que el foco sigue el orden de lectura, que cada control enfocado se ve (anillo de foco) y que todos tienen nombre.',
+      },
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const visited: HTMLElement[] = [];
+    for (let i = 0; i < 20; i += 1) {
+      await userEvent.tab();
+      const focused = document.activeElement as HTMLElement;
+      if (!canvasElement.contains(focused) || visited.includes(focused)) break;
+      visited.push(focused);
+      await expect(getComputedStyle(focused).outlineStyle).not.toBe('none');
+      await expect(focused).toHaveAccessibleName();
+    }
+    // Volver, read more, copy, and at least share and the SECOP link.
+    await expect(visited.length).toBeGreaterThanOrEqual(5);
+    for (const [i, element] of visited.entries()) {
+      const next = visited[i + 1];
+      if (next)
+        await expect(
+          element.compareDocumentPosition(next) & Node.DOCUMENT_POSITION_FOLLOWING,
+        ).toBeTruthy();
+    }
   },
 };
 export const CutDateUnknown: Story = {
