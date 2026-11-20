@@ -97,7 +97,7 @@ https://www.datos.gov.co/api/views/{id}.json  → metadatos y columnas
 2. **CUIPO:** solo cubre desde 2023 y llega con alrededor de un trimestre de rezago.
 3. **Calidad de SECOP:** hay valores irreales, nombres de proveedores escritos de distintas formas y campos vacíos. Hace falta una capa de limpieza.
 4. **Volumen:** hay datasets de hasta 23 M de registros. Los datos se copian a una base propia; no se consultan en vivo.
-5. **Datos personales:** RUES, SIRI, conflictos de interés y las cédulas de contratistas que son personas naturales. Se usan para calcular alertas, pero en la interfaz solo se muestran personas jurídicas o datos agregados (Ley 1581 de 2012).
+5. **Datos personales:** RUES, SIRI, conflictos de interés y las cédulas de contratistas que son personas naturales. Se usan para calcular alertas, pero en la interfaz solo se muestran personas jurídicas o datos agregados; criterios en [datos personales](datos-personales.md) (Ley 1581 de 2012).
 6. **Alertas:** se comunican como **"señales de riesgo"** con una metodología pública, no como pruebas de corrupción.
 7. **Licencias:** la mayoría usa CC BY-SA 4.0, que obliga a citar la fuente y a compartir los datos derivados con la misma licencia.
 
@@ -109,5 +109,5 @@ https://www.datos.gov.co/api/views/{id}.json  → metadatos y columnas
 - [ ] Sacar una muestra de cada API del MVP para medir su calidad real
 - [ ] Definir las reglas de alertas a partir de [Red Flags for Integrity](https://www.open-contracting.org/resources/red-flags-integrity-giving-green-light-open-data-solutions/) (Open Contracting Partnership)
 - [ ] Diseñar el modelo de datos y el pipeline de ingesta, con exportación en formato [OCDS](https://standard.open-contracting.org/latest/es/)
-- [ ] Revisión legal del uso de datos personales
+- [x] Revisión legal del uso de datos personales ([criterios](datos-personales.md); pendiente validar con un abogado)
 - [ ] Radicar un derecho de petición a la Contraloría por el Registro Nacional de Obras Civiles Inconclusas
