@@ -89,6 +89,25 @@ El frontend no depende de los datos del corte: la app funciona sin el binding.
 
 El Worker de datos es un espejo de los Releases: `datos/AAAA-MM/` tiene los JSON del Release `corte-AAAA-MM` con el mismo nombre (los del mapa: `corte.json`, `municipios.json` y `departamentos.json`, de `ekou-pipeline export-mapa`), y `datos/latest.json` apunta al corte vigente. La geometría del mapa no va ahí: casi nunca cambia, así que es un archivo estático de la app (`public/geometria/mgn-2025.topojson`, generado con `scripts/geometria-mgn.mjs`), con caché inmutable (`public/_headers`). Una versión nueva del MGN usa otro nombre.
 
+### Detalle de los contratos (TASK-12): pendiente de activar
+
+`GET /api/contracts/:id` lee `datos/AAAA-MM/contratos/<grupo>.ndjson` del Worker de datos: 16.384 archivos por corte, 7,9 GB con el corte 2026-11 ([contrato](design/pages/contract-detail/contract.md#archivos-publicados)). El pipeline ya los genera, pero **el corte mensual todavía no los publica**: mientras tanto, la ruta responde `404 contract_not_found`. Activarlo exige cambiar `corte-mensual.yml`, y eso lo hace una persona del equipo:
+
+1. **Exportar:** después de `export-mapa`, correr `uv run ekou-pipeline export-contracts --corte AAAA-MM --pack`. Deja `contratos-0.tar.gz` a `contratos-3.tar.gz` (300 MB cada uno) en la carpeta de publicación, y suben al Release con los demás archivos.
+2. **Desplegar:** al armar el Worker de datos, bajar esos cuatro archivos **solo del corte vigente** y descomprimirlos en `datos/AAAA-MM/contratos/`. Con dos cortes se pasa el límite de 20.000 archivos por Worker.
+
+```bash
+gh release download "corte-$VIGENTE" --dir "$RUNNER_TEMP/contratos" --pattern 'contratos-*.tar.gz'
+mkdir -p "$raiz/datos/$VIGENTE/contratos"
+for paquete in "$RUNNER_TEMP"/contratos/contratos-*.tar.gz; do
+  tar -xzf "$paquete" -C "$raiz/datos/$VIGENTE/contratos"
+done
+```
+
+Antes de activarlo en producción, pruébalo una vez con un Worker de datos de PR: no está comprobado que Cloudflare acepte 7,9 GB de archivos estáticos en el plan gratuito ni cuánto tarda en subirlos. Si no pasa, la salida acordada es publicar solo los contratos de 2025 y 2026.
+
+En local, `npm run dev` sirve los grupos que copies a `datos-locales/datos/AAAA-MM/contratos/`. Copia solo unos pocos: el Worker local los incluye al compilar.
+
 ## Producción
 
 Con cada push a `main` (tras el merge de un PR):

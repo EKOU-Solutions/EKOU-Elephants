@@ -45,3 +45,32 @@ models:
                 field: cod_dpto
       - name: contratos
         data_tests: [not_null, mayor_que_cero]
+
+  - name: contract_detail
+    description: >
+      One row per contract with a detail page (TASK-12): the contracts of the map window located
+      in one municipality. API contract: docs/design/pages/contract-detail/contract.md.
+    columns:
+      - name: id
+        data_tests: [unique, not_null]
+      - name: source
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [secop_i, secop_ii]
+      - name: status
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [not_started, active, suspended, finished, expired_unclosed]
+      - name: supplier_kind
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [company, natural_person, unknown]
+      - name: buyer_name
+        data_tests: [not_null]
+      - name: signed_on
+        data_tests: [not_null]

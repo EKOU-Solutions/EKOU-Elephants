@@ -1,7 +1,9 @@
 // Worker de datos para `npm run dev` (scripts/datos-local.wrangler.jsonc). Vite no admite archivos
 // estáticos en Workers auxiliares, así que incluye los JSON de datos-locales/ al compilar y los
 // sirve con la misma ruta que el Worker de producción (`/datos/...`). Vite lo recarga si cambian.
-const archivos = import.meta.glob<string>('../datos-locales/datos/**/*.json', {
+// Los contratos (`contratos/*.ndjson`, TASK-12) también: en local van solo unos pocos grupos de
+// muestra, porque el corte completo pesa varios GB.
+const archivos = import.meta.glob<string>('../datos-locales/datos/**/*.{json,ndjson}', {
   query: '?raw',
   import: 'default',
   eager: true,
