@@ -25,6 +25,7 @@ const ZOOM_COLUMN = 68; // the zoom buttons: 12 + 44 + 12
 export const PANEL_WIDTH = 440; // the BottomSheet's desktop side panel by default (decision 22, widened in 35)
 export const PANEL_MIN = 360; // the narrowest the person can drag it to
 export const PANEL_MAX = 640; // and the widest
+export const PANEL_WIDTH_KEY = 'ekou.map.panelWidth'; // where this browser keeps the width the person chose
 const PHONE_TOP = 116; // search 12 + 44, crumbs 8 + 44, 8
 const SEARCH_TOP = 68; // search 12 + 44, 12: the country view has no crumbs row (decision 39)
 const PANEL_TOP = 72; // crumbs 12 + 44, 16

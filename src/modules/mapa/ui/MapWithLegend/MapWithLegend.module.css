@@ -397,7 +397,9 @@
 @container static-map (min-width: 1024px) {
   .staticArea {
     top: calc(var(--top-panel) * 1px);
-    right: calc(var(--right-panel) * 1px);
+    left: calc(var(--left-panel) * 1px);
+    /* The panel's own width is the page's variable, as the camera's `panelWidth`. */
+    right: calc(var(--map-panel-width, 440px) + var(--right-panel) * 1px);
     bottom: calc(var(--bottom-panel) * 1px);
     min-height: 0;
   }

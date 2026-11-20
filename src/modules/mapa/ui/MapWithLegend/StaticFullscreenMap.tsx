@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react';
 import { FILL } from '../mapModel';
-import { freeInsets } from './camera';
+import { freeInsets, PANEL_WIDTH } from './camera';
 import { ANCHOR_TRANSFORM, type FullscreenMapProps, HATCH, LABEL_CLASS } from './FullscreenMap';
 import styles from './MapWithLegend.module.css';
 
@@ -57,7 +57,9 @@ export function StaticFullscreenMap({
     'bottom-phone': phone.bottom,
     'min-phone': phone.minHeight,
     'top-panel': panel.top,
-    'right-panel': panel.right,
+    'left-panel': panel.left,
+    // What the panel takes beyond its own width (the zoom column): CSS adds `--map-panel-width`.
+    'right-panel': panel.right - PANEL_WIDTH,
     'bottom-panel': panel.bottom,
   });
   const hatch = (HATCH * wv) / HATCH_WIDTH;

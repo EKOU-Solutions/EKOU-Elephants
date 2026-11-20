@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import worker from './index';
 import {
   PAGE_CACHE,
+  PANEL_WIDTH_SCRIPT,
   SECURITY_HEADERS,
   SITEMAP_CACHE,
   appTags,
@@ -218,11 +219,14 @@ describe('servePage', () => {
     expect(res.headers.get('ETag')).toMatch(ETAG_SIN_ORIGEN);
     const html = await res.text();
     expect(html).toContain(
-      '<title>Medellín, Antioquia</title><script type="module" crossorigin src="/assets/index-abc.js"></script>' +
+      `<title>Medellín, Antioquia</title>${PANEL_WIDTH_SCRIPT}<script type="module" crossorigin src="/assets/index-abc.js"></script>` +
         '<link rel="modulepreload" crossorigin href="/assets/vendor-def.js">' +
         '<link rel="stylesheet" crossorigin href="/assets/index-ghi.css"></head>',
     );
     expect(html).toContain('<div id="root"><h1>Medellín</h1></div>');
+    // The saved panel width reaches the page before it paints (key and limits as in MapPage).
+    expect(PANEL_WIDTH_SCRIPT).toContain('"ekou.map.panelWidth"');
+    expect(PANEL_WIDTH_SCRIPT).toContain('Math.min(640,Math.max(360,');
     expect(html).not.toContain('window.other');
     // Server to server, through the binding: the page without extension, never a redirect.
     expect(d.fetch).toHaveBeenCalledWith('https://datos/paginas/mapa/05001', {

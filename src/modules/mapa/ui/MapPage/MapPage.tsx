@@ -34,7 +34,13 @@ import {
   searchPlaces,
   sourceParts,
 } from '../mapModel';
-import { freeInsets, PANEL_MAX, PANEL_MIN, PANEL_WIDTH } from '../MapWithLegend/camera';
+import {
+  freeInsets,
+  PANEL_MAX,
+  PANEL_MIN,
+  PANEL_WIDTH,
+  PANEL_WIDTH_KEY,
+} from '../MapWithLegend/camera';
 import { MapWithLegend } from '../MapWithLegend/MapWithLegend';
 import { SearchResults } from '../SearchResults/SearchResults';
 import styles from './MapPage.module.css';
@@ -58,8 +64,6 @@ declare module 'react' {
     '--static-map-min'?: string;
   }
 }
-
-const PANEL_WIDTH_KEY = 'ekou.map.panelWidth';
 
 /** The width saved in this browser, or the default (storage may be missing or blocked). */
 function readPanelWidth(): number {
@@ -244,7 +248,14 @@ export function MapPage({
       </h1>
     </>
   );
-  const pageStyle = { '--map-panel-width': `${panelWidth}px` };
+  // The generated page cannot read this browser's storage: it takes the width from `--saved-panel-width`,
+  // which a script in its head sets before the first paint (src/server/pages.ts), so the panel and the map
+  // are already framed for it and do not jump when the app starts.
+  const pageStyle = {
+    '--map-panel-width': prerendered
+      ? `var(--saved-panel-width, ${PANEL_WIDTH}px)`
+      : `${panelWidth}px`,
+  };
 
   if (!map || !view) {
     return (

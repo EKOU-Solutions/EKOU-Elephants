@@ -3,6 +3,7 @@
 // DATOS for the page, adds the current app's scripts and styles, and serves it; if there is no page
 // or anything fails, it serves what it always served (the SPA's index.html). The API is not involved.
 import { parseRoute, routePath } from '../modules/mapa/ui/mapModel';
+import { PANEL_MAX, PANEL_MIN, PANEL_WIDTH_KEY } from '../modules/mapa/ui/MapWithLegend/camera';
 
 export interface PagesEnv {
   DATOS?: Fetcher;
@@ -73,6 +74,16 @@ export async function appTags(indice: Response): Promise<string> {
     .text();
   return tags.map((e) => `${e.open}${e.body.join('')}${e.close}`).join('');
 }
+
+/**
+ * Before anything paints, the width of the desktop panel this browser saved (same key and limits as
+ * MapPage's `readPanelWidth`) goes to `--saved-panel-width`, which the generated page reads. Without it
+ * the page is framed for the default width and jumps when the app starts. Blocked storage: no variable.
+ */
+export const PANEL_WIDTH_SCRIPT =
+  `<script>try{var w=Number(localStorage.getItem(${JSON.stringify(PANEL_WIDTH_KEY)}));` +
+  `if(w)document.documentElement.style.setProperty("--saved-panel-width",` +
+  `Math.min(${PANEL_MAX},Math.max(${PANEL_MIN},Math.round(w)))+"px")}catch(e){}</script>`;
 
 /** An ETag's value without `W/` and quotes; undefined if there is none. */
 const etagValue = (etag: string | null) => etag?.replace(/^W\//, '').replace(/"/g, '') || undefined;
@@ -179,7 +190,7 @@ export async function servePage(request: Request, env: PagesEnv): Promise<Respon
     return new HTMLRewriter()
       .on('head', {
         element(e) {
-          e.append(app.tags, { html: true });
+          e.append(PANEL_WIDTH_SCRIPT + app.tags, { html: true });
         },
       })
       .transform(new Response(body, { headers }));
