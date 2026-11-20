@@ -9,7 +9,7 @@ const meta = {
   tags: ['autodocs'],
   parameters: componentDocs(
     'Button',
-    'Ejecuta una acción en la pantalla actual. Para ir a otra página usa un enlace.',
+    'Ejecuta una acción en la pantalla actual. Para ir a otra página usa un enlace; si ese enlace es la acción principal de la vista (ver el registro en la fuente, volver a un destino), usa `href`: se renderiza como `<a>` con la misma forma. Con `external` abre otra pestaña y lo dice.',
     'src/components/ui/Button/',
   ),
   args: { variant: 'primary', label: 'Consultar contratos', icon: <Icon name="search" /> },
@@ -81,4 +81,35 @@ export const IconOnly: Story = {
       },
     },
   },
+};
+export const LinkExternal: Story = {
+  name: 'Enlace externo con forma de botón',
+  args: {
+    label: 'Ver el registro en SECOP II',
+    icon: undefined,
+    href: 'https://community.secop.gov.co/Public/Tendering/ContractNoticeManagement/Index',
+    external: true,
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Con `href` es un `<a>`: lleva a otro lugar. `external` abre otra pestaña con `rel="noopener"`, agrega el ícono de enlace externo y el nombre accesible termina en «(abre en otra pestaña)».',
+      },
+    },
+  },
+};
+export const LinkBack: Story = {
+  name: 'Enlace interno (volver a un destino)',
+  args: {
+    variant: 'secondary',
+    label: 'Pasto',
+    icon: <Icon name="arrow-left" />,
+    href: '/mapa/52001',
+  },
+  render: (args) => (
+    <nav aria-label="Volver">
+      <Button {...args} />
+    </nav>
+  ),
 };

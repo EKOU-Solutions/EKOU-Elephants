@@ -21,7 +21,7 @@ const meta = {
     onAction: () => {},
   },
   argTypes: {
-    variant: { control: 'inline-radio', options: ['banner', 'inline', 'note'] },
+    variant: { control: 'inline-radio', options: ['banner', 'inline', 'note', 'toast'] },
     tone: { control: 'inline-radio', options: ['info', 'warning', 'danger', 'success'] },
   },
 } satisfies Meta<typeof Alert>;
@@ -89,4 +89,37 @@ export const Note: Story = {
     message: undefined,
     action: undefined,
   },
+};
+export const ToastSuccess: Story = {
+  name: 'Flotante · confirmación',
+  args: {
+    variant: 'toast',
+    tone: 'success',
+    title: 'Enlace copiado.',
+    message: undefined,
+    action: undefined,
+    onDismiss: () => {},
+  },
+  parameters: {
+    docs: {
+      // Fixed to the window: in the docs page it lives in its own frame, not over the text.
+      story: { inline: false, iframeHeight: 160 },
+      description: {
+        story:
+          'Confirma una acción que no cambia la página (copiar, compartir). Queda fija a la ventana, abajo y centrada; en celular ocupa el ancho menos el margen. No tiene sombra: la separa del contenido un borde fuerte. Quien la usa la cierra sola a los 5 segundos (`TOAST_DURATION_MS`), sea confirmación o error; «Cerrar» la quita antes. Monta la región desde el inicio con `title` vacío para que el lector de pantalla anuncie el mensaje cuando llegue. Puede tapar por unos segundos lo que queda debajo: no se reserva espacio en blanco para ella.',
+      },
+    },
+  },
+};
+export const ToastError: Story = {
+  name: 'Flotante · error',
+  args: {
+    variant: 'toast',
+    tone: 'danger',
+    title: 'No se pudo copiar.',
+    message: 'Selecciona el número y cópialo.',
+    action: undefined,
+    onDismiss: () => {},
+  },
+  parameters: { docs: { story: { inline: false, iframeHeight: 160 } } },
 };

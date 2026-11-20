@@ -1,0 +1,73 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+import { Button } from '../../../src/components/ui/Button/Button';
+import { Icon } from '../../../src/components/ui/Icon/Icon';
+import { Block, DoAndDont, Status } from '../../blocks';
+
+<Meta title="Patrones/Navegación" />
+
+# Navegación
+
+<Status status="accepted" detail="Guía v1.4.0 · patrón «Volver»" />
+
+Cómo se mueve una persona entre las páginas de Elephants. Por ahora hay un patrón: **«Volver»**. El encabezado y la navegación común del sitio todavía no están diseñados.
+
+## «Volver»
+
+Casi todas las personas llegan por un enlace compartido, sin historial dentro de Elephants. Por eso «volver» **nombra a dónde lleva** y siempre lleva al mismo lugar: el nivel de arriba de la página actual.
+
+<Block>
+  <nav aria-label="Volver" className="sb-el-row">
+    <Button variant="secondary" label="Colombia" icon={<Icon name="arrow-left" />} href="/mapa" />
+    <Button variant="secondary" label="Pasto" icon={<Icon name="arrow-left" />} href="/mapa/52001" />
+  </nav>
+</Block>
+
+En una página va uno solo; aquí se muestran dos destinos como ejemplo.
+
+```tsx
+<nav aria-label="Volver">
+  <Button variant="secondary" label="Pasto" icon={<Icon name="arrow-left" />} href="/mapa/52001" />
+</nav>
+```
+
+| Regla | Detalle |
+| --- | --- |
+| Marcado | `<nav aria-label="Volver">` con un `Button` secundario que recibe `href`: es un enlace real, se puede abrir en otra pestaña |
+| Ícono y texto | Ícono `arrow-left` y **el nombre del destino**: «← Colombia», «← Pasto». La región ya se llama «Volver»; el enlace dice a dónde |
+| Destino | **Fijo**, nunca el historial del navegador: quien llega por un enlace no tiene a dónde «devolverse» |
+| Lugar | Lo primero de la página, arriba a la izquierda, antes del `h1` |
+| Tamaño | El del botón: 44 px de alto (`--el-control-height`) |
+
+### A dónde lleva en cada página
+
+| Página | «Volver» | Destino |
+| --- | --- | --- |
+| Mapa: un municipio | ← {departamento} | `/mapa/departamento/{código}` |
+| Mapa: un departamento, y Bogotá, D.C. | ← Colombia | `/mapa` |
+| Detalle de contrato | ← {municipio} | `/mapa/{código}`. Cuando exista la lista de contratos del municipio (TASK-11), llevará a ella |
+| Detalle de contrato, mientras carga | ← Mapa | `/mapa` |
+
+### «Volver» sin destino: la única excepción
+
+Cuando una página no existe (404) y la persona **venía de otra página de Elephants**, el botón dice solo «Volver» y sí usa el «atrás» del navegador: la devuelve a donde estaba. Es un `Button` con el ícono `arrow-left`, no un enlace.
+
+<Block>
+  <Button variant="primary" label="Volver" icon={<Icon name="arrow-left" />} />
+</Block>
+
+Si llegó por un enlace (no hay página anterior de Elephants), no se ofrece «Volver»: la acción es un destino con nombre, como «Ir al mapa».
+
+<DoAndDont
+  dos={[
+    'Nombrar el destino: «← Pasto».',
+    'Llevar siempre al nivel de arriba, venga de donde venga la persona.',
+    'Usar un enlace real (`href`), que se pueda abrir en otra pestaña.',
+  ]}
+  donts={[
+    'Un «← Volver» o «← Atrás» que dependa del historial, fuera del caso del 404.',
+    'Un ícono de flecha solo, sin texto.',
+    'Dos «volver» en la misma página.',
+  ]}
+/>
+
+Es el patrón del PR #47 del mapa (todavía sin fusionar); el detalle de contrato lo usa igual.

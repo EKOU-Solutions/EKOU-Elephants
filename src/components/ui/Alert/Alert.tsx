@@ -11,12 +11,15 @@ const ICON = {
   success: 'circle-check',
 } as const satisfies Record<Tone, IconName>;
 
+/** How long a floating alert stays before whoever shows it closes it, success or failure alike. */
+export const TOAST_DURATION_MS = 5000;
+
 type Props = {
-  /** Banner: afecta toda la vista (uno a la vez, arriba). En línea: afecta una sección. Nota: matiza una cifra. */
-  variant: 'banner' | 'inline' | 'note';
+  /** Banner: afecta toda la vista (uno a la vez, arriba). En línea: afecta una sección. Nota: matiza una cifra. Flotante (`toast`): confirma una acción que no cambia la página («Enlace copiado.»); queda fija abajo, sobre el contenido. */
+  variant: 'banner' | 'inline' | 'note' | 'toast';
   /** Tono del mensaje de la interfaz. Nunca se usa para calificar el riesgo de un territorio. */
   tone: Tone;
-  /** Qué pasó. */
+  /** Qué pasó. En la flotante, vacío deja solo la región viva: móntala así desde el inicio para que el lector de pantalla anuncie el mensaje cuando llegue. */
   title: string;
   /** Qué puede hacer la persona. */
   message?: string;
@@ -26,10 +29,21 @@ type Props = {
   actionHref?: string;
   /** Si la acción ocurre en la pantalla actual: qué hace. Se muestra como botón. */
   onAction?: () => void;
+  /** Solo en la flotante: muestra el botón «Cerrar» y avisa cuando la persona lo toca. Quien la usa la cierra sola a los `TOAST_DURATION_MS` (5 segundos). */
+  onDismiss?: () => void;
 };
 
 /** Avisa algo sobre la interfaz o la información: qué pasó y qué puede hacer la persona. */
-export function Alert({ variant, tone, title, message, action, actionHref, onAction }: Props) {
+export function Alert({
+  variant,
+  tone,
+  title,
+  message,
+  action,
+  actionHref,
+  onAction,
+  onDismiss,
+}: Props) {
   const toneIcon = ICON[tone];
   // Inserted after load, an error is read at once (alert); the rest wait their turn (status).
   const liveRole = tone === 'danger' ? 'alert' : 'status';
@@ -39,6 +53,32 @@ export function Alert({ variant, tone, title, message, action, actionHref, onAct
         <Icon name={toneIcon} size={16} />
         {title}
       </span>
+    );
+  }
+  if (variant === 'toast') {
+    // The live region stays mounted, even empty: a region that arrives with its text is not announced.
+    return (
+      <div className={styles.toastRegion} role={liveRole}>
+        {title ? (
+          <div className={`${styles.toast} ${styles[tone]}`}>
+            <span className={styles.badge}>
+              <Icon name={toneIcon} size={18} />
+            </span>
+            <p className={styles.message}>
+              <strong>{title}</strong> {message}
+            </p>
+            {onDismiss ? (
+              <Button
+                variant="text"
+                label="Cerrar"
+                hideLabel
+                icon={<Icon name="x" />}
+                onClick={onDismiss}
+              />
+            ) : null}
+          </div>
+        ) : null}
+      </div>
     );
   }
   if (variant === 'banner') {
