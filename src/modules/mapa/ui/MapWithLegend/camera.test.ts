@@ -198,7 +198,7 @@ describe('medidas compartidas con el CSS', () => {
     const map = readFileSync('src/modules/mapa/ui/MapWithLegend/MapWithLegend.module.css', 'utf8');
     const sheet = readFileSync('src/components/ui/BottomSheet/BottomSheet.module.css', 'utf8');
     expect(map).toContain(
-      `right: calc(var(--map-panel-width, ${PANEL_WIDTH}px) + var(--el-space-12))`,
+      `right: calc(var(--map-panel-width, ${PANEL_WIDTH}px) + var(--el-space-16))`,
     );
     expect(sheet).toMatch(
       new RegExp(`\\.panel \\{[^}]*width: var\\(--map-panel-width, ${PANEL_WIDTH}px\\)`),

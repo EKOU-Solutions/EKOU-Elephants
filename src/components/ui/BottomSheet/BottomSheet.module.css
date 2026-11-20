@@ -96,7 +96,7 @@
   max-width: none;
   height: 100%;
   border-top: 0;
-  border-left: var(--el-rule-strong) solid var(--el-color-line-strong);
+  border-left: var(--el-rule) solid var(--el-color-line);
   border-radius: 0;
 }
 
@@ -176,7 +176,7 @@
     max-width: none;
     height: 100%;
     border-top: 0;
-    border-left: var(--el-rule-strong) solid var(--el-color-line-strong);
+    border-left: var(--el-rule) solid var(--el-color-line);
     border-radius: 0;
   }
 
