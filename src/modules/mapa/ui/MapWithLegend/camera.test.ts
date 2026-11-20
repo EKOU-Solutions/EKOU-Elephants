@@ -36,13 +36,24 @@ describe('zona libre del mapa', () => {
     expect(r).toEqual({ x: 88, y: 148, w: 234, h: 360 });
   });
 
+  it('en la vista del país no hay migas: la zona libre empieza bajo el buscador (decisión 39)', () => {
+    const r = freeRect({ ...phone, sheetHeight: 240, crumbs: false });
+    expect(r.y).toBe(68);
+    expect(r.h).toBe(440);
+  });
+
   it('nunca deja el mapa sin alto aunque la ficha sea muy alta', () => {
     expect(freeRect({ ...phone, sheetHeight: 700 }).h).toBe(140);
   });
 
-  it('en escritorio queda a la izquierda del panel de 400 px', () => {
+  it('en escritorio queda a la izquierda del panel de 440 px', () => {
     const r = freeRect({ ...phone, width: 1280, isPanel: true, sheetHeight: 999 });
-    expect(r).toEqual({ x: 16, y: 72, w: 796, h: 672 });
+    expect(r).toEqual({ x: 16, y: 72, w: 756, h: 672 });
+  });
+
+  it('en escritorio sigue el ancho que la persona le da al panel', () => {
+    const r = freeRect({ ...phone, width: 1280, isPanel: true, sheetHeight: 999, panelWidth: 600 });
+    expect(r).toEqual({ x: 16, y: 72, w: 596, h: 672 });
   });
 });
 
@@ -186,8 +197,12 @@ describe('medidas compartidas con el CSS', () => {
   it('el panel de escritorio mide lo mismo en la cámara, el mapa y la ficha', () => {
     const map = readFileSync('src/modules/mapa/ui/MapWithLegend/MapWithLegend.module.css', 'utf8');
     const sheet = readFileSync('src/components/ui/BottomSheet/BottomSheet.module.css', 'utf8');
-    expect(map).toContain(`right: calc(${PANEL_WIDTH}px + var(--el-space-12))`);
-    expect(sheet).toMatch(new RegExp(`\\.panel \\{[^}]*width: ${PANEL_WIDTH}px`));
+    expect(map).toContain(
+      `right: calc(var(--map-panel-width, ${PANEL_WIDTH}px) + var(--el-space-12))`,
+    );
+    expect(sheet).toMatch(
+      new RegExp(`\\.panel \\{[^}]*width: var\\(--map-panel-width, ${PANEL_WIDTH}px\\)`),
+    );
   });
 });
 

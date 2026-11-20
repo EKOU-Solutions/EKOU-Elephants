@@ -24,6 +24,7 @@ import {
   freeRect,
   isNearCountry,
   isTrackpadScroll,
+  PANEL_WIDTH,
   zoomAround,
   zoomLimits,
 } from './camera';
@@ -39,6 +40,8 @@ export interface FullscreenMapProps extends FullscreenView {
   onZoomToCountry?: () => void;
   /** Oculta el zoom y el recuadro de esquina mientras algo los cubre, p. ej. la lista del buscador abierta (v1.6.0). */
   controlsHidden?: boolean;
+  /** The desktop panel's width (px), which the person may drag; `PANEL_WIDTH` if not given. */
+  panelWidth?: number;
   /** Página generada sin JavaScript (ADR 0003): `StaticFullscreenMap`, encuadrado solo con CSS. */
   prerendered?: boolean;
 }
@@ -105,6 +108,7 @@ export function FullscreenMap({
   onSelect,
   onZoomToCountry,
   controlsHidden = false,
+  panelWidth = PANEL_WIDTH,
 }: FullscreenMapProps) {
   const id = useId().replace(/[^a-zA-Z0-9-]/g, '');
   const hatchId = `hatch-${id}`;
@@ -149,6 +153,8 @@ export function FullscreenMap({
       isPanel,
       corner: inset.placement === 'corner',
       roomAbove: labels.some((l) => l.anchor === 'above'),
+      panelWidth,
+      crumbs: department !== undefined,
     });
     const homeK = fitCamera(home, rect, FILL.place).k;
     return {
@@ -290,7 +296,7 @@ export function FullscreenMap({
   useLayoutEffect(() => {
     reframeRef.current = reframe;
   });
-  const layout = `${size.w}x${size.h}x${isPanel}|${sheetFull ? 'full' : (sheet?.height ?? 0)}`;
+  const layout = `${size.w}x${size.h}x${isPanel}x${panelWidth}|${sheetFull ? 'full' : (sheet?.height ?? 0)}`;
   const view = `${department ?? ''}/${selected ?? ''}`;
   useLayoutEffect(() => reframeRef.current(layout, view), [layout, view]);
 

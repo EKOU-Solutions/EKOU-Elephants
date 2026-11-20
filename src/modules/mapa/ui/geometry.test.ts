@@ -111,7 +111,8 @@ describe('geometría del mapa', () => {
     const alto = mainland[3] - mainland[1];
     expect((san.box[3] - providencia.box[1]) / alto).toBeCloseTo(0.18, 6);
     expect(box[0]).toBeGreaterThan(mainland[0]);
-    expect(box[1]).toBeGreaterThan(mainland[1]);
+    // Separado del continente: el recuadro sube por encima de su borde norte (decisión 40).
+    expect(box[1]).toBeLessThan(mainland[1]);
     expect(box[2]).toBeLessThan((mainland[0] + mainland[2]) / 2);
     expect(box[3]).toBeLessThan((mainland[1] + mainland[3]) / 2);
     for (const island of islands) {

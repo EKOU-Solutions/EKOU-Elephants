@@ -34,17 +34,19 @@ import {
   searchPlaces,
   sourceParts,
 } from '../mapModel';
-import { freeInsets, PANEL_WIDTH } from '../MapWithLegend/camera';
+import { freeInsets, PANEL_MAX, PANEL_MIN, PANEL_WIDTH } from '../MapWithLegend/camera';
 import { MapWithLegend } from '../MapWithLegend/MapWithLegend';
 import { SearchResults } from '../SearchResults/SearchResults';
 import styles from './MapPage.module.css';
 import {
   arrivalState,
+  clampPanelWidth,
   crumbFocus,
   crumbsFor,
   lowered,
   MIN_FREE_MAP,
   mapTap,
+  PANEL_STEP,
   type SheetState,
   selectedText,
 } from './mapPageRules';
@@ -54,6 +56,18 @@ declare module 'react' {
   interface CSSProperties {
     '--map-panel-width'?: string;
     '--static-map-min'?: string;
+  }
+}
+
+const PANEL_WIDTH_KEY = 'ekou.map.panelWidth';
+
+/** The width saved in this browser, or the default (storage may be missing or blocked). */
+function readPanelWidth(): number {
+  try {
+    const saved = Number(localStorage.getItem(PANEL_WIDTH_KEY));
+    return saved ? clampPanelWidth(saved, Number.POSITIVE_INFINITY) : PANEL_WIDTH;
+  } catch {
+    return PANEL_WIDTH;
   }
 }
 
@@ -149,6 +163,17 @@ export function MapPage({
   const [query, setQuery] = useState(defaultQuery);
   const [announcement, setAnnouncement] = useState('');
   const [sheet, setSheet] = useState<SheetFrame>();
+  // Decision 35: the desktop panel's width, which the person drags; kept in this browser only.
+  const [panelWidth, setPanelWidthState] = useState(readPanelWidth);
+  const setPanelWidth = (width: number) => {
+    const next = clampPanelWidth(width, pageRef.current?.clientWidth ?? Number.POSITIVE_INFINITY);
+    setPanelWidthState(next);
+    try {
+      localStorage.setItem(PANEL_WIDTH_KEY, String(next));
+    } catch {
+      // Storage may be blocked: the width just is not remembered.
+    }
+  };
   // The height belongs to a place: a new place starts over (half, or collapsed on a short screen).
   const [sheetState, setSheetState] = useState<SheetState>({
     key: defaultDetent ? routeKey : '',
@@ -219,7 +244,7 @@ export function MapPage({
       </h1>
     </>
   );
-  const pageStyle = { '--map-panel-width': `${PANEL_WIDTH}px` };
+  const pageStyle = { '--map-panel-width': `${panelWidth}px` };
 
   if (!map || !view) {
     return (
@@ -309,7 +334,7 @@ export function MapPage({
       <p className={styles.srOnly} role="status">
         {announcement}
       </p>
-      <search className={styles.search}>
+      <search className={styles.search} hidden={sheetFull}>
         <Input
           label={SEARCH_LABEL}
           hideLabel
@@ -353,6 +378,7 @@ export function MapPage({
         variant="fullscreen"
         {...view}
         sheet={sheet}
+        panelWidth={panelWidth}
         controlsHidden={searchOpen}
         prerendered={prerendered}
         onSelect={handleSelect}
@@ -393,6 +419,36 @@ export function MapPage({
           <div className={styles.body}>{text.body}</div>
         </BottomSheet>
       </div>
+      {prerendered ? null : (
+        // A separator that is also the handle: drag it, or use the arrow keys, Home and End.
+        // biome-ignore lint/a11y/useSemanticElements: an <hr> cannot take focus or be dragged
+        <div
+          role="separator"
+          aria-orientation="vertical"
+          aria-label="Ancho de la ficha"
+          aria-valuemin={PANEL_MIN}
+          aria-valuemax={PANEL_MAX}
+          aria-valuenow={panelWidth}
+          tabIndex={0}
+          className={styles.divider}
+          onPointerDown={(e) => {
+            e.currentTarget.setPointerCapture(e.pointerId);
+          }}
+          onPointerMove={(e) => {
+            if (!e.currentTarget.hasPointerCapture(e.pointerId)) return;
+            const right = pageRef.current?.getBoundingClientRect().right ?? e.clientX;
+            setPanelWidth(right - e.clientX);
+          }}
+          onKeyDown={(e) => {
+            const step = { ArrowLeft: PANEL_STEP, ArrowRight: -PANEL_STEP }[e.key];
+            if (step !== undefined) setPanelWidth(panelWidth + step);
+            else if (e.key === 'Home') setPanelWidth(PANEL_MIN);
+            else if (e.key === 'End') setPanelWidth(PANEL_MAX);
+            else return;
+            e.preventDefault();
+          }}
+        />
+      )}
     </main>
   );
 }
@@ -602,11 +658,7 @@ function sheetText(map: PreparedMap, route: MapRoute, link: Link): SheetText {
     summary: (
       <>
         {dep ? (
-          <p className={styles.lead}>
-            <strong>{formatNumber(dep.contratosEnMunicipios, 0)}</strong> contratos en sus
-            municipios y <strong>{formatNumber(dep.contratosSoloDepartamento, 0)}</strong> sin
-            municipio identificado, {sentence}. Elige un municipio.
-          </p>
+          <p className={styles.lead}>Contratos firmados {sentence}. Elige un municipio.</p>
         ) : (
           <p className={styles.legend}>
             <LegendKey kind="unknown" />

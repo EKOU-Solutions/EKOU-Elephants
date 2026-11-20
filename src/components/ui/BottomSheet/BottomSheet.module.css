@@ -87,11 +87,12 @@
   white-space: nowrap;
 }
 
-/* Desktop (spec decision 22): a fixed 400 px panel on the right, header and body together, no heights. */
+/* Desktop (spec decision 22): a panel on the right, 440 px unless the page sets `--map-panel-width` (the
+   person drags it), header and body together, no heights. */
 .panel {
   top: 0;
   left: auto;
-  width: 400px;
+  width: var(--map-panel-width, 440px);
   max-width: none;
   height: 100%;
   border-top: 0;
@@ -171,7 +172,7 @@
   .static .sheet {
     top: 0;
     left: auto;
-    width: 400px;
+    width: var(--map-panel-width, 440px);
     max-width: none;
     height: 100%;
     border-top: 0;

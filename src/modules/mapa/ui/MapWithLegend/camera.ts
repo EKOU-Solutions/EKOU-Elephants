@@ -22,8 +22,11 @@ const EDGE = 16; // map air on the left when nothing covers that side
 export const CORNER_WIDTH = 68; // the corner inset (decision 23)
 const CORNER_COLUMN = 12 + CORNER_WIDTH + 8;
 const ZOOM_COLUMN = 68; // the zoom buttons: 12 + 44 + 12
-export const PANEL_WIDTH = 400; // the BottomSheet's desktop side panel (decision 22)
+export const PANEL_WIDTH = 440; // the BottomSheet's desktop side panel by default (decision 22, widened in 35)
+export const PANEL_MIN = 360; // the narrowest the person can drag it to
+export const PANEL_MAX = 640; // and the widest
 const PHONE_TOP = 116; // search 12 + 44, crumbs 8 + 44, 8
+const SEARCH_TOP = 68; // search 12 + 44, 12: the country view has no crumbs row (decision 39)
 const PANEL_TOP = 72; // crumbs 12 + 44, 16
 const LABEL_ROOM = 32; // a chosen place carries its name above it: it never meets the crumbs
 const SHEET_GAP = 12;
@@ -39,6 +42,10 @@ export interface FreeAreaInput {
   corner: boolean;
   /** A label goes above the chosen place. */
   roomAbove: boolean;
+  /** The side panel's width (desktop); `PANEL_WIDTH` if not given. */
+  panelWidth?: number;
+  /** The crumbs row is shown under the search (phone). Without it, the free area starts higher. */
+  crumbs?: boolean;
 }
 
 /**
@@ -58,11 +65,14 @@ export function freeRect({
   isPanel,
   corner,
   roomAbove,
+  panelWidth = PANEL_WIDTH,
+  crumbs = true,
 }: FreeAreaInput): Rect {
   const left = leftMargin(corner, isPanel);
-  const top = (isPanel ? PANEL_TOP : PHONE_TOP) + (roomAbove ? LABEL_ROOM : 0);
+  const top =
+    (isPanel ? PANEL_TOP : crumbs ? PHONE_TOP : SEARCH_TOP) + (roomAbove ? LABEL_ROOM : 0);
   if (isPanel) {
-    return { x: left, y: top, w: width - PANEL_WIDTH - ZOOM_COLUMN - left, h: height - top - EDGE };
+    return { x: left, y: top, w: width - panelWidth - ZOOM_COLUMN - left, h: height - top - EDGE };
   }
   const bottom = Math.max(top + MIN_HEIGHT, height - sheetHeight - SHEET_GAP);
   return { x: left, y: top, w: width - ZOOM_COLUMN - left, h: bottom - top };

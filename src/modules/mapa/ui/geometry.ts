@@ -169,7 +169,7 @@ export interface InsetIsland {
 
 // Map spec, decision 24: the inset is about 18 % of the mainland's height, in the sea at its north-west corner.
 const INSET_HEIGHT = 0.18;
-const INSET_AT = [0.04, 0.03] as const; // shares of the mainland's width and height from its north-west corner
+const INSET_AT = [0.04, -0.14] as const; // shares of the mainland's width and height from its north-west corner (a negative height: above it, apart from the land: decision 40)
 const INSET_PAD = 0.015; // the dashed frame's margin, as a share of the mainland's height
 const INSET_SEA = 0.35; // sea kept between the islands, as a share of San Andrés' height
 const PROVIDENCIA_SHIFT = 0.6; // Providencia starts this share of San Andrés' width to the right

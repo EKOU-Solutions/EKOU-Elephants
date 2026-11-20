@@ -4,6 +4,7 @@ import { sampleMap } from '../sample';
 import {
   arrivalDetent,
   arrivalState,
+  clampPanelWidth,
   crumbFocus,
   crumbsFor,
   lowered,
@@ -145,5 +146,22 @@ describe('announcements (spec §3)', () => {
       'Seleccionado: Antioquia',
     );
     expect(selectedText(sampleMap, { view: 'country' })).toBe('Seleccionado: Colombia');
+  });
+});
+
+describe('panel width (decision 35)', () => {
+  it('stays between 360 and 640 px', () => {
+    expect(clampPanelWidth(100, 1600)).toBe(360);
+    expect(clampPanelWidth(900, 1600)).toBe(640);
+    expect(clampPanelWidth(500.4, 1600)).toBe(500);
+  });
+
+  it('never leaves the map under 400 px on a narrow window', () => {
+    expect(clampPanelWidth(640, 1024)).toBe(624);
+    expect(clampPanelWidth(640, 700)).toBe(360);
+  });
+
+  it('a value that is not a number goes back to the default', () => {
+    expect(clampPanelWidth(Number.NaN, 1600)).toBe(440);
   });
 });

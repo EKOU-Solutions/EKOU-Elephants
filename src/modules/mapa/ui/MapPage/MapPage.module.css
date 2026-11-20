@@ -67,11 +67,16 @@
 
 /* ---- the sheet ---- */
 
-/* Phone: the full sheet leaves 68 px of map below the search field (12 + 44 + 12 + 44 + 12 = 124).
-   Only the sheet takes taps; the rest goes to the map. */
+/* The panel's divider only exists on the desktop (see its rules in the 1024 px block below). */
+.divider {
+  display: none;
+}
+
+/* Phone: the full sheet covers the search field too (decision 38), as in map apps. Only the sheet takes
+   taps; the rest goes to the map. */
 .sheetArea {
   position: absolute;
-  inset: calc(var(--el-space-12) * 3 + var(--el-control-height) * 2) 0 0;
+  inset: 0;
   pointer-events: none;
 }
 
@@ -200,6 +205,23 @@
 
   .sheetArea {
     top: calc(var(--el-space-12) * 2 + var(--el-control-height));
+  }
+
+  /* Decision 35: the panel's left edge, 8 px wide and centred on it. */
+  .divider {
+    display: block;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: calc(var(--map-panel-width) - var(--el-space-4));
+    width: var(--el-space-8);
+    cursor: col-resize;
+    touch-action: none;
+    z-index: 1;
+  }
+
+  .divider:hover {
+    background: var(--el-color-line-strong);
   }
 
   /* The panel has no height button (spec §6); the generated page cannot ask the sheet, so CSS hides it. */

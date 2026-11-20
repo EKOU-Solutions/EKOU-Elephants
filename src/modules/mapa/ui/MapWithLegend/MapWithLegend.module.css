@@ -299,17 +299,23 @@
   min-width: 0;
 }
 
-/* 400 px: the BottomSheet's side panel (map spec decision 22; camera.test.ts checks it against PANEL_WIDTH). */
+/* The BottomSheet's side panel: 440 px unless dragged (map spec decisions 22 and 35; camera.test.ts checks it against PANEL_WIDTH). */
 .screenZoom[data-panel="true"] {
   top: var(--el-space-12);
-  right: calc(400px + var(--el-space-12));
+  right: calc(var(--map-panel-width, 440px) + var(--el-space-12));
 }
 
-/* Outside Colombia and the archipelago: a fixed 68 px corner inset under the crumbs (decision 23). */
+/* Outside Colombia and the archipelago: a fixed 68 px corner inset under the crumbs, 12 px apart (decisions 23 and 37). */
 .corner {
   position: absolute;
   left: var(--el-space-12);
-  top: calc(var(--el-space-12) + 2 * var(--el-control-height) + 2 * var(--el-space-8));
+  top: calc(
+    var(--el-space-12) +
+    2 *
+    var(--el-control-height) +
+    var(--el-space-8) +
+    var(--el-space-12)
+  );
   width: calc(var(--el-control-height) + var(--el-space-24));
   padding: var(--el-space-4) 0;
   display: flex;

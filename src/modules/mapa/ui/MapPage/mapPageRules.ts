@@ -8,7 +8,18 @@ import {
   type MapRoute,
   type PreparedMap,
 } from '../mapModel';
-import { freeRect } from '../MapWithLegend/camera';
+import { freeRect, PANEL_MAX, PANEL_MIN, PANEL_WIDTH } from '../MapWithLegend/camera';
+
+/** The map keeps at least this much width (px) next to the panel when it is dragged wide. */
+const MIN_MAP_WIDTH = 400;
+export const PANEL_STEP = 24; // one arrow key, in px
+
+/** Decision 35: the panel's width the person drags it to, between `PANEL_MIN` and `PANEL_MAX`, and never leaving the map under 400 px. */
+export function clampPanelWidth(width: number, pageWidth: number): number {
+  const max = Math.max(PANEL_MIN, Math.min(PANEL_MAX, pageWidth - MIN_MAP_WIDTH));
+  const value = Number.isFinite(width) ? Math.round(width) : PANEL_WIDTH;
+  return Math.min(max, Math.max(PANEL_MIN, value));
+}
 
 /** Decision 32: below this free map height (px) with the sheet at half, the sheet arrives collapsed. */
 export const MIN_FREE_MAP = 160;
