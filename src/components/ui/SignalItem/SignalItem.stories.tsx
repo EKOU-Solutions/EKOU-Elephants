@@ -54,12 +54,12 @@ export const List: Story = {
       />
       <SignalItem
         level="low"
-        title="Se contrató sin concurso"
-        fact="La modalidad registrada es contratación directa."
-      />
-      <SignalItem
         title="La entidad no ha reportado pagos"
         fact="SECOP II no trae pagos de este contrato."
+      />
+      <SignalItem
+        title="El contrato no trae fecha de inicio"
+        fact="SECOP solo registra la firma y el fin."
       />
     </>
   ),

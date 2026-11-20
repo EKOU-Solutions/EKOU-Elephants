@@ -17,7 +17,6 @@ only. The monthly cut unpacks them into ``datos/<cut>/contratos/`` of the data W
 
 import hashlib
 import json
-import shutil
 import tarfile
 from collections.abc import Iterator
 from dataclasses import dataclass
@@ -95,6 +94,11 @@ def _iso(value: Any) -> str | None:
     return None if value is None else value.isoformat()
 
 
+def _https(url: str | None) -> str | None:
+    # The page links to it: anything that is not a plain https address is published as "no link".
+    return url if url and url.startswith("https://") else None
+
+
 def _supplier(row: dict[str, Any]) -> dict[str, Any]:
     # TASK-08: only a company is identified. The model already blanks the rest; building the
     # object from `kind` keeps a name out of the file even if the model changes.
@@ -110,7 +114,7 @@ def contract_detail(row: dict[str, Any]) -> dict[str, Any]:
     return {
         "id": row["id"],
         "source": row["source"],
-        "sourceUrl": row["source_url"],
+        "sourceUrl": _https(row["source_url"]),
         "description": row["description"],
         "type": row["contract_type"],
         "isPublicWorks": row["is_public_works"],
@@ -159,11 +163,13 @@ def _rows(conn: duckdb.DuckDBPyConnection) -> Iterator[tuple[int, dict[str, Any]
 
 
 def export_contracts(conn: duckdb.DuckDBPyConnection, *, corte: str, out_dir: Path) -> ExportReport:
-    """Writes one file per group in ``out_dir``, replacing what was there."""
+    """Writes one file per group in ``out_dir``, replacing the groups of a previous export."""
     check_corte(conn, corte)
 
-    shutil.rmtree(out_dir, ignore_errors=True)
-    out_dir.mkdir(parents=True)
+    # Only our own files: `out_dir` may be a folder that holds other things.
+    out_dir.mkdir(parents=True, exist_ok=True)
+    for old in out_dir.glob("*.ndjson"):
+        old.unlink()
     contracts = files = size = 0
     for grp, rows in groupby(_rows(conn), key=lambda item: item[0]):
         lines = [

@@ -58,7 +58,7 @@ Si la opción A falla por peso o por tiempo de publicación, la salida es acorta
 
 ### `GET /api/contracts/:id`
 
-`id` cumple `^(CO\d+\.PCCNTR\.\d+|\d+-\d+-\d+-\d+)$` y tiene 40 caracteres como máximo.
+`id` cumple `^(CO\d{1,3}\.PCCNTR\.\d{1,12}|\d{1,12}(-\d{1,12}){3})$` y tiene 40 caracteres como máximo.
 
 | Estado | Cuerpo | Cuándo |
 | --- | --- | --- |

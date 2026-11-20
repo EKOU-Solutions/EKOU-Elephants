@@ -6,14 +6,14 @@
 
 | Comando | Resultado |
 | --- | --- |
-| `npm run design:check -- --filter contracts --filter signalitem --filter button` | `✓ 392 renders, 0 fallas, 0 avisos «incompleto» de axe (revisión manual).` |
+| `npm run design:check -- --filter contracts --filter signalitem --filter button --filter alert` (2026-11-20) | `✓ 472 renders, 0 fallas, 4 avisos «incompleto» de axe (revisión manual).` |
 | `npm run design:check` (completo) | `✗ 920 renders, 1 fallas, 54 avisos «incompleto» de axe (revisión manual).` |
-| `npm run check` | Pasa: lint y formato sin cambios, tipos sin errores, 233 pruebas pasan y 6 se omiten, la compilación termina |
-| Pipeline (`pytest`, `ruff`, `mypy src`) | 87 pruebas pasan, cobertura 99 %, sin avisos |
+| `npm run check` | Pasa: lint y formato sin cambios, tipos sin errores, 236 pruebas pasan y 6 se omiten, la compilación termina |
+| Pipeline (`pytest`, `ruff`, `mypy src`) | 91 pruebas pasan, cobertura 99 %, sin avisos |
 
 **La falla del barrido completo no es de la pantalla.** Es un render que la herramienta no pudo revisar: `Axe is already running`, en `contractdetailpage--recent · light · 1280 px`. En cada corrida cae en una historia distinta, también en historias que esta rama no tocó (Icon, RiskTag, Alert, DataTable, MapPage). No hubo ninguna violación de axe ni desplazamiento horizontal en ninguna corrida. Causa probable, según `elephant-tester`: el complemento de accesibilidad de Storybook corre su propio axe mientras `scripts/design-check.mjs` llama al suyo. El script no se tocó; queda como tarea aparte.
 
-Los 54 avisos «incompleto» son del mapa y de `DataTable`, anteriores a esta rama. Ninguno es de la pantalla ni de sus componentes.
+Los 54 avisos «incompleto» del barrido completo son del mapa y de `DataTable`, anteriores a esta rama. Los 4 de la corrida filtrada son de contraste en la alerta flotante de la historia de falla: la herramienta no puede medirlo porque la alerta queda encima de un botón; el texto va sobre la superficie de la alerta y se lee bien.
 
 ## En un navegador real
 
@@ -67,9 +67,29 @@ Revisión de `elephant-ux` (experiencia) y `elephant-tester` (técnica), sin hab
 
 Son las preguntas abiertas de la [especificación](spec.md#7-preguntas-abiertas). Las que salieron de esta validación: acceso a SECOP en celular (7), plazo visual en el caso típico (8), texto del valor $ 0 (9) y «Régimen especial» sin norma (10).
 
+## Segunda revisión técnica (2026-11-20)
+
+Después de la primera validación, Jouler pidió que los mensajes de copiar y compartir fueran una **alerta flotante** (`Alert`, variante flotante), sin espacio reservado al final de la página, y que toda alerta flotante se cierre sola a los 5 segundos (`TOAST_DURATION_MS`). `elephant-tester` revisó la rama completa antes del PR.
+
+Corregido:
+
+| Hallazgo | Corrección |
+| --- | --- |
+| `export-contracts` borraba toda la carpeta de salida | Solo borra sus propios archivos `.ndjson` |
+| Un enlace a SECOP que la API no acepta dejaba la ficha en error permanente (la corrección anterior quedó a medias) | El export publica solo enlaces `https`, y la API trata un enlace inválido como «sin enlace» en vez de responder 503. Con pruebas en los dos lados |
+| El patrón del id en `contract.md` no era el del código | Corregido |
+| Una historia de `SignalItem` conservaba la señal «Se contrató sin concurso», retirada de la vista previa | Cambiada |
+
+**Pendiente: decisiones de Jouler.**
+
+1. **El mensaje de falla se cierra solo a los 5 segundos.** No cumple WCAG 2.2.1, tiempo ajustable (nivel A): el mensaje trae la instrucción de qué hacer («Selecciona el número y cópialo.») y la persona no puede extender el tiempo. Propuesta: que solo la confirmación se cierre sola.
+2. **La alerta tapa «Ver el registro en SECOP» al final de la página en celular** (por completo a 320 px). Con teclado, el foco puede caer en un control tapado (WCAG 2.4.11, foco no oculto, nivel AA).
+
+Sin prueba automática: el cierre a los 5 segundos y que el mismo mensaje se vuelva a anunciar (las pruebas corren sin DOM). El enlace a SECOP no se limita a los dominios de SECOP: no se conoce la lista completa de dominios del corte.
+
 ## Peso
 
-`npm run build`: JavaScript 276,10 kB (87,88 kB con gzip) y CSS 25,91 kB (5,64 kB con gzip). Es un solo paquete: la ficha descarga también el código del mapa. No se midió contra `main`.
+`npm run build`: JavaScript 276,84 kB (88,03 kB con gzip) y CSS 26,60 kB (5,75 kB con gzip). Es un solo paquete: la ficha descarga también el código del mapa. No se midió contra `main`.
 
 ## Límites: lo que no se comprobó
 

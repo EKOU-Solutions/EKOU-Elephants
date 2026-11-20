@@ -113,18 +113,25 @@ def _warehouse(path: Path, corte: str = "2026-11") -> None:
         )
 
 
+@pytest.mark.parametrize("url", ["http://www.contratos.gov.co/x", "javascript:alert(1)", "", None])
+def test_only_an_https_link_is_published(url: str | None) -> None:
+    assert contract_detail({**_ROW, "source_url": url})["sourceUrl"] is None
+
+
 def test_export_writes_each_contract_in_its_group(tmp_path: Path) -> None:
     database = tmp_path / "ekou.duckdb"
     _warehouse(database)
     out = tmp_path / "contratos"
-    (out / "viejo").mkdir(parents=True)  # a previous export is replaced
+    out.mkdir()
+    (out / "ffff.ndjson").write_text("old")  # a previous export is replaced
+    (out / "corte.json").write_text("{}")  # and nothing else in the folder is touched
 
     with duckdb.connect(str(database), read_only=True) as conn:
         report = export_contracts(conn, corte="2026-11", out_dir=out)
 
     assert (report.contracts, report.files) == (2, 2)
     assert sorted(p.name for p in out.iterdir()) == sorted(
-        f"{group_of(i)}.ndjson" for i in (COMPANY, PERSON)
+        ["corte.json", *(f"{group_of(i)}.ndjson" for i in (COMPANY, PERSON))]
     )
     line = (out / f"{group_of(PERSON)}.ndjson").read_text("utf-8")
     assert line.startswith(f'{{"id":"{PERSON}",') and line.endswith("\n")

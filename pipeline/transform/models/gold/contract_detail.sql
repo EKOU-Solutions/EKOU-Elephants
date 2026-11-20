@@ -10,8 +10,7 @@
 select
     c.id_contrato as id,
     c.fuente as source,
-    -- The API only links to https: anything else is published as "no link", not as a broken one.
-    case when c.url_proceso like 'https://%' then c.url_proceso end as source_url,
+    c.url_proceso as source_url,
     nullif(trim(c.objeto), '') as description,
     c.tipo_contrato as contract_type,
     coalesce(c.es_obra, false) as is_public_works,

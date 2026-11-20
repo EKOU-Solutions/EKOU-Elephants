@@ -48,7 +48,11 @@ const contractSchema: z.ZodType<ContractRecord> = z
   .object({
     id: z.string().min(1),
     source: z.enum(['secop_i', 'secop_ii']),
-    sourceUrl: z.url({ protocol: /^https$/ }).nullable(),
+    // A link the page cannot use is "no link": it must not hide the whole contract behind a 503.
+    sourceUrl: z
+      .url({ protocol: /^https$/ })
+      .nullable()
+      .catch(null),
     description: z.string().min(1).nullable(),
     type: z.string().nullable(),
     isPublicWorks: z.boolean(),

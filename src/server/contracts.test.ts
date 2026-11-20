@@ -179,13 +179,23 @@ describe('GET /api/contracts/:id', () => {
       'a zero where missing data must be null',
       { ...company, dates: { ...company.dates, addedDays: 0 } },
     ],
-    ['a link that is not https', { ...company, sourceUrl: 'javascript:alert(1)' }],
   ])('answers 503 if the published line has %s', async (_case, contract) => {
     const res = await app(await published([contract])).app.request(
       '/api/contracts/CO1.PCCNTR.7954915',
     );
     expect(res.status).toBe(503);
   });
+
+  it.each(['javascript:alert(1)', 'http://www.contratos.gov.co/x', 'https://'])(
+    'returns the contract without a link if the published link is %s',
+    async (sourceUrl) => {
+      const res = await app(await published([{ ...company, sourceUrl }])).app.request(
+        '/api/contracts/CO1.PCCNTR.7954915',
+      );
+      expect(res.status).toBe(200);
+      expect(((await res.json()) as { sourceUrl: unknown }).sourceUrl).toBeNull();
+    },
+  );
 
   it('answers 503 if the published line is not JSON', async () => {
     const files = await published([]);
