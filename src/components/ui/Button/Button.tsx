@@ -21,6 +21,11 @@ type AsButton = Common &
     loading?: boolean;
     /** Texto mientras carga («Descargando CSV…»). Si no se da, se conserva `label`. */
     loadingLabel?: string;
+    /**
+     * Recorta la etiqueta con puntos suspensivos si no cabe (migas del mapa a 320 px, v1.6.0). El texto
+     * entero sigue siendo el nombre accesible; úsalo solo si también está completo a la vista en otro lugar.
+     */
+    truncate?: boolean;
     /** `submit` solo dentro de un formulario; por defecto no envía nada. */
     type?: 'button' | 'submit' | 'reset';
     href?: never;
@@ -30,6 +35,7 @@ type AsButton = Common &
 type AsLink = Common & {
   /** Con `href` es un enlace con forma de botón (`<a>`): lleva a otro lugar en vez de ejecutar una acción. */
   href: string;
+  truncate?: never;
   /** Enlace a otro sitio: abre otra pestaña (`target="_blank"`, `rel="noopener"`), lleva el ícono de enlace externo y lo dice en su nombre accesible. */
   external?: boolean;
 };
@@ -44,7 +50,7 @@ const NEW_TAB = '(abre en otra pestaña)';
  */
 export function Button(props: Props) {
   const { variant, label, hideLabel, icon } = props;
-  const className = `${styles.button} ${styles[variant]}${hideLabel ? ` ${styles.iconOnly}` : ''}`;
+  const shape = `${styles.button} ${styles[variant]}${hideLabel ? ` ${styles.iconOnly}` : ''}`;
   const decoration = icon ? (
     <span className={styles.icon} aria-hidden="true">
       {icon}
@@ -56,7 +62,7 @@ export function Button(props: Props) {
     const name = external ? `${label} ${NEW_TAB}` : hideLabel ? label : undefined;
     return (
       <a
-        className={className}
+        className={shape}
         href={href}
         aria-label={name}
         {...(external ? { target: '_blank', rel: 'noopener' } : {})}
@@ -78,6 +84,7 @@ export function Button(props: Props) {
     disabled,
     loading,
     loadingLabel,
+    truncate,
     type = 'button',
     onClick,
     ...button
@@ -90,11 +97,13 @@ export function Button(props: Props) {
     }
     onClick?.(event);
   };
+  const current = loading ? (loadingLabel ?? label) : label;
+  const text = truncate ? <span className={styles.label}>{current}</span> : current;
   return (
     <button
       aria-label={hideLabel ? label : undefined}
       {...button}
-      className={className}
+      className={truncate ? `${shape} ${styles.truncate}` : shape}
       type={type}
       disabled={disabled}
       aria-disabled={loading || undefined}
@@ -102,7 +111,7 @@ export function Button(props: Props) {
       onClick={handleClick}
     >
       {loading ? <Icon name="loader-circle" /> : decoration}
-      {hideLabel ? null : loading ? (loadingLabel ?? label) : label}
+      {hideLabel ? null : text}
     </button>
   );
 }

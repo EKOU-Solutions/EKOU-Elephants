@@ -1,0 +1,13 @@
+---
+import Lugar from '../../../components/Place.astro';
+import { loadSite } from '../../../lib/cut';
+
+// Bogotá, D.C. has no page of its own: its link opens 11001 (sitePages).
+export async function getStaticPaths() {
+  const { toGenerate } = await loadSite();
+  return toGenerate.flatMap(({ route }) =>
+    route.view === 'department' ? [{ params: { codigo: route.code }, props: { route } }] : [],
+  );
+}
+---
+<Lugar route={Astro.props.route} />

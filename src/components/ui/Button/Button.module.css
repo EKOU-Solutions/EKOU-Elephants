@@ -25,6 +25,19 @@
   padding: 0;
 }
 
+/* truncate: the button may shrink below its label, which ends in an ellipsis. */
+.truncate {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* Wraps the icon passed by composition so it stays decorative and aligned with the label. */
 .icon {
   display: inline-flex;

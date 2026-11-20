@@ -45,6 +45,26 @@
   color: var(--el-color-text-muted);
 }
 
+/* floating (v1.6.0): a box under the field, over the map, as wide as the field. */
+.floating {
+  position: absolute;
+  top: calc(100% + var(--el-space-4));
+  left: 0;
+  right: 0;
+  max-width: none;
+  max-height: calc(100dvh - 2 * var(--el-space-48));
+  overflow-y: auto;
+  margin: 0;
+  padding: 0 var(--el-space-8);
+  background: var(--el-color-surface);
+  border: 1px solid var(--el-color-control-border);
+  border-radius: var(--el-control-radius);
+}
+
+.floating li:last-child {
+  border-bottom: 0;
+}
+
 /* Read by screen readers only: the count of results. */
 .status {
   position: absolute;

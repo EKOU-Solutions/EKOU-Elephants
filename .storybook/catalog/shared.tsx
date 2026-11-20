@@ -51,6 +51,8 @@ const A11Y_NOTES: Record<string, string> = {
   'Progress vs expected': 'los dos porcentajes (avance y esperado) van escritos en texto.',
   'Signal item':
     'va dentro de una lista ordenada (`ol`), que pone el número de cada señal; con nivel, el número toma el color de riesgo con su texto `on-risk` (contraste ≥ 4,5:1 en ambos temas) y la gravedad de la señal se escribe debajo en palabras («Gravedad alta»), así que nunca depende solo del color.',
+  BottomSheet:
+    'el borde es un `button` de 44 px cuyo nombre dice la altura; toque, Enter o Espacio mueven un paso y Escape baja la completa a la media. Nunca depende del arrastre. Cada cambio se anuncia en `role="status"`; lo que no se ve es `inert` y el foco que quedaba ahí pasa al borde. Con `prefers-reduced-motion` no se anima.',
 };
 
 /**

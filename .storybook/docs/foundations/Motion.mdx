@@ -1,0 +1,33 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+import { Status } from '../../blocks';
+
+<Meta title="Fundamentos/Movimiento" />
+
+# Movimiento
+
+<Status status="accepted" detail="Guía v1.4.0 · decisión 19 de la página del Mapa" />
+
+El movimiento solo explica un cambio de lugar o de tamaño: de dónde viene algo y a dónde va. Nunca decora, nunca se repite solo y ningún contenido depende de él para entenderse.
+
+| Token | Valor | Cuándo usarlo |
+| --- | --- | --- |
+| `--el-ease-standard` | `cubic-bezier(0.2, 0.7, 0.2, 1)` | La única curva. Arranca rápido y frena suave al llegar. |
+| `--el-duration-short` | 300 ms | Cambios pequeños y cercanos: la ficha que cambia de altura, los botones «+» / «−» del mapa, un fundido. |
+| `--el-duration-base` | 450 ms | Moverse dentro de un departamento: de departamento a municipio, de un municipio a otro, «Ver todo». |
+| `--el-duration-long` | 750 ms | El vuelo largo: de Colombia a un departamento, de vuelta, o de un departamento a otro. |
+
+```css
+.sheet {
+  transition: transform var(--el-duration-short) var(--el-ease-standard);
+}
+```
+
+## Movimiento reducido
+
+Si la persona pidió `prefers-reduced-motion: reduce`, **nada se anima**: el cambio ocurre de una vez (la ficha salta a su altura, el mapa cambia de encuadre sin vuelo, los elementos aparecen sin fundido). El ajuste global de `src/styles/global.css` ya anula transiciones y animaciones de CSS; lo que se anima con JavaScript (como el vuelo del mapa) debe consultar `matchMedia('(prefers-reduced-motion: reduce)')` y saltar al estado final.
+
+## Qué evitar
+
+- Duraciones o curvas sueltas (`.3s ease`): usa siempre los tokens.
+- Animar mientras la persona arrastra: durante el gesto, el elemento sigue al dedo sin transición; la transición entra al soltar.
+- Movimiento que se repite, parpadea o arranca solo.

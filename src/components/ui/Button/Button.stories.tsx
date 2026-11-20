@@ -113,3 +113,17 @@ export const LinkBack: Story = {
     </nav>
   ),
 };
+export const Truncated: Story = {
+  name: 'Etiqueta recortada (miga del mapa a 320 px)',
+  args: {
+    variant: 'secondary',
+    icon: undefined,
+    truncate: true,
+    label: 'Archipiélago de San Andrés, Providencia y Santa Catalina',
+  },
+  render: (args) => (
+    <div style={{ display: 'flex', maxWidth: 200 }}>
+      <Button {...args} />
+    </div>
+  ),
+};

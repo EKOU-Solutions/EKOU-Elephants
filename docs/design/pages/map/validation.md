@@ -41,3 +41,25 @@ Date: 2026-11-15. Mockup built by `build.py` from `sample/` (cut 2026-11, data t
 - No screen reader was run; announcements were checked through the live-region text.
 - Pinch-zoom and drag were not tested on a real touch device; only the buttons and Ctrl + wheel.
 - Width checks used iframes in one Chrome window, not device emulation.
+
+## Experiencia en una sola pantalla: validación (paso 5, 2026-11-17)
+
+Pantalla `Módulos/Mapa/MapPage` en Storybook (React, muestra de `sample/`, corte al 7 nov 2026), con `BottomSheet` (f25e0a4) y Map with legend a pantalla completa (4196675); guía v1.6.0. Revisores: `elephant-ux` (experiencia) y `elephant-tester` (reglas, accesibilidad, contrato, código), en paralelo y sin haber construido la pantalla. Comprobado también en `npm run dev` con la API real.
+
+| Comprobación | Resultado |
+| --- | --- |
+| `npm run design:check` (completo) | Primera pasada: «✗ 952 renders, 228 fallas, 210 avisos «incompleto» de axe». Con cuatro rondas de repetición, cada render pasó en algún intento; las fallas que desaparecen al repetir son «Axe is already running» (choque entre el revisor de Storybook y el del script, en Windows). **No es una corrida limpia**: queda pendiente arreglar el script. Sin violaciones de axe que se repitan ni desplazamiento horizontal |
+| `npm run design:check -- --filter mapa` | «✗ 408 renders, 38 fallas, 213 avisos «incompleto»» en la primera pasada; los 408 pasaron en algún reintento |
+| Avisos «incompleto» de axe | Todos `color-contrast` sin fondo determinable (ficha con `transform`, rótulos sobre el mapa). Por muestreo de estilos, ninguno real: los rótulos llevan fondo o halo de `surface` y los textos de la ficha usan pares que comprueba `build.py`. Falta confirmarlos uno por uno sobre las capturas en los dos temas |
+| Typecheck, lint, formato | Sin errores |
+| Pruebas | `vitest src`: 150 pasan. `npm test`: 199 pasan, 1 falla ajena (`scripts/despliegue.test.mjs`) |
+| Contrato y «Sin datos» | Tipos del contrato; `null` → trama + «Sin datos» + motivo, nunca 0 (también si faltara el departamento) |
+| Rutas | `/mapa`, `/mapa/departamento/<cód>`, `/mapa/<mun>`; `/mapa/departamento/11` → `/mapa/11001`; enlace inválido → «No encontramos ese lugar» con el mapa en Colombia; Atrás funciona |
+| Foco y anuncios (§3) | Buscador o tabla → `h1`; toque en el mapa → se queda; miga → se queda, o «← Colombia» si la miga desaparece; «Ver todo» → «Acercar»; un solo anuncio por cambio. Historias con `play` lo comprueban |
+| Prueba de 10 segundos (`elephant-ux`) | Pasa en Colombia, departamento, municipio, Bogotá, archipiélago y llegada por enlace a un municipio, a 390 y 375 px. A 320×640 la ficha llega recogida (decisión 32) para que se vea el lugar |
+| Orden de lectura a 390 | Municipio: cifra, `h1` y rótulo en el mapa, contorno del departamento con las migas. Colombia: el `h1` de la ficha antes que el mapa; aceptado mientras no haya color de riesgo |
+| Peso (`npm run build`) | JS 272 KB (86 KB gz; +4,4 KB gz frente a `main`, casi todo de los componentes nuevos), CSS 23 KB (5,2 KB gz), geometría 369 KB (80 KB br, sin cambio). Primera visita ≈ 199 KB con Brotli |
+
+**Corregido durante la validación:** «+» alejaba en municipios pequeños; estilos de la página sobre otros componentes (ahora son opciones de `FormField`/`Input`, `Button`, `DataTable` y `SearchResults`); encabezado fijo en la tabla; pie de tablas con la fuente; «del Archipiélago»; buscador alineado con la ficha a 768 px; zoom oculto con los resultados abiertos; anuncios dobles; código de la animación anterior retirado (`mapZoom.ts`). Decisiones nuevas del usuario: 30 (buscador con lupa), 31 (Bogotá sin tabla), 32 (ficha recogida si no hay espacio).
+
+**No comprobado:** lector de pantalla real, gestos reales con el dedo y zoom real al 200 %; preview del PR con datos reales. **Prueba en celular real (2026-11-17):** Esteban Jimenez la probó en su celular por la red local (`npm run dev -- --host`, API real) y la aprobó: «esta re melo». **Pendiente:** la prueba de 10 segundos con alguien que no conozca el producto y en un teléfono pequeño.

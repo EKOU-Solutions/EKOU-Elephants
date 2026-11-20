@@ -79,6 +79,7 @@ static = ''.join([
     *(f'  --{p}-line-{k}: {v};\n' for k, v in t['line-height'].items()),
     *(f'  --{p}-weight-{k}: {v};\n' for k, v in t['weights'].items()),
     *(f'  --{p}-{k}: {v}px;\n' for k, v in tokens['geometry'].items()),
+    *(f'  --{p}-{k}: {v};\n' for k, v in tokens['motion'].items()),
     f'  --{p}-font-ui: "{t["family"]["name"]}", {fallback};\n',
     f'  --{p}-font-display: "{t["family"]["name"]}", {fallback};\n',
     f'  --{p}-numbers: {t["numbers"]};\n',
@@ -398,6 +399,8 @@ lines += [f'| `--{p}-weight-{k}` | {v} |' for k, v in t['weights'].items()]
 lines += ['', '## Espacio y geometría', '', '| Token | Valor |', '| --- | --- |']
 lines += [f'| `--{p}-space-{n}` | {n} px |' for n in tokens['spacing']]
 lines += [f'| `--{p}-{k}` | {v} px |' for k, v in tokens['geometry'].items()]
+lines += ['', '## Movimiento', '', 'Con `prefers-reduced-motion: reduce` nada se anima: el cambio ocurre de una vez.', '', '| Token | Valor |', '| --- | --- |']
+lines += [f'| `--{p}-{k}` | `{v}` |' for k, v in tokens['motion'].items()]
 lines += ['', '## Contraste', '', 'Todos los pares de texto, controles, foco, trama y etiquetas de riesgo pasan en ambos temas; ver `contrast-report.json`.', '']
 (folder / 'tokens.md').write_text('\n'.join(lines))
 sizes['examples.html'] = finish((folder / 'examples.source.html').read_text(), 'examples.html')
