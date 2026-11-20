@@ -14,7 +14,7 @@ export default defineConfig({
       },
       {
         // Every story runs in a real browser and its `play` function is the test (npm run test:stories).
-        // Not part of `npm test`: it needs a Playwright browser, which CI does not install yet.
+        // Not part of `npm test`: it needs a Playwright browser. CI runs it as its own step (app-ci.yml).
         plugins: [storybookTest({ configDir: '.storybook' })],
         test: {
           name: 'stories',

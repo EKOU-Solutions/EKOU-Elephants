@@ -16,7 +16,7 @@ flowchart LR
 
 | Workflow | Cuándo | Qué hace |
 | --- | --- | --- |
-| `app-ci.yml` | Lo llaman los otros dos; también manual | Lint y formato con Biome, tipos, pruebas (incluida integración con PostgreSQL 17 desechable), build y validación del paquete de Wrangler. No usa secretos, así que también corre en PRs desde forks. |
+| `app-ci.yml` | Lo llaman los otros dos; también manual | Lint y formato con Biome, tipos, pruebas (incluida integración con PostgreSQL 17 desechable), pruebas de las historias de Storybook en Chromium (`npm run test:stories`), build y validación del paquete de Wrangler. No usa secretos, así que también corre en PRs desde forks. |
 | `app-preview.yml` | PR abierto, actualizado, reabierto o cerrado; edición del comentario de control | Despliega el preview del PR, publica y actualiza el comentario del preview y limpia al cerrar. |
 | `app-deploy.yml` | Push a `main` | CI, migraciones en la base compartida `dev` y despliegue a producción tras la aprobación. |
 

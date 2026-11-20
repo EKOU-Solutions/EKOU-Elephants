@@ -1,6 +1,6 @@
 name: app-ci
 
-# Calidad de la app: lint y formato (Biome), tipos, pruebas con PostgreSQL, build y paquete.
+# Calidad de la app: lint y formato (Biome), tipos, pruebas con PostgreSQL y de historias en navegador, build y paquete.
 # La invocan app-preview (PRs) y app-deploy (main). Sin secretos: sirve también para forks.
 on:
   workflow_call:
@@ -49,6 +49,10 @@ jobs:
         run: npm run typecheck
       - name: Pruebas unitarias, HTTP y PostgreSQL
         run: npm test
+      - name: Instalar el navegador de las pruebas de historias
+        run: npx playwright install --with-deps chromium
+      - name: Pruebas de historias en navegador (Storybook)
+        run: npm run test:stories
       - name: Build del cliente y el Worker
         run: npm run build
       - name: Validar el paquete de despliegue
