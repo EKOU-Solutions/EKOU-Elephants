@@ -160,6 +160,12 @@
     padding-bottom: calc(var(--el-space-16) - var(--el-rule-strong));
   }
 
+  /* Collapsed (the country arrives so on a phone, decision 32): grip and title only, as the app shows
+     `peek`; the header is out of sight and out of the focus order. */
+  .staticPeek .head > :last-child {
+    display: none;
+  }
+
   /* Out of sight and out of the focus order (decision 25), as the inert body of the app. */
   .static .body {
     position: absolute;

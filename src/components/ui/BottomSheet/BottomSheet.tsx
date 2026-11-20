@@ -323,7 +323,13 @@ export function BottomSheet({
   return (
     <div
       ref={layerRef}
-      className={staticLayout ? `${styles.layer} ${styles.static}` : styles.layer}
+      className={
+        staticLayout
+          ? [styles.layer, styles.static, shown === 'peek' && styles.staticPeek]
+              .filter(Boolean)
+              .join(' ')
+          : styles.layer
+      }
     >
       <section
         ref={sectionRef}
@@ -355,7 +361,9 @@ export function BottomSheet({
             <div ref={titleRef} className={styles.title} tabIndex={-1}>
               {title}
             </div>
-            <div inert={!isPanel && shown === 'peek'}>{header({ shown, isPanel })}</div>
+            <div inert={!isPanel && !staticLayout && shown === 'peek'}>
+              {header({ shown, isPanel })}
+            </div>
           </div>
           {/* The generated HTML has no inert body: the panel's links work without JavaScript, and on a
               phone CSS hides the body out of sight (visibility), so it stays out of the focus order. */}

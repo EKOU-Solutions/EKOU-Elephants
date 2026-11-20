@@ -400,7 +400,7 @@ export function MapPage({
           label="Ficha del lugar"
           contentKey={routeKey}
           prerendered={prerendered}
-          detent={detent}
+          detent={prerendered && route.view === 'country' ? 'peek' : detent}
           onDetentChange={setDetent}
           onLayoutChange={setSheet}
           title={titleBlock(text.kicker, text.title)}
