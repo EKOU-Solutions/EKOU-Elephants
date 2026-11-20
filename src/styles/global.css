@@ -56,3 +56,38 @@ a {
     scroll-behavior: auto !important;
   }
 }
+
+/* Containment for the generated map pages (ADR 0003): they are made once per cut and link this
+   stylesheet later, so the CSS Modules names of the map may not match. These defaults hang from data
+   attributes, which never change, and have zero specificity: when the names do match, the map's own CSS
+   wins. If not, the map stays inside its frame, unscaled and in the app's colours, instead of
+   growing to whatever size the browser gives an SVG with no rules. */
+:where([data-static-map="screen"]) {
+  position: relative;
+  overflow: hidden;
+  background: var(--el-color-surface);
+}
+
+:where([data-static-map="area"]) {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+:where([data-static-map="world"]) {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+:where([data-static-map="world"] path) {
+  fill: var(--el-color-line);
+  stroke: var(--el-color-map-border);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}

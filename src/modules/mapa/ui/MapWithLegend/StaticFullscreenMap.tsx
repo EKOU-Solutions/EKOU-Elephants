@@ -65,10 +65,11 @@ export function StaticFullscreenMap({
   const [ix0, iy0, ix1, iy1] = inset.box;
 
   return (
-    <div className={styles.staticScreen}>
-      <div className={styles.staticArea} style={style}>
+    <div className={styles.staticScreen} data-static-map="screen">
+      <div className={styles.staticArea} data-static-map="area" style={style}>
         <svg
           className={styles.staticWorld}
+          data-static-map="world"
           viewBox={`${x0} ${y0} ${x1 - x0} ${y1 - y0}`}
           role="img"
           aria-label={title}

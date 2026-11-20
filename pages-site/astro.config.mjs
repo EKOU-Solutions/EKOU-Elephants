@@ -2,6 +2,7 @@
 // React + Vite (ADR 0001): this config is separate and never part of `npm run build`.
 import react from '@astrojs/react';
 import { defineConfig } from 'astro/config';
+import { generateScopedName } from '../scripts/css-module-names.mjs';
 
 export default defineConfig({
   output: 'static',
@@ -10,7 +11,8 @@ export default defineConfig({
   build: { format: 'file', inlineStylesheets: 'never' },
   trailingSlash: 'never',
   // No CSS of its own: scripts/pages.mjs removes Astro's copy and the app Worker links the app's
-  // stylesheet. Both use Vite's default CSS Modules names (from the file's content), so they match
-  // while the components' CSS is the same as in the deployed app.
+  // stylesheet. Both build the CSS Modules names with the same function, from the file's path and the
+  // class name only, so they match even when the components' CSS changed after the pages were made.
+  vite: { css: { modules: { generateScopedName } } },
   devToolbar: { enabled: false },
 });
