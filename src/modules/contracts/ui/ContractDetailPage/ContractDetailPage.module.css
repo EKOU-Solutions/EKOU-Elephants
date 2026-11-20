@@ -1,0 +1,265 @@
+/* Contract detail layout (spec §5, prototype D4; phone: option A). Tokens only. */
+.page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--el-space-24) var(--el-space-16) var(--el-space-48);
+  /* Names and the object go as SECOP writes them: they may break anywhere. */
+  overflow-wrap: anywhere;
+}
+
+.page p {
+  text-wrap: pretty;
+}
+
+.small,
+.kicker,
+.endInfo {
+  font-size: var(--el-size-small);
+}
+
+.small,
+.kicker,
+.endInfo {
+  color: var(--el-color-text-muted);
+}
+
+.text {
+  max-width: 72ch;
+}
+
+/* ---- back and, from 900 px, the actions ---- */
+.top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--el-space-16);
+  margin-bottom: var(--el-space-24);
+}
+
+.topActions {
+  display: none;
+}
+
+/* ---- head ---- */
+.head {
+  display: grid;
+  gap: var(--el-space-4);
+}
+
+.title {
+  font-size: var(--el-size-title-mobile);
+  line-height: var(--el-line-heading);
+  font-weight: var(--el-weight-heading);
+  text-wrap: balance;
+}
+
+.title:focus {
+  outline: none;
+}
+
+.notices,
+.recover {
+  display: grid;
+  gap: var(--el-space-16);
+  justify-items: start;
+  margin-top: var(--el-space-16);
+}
+
+.flag {
+  padding: var(--el-space-4) var(--el-space-8);
+  border: var(--el-rule-strong) solid var(--el-color-line-strong);
+  font-size: var(--el-size-small);
+  font-weight: var(--el-weight-emphasis);
+}
+
+/* ---- bands: the question above, the answer below ---- */
+.step {
+  border-top: var(--el-rule) solid var(--el-color-line);
+  padding: var(--el-space-16) 0 var(--el-space-8);
+  margin-top: var(--el-space-16);
+}
+
+.question {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  align-content: start;
+  gap: var(--el-space-4) var(--el-space-12);
+  margin-bottom: var(--el-space-8);
+}
+
+.step h2 {
+  font-size: var(--el-size-body);
+  font-weight: var(--el-weight-emphasis);
+  line-height: var(--el-line-heading);
+}
+
+/* «Ejemplo»: a word in an outline, never a colour alone. */
+.mark {
+  padding: 0 var(--el-space-8);
+  border: var(--el-rule) solid var(--el-color-control-border);
+  border-radius: var(--el-mark-radius);
+  font-size: var(--el-size-small);
+  font-weight: var(--el-weight-emphasis);
+}
+
+.main {
+  border-top: var(--el-rule-strong) solid var(--el-color-line-strong);
+  margin-top: var(--el-space-24);
+}
+
+.main h2 {
+  font-size: var(--el-size-subsection);
+  font-weight: var(--el-weight-heading);
+}
+
+.answer {
+  display: grid;
+  gap: var(--el-space-4);
+  min-width: 0;
+}
+
+.figure {
+  font-size: var(--el-size-figure-mobile);
+  line-height: var(--el-line-figure);
+  font-weight: var(--el-weight-heading);
+}
+
+/* No value: the hatch key plus the words, never 0. */
+.noData {
+  display: flex;
+  align-items: center;
+  gap: var(--el-space-12);
+}
+
+.noDataKey {
+  width: var(--el-space-24);
+  height: var(--el-space-24);
+}
+
+.signals {
+  margin: 0;
+  padding: 0;
+  max-width: 72ch;
+}
+
+.note {
+  max-width: 72ch;
+  margin-top: var(--el-space-8);
+  padding-left: var(--el-space-12);
+  border-left: var(--el-rule-strong) solid var(--el-color-line-strong);
+  font-size: var(--el-size-small);
+}
+
+.clamped {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
+}
+
+.parties {
+  margin: 0;
+  font-size: var(--el-size-small);
+}
+
+.parties div {
+  padding: var(--el-space-8) 0;
+}
+
+.parties div:first-child {
+  padding-top: 0;
+}
+
+.parties div + div {
+  border-top: var(--el-rule) solid var(--el-color-line);
+}
+
+.parties dt,
+.parties dd {
+  color: var(--el-color-text-muted);
+}
+
+.parties dd {
+  margin: 0;
+  max-width: 72ch;
+}
+
+.parties strong {
+  display: block;
+  color: var(--el-color-text);
+  font-weight: var(--el-weight-emphasis);
+}
+
+/* ---- closing: source, date, id and the two actions, full width one under the other ---- */
+.end {
+  display: grid;
+  gap: var(--el-space-16);
+  border-top: var(--el-rule-strong) solid var(--el-color-line-strong);
+  padding-top: var(--el-space-16);
+  margin-top: var(--el-space-24);
+}
+
+.idLine {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--el-space-8);
+  white-space: nowrap;
+}
+
+.endActions {
+  display: grid;
+  gap: var(--el-space-12);
+}
+
+@media (min-width: 900px) {
+  .page {
+    padding: var(--el-space-32) var(--el-space-48) var(--el-space-48);
+  }
+
+  .topActions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    align-items: center;
+    gap: var(--el-space-12);
+  }
+
+  .title {
+    font-size: var(--el-size-title);
+  }
+
+  .figure {
+    font-size: var(--el-size-figure);
+  }
+
+  .main h2 {
+    font-size: var(--el-size-section);
+  }
+
+  .end {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--el-space-32);
+  }
+
+  .endActions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+}
+
+/* ---- desktop: each band is a row, the question on the left ---- */
+@media (min-width: 1100px) {
+  .step {
+    display: grid;
+    grid-template-columns: 240px minmax(0, 1fr);
+    gap: var(--el-space-48);
+  }
+
+  .question {
+    margin-bottom: 0;
+  }
+}
