@@ -116,6 +116,8 @@ export function BottomSheet({
   const lastShown = useRef<Detent | null>(null);
   const lastContent = useRef(contentKey);
   const arriving = useRef(false);
+  const arrivingFrame = useRef(0);
+  const gripClickTimer = useRef(0);
   const [heights, setHeights] = useState<Heights>({ peek: 0, half: 0, full: 0 });
   const [measuredKey, setMeasuredKey] = useState(contentKey);
   const [headerFits, setHeaderFits] = useState(true);
@@ -140,6 +142,16 @@ export function BottomSheet({
     if (isMeasured)
       layoutListener.current?.({ shown, isPanel, height: shownHeight, contentKey: measuredKey });
   }, [isMeasured, shown, isPanel, shownHeight, measuredKey]);
+
+  // Pending callbacks that outlive a run on purpose (see `arriving` and the grip click): they only
+  // write refs, but must not stay behind once the sheet is gone.
+  useEffect(
+    () => () => {
+      cancelAnimationFrame(arrivingFrame.current);
+      clearTimeout(gripClickTimer.current);
+    },
+    [],
+  );
 
   useEffect(() => {
     if (!isMeasured) return;
@@ -201,7 +213,7 @@ export function BottomSheet({
       lastContent.current = contentKey;
       arriving.current = true;
       // Not cancelled on the next run: an adjustment right after must still find it set.
-      requestAnimationFrame(() => {
+      arrivingFrame.current = requestAnimationFrame(() => {
         arriving.current = false;
       });
       lastShown.current = shown;
@@ -275,7 +287,7 @@ export function BottomSheet({
     if (event.currentTarget === gripRef.current) {
       // The click that follows this drag must not also step; the next tap or key must.
       suppressGripClick.current = true;
-      setTimeout(() => {
+      gripClickTimer.current = window.setTimeout(() => {
         suppressGripClick.current = false;
       }, 0);
     }
@@ -292,6 +304,9 @@ export function BottomSheet({
     onPointerMove: handlePointerMove,
     onPointerUp: handlePointerUp,
     onPointerCancel: handlePointerUp,
+    // The safety net: if the browser takes the capture away, the drag ends instead of hanging.
+    // After a normal release `dragRef` is already empty, so this does nothing.
+    onLostPointerCapture: handlePointerUp,
   };
   const offset = heights.full - (dragHeight ?? heights[shown]);
   // Only in the generated HTML: the first measure in the browser replaces it before paint.

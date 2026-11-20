@@ -67,6 +67,7 @@ Los títulos y descripciones nuevos los lee la gente: pasan por `/ajuste` con la
 - **Antes del primer corte con el script,** el Worker de datos no tiene páginas y la web sirve la de siempre. No se rompe nada; solo no hay HTML por lugar hasta ese corte (o hasta reprocesar el vigente).
 - **Si la pantalla cambia entre cortes,** el HTML inicial puede diferir un poco de lo que monta React hasta el siguiente corte. Se acota regenerando las páginas cuando cambie la pantalla.
 - **Peso del Worker de datos:** suma unas 1.155 páginas de pocos KB; se mide con el primer corte.
+- **Política de seguridad de contenido (CSP) futura:** las páginas llevan scripts en línea (el JSON-LD y, con `npm run dev`, los módulos de Astro). Si se adopta una CSP, esos scripts necesitan un hash o un nonce. Hoy el Worker ya envía `X-Content-Type-Options: nosniff` y `Referrer-Policy: strict-origin-when-cross-origin` en las páginas y el sitemap. Los scripts que se copian al `<head>` salen del `index.html` de la propia app (`appTags`), y una prueba fija que solo se copian los módulos.
 
 ## Verificación antes de producción
 

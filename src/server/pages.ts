@@ -16,6 +16,13 @@ export interface PagesEnv {
  * so while neither changes the revalidation is a 304 without body; after a cut or a deploy, the new
  * page. The same as the SPA's own index.html, which is always revalidated.
  */
+/** On every generated response, the sitemap included. A future CSP must allow the pages' inline
+ * scripts (the JSON-LD and, in `npm run dev`, Astro's modules) with a hash or nonce: ADR 0003. */
+export const SECURITY_HEADERS = {
+  'X-Content-Type-Options': 'nosniff',
+  'Referrer-Policy': 'strict-origin-when-cross-origin',
+} as const;
+
 export const PAGE_CACHE = 'public, no-cache';
 
 /** The sitemap names no scripts: a minute in the browser, five in shared caches. */
@@ -133,6 +140,7 @@ export async function servePage(request: Request, env: PagesEnv): Promise<Respon
     if (key.endsWith('.xml'))
       return new Response(noBody ? null : page.body, {
         headers: {
+          ...SECURITY_HEADERS,
           'Content-Type': 'application/xml; charset=utf-8',
           'Cache-Control': SITEMAP_CACHE,
         },
@@ -155,10 +163,11 @@ export async function servePage(request: Request, env: PagesEnv): Promise<Respon
       if (typeof body !== 'string') await body?.cancel();
       return new Response(null, {
         status: 304,
-        headers: { ETag: etag, 'Cache-Control': PAGE_CACHE },
+        headers: { ...SECURITY_HEADERS, ETag: etag, 'Cache-Control': PAGE_CACHE },
       });
     }
     const headers = {
+      ...SECURITY_HEADERS,
       'Content-Type': 'text/html; charset=utf-8',
       'Cache-Control': PAGE_CACHE,
       ETag: etag,

@@ -17,24 +17,32 @@ const isTwin = (a: Element, b: Element) =>
 
 // A place's generated page (ADR 0003) stays in view until its data arrive; then the app takes over,
 // keeping what the person did meanwhile: the search text, the focus and the caret.
-initialState(raiz.hasChildNodes()).then((initial) => {
-  const query = raiz.querySelector<HTMLInputElement>('input[type="search"]')?.value;
-  const active = document.activeElement;
-  const focused = active && active !== raiz && raiz.contains(active) ? active : null;
-  const caret =
-    focused instanceof HTMLInputElement && focused.selectionStart !== null
-      ? ([focused.selectionStart, focused.selectionEnd ?? focused.selectionStart] as const)
-      : null;
-  flushSync(() =>
-    createRoot(raiz).render(
-      <StrictMode>
-        <App initial={initial} query={query} />
-      </StrictMode>,
-    ),
-  );
-  if (!focused) return;
-  const twin = Array.from(raiz.querySelectorAll(focused.tagName)).find((el) => isTwin(el, focused));
-  if (!(twin instanceof HTMLElement)) return;
-  twin.focus({ preventScroll: true });
-  if (caret && twin instanceof HTMLInputElement) twin.setSelectionRange(...caret);
-});
+initialState(raiz.hasChildNodes())
+  .then((initial) => {
+    const query = raiz.querySelector<HTMLInputElement>('input[type="search"]')?.value;
+    const active = document.activeElement;
+    const focused = active && active !== raiz && raiz.contains(active) ? active : null;
+    const caret =
+      focused instanceof HTMLInputElement && focused.selectionStart !== null
+        ? ([focused.selectionStart, focused.selectionEnd ?? focused.selectionStart] as const)
+        : null;
+    flushSync(() =>
+      createRoot(raiz).render(
+        <StrictMode>
+          <App initial={initial} query={query} />
+        </StrictMode>,
+      ),
+    );
+    if (!focused) return;
+    const twin = Array.from(raiz.querySelectorAll(focused.tagName)).find((el) =>
+      isTwin(el, focused),
+    );
+    if (!(twin instanceof HTMLElement)) return;
+    twin.focus({ preventScroll: true });
+    if (caret && twin instanceof HTMLInputElement) twin.setSelectionRange(...caret);
+  })
+  .catch((error: unknown) => {
+    // The takeover failed: the generated page stays as it is, still readable. Only the error's name,
+    // like the server: no URLs or data.
+    console.error('No se pudo iniciar la app sobre la página generada:', (error as Error).name);
+  });

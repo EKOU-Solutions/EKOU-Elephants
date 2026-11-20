@@ -1,6 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import worker from './index';
-import { PAGE_CACHE, SITEMAP_CACHE, pageKey, pageEtag, appTags, servePage } from './pages';
+import {
+  PAGE_CACHE,
+  SECURITY_HEADERS,
+  SITEMAP_CACHE,
+  appTags,
+  pageEtag,
+  pageKey,
+  servePage,
+} from './pages';
 
 /**
  * Node has no HTMLRewriter: a small stand-in with the part of its API these routes use (selectors
@@ -158,6 +166,16 @@ describe('appTags', () => {
     );
   });
 
+  it('trusts only the index of the app itself: scripts that are not modules are never copied', async () => {
+    const tags = await appTags(
+      new Response(
+        '<head><script src="https://example.test/x.js"></script><script>alert(1)</script>' +
+          '<script type="module" src="/assets/index-abc.js"></script></head>',
+      ),
+    );
+    expect(tags).toBe('<script type="module" src="/assets/index-abc.js"></script>');
+  });
+
   it('keeps an inline module script (Vite in `npm run dev`)', async () => {
     expect(
       await appTags(
@@ -168,6 +186,27 @@ describe('appTags', () => {
 });
 
 describe('servePage', () => {
+  it('security headers on every generated response: page, 304, HEAD and sitemap', async () => {
+    const env = {
+      ASSETS: assets().fetcher,
+      DATOS: datos({ 'paginas/mapa/05001': PAGINA, 'paginas/sitemap.xml': SITEMAP }).fetcher,
+    };
+    const first = await servePage(pedir('/mapa/05001'), env);
+    const etag = first.headers.get('ETag') ?? '';
+    const responses = [
+      first,
+      await servePage(pedir('/mapa/05001', { headers: { 'If-None-Match': etag } }), env),
+      await servePage(pedir('/mapa/05001', { method: 'HEAD' }), env),
+      await servePage(pedir('/sitemap.xml'), env),
+    ];
+    expect(responses[1]?.status).toBe(304);
+    for (const res of responses) {
+      for (const [name, value] of Object.entries(SECURITY_HEADERS)) {
+        expect(res.headers.get(name)).toBe(value);
+      }
+    }
+  });
+
   it('found: the generated page with the app scripts in its head, always revalidated', async () => {
     const a = assets();
     const d = datos();
