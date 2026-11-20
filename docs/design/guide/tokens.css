@@ -60,6 +60,10 @@
   --el-focus-offset: 3px;
   --el-rule: 1px;
   --el-rule-strong: 2px;
+  --el-ease-standard: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --el-duration-short: 300ms;
+  --el-duration-base: 450ms;
+  --el-duration-long: 750ms;
   --el-font-ui: "Public Sans", system-ui, -apple-system, 'Segoe UI', sans-serif;
   --el-font-display: "Public Sans", system-ui, -apple-system, 'Segoe UI', sans-serif;
   --el-numbers: tabular-nums lining-nums;

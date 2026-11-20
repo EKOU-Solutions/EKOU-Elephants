@@ -17,6 +17,7 @@
   "include": [
     ".storybook",
     "worker-configuration.d.ts",
+    "pages-site/src/lib",
     "scripts/cli-app.ts",
     "src",
     "tests",

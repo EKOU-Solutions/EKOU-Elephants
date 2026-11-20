@@ -1,5 +1,5 @@
 {
-  "version": "1.3.0",
+  "version": "1.6.1",
   "about": "Catálogo legible por máquina de los componentes de Elephants. 'core' = revisado y aceptado (Ronda 05); 'candidate' = se puede usar, pero lo debe confirmar la primera página que lo necesite (ver .claude/skills/elephant-designer/references/build-page.md). Los componentes con 'component' ya son React en src/components/ui/ y traen sus propios estilos ('styles', CSS Modules); los demás son especificación con clases de components.css. build.py comprueba que los archivos, las clases y los tokens existan.",
   "components": [
     {
@@ -13,7 +13,8 @@
         "secondary",
         "text",
         "disabled (deshabilitado)",
-        "solo ícono (hideLabel, 44 px; zoom del mapa, v1.3.0)"
+        "solo ícono (hideLabel, 44 px; zoom del mapa, v1.3.0)",
+        "etiqueta recortada (truncate, v1.6.0): puntos suspensivos si no cabe; el texto entero sigue siendo el nombre accesible y debe estar completo a la vista en otro lugar (migas del mapa)"
       ],
       "tokens": [
         "--el-color-action",
@@ -68,11 +69,14 @@
       "label_es": "Campo de texto",
       "status": "core",
       "reference": "preview.html#campo",
-      "use": "Recoge un dato escrito para filtrar o buscar. Siempre con etiqueta visible.",
+      "use": "Recoge un dato escrito para filtrar o buscar. Siempre con etiqueta visible, salvo un buscador que flota sobre un mapa (hideLabel con ícono visible, v1.6.0).",
       "variants": [
         "con texto de ayuda",
         "numérico (inputMode)",
-        "error"
+        "error",
+        "con ícono visible (icon: la lupa de un buscador, v1.6.0)",
+        "a todo el ancho (fullWidth, sin el tope de 320 px; v1.6.0)",
+        "etiqueta oculta (hideLabel, v1.6.0): exige un ícono visible y un placeholder que diga qué escribir; la etiqueta sigue siendo el nombre accesible. Solo donde no cabe una etiqueta (buscador del mapa, decisión 30)"
       ],
       "tokens": [
         "--el-color-control-border",
@@ -86,7 +90,8 @@
         "Error: aria-invalid=true + aria-describedby apuntando al mensaje",
         "El texto del error dice cómo corregirlo",
         "inputMode=\"numeric\" solo si el dato es un número",
-        "Placeholder en --el-color-text-muted (v1.3.0): el del navegador da 3,8:1 en oscuro; nunca reemplaza la etiqueta"
+        "Placeholder en --el-color-text-muted (v1.3.0): el del navegador da 3,8:1 en oscuro; nunca reemplaza la etiqueta",
+        "Con hideLabel, la etiqueta queda oculta a la vista pero sigue ligada con for: es el nombre accesible"
       ],
       "component": "src/components/ui/Input/Input.tsx",
       "styles": "src/components/ui/FormField/FormField.module.css"
@@ -123,7 +128,10 @@
       "use": "Base de Input y Select: etiqueta, control y mensaje de ayuda o de error ligados entre sí. Sirve para crear campos nuevos; no se usa sola en las páginas.",
       "variants": [
         "con texto de ayuda",
-        "error"
+        "error",
+        "ícono visible al inicio del control (icon, v1.6.0)",
+        "a todo el ancho (fullWidth, v1.6.0)",
+        "etiqueta oculta a la vista (hideLabel, solo con icon; v1.6.0)"
       ],
       "tokens": [
         "--el-color-control-border",
@@ -135,7 +143,8 @@
         "<label for>",
         "Error: aria-invalid=true + aria-describedby apuntando al mensaje",
         "El texto del error dice cómo corregirlo",
-        "La ayuda también va en aria-describedby"
+        "La ayuda también va en aria-describedby",
+        "hideLabel oculta la etiqueta a la vista sin quitarla: sigue siendo el nombre accesible; el ícono es decorativo"
       ],
       "component": "src/components/ui/FormField/FormField.tsx",
       "styles": "src/components/ui/FormField/FormField.module.css"
@@ -166,10 +175,11 @@
       "label_es": "Resultados de búsqueda",
       "status": "core",
       "reference": "preview.html#resultados",
-      "use": "Lista hasta 8 lugares que coinciden con un campo de búsqueda, cada uno con su departamento, en el flujo de la página bajo el campo (v1.3.0, TASK-09). Componente de página: vive en el módulo del mapa.",
+      "use": "Lista hasta 8 lugares que coinciden con un campo de búsqueda, cada uno con su departamento: en el flujo de la página bajo el campo (v1.3.0, TASK-09) o flotante sobre el mapa (v1.6.0). Componente de página: vive en el módulo del mapa.",
       "variants": [
         "con resultados",
-        "vacío"
+        "vacío",
+        "flotante (variant=\"floating\", v1.6.0): caja a todo el ancho del campo, sobre el mapa, con altura máxima y desplazamiento propio; también dice «Escribe al menos 2 letras.»"
       ],
       "tokens": [
         "--el-color-line",
@@ -180,7 +190,10 @@
         "--el-weight-emphasis",
         "--el-weight-body",
         "--el-size-small",
-        "--el-space-8"
+        "--el-space-8",
+        "--el-color-surface",
+        "--el-color-control-border",
+        "--el-control-radius"
       ],
       "a11y": [
         "Botones nativos de 44 px",
@@ -302,7 +315,8 @@
         "por defecto",
         "columnas numéricas alineadas a la derecha (el-num)",
         "fila elegida (currentRowId: peso y aria-current, nunca color; v1.3.0)",
-        "encabezado de fila con enlace y celdas con clave «Sin datos» (v1.3.0)"
+        "encabezado de fila con enlace y celdas con clave «Sin datos» (v1.3.0)",
+        "encabezado fijo (stickyHeader, v1.6.0): el encabezado queda arriba mientras se desplaza el contenedor (la ficha del mapa); sin desplazamiento horizontal propio, solo para pocas columnas"
       ],
       "tokens": [
         "--el-color-line",
@@ -356,7 +370,10 @@
       "variants": [
         "por defecto",
         "territorio seleccionado",
-        "neutra (v1.3.0): un solo relleno, contorno del conjunto, nombres de lugar y zoom"
+        "neutra (v1.3.0): un solo relleno, contorno del conjunto, nombres de lugar y zoom",
+        "pantalla completa (v1.5.0, variant=\"fullscreen\"): un solo mapa con tres niveles bajo la BottomSheet; cámara con vuelos, arrastre con un dedo, pellizco y rueda, encuadre en la zona libre, lugares atenuados alrededor, contorno del candidato, rótulo del elegido y recuadro del archipiélago dentro del mapa o fijo en la esquina",
+        "pantalla completa con controles ocultos (controlsHidden, v1.6.0): el zoom y el recuadro de esquina se ocultan mientras algo los cubre, como la lista del buscador",
+        "estática de la página generada (prerendered, v1.6.1): contorno simplificado del departamento con el lugar marcado y el mismo encuadre que la cámara, sin JavaScript (ADR 0003)"
       ],
       "tokens": [
         "--el-color-risk-low",
@@ -370,17 +387,56 @@
         "--el-color-text",
         "--el-color-surface",
         "--el-size-small",
-        "--el-control-height"
+        "--el-control-height",
+        "--el-color-surface-subtle",
+        "--el-color-text-muted",
+        "--el-duration-short",
+        "--el-duration-base",
+        "--el-duration-long",
+        "--el-ease-standard"
       ],
       "a11y": [
         "<svg role=img> con <title>",
         "Siempre se puede llegar a una tabla de datos con los mismos valores",
         "La selección nunca se marca solo con color",
         "Variante neutra: contorno del conjunto y contorno al pasar o enfocar en --el-color-control-border (3:1 o más), nunca con opacidad",
-        "Los botones de zoom miden 44 px y llevan aria-label; los gestos nunca son la única forma"
+        "Los botones de zoom miden 44 px y llevan aria-label; los gestos nunca son la única forma",
+        "Pantalla completa: el nombre del mapa remite a la tabla de la ficha; el recuadro de esquina es un botón con nombre; con prefers-reduced-motion el encuadre cambia de una vez, sin vuelo ni fundido"
       ],
       "component": "src/modules/mapa/ui/MapWithLegend/MapWithLegend.tsx",
       "styles": "src/modules/mapa/ui/MapWithLegend/MapWithLegend.module.css"
+    },
+    {
+      "name": "BottomSheet",
+      "label_es": "Ficha deslizable",
+      "status": "core",
+      "use": "Ficha del lugar sobre un mapa a pantalla completa: recogida, media y completa con un borde que es botón; desde 1024 px, panel fijo a la derecha.",
+      "variants": [
+        "recogida (rótulo y h1)",
+        "media (encabezado completo; la de llegada)",
+        "completa (cuerpo con desplazamiento; 68 px de mapa a la vista)",
+        "panel lateral de 400 px desde 1024 px",
+        "cambio de contenido (contentKey, v1.6.0): la altura con la que llega un lugar nuevo no se anuncia, porque la página ya anuncia el lugar",
+        "prerendered (v1.6.1): ficha a media altura solo con CSS en la página generada; la reemplaza la medida real al montar (ADR 0003)"
+      ],
+      "tokens": [
+        "--el-color-surface",
+        "--el-rule-strong",
+        "--el-color-line-strong",
+        "--el-color-control-border",
+        "--el-control-height",
+        "--el-duration-short",
+        "--el-ease-standard",
+        "--el-space-12"
+      ],
+      "a11y": [
+        "Borde: <button> de 44 px cuyo nombre dice la altura; toque, Enter o Espacio mueven un paso (decisión 27); Escape baja la completa a la media",
+        "Cada cambio se anuncia en role=status; lo oculto es inert y el foco que quedaba ahí pasa al borde",
+        "Nunca depende del arrastre; con prefers-reduced-motion no se anima"
+      ],
+      "component": "src/components/ui/BottomSheet/BottomSheet.tsx",
+      "styles": "src/components/ui/BottomSheet/BottomSheet.module.css",
+      "notes": "Esquinas superiores con --el-space-12: ningún token de radio sirve para una superficie de este tamaño (--el-control-radius es de 6 px, para controles); así se aprobó en el boceto."
     },
     {
       "name": "Status pill",

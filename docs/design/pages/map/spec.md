@@ -1,138 +1,199 @@
-# Map page · Spec
+# Página del mapa · Especificación
 
-> Step 2 of [Build a page](../../../../.claude/skills/elephants-design/references/build-page.md). Status: **Approved (Approval 1) 2026-11-15** by the user (drafted and revised the same day with the [audit](../../audits/2026-11-15-map-page.md) and decisions 9–11). Contract: [contract.md](contract.md) (approved 2026-11-15). Data: [data.md](data.md).
+> Paso 2b de [Construir una página](../../../../.claude/skills/elephant-designer/references/build-page.md). Estado: **aprobada (Aprobación 1) el 2026-11-17** por el usuario, tras probar el boceto interactivo en celular y escritorio y acoger la crítica de `elephant-ux`. Reemplaza la especificación aprobada el 2026-11-15 (queda en el historial de Git, commit `7a4818d`), sobre el boceto **A** elegido por Jouler el 2026-11-16: [bocetos.html](bocetos.html) y [prototipo-a.html](prototipo-a.html). Contrato: [contract.md](contract.md) (aprobado 2026-11-15, sin cambios). Datos: [data.md](data.md).
 
-## 1. Purpose
+## 1. Propósito
 
-**Question (TASK-09 scope):** «¿Dónde se firmaron los contratos públicos de Colombia, y cuántos hay en mi departamento o municipio?»
+**Pregunta (alcance de TASK-09):** «¿Dónde se firmaron los contratos públicos de Colombia, y cuántos hay en mi departamento o municipio?»
 
-The tentative question («how does my territory compare, where should I look?») needs risk, which is not in this contract. This page draws the place layer that TASK-13/14 will later colour.
+La pregunta de la referencia tentativa («¿cómo se compara mi territorio, dónde debería mirar?») necesita el riesgo, que no está en este contrato. Esta página dibuja la capa de lugares que TASK-13 y TASK-14 colorearán después.
 
-**Audience:** general public on a phone (default), often arriving through a shared link to one municipality; journalists on desktop who need the exact figure, source and date.
+**Principios del pedido (Jouler, 2026-11-16):** una sola pantalla, sin navegar entre páginas. El mapa es el protagonista. Limpia, bien animada, interactiva, con arrastre y con información clara.
 
-**10-second test (adapted for TASK-09):** on a phone, within 10 seconds a person can say: (1) this is a map of Colombia by department; (2) how to get to their territory (tap or search); (3) that the map does not rate anyone yet. Arriving on a municipality link, within 10 seconds they read its name and figure without scrolling. The brief's test («where signals concentrate») applies when risk arrives.
+**Audiencia:** público general en celular (por defecto), que suele llegar por un enlace compartido a un municipio; periodistas en escritorio que necesitan la cifra exacta, la fuente y la fecha.
 
-## 2. Content and hierarchy
+**Prueba de 10 segundos:** en el celular, en 10 segundos la persona puede decir: (1) que es un mapa de Colombia por departamentos; (2) cómo llegar a su territorio (tocarlo o buscarlo); (3) que el mapa todavía no califica a nadie. Si llega por el enlace de un municipio, lee su nombre y su cifra sin tocar nada. La prueba del brief («dónde se concentran las señales») aplica cuando llegue el riesgo.
 
-Heading outline, the same in every view: one `h1` (the page's subject), then `h2` for the legend, the selected territory, the counts and the table.
+## 2. Contenido y jerarquía
 
-### National view (`/mapa`)
+**Una sola pantalla con tres estados** del mismo mapa: Colombia, departamento y municipio. El mapa ocupa toda la pantalla y nunca se va; la información vive en una **ficha** que sube desde abajo y cambia en su sitio. La ficha tiene tres alturas:
 
-| Order | Content | Contract field(s) | Component | Tokens | If missing / null | Phase |
+- **Recogida:** solo el rótulo y el título.
+- **Media:** el encabezado completo de la ficha. Es la altura al llegar y después de cada cambio de lugar.
+- **Completa:** el cuerpo con cifras, tabla y fuentes, con su propio desplazamiento.
+
+Esquema de títulos, igual en los tres estados: un `h1` en el encabezado de la ficha (el lugar), y `h2` para cada sección del cuerpo.
+
+### Siempre a la vista (sobre el mapa)
+
+| Orden | Contenido | Campo(s) del contrato | Componente | Tokens | Si falta / es nulo | Fase |
 | --- | --- | --- | --- | --- | --- | --- |
-| 1 | Kicker + `h1` headline «7.456.749 contratos públicos firmados en Colombia» + dek | `nacional.contratos`, `ventana`, `fechaCorte` | Page heading (type scale) | `--el-size-title`, `--el-color-text`, `--el-color-text-muted` | Error state (no headline without data) | MVP |
-| 2 | Map of 33 departments: neutral fill, internal borders as surface gaps, **outline of the country** (decision 9). Archipelago in an inset, labelled «San Andrés y Providencia» at 14 px outside the box (decision 10). Zoom with + / − / «Ver todo» | Geometry `departamentos`, `codigo`; `departamentos[].nombre` | Map with legend · neutral variant + zoom (step 3) | `--el-color-line` (fill), `--el-color-map-border` (internal borders), `--el-color-control-border` (outline, hover, focus), `--el-size-small` (labels) | Never null at this level | MVP |
-| 3 | Legend `h2` «Qué muestra el mapa»: neutral key + note that the map does not measure risk yet | fixed copy | Map with legend · `el-legend` | `--el-color-text-muted` | — | MVP |
-| 4 | Place search: municipality or department by name, up to 8 results «Municipio, Departamento» | `municipios[].nombre`, `departamento.nombre`, `departamentos[].nombre` | Field + Search results (new, step 3) | `--el-control-height`, `--el-color-control-border`, `--el-color-line`, `--el-color-text-muted` (placeholder) | Empty-result message | MVP |
-| 5 | Counts `h2` «Dónde quedó cada contrato»: en un municipio / solo en un departamento / sin lugar identificado, each with a one-line gloss | `nacional.contratosEnMunicipios`, `contratosSoloDepartamento`, `contratosSinLugar` | Counter | `--el-color-line`, `--el-color-text-muted` | Error state | MVP |
-| 6 | Source and date line | `fuentes[].nombre`, `entidad`, `licencia`, `url`; `fechaCorte`; `ventana` | Key figure · source line | `--el-color-text-muted` | Error state | MVP |
-| 7 | Table `h2` of departments in alphabetical order (not sortable; changed from DANE code order on 2026-11-16, decision 2): name, contracts in municipalities, contracts only in the department | `departamentos[]` | Data table | `--el-color-line`, `--el-rule-strong` | — | MVP |
+| A | Buscador arriba, a todo el ancho: «Busca tu municipio o departamento», hasta 8 resultados «Municipio, Departamento» | `municipios[].nombre`, `departamento.nombre`, `departamentos[].nombre` | Input + Search results | `--el-control-height`, `--el-color-control-border`, `--el-color-surface` | Mensaje de búsqueda vacía | MVP |
+| B | Migas bajo el buscador: «← Colombia» y, en un municipio, el nombre de su departamento | `departamento.codigo`, `departamento.nombre` | Button (secundario) | `--el-control-height` | — | MVP |
+| C | Controles de zoom a la derecha: «Acercar», «Alejar» y «Ver todo» (este, solo con el mapa acercado o movido) | — | Map with legend · zoom | `--el-control-height` | — | MVP |
+| D | Recuadro «San Andrés y Providencia»: las dos islas **ampliadas**, con su forma, a escala uniforme y sin deformar, en un marco punteado con su nombre. **En Colombia** va dentro del mapa, en su posición geográfica aproximada (en el Caribe, al noroeste del continente), y se mueve con él. **En cualquier otro departamento o municipio** queda fijo en la esquina superior izquierda de la pantalla, bajo las migas (68 px de ancho), como mapa de referencia; un toque lleva al archipiélago. Dentro del archipiélago no aparece (decisiones 12, 23 y 24) | geometría `municipios` 88001 y 88564 | Map with legend · recuadro | `--el-color-control-border` (marco punteado), `--el-color-line` | — | MVP |
 
-### Department view (`/mapa/departamento/05`)
+### Colombia (`/mapa`)
 
-| Order | Content | Contract field(s) | Component | Tokens | If missing / null | Phase |
+| Orden | Contenido | Campo(s) del contrato | Componente | Tokens | Si falta / es nulo | Fase |
 | --- | --- | --- | --- | --- | --- | --- |
-| 1 | Back: «← Colombia» | — | Button (secondary) | `--el-color-action` | — | MVP |
-| 2 | Kicker «Código DANE 05» + `h1` department name | `departamentos[].nombre`, `codigo` | Page heading | `--el-size-title` | — | MVP |
-| 3 | Map of its municipalities, fitted to the department, **outline of the department**; hatch where `null`; zoom. In Cundinamarca, «Bogotá, D.C.» labelled in its gap (decision 10) | Geometry `municipios` filtered by `codigo` prefix; `contratosUbicados` | Map with legend · neutral variant + `el-fill-unknown` + zoom | `--el-color-line`, `--el-color-control-border`, `--el-color-unknown`, `--el-color-unknown-surface` | Hatch + «Sin datos» (the guide's hatch unchanged, decision 11) | MVP |
-| 4 | Legend: neutral + «Sin datos» (the hatch item only if the department has a `null`) | fixed copy | `el-legend` | — | — | MVP |
-| 5 | Counts `h2`: «en sus municipios» / «solo en el departamento» | `contratosEnMunicipios`, `contratosSoloDepartamento` | Counter | — | 0 shown as 0 (measured) | MVP |
-| 6 | Source and date line | as national | Key figure · source line | — | — | MVP |
-| 7 | Table `h2` of its municipalities in alphabetical order: name, code, contracts | `municipios[]` of that department | Data table | `el-num` | «Sin datos» with the hatch key in the cell, never 0 | MVP |
+| 1 | Mapa de los 33 departamentos a pantalla completa, encuadrado en la zona libre sobre la ficha: relleno neutro, contorno del país | geometría `departamentos`, `codigo` | Map with legend · pantalla completa (paso 3) | `--el-color-line`, `--el-color-map-border`, `--el-color-control-border` | Nunca nulo en este nivel | MVP |
+| 2 | Ficha recogida: rótulo «Mapa de contratación pública» + `h1` «7.456.749 contratos públicos firmados en Colombia» | `nacional.contratos` | Ficha deslizable (nueva) | `--el-size-title-mobile`, `--el-color-text-muted` | Estado de error | MVP |
+| 3 | Ficha media: «Del 1 ene 2021 al 7 nov 2026. Elige un departamento. Este mapa todavía no mide riesgo.» + línea de fuente y fecha + botón «Ver cifras, tabla y fuentes» | `ventana`, `fechaCorte`, `fuentes[]` | Ficha, Button | `--el-size-small` | — | MVP |
+| 4 | Ficha completa, `h2` «Dónde quedó cada contrato»: en un municipio / sin municipio identificado / sin lugar identificado, cada una con su glosa (decisión 18: detrás de un toque) | `nacional.contratosEnMunicipios`, `contratosSoloDepartamento`, `contratosSinLugar` | Counter | `--el-color-line` | Estado de error | MVP |
+| 5 | `h2` «Contratos por departamento, 2021 – 7 nov 2026»: tabla en orden alfabético con «En municipios» y «Sin municipio»; cada nombre lleva a su departamento | `departamentos[]` | Data table | `--el-color-line`, `--el-rule-strong` | — | MVP |
+| 6 | `h2` «Fuentes»: fuentes completas con licencia y fecha | `fuentes[]`, `fechaCorte` | Key figure · línea de fuente | `--el-color-text-muted` | — | MVP |
 
-### Municipality view (`/mapa/05001`: tap, search or shared link)
+### Departamento (`/mapa/departamento/05`)
 
-| Order | Content | Contract field(s) | Component | Tokens | If missing / null | Phase |
+| Orden | Contenido | Campo(s) del contrato | Componente | Tokens | Si falta / es nulo | Fase |
 | --- | --- | --- | --- | --- | --- | --- |
-| 1 | Back: «← Antioquia» (to the department; «← Colombia» for Bogotá) | `departamento.codigo`, `departamento.nombre` | Button (secondary) | `--el-color-action` | — | MVP |
-| 2 | Kicker «Antioquia · Código DANE 05001» (+ «· Área no municipalizada» / «· Isla») + **`h1` municipality name** (decision 11b) | `nombre`, `departamento.nombre`, `codigo`, `tipo` | Page heading | `--el-size-title` | — | MVP |
-| 3 | Map of the department with the selected shape outlined and **labelled with its name**; fill unchanged | `codigo`, `nombre` | Map with legend · selected | `--el-color-text` (outline), `--el-size-small` | — | MVP |
-| 4 | Key figure, **directly under the map** on mobile: «356.935» «contratos firmados del 1 ene 2021 al 7 nov 2026 y ubicados en Medellín» | `contratosUbicados`, `ventana`, `fechaCorte`, `nombre` | Key figure | `--el-size-figure`, `--el-rule-strong` | Hatch swatch + «Sin datos» + «No encontramos contratos ubicados con certeza en este lugar del 1 ene 2021 al 7 nov 2026.» | MVP |
-| 5 | Source line | `fuentes[]`, `fechaCorte` | Key figure · source | — | — | MVP |
-| 6 | «Copiar enlace» → «Enlace copiado» (`role="status"`); copies `/mapa/<codigo>` | `codigo` | Button (secondary) | `--el-color-action` | If the clipboard is refused, select the URL in a read-only field | MVP |
-| 7 | Department counts and table, as in the department view (the selected row marked by weight, not colour) | as department view | Counter, Data table | — | — | MVP |
+| 1 | El mapa vuela al departamento: sus municipios aparecen, los demás departamentos quedan atenuados alrededor y se pueden tocar; contorno del departamento | geometría `municipios` por prefijo de `codigo`; `contratosUbicados` | Map with legend · pantalla completa + `el-fill-unknown` | `--el-color-line`, `--el-color-surface-subtle` (atenuado), `--el-color-unknown`, `--el-color-unknown-surface` | Trama + «Sin datos» | MVP |
+| 2 | Ficha recogida: rótulo «DANE 05» (decisión 28) + `h1` «Antioquia» | `departamentos[].nombre`, `codigo` | Ficha | — | — | MVP |
+| 3 | Ficha media: «**X** contratos en sus municipios y **Y** sin municipio identificado, del 1 ene 2021 al 7 nov 2026. Elige un municipio.» + fuente + leyenda «Sin datos» si el departamento tiene algún nulo + «Ver tabla y fuentes» | `contratosEnMunicipios`, `contratosSoloDepartamento`, `ventana`, `fechaCorte` | Ficha, Legend key, Button | — | 0 se muestra como 0 (medido) | MVP |
+| 4 | Ficha completa: `h2` «Dónde quedó cada contrato» (dos cifras), `h2` tabla de sus municipios en orden alfabético, `h2` «Fuentes» | `municipios[]` del departamento | Counter, Data table | `el-num` | «Sin datos» con la trama en la celda, nunca 0 | MVP |
 
-**Bogotá, D.C.** (decision 4): the municipality view of 11001. The «en sus municipios» counter is hidden because it equals the key figure; only «solo en el departamento» stays, labelled «registrados solo como Bogotá, D.C. (departamento)». Search lists Bogotá once.
+### Municipio (`/mapa/05001`: toque, búsqueda o enlace compartido)
 
-## 3. States
+| Orden | Contenido | Campo(s) del contrato | Componente | Tokens | Si falta / es nulo | Fase |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | **El mismo foco que un departamento, con tope** (decisión 20): el mapa vuela al municipio y lo deja ocupando como máximo cerca del 55 % de la zona libre; sus vecinos y el resto del departamento quedan **atenuados alrededor** y se pueden tocar; el elegido conserva el relleno, lleva el contorno fuerte, se dibuja encima y lleva su nombre en un rótulo | `codigo`, `nombre` | Map with legend · seleccionado | `--el-color-line` (relleno del elegido), `--el-color-surface-subtle` (atenuado), `--el-color-text` (contorno), `--el-size-small` | Si la geometría no tiene su forma, se queda el encuadre del departamento | MVP |
+| 2 | Ficha recogida: rótulo «Antioquia · DANE 05001» (decisión 28) (+ «· Área no municipalizada» / «· Isla») + `h1` «Medellín» | `nombre`, `departamento.nombre`, `codigo`, `tipo` | Ficha | — | — | MVP |
+| 3 | Ficha media: cifra clave «356.935» y «contratos firmados del 1 ene 2021 al 7 nov 2026 y ubicados en Medellín» + fuente + «Copiar enlace» + «Ver Antioquia y tabla» | `contratosUbicados`, `ventana`, `fechaCorte`, `fuentes[]` | Key figure, Button | `--el-size-figure-mobile` | Trama + «Sin datos» + «No encontramos contratos ubicados con certeza en este lugar del 1 ene 2021 al 7 nov 2026.» | MVP |
+| 4 | Ficha completa: `h2` con el departamento, sus dos cifras y la tabla de sus municipios (la fila elegida marcada con peso, no con color), `h2` «Fuentes» | como en el departamento | Counter, Data table | — | — | MVP |
 
-| State | What the person sees |
+**Bogotá, D.C.** (decisión 4): elegir el departamento 11 lleva directo al municipio 11001; la miga muestra solo «← Colombia»; la cifra «en sus municipios» no se repite y queda «registrados solo como Bogotá, D.C. (departamento)». El buscador lista Bogotá una vez.
+
+## 3. Comportamiento
+
+**Llegar y volver.** Cada estado tiene su dirección: `/mapa`, `/mapa/departamento/05`, `/mapa/05001`. Abrir el enlace muestra lo mismo que veía quien lo compartió, con la ficha a media altura. Cada cambio de lugar agrega una entrada al historial, y el botón Atrás del navegador vuelve al estado anterior con el vuelo inverso. Se vuelve con las migas, con «Ver todo» o alejando el mapa: alejar desde un departamento hasta cerca del encuadre del país vuelve a Colombia.
+
+**Gestos sobre el mapa** (decisión 12c, revisada):
+
+- **Un dedo o el ratón siempre arrastran el mapa**, a cualquier zoom; cursor `grab` / `grabbing`. La página nunca se desplaza.
+- **Dos dedos, la rueda o «+» / «−» acercan y alejan** alrededor del punto. Con la rueda no hace falta Ctrl, porque ya no hay página que desplazar. **En un trackpad,** deslizar con dos dedos mueve el mapa y pellizcar (Ctrl) acerca y aleja; la rueda del mouse sigue acercando (revisión del PR #47, 2026-11-20).
+- **Un toque sin moverse elige** el lugar tocado; un arrastre de más de 6 px nunca elige. En un departamento, tocar un municipio lo elige y tocar otro departamento atenuado va a ese departamento.
+- Con la ficha completa, tocar el mapa la baja a media altura en lugar de elegir.
+
+**La ficha** (componente nuevo, paso 3):
+
+- Se mueve **solo desde su borde y su encabezado**. El cuerpo se desplaza por dentro únicamente con la ficha completa, así que mapa, ficha y tabla nunca se disputan el mismo gesto.
+- Al soltar, se ajusta a la altura más cercana; un movimiento rápido la empuja una altura más.
+- Nunca depende del arrastre: el borde es un botón de 44 px, cuyo nombre dice la altura actual («Ficha a media altura. Cambiar altura»), y que con un toque, Enter o Espacio mueve la ficha un paso, siempre volviendo a la media: media → completa → media → recogida → media (decisión 27). Escape baja la completa a la media. Cada cambio se anuncia en `role="status"`, y si el foco estaba en una parte que queda oculta, pasa al borde. En la altura recogida, todo lo que no se ve es `inert`; si el encabezado no cabe en la altura media (celular horizontal, texto al 200 %), la ficha se comporta como completa, con desplazamiento; la media nunca pasa de la completa menos 68 px, para que siempre se vea más mapa que en la completa. Si la ficha se ve completa por eso, el borde dice «Ficha completa», el ciclo es completa ↔ recogida y el botón del encabezado dice «Volver al mapa». Con la ficha completa, arrastrar el encabezado hacia arriba desplaza el cuerpo; hacia abajo, con el cuerpo arriba del todo, mueve la ficha. Los botones del encabezado van en una sola fila desde unos 360 px; a 320 px bajan a dos filas (usuario, 2026-11-17). El botón rotulado «Ver cifras, tabla y fuentes» abre la ficha completa y, abierta, pasa a decir «Volver al mapa».
+- Con la ficha recogida o media, el cuerpo es `inert` (fuera del orden de tabulación); con la completa, entra.
+- Alturas: la recogida y la media se miden de su contenido; la completa **cubre también el buscador** en celular (decisión 38; antes dejaba 68 px de mapa bajo él). Con la ficha completa se ocultan el buscador, las migas, el zoom, el recuadro y el rótulo, que quedarían cortados.
+
+**Cámara.**
+
+- Cada lugar se encuadra en la **zona libre sobre la ficha**, debajo del buscador y las migas, y a la izquierda de los controles de zoom.
+- Si la persona no ha movido el mapa, este se vuelve a encuadrar cuando la ficha cambia de altura; si lo movió, se respeta su encuadre hasta «Ver todo».
+- El zoom va de 0,7 a 80 veces el encuadre del país.
+- **Municipios pequeños:** el vuelo al municipio los deja grandes (decisión 20), y el pellizco sirve para cualquier otro.
+
+**Vuelos** (decisiones 15 y 19):
+
+| Transición | Token de duración | Valor |
+| --- | --- | --- |
+| Colombia ↔ departamento, o cambio de departamento | `--el-duration-long` | 750 ms |
+| Departamento ↔ municipio, municipio ↔ municipio, «Ver todo» | `--el-duration-base` | 450 ms |
+| Ficha que cambia de altura, botones «+» / «−» | `--el-duration-short` | 300 ms |
+
+- Todos usan `--el-ease-standard`, `cubic-bezier(0.2, 0.7, 0.2, 1)`.
+- El vuelo interpola el zoom de forma geométrica (no lineal), para que acercar 20 veces no se sienta como un salto.
+- Los municipios de un departamento aparecen con un fundido de `--el-duration-short`.
+- Reemplaza la transición con View Transitions de la decisión 15.
+
+**Foco y anuncios.**
+
+- Tras elegir con el buscador o la tabla, el foco va al `h1` de la ficha. Tras un toque en el mapa, se queda en el mapa. Con las migas, se queda en la miga; si la miga tocada desaparece, el foco pasa a «← Colombia», y ya en Colombia, al `h1`.
+- Tras «Ver todo», el foco va a «Acercar».
+- Una región `role="status"` anuncia «Seleccionado: Medellín, Antioquia», el número de resultados de la búsqueda y «Enlace copiado».
+
+**Mapa accesible.** El mapa es `role="img"` con una etiqueta que remite a la tabla de la ficha. La tabla es la ruta de teclado a cada lugar. El paso del puntero, el foco y el dedo apoyado muestran en el lugar candidato un contorno menos fuerte que el del elegido (decisión 25), nunca un cambio de opacidad, y nada depende del paso del puntero: es un aviso, el toque elige igual sin él.
+
+**`prefers-reduced-motion`:** el mapa cambia de encuadre de una vez, la ficha salta a su altura y los municipios aparecen sin fundido. Ningún contenido depende de una animación.
+
+## 4. Estados
+
+| Estado | Qué ve la persona |
 | --- | --- |
-| Loading | Map area keeps its height; «Cargando el mapa…» in `role="status"` |
-| `null` municipality | Hatch on the shape and in the key figure, «Sin datos» + reason. Never 0, never «sin contratos» |
-| Empty search | «No encontramos «texto». Revisa la escritura o elige el departamento en el mapa.» |
-| 400 / 404 from a shared link | Alert (warning): «Ese enlace no corresponde a un municipio de Colombia.» + Button «Ver el mapa de Colombia» |
-| 503 `corte_no_disponible` | Alert (danger): «Los datos del mapa no están disponibles en este momento.» + Button «Reintentar». No map, no figures |
-| 404 `geometria_no_encontrada` / 500 | Same as 503 |
-| Phase 2 | Nothing reserved or greyed out for risk; it is simply absent |
+| Carga | El mapa en `--el-color-surface-subtle` con el contorno del país si ya llegó la geometría; la ficha a media altura con «Cargando el mapa…» en `role="status"` |
+| Municipio `null` | Trama en la forma y en la cifra clave, «Sin datos» + el motivo. Nunca 0 ni «sin contratos» |
+| Búsqueda vacía | «No encontramos «texto». Revisa la escritura o elige el departamento en el mapa.» |
+| Enlace compartido inválido (400 / 404) | Ficha media con Alert (aviso): «Ese enlace no corresponde a un municipio de Colombia.» + Button «Ver el mapa de Colombia»; el mapa muestra Colombia |
+| 503 `corte_no_disponible`, 404 `geometria_no_encontrada`, 500 | Ficha media con Alert (peligro): «Los datos del mapa no están disponibles en este momento.» + Button «Reintentar»; el mapa vacío, sin cifras |
+| Dos cortes distintos en las respuestas | Se piden de nuevo sin caché; si siguen distintos, el estado 503 (regla del PR #29) |
+| Fase 2 | Nada reservado ni en gris para el riesgo: simplemente no está |
 
-## 4. Layout and behaviour
+## 5. Maquetación
 
-- **Mobile (390 px, from 320):** one column.
-  - National and department: headline → map → legend → search → counts → source → table.
-  - Municipality: back → headline → map → **key figure + source + «Copiar enlace»** → legend → search → department counts → table.
-  - Counts: stacked, separated by horizontal rules only (no vertical dividers when stacked); a 3-up row from 600 px.
-- **Desktop (1280 px):** headline full width; two columns: map 7/12 left; right column with search, the key figure (municipality view), counts and source, kept in view beside the map (sticky) so the column has no dead space. Table full width under both.
-- **Selection:** tapping, searching or arriving by URL updates the view. After a tap or a search result, the page scrolls the key figure into view (instant with `prefers-reduced-motion`) and moves focus to the `h1`. Every view change resets the scroll to the top of the map and clears the search field.
-- **Map interaction:** hover and keyboard focus show an outline in `--el-color-control-border`, never an opacity change. Nothing depends on hover. The table is the keyboard route to every territory; the map is `role="img"` with a `<title>` that points to it.
-- **Zoom (decision 5):** pinch and drag on touch; Ctrl + wheel on desktop (plain scroll keeps scrolling the page). «Acercar», «Alejar» and «Ver todo» icon buttons (44 px, `aria-label`) at the map's top-right. Zoom resets when the view changes. One-finger drag pans only when zoomed in.
-- **Table on narrow screens:** caption outside the scroll region; the scroll region has `tabindex="0"`, `role="region"` and an `aria-label`; under 360 px the headers shorten («Municipios», «Solo depto.»).
-- **Search accessibility:** the hint «Escribe al menos 2 letras.» shows only below 2 letters; a live region announces the number of results, not the list; choosing a result announces the selected territory.
-- **Text:** `text-wrap: pretty` on paragraphs (no one-word last lines).
+- **Celular (390 px, desde 320):** el mapa ocupa `100dvh` a todo el ancho; el buscador y los controles flotan sobre él con 12 px de margen; la ficha ocupa todo el ancho, con borde superior `--el-rule-strong` y esquinas superiores redondeadas, sin sombra. A 320 px las migas recortan el nombre largo con puntos suspensivos (el nombre completo está en el `h1`).
+- **Escritorio (desde 1024 px):** la ficha pasa a ser un **panel fijo a la derecha** de 400 px, a toda la altura, separado del mapa por una línea `--el-rule-strong`, sin alturas ni borde que arrastrar (encabezado y cuerpo seguidos, con desplazamiento propio); el buscador va arriba del panel. El mapa ocupa el resto a la izquierda y se encuadra en él; las migas quedan arriba a la izquierda del mapa, los controles de zoom arriba a la derecha del mapa (junto al panel) y el recuadro del archipiélago como en celular (decisiones 23 y 24).
+- **Entre 600 y 1023 px:** la ficha deslizable con un ancho máximo de 560 px, centrada.
+- Separaciones con líneas, nunca tarjetas ni sombras. Solo tokens `--el-*`. Dos temas.
 
-## 5. Copy (es-CO)
+## 6. Textos (es-CO)
 
-- Kicker (national): «Mapa de contratación pública»
-- Headline: «7.456.749 contratos públicos firmados en Colombia»
-- Dek: «Del 1 ene 2021 al 7 nov 2026. Elige un departamento para ver sus municipios. Este mapa muestra dónde se firmaron los contratos; todavía no mide riesgo.»
-- Window, one wording everywhere: «del 1 ene 2021 al 7 nov 2026» in sentences; «2021 – 7 nov 2026» in captions and source lines.
-- Legend: «Territorio con contratos ubicados» · «Sin datos: no hay contratos ubicados con certeza» · note: «Todavía no hay color por riesgo. Gris no quiere decir «sin problemas».»
-- Counts and glosses:
-  - «6.771.167 en un municipio»: «sabemos en qué municipio se firmaron»
-  - «626.277 solo en un departamento»: «sabemos el departamento, no el municipio»
-  - «59.305 sin lugar identificado»: «no sabemos dónde»
-- Municipality key figure: no label above the number; the sentence below carries the noun.
-- Search label: «Busca tu municipio o departamento»
-- Source: «Fuentes: SECOP II y SECOP I (Colombia Compra Eficiente), DIVIPOLA y Marco Geoestadístico 2025 (DANE). Datos al 7 nov 2026.»
-- Table captions: «Contratos por departamento, 2021 – 7 nov 2026» · «Contratos por municipio en Antioquia, 2021 – 7 nov 2026»
-- Verbs work on touch and desktop: «Elige», not «Toca».
+Se conservan los textos aprobados el 2026-11-15 (titular, ventana, glosas de las cifras, fuente, títulos de tabla, «Elige» en lugar de «Toca»). Nuevos:
 
-No «corrupción», «robo», «sospechoso»; no natural persons. Figures use dot as the thousands separator and always carry a noun.
+- Ficha en Colombia: «Del 1 ene 2021 al 7 nov 2026. Elige un departamento. Este mapa todavía no mide riesgo.»
+- Línea de fuente en departamento y municipio: «Fuentes: SECOP II y SECOP I, DANE. Datos al 7 nov 2026. Este mapa todavía no mide riesgo.» (crítica de `elephant-ux`: quien llega por el enlace de un municipio, el caso principal, no veía la nota).
+- Botones de la ficha: «Ver cifras, tabla y fuentes» (Colombia) · «Ver tabla y fuentes» (departamento) · «Ver Antioquia y tabla» (municipio) · «Volver al mapa» (ficha completa).
+- Borde de la ficha: su nombre dice la altura que se ve: «Ficha recogida. Cambiar altura» · «Ficha a media altura. Cambiar altura» · «Ficha completa. Cambiar altura» (sección 3).
+- En escritorio (panel) no hay alturas: los botones «Ver … y tabla» / «Volver al mapa» no se muestran, porque la tabla ya está a la vista en el panel.
+- Leyenda en la ficha, solo si hay nulos: «Sin datos: no hay contratos ubicados con certeza». Nota de riesgo: «Todavía no hay color por riesgo. Gris no quiere decir «sin problemas».» (en «Fuentes»).
 
-## 6. Decisions (2026-11-15, by the user)
+Nunca «corrupción», «robo» ni «sospechoso»; nunca nombres de personas naturales. Las cifras usan punto de miles y siempre llevan sustantivo.
 
-| # | Question | Decision |
+## 7. Decisiones
+
+Siguen vigentes, de la especificación del 2026-11-15: **1** relleno neutro con `--el-color-line` · **2** tabla en orden alfabético, sin ordenar · **3** buscador con Search results · **4** Bogotá directo a 11001 · **5** municipios pequeños con pellizco y botones · **6** sin enlace a metodología · **7** «Copiar enlace» · **8** ejemplos del contrato · **9** contornos en `--el-color-control-border` · **10** rótulos solo del elegido, el archipiélago y Bogotá · **11** trama de «Sin datos» sin cambios · **11b** `h1` con el nombre del municipio · **12** archipiélago en un panel a la misma escala · **12b** la forma con foco se dibuja encima · **14** sin colores de riesgo en la vista real.
+
+Cambian o se agregan (usuario, 2026-11-17):
+
+| # | Pregunta | Decisión |
 | --- | --- | --- |
-| 1 | Neutral fill | **No new token.** `--el-color-line` as the territory fill (already the «clean» fill in Coverage bar and `el-key-clean`) |
-| 2 | Sortable table | **Not for now.** Alphabetical order, Spanish rules (user, 2026-11-16: in DANE code order nobody finds their department; it was Arauca after Valle del Cauca) |
-| 3 | Search | **Yes, with a new search-results component**, to approve in step 3 |
-| 4 | Bogotá | **Straight to the municipality** 11001 |
-| 5 | Small municipalities | **Pinch-zoom**, with keyboard buttons |
-| 6 | Methodology link | **Left out** until a methodology page exists |
-| 7 | Shared link | **«Copiar enlace»** in the municipality view |
-| 8 | Contract examples | **Refreshed** in `contract.md` (examples only; schema unchanged) |
-| 9 | Map visibility (audit #2) | Outline of the drawn set and hover/focus outline in `--el-color-control-border` (existing token); fill unchanged |
-| 10 | Place labels (audit #5) | **Selected territory, the archipelago inset and Bogotá, D.C.** No department labels |
-| 11 | «Sin datos» hatch (audit #4) | **Unchanged** (guide rule, 3:1); decision 9 restores the visual order |
-| 11b | `h1` on a municipality (audit #3) | **The municipality's name**, department and code in the kicker |
-| 12 | Archipelago (national inset, `/mapa/departamento/88` and its two municipalities; user, 2026-11-15, revised) | **Both islands in one panel at the same scale.** The islands are about 90 km apart, so only the empty sea between them is reduced: Providencia sits next to San Andrés, shapes and scale untouched, x projected at the islands' latitude (cos 12.9°) so neither is stretched. Each island labelled with its name below it; the legend adds «San Andrés y Providencia están a unos 90 km. En el mapa se acercan para verlas juntas a la misma escala, sin cambiar su forma.» The national inset uses the same panel |
-| 12b | Hover / focus outline (user, 2026-11-15) | The shape under the pointer or with focus is drawn last (the selected shape stays on top), so neighbours never cover part of its outline |
-| 12c | Drag to move (user, 2026-11-15) | With a mouse the map can always be grabbed and dragged, at any zoom (cursor `grab` / `grabbing`); a drag never selects, a click without moving does. On touch, one finger scrolls the page at full view and moves the map once zoomed; two fingers pinch. «Ver todo» recentres. **2026-11-16 (user):** «Ver todo» shows only when the map is zoomed or moved, since at the starting frame it has nothing to undo; after using it, keyboard focus moves to «Acercar» |
-| 13 | ~~Navigation by list (user, 2026-11-15)~~ **Withdrawn 2026-11-16 by the user:** the search, the map, the department table and the back link already cover this navigation; without the selects the right column is cleaner and the key figure moves up, above all on the phone. Original decision: | Two selects from the guide's Field above the search: «Departamento» («Toda Colombia» + 33) and «Municipio» («Todo el departamento» + its municipalities; disabled with «Elige primero un departamento» on the national view). They follow the current view; choosing moves like a search result (focus on the `h1`). Bogotá goes straight to 11001 |
-| 14 | Risk colours (user, 2026-11-15) | No risk data exists in the cut (only counts), so the real view stays neutral (decision 1). The mockup adds a **Fase 2 preview with fictional levels**: guide fills `el-fill-low/medium/high`, legend «Contratos con señales» Bajo / Intermedio / Alto / Sin datos, risk tag in the key figure, a «Riesgo (ficticio)» table column, and a warning alert «Vista previa con datos ficticios». Every fictional level says «(ficticio)». Building it for real needs a risk field in the API contract (TASK-07) and goes back to step 0 |
-| 15 | Zoom between views (user, 2026-11-16) | A teammate felt the change of view as a jump to a «sub-page». With the View Transitions API, going from Colombia into a department (or a municipality) the map grows toward that department until it fills the frame while the new map fades in; going back, it shrinks into its place. 450 ms, `cubic-bezier(0.2, 0.7, 0.2, 1)`, clipped to the map frame; the rest of the page crossfades. Between a department and one of its municipalities the zoom follows the municipality (decision 16). With `prefers-reduced-motion` or without the API the view changes at once. The guide has no motion tokens yet: these values live in `mapZoom.ts` |
-| 16 | A municipality is drawn alone (user, 2026-11-16) | Choosing a municipality used to keep the whole department in frame, so a small municipality was hard to see. Now the municipality view draws only that municipality, filling the frame with a 6 % margin, without a label (the heading names it). To change municipality: the search, the table, or «← department» and the department map. If the geometry has no shape for it, the department stays in view. The zoom of decision 15 also goes from a department into one of its municipalities and back; none between two municipalities. «Ver todo» returns to the municipality's frame |
+| 12c | Arrastrar (revisada) | **Un dedo siempre arrastra el mapa**, a cualquier zoom, porque la página ya no se desplaza; dos dedos o la rueda (sin Ctrl) acercan. «Ver todo» solo con el mapa acercado o movido; después de usarlo, el foco va a «Acercar» |
+| 13 | Listas de navegación | Sigue retirada (2026-11-16) |
+| 15 | Zoom entre vistas (reemplazada) | Un vuelo de cámara sobre el mismo mapa, no View Transitions entre dos vistas. Duraciones y curva de la sección 3 |
+| 16 | Municipio dibujado solo (reemplazada por la 20) | — |
+| 17 | Experiencia (Jouler, 2026-11-16) | **Boceto A**: mapa a pantalla completa y ficha deslizable de tres alturas; un solo estado de página con tres niveles |
+| 18 | Cifras de cobertura | **Detrás de un toque rotulado** («Ver cifras, tabla y fuentes»); la ficha media trae el titular, la ventana y la fuente |
+| 19 | Movimiento | **Tokens nuevos en la guía:** `--el-ease-standard` y `--el-duration-short` / `-base` / `-long` (300 / 450 / 750 ms), con su página MDX; versión menor de la guía por su proceso de cambio |
+| 20 | Encuadre del municipio (revisada dos veces el mismo día; la última, por la crítica de `elephant-ux`: llenando todo el mapa se perdía dónde queda el municipio y la forma simplificada se veía tosca) | **El mismo tratamiento que un departamento, con tope de zoom:** el municipio ocupa como máximo cerca del **55 %** de la zona libre, así que se ven el contorno del departamento y varios vecinos alrededor. **Y el departamento sigue a la vista** (usuario, 2026-11-17, por la revisión de `elephant-ux`: en escritorio Medellín llenaba la pantalla y no se veía Antioquia): si el departamento entero cabe en la zona libre, el zoom no lo deja salir; en los municipios pequeños manda el departamento y el municipio se ve más chico. Sus vecinos quedan atenuados alrededor (como los demás departamentos en la vista de departamento) y se pueden tocar para cambiar de municipio. El elegido conserva su relleno, con contorno fuerte y rótulo. Ningún municipio se dibuja solo |
+| 21 | Relleno mientras no hay riesgo | **Neutro hasta TASK-07** (confirma la 1 y la 14) |
 
-## 7. Components for step 3
+## 8. Componentes para el paso 3
 
-| Component | Change | Needs approval |
+| Componente | Cambio | Necesita aprobación |
 | --- | --- | --- |
-| Map with legend | Variant «neutral» (`el-fill-neutral` with `--el-color-line`, `el-key-neutral`), set outline and hover/focus outline in `--el-color-control-border`, place labels, zoom controls | Yes |
-| Search results | New | Yes |
-| Field | `::placeholder` in `--el-color-text-muted` (audit #10: the browser default is 3.8:1 in dark) | Yes (fix to a core component) |
-| Button, Counter, Key figure, Data table, Alert | Used as they are | No |
+| Ficha deslizable (`BottomSheet`, `src/components/ui/`) | **Nuevo**, por `/crear-componente`: tres alturas, borde arrastrable que es botón, cuerpo `inert` fuera de la altura completa, panel lateral desde 1024 px, tokens de movimiento | Sí |
+| Map with legend | Variante a pantalla completa: cámara con vuelo, arrastre con un dedo, pellizco y rueda, encuadre en una zona libre, departamentos atenuados alrededor, rótulo del elegido, recuadro del archipiélago flotante | Sí |
+| Tokens de movimiento | Nuevos en `tokens.json` + `.storybook/docs/` (decisión 19) | Sí (proceso de cambio de la guía) |
+| Input, Search results, Button, Counter, Key figure, Data table, Alert, Legend key | Se usan como están | No |
 
-## 8. Requirements for the mockup (step 4)
+## 9. Preguntas abiertas
 
-- Generated by `build.py` in this folder from the guide's `tokens.css` and `components.css`. A standalone document: `<meta charset="utf-8">` and the `[hidden]` rule. It must open from disk and from a local server (audit #1).
-- Validated (step 5) before it is shown.
+Ninguna. Resueltas por el usuario el 2026-11-17:
+
+| # | Pregunta | Decisión |
+| --- | --- | --- |
+| 22 | Escritorio | **Panel lateral derecho** de 400 px a toda la altura, con el mapa a la izquierda (sección 5) |
+| 23 | Archipiélago fuera de Colombia (revisada el mismo día por el usuario: con el recuadro solo en Colombia, las islas desaparecían al entrar a otro departamento) | **Recuadro fijo en la esquina superior izquierda** de la pantalla en todo departamento o municipio que no sea el archipiélago, con las islas visibles (nunca una caja vacía) y su nombre; un toque lleva al archipiélago. El mapa reserva esa columna (88 px) igual que la de los controles de zoom, para que el lugar elegido no quede debajo |
+| 25 | Aviso de cambio de lugar (usuario, 2026-11-17) | Con un departamento o un municipio elegido, **el lugar al que te vas a pasar se delinea con un contorno menos fuerte** que el del elegido: `--el-color-control-border` a 1,5 px, frente a `--el-color-text` a 2,5 px del elegido. Aplica a los vecinos atenuados y a los demás departamentos. Aparece con el puntero encima y, en pantallas táctiles, mientras el dedo está apoyado (se quita si el toque se vuelve arrastre). El candidato se dibuja encima de sus vecinos, pero el elegido sigue encima de todo (decisión 12b), así que los dos contornos nunca se tapan. Solo cambia el contorno, nunca la opacidad ni el relleno. El marco punteado del recuadro del archipiélago nunca sube al frente: taparía las islas |
+| 26 | Contratos sin municipio (usuario, 2026-11-17, por la crítica de `elephant-ux`) | Cambia el texto aprobado el 2026-11-15 «solo en el departamento» por **«sin municipio identificado»** en la ficha media, las cifras y la tabla («Sin municipio»): sin la glosa, «8.565 solo en el departamento» se podía leer como «solo hay 8.565 contratos». La glosa se mantiene: «sabemos el departamento, no el municipio». En Bogotá: «registrados solo como Bogotá, D.C. (departamento)» se mantiene |
+| 29 | Texto del recuadro de las islas (usuario, 2026-11-17, por la revisión de `elephant-tester`) | **Excepción a los 14 px:** solo los nombres dentro del recuadro del archipiélago (en el mapa y en la esquina) miden ≈11 px (`calc(var(--el-size-small) * 0.8)`), en `--el-color-text`, porque en 68 px no cabe más. El mismo nombre sale completo en la ficha |
+| 30 | Etiqueta del buscador (usuario, 2026-11-17, por la validación de `elephant-ux` y `elephant-tester`) | **Excepción a «etiqueta siempre visible»:** la etiqueta del buscador del mapa queda oculta a la vista (sigue siendo su nombre accesible), con una **lupa visible** y el texto de ayuda «Busca municipio o departamento», que cabe a 320 px. Se hace con una opción documentada de `FormField` (ocultar la etiqueta solo con un ícono visible), nunca con CSS de la página. Gana el alto que el mapa necesita en el celular |
+| 31 | Bogotá en la ficha completa (usuario, 2026-11-17, por la validación de `elephant-ux`) | En Bogotá el botón dice **«Ver más cifras y fuentes»** y la ficha completa no lleva tabla: quedan la cifra de contratos «registrados solo como Bogotá, D.C. (departamento)» y las fuentes. Una tabla de una sola fila repetía la cifra clave |
+| 32 | Pantallas bajas (usuario, 2026-11-17, por la validación de `elephant-ux`) | Si con la ficha a media altura al mapa le quedan menos de unos **160 px** libres (p. ej. 320×640), la ficha llega **recogida**: se ven el nombre, el lugar en el mapa y el borde para subirla. Se mide el espacio libre real, no el ancho: a 375×667 llegan recogidos Bogotá y los nombres más largos (su ficha es más alta); Medellín y los departamentos, a media altura (confirmado por el usuario el mismo día) |
+| 33 | Entrada en celular (revisión del PR #47, 2026-11-20) | En el celular, **Colombia entra con la ficha recogida** para que el mapa sea lo primero; al elegir un departamento o municipio, la ficha sube a media altura. Un enlace directo a un lugar sigue abriendo a media altura (decisión 32 manda si no cabe). El panel de escritorio no tiene alturas. Reemplaza «la ficha a media altura» de Colombia en la sección «Llegar y volver» |
+| 34 | Mapa centrado en celular (misma revisión) | Sin el recuadro de esquina, la zona libre reserva a la izquierda lo mismo que la columna del zoom a la derecha (68 px), para que el lugar encuadrado quede centrado en la pantalla y no corrido a la izquierda |
+| 35 | Ancho de la ficha en escritorio (revisión del PR #47, 2026-11-20, boceto elegido por el usuario) | El panel entra en **440 px** (antes 400) y la persona lo ajusta arrastrando su borde izquierdo, un separador de 8 px con `role="separator"`, o con ← → (24 px), Inicio y Fin. Mínimo 360 px, máximo 640 px, y el mapa nunca queda con menos de 400 px. El ancho se recuerda solo en ese navegador; la página generada usa 440 px |
+| 36 | Resumen del departamento (misma revisión) | Ya no repite las dos cifras que muestra «Dónde quedó cada contrato»: dice «Contratos firmados {periodo}. Elige un municipio.» |
+| 37 | Recuadro de San Andrés separado de las migas (misma revisión) | En celular, fuera de Colombia, el recuadro de esquina queda a 12 px bajo las migas (antes 8 px), para que no parezca pegado a ellas. La zona libre del mapa no cambia. |
+| 38 | Ficha completa sobre el buscador (usuario, revisión del PR #47) | En celular la ficha a pantalla completa ocupa todo el alto, como en Google Maps, y oculta el buscador y las migas (vuelven al bajar la ficha). Sustituye los 68 px de mapa bajo el buscador de la crítica de `elephant-ux` de 2026-11-17. Escritorio no cambia. La altura media sigue sin pasar de la completa menos 68 px. |
+| 39 | Colombia con más espacio en celular (usuario, revisión del PR #47) | En la vista del país no hay migas, así que la zona libre del mapa empieza justo bajo el buscador (68 px) y no a 116 px. El país sigue centrado en ella. |
+| 40 | San Andrés separado del continente (usuario, revisión del PR #47) | En el mapa del país, el recuadro de las islas sube por encima del borde norte del continente (antes dentro de su alto), en el mar, sin tocar la tierra. Sustituye la posición de la decisión 24; el tamaño (18 % del alto) no cambia. |
+| 27 | Ciclo del borde de la ficha (usuario, 2026-11-17, por la crítica de `elephant-ux` a `BottomSheet`) | **Siempre vuelve a la media:** media → completa → media → recogida → media. Cada toque mueve un paso y la cifra nunca desaparece sin pasar por la media |
+| 28 | Rótulo de la ficha (usuario, 2026-11-17, por la misma crítica) | **Una línea:** «Antioquia · DANE 05001» en un municipio y «DANE 05» en un departamento (+ «· Área no municipalizada» / «· Isla» cuando aplica). «Mapa de contratación pública» sale del rótulo fuera de Colombia y queda en la vista de Colombia; gana una línea de mapa en la ficha media. El `h1` sigue siendo el nombre (decisión 11b) |
+| 24 | Islas sin deformar (usuario, 2026-11-17) | **Las islas se escalan, nunca se estiran:** un solo factor de escala para el ancho y el alto, en todas partes. En el **recuadro de Colombia** (revisado el mismo día por el usuario): a la escala del país las islas son dos puntos y se ven mal, así que se dibujan **ampliadas** (el recuadro mide cerca del 18 % del alto del continente), con su forma y un solo factor de escala para las dos; como en la decisión 12, solo se acorta el mar entre ellas (Providencia arriba y a la derecha de San Andrés); el marco punteado se adapta a ellas y no al revés. El recuadro va **dentro del mapa, en su posición geográfica aproximada**: en el Caribe, en la esquina noroeste del continente, a la latitud de La Guajira; se mueve y se acerca con el mapa, y el encuadre del país lo incluye para que siempre se vea al llegar. Un toque en el recuadro va al archipiélago. En la **vista del archipiélago** (`/mapa/departamento/88` y sus dos municipios) las islas **se quedan donde estaba el recuadro**, con la misma disposición: la cámara vuela al recuadro con el vuelo de siempre, nunca a la posición real en el Caribe (que dejaría dos puntos con 90 km de mar). El marco punteado queda como contorno del departamento; cada isla lleva su nombre debajo («San Andrés», «Providencia»), y la ficha media suma la nota «En el mapa se acorta la distancia entre San Andrés y Providencia (unos 90 km) para verlas juntas, a la misma escala y sin cambiar su forma.». Las islas se proyectan con el coseno de su propia latitud (12,9°) y no con el de Colombia (4,5°), que las ensancharía cerca de 2 % (lo hace la pantalla construida, `archipelagoPanel`; el boceto usa la geometría de muestra). Con zoom, la escala sigue siendo uniforme (la cámara tiene un solo factor `k`) |

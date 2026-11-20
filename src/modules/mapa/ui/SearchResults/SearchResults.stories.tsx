@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
+import { Icon } from '../../../../components/ui/Icon/Icon';
 import { Input } from '../../../../components/ui/Input/Input';
 import { routePath, searchPlaces } from '../mapModel';
 import { sampleMap } from '../sample';
@@ -41,7 +42,9 @@ const meta = {
     docs: {
       description: {
         component: [
-          'Lista hasta 8 lugares que coinciden con lo escrito en el campo de búsqueda, cada uno con su departamento, debajo del campo y en el flujo de la página (no flota). Nació en la página del Mapa (TASK-09, guía v1.3.0).',
+          'Lista hasta 8 lugares que coinciden con lo escrito en el campo de búsqueda, cada uno con su departamento, debajo del campo. Nació en la página del Mapa (TASK-09, guía v1.3.0).',
+          '',
+          '**Dos formas:** `inline` (por defecto), en el flujo de la página, con la ayuda de 2 letras en el campo. `floating` (v1.6.0), para el buscador que flota sobre el mapa: una caja a todo el ancho del campo, sobre el mapa, con altura máxima y su propio desplazamiento, que también dice «Escribe al menos 2 letras.». Con `floating`, el contenedor del campo y la lista va posicionado.',
           '',
           '**Cuándo usarlo:** buscar un lugar por su nombre cuando la lista es larga (1.122 municipios). Para listas cortas, una `Select`.',
           '',
@@ -58,6 +61,45 @@ const meta = {
 export default meta;
 type Story = StoryObj<SearchResultsProps>;
 
+/** The map's search: hidden label with a magnifier, results floating over what is below (a stand-in map). */
+function FloatingSearch({ initial }: { initial: string }) {
+  const [query, setQuery] = useState(initial);
+  const found = searchPlaces(sampleMap, query);
+  return (
+    <div
+      style={{
+        position: 'relative',
+        maxWidth: 390,
+        height: 520,
+        padding: 'var(--el-space-12)',
+        background: 'var(--el-color-surface-subtle)',
+      }}
+    >
+      <search style={{ position: 'relative' }}>
+        <Input
+          label="Busca tu municipio o departamento"
+          hideLabel
+          icon={<Icon name="search" />}
+          fullWidth
+          type="search"
+          autoComplete="off"
+          placeholder="Busca municipio o departamento"
+          aria-controls="floating-results"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+        />
+        <SearchResults
+          id="floating-results"
+          variant="floating"
+          query={query}
+          results={found.map((e) => ({ id: routePath(e.route), name: e.name, context: e.context }))}
+          onChoose={() => setQuery('')}
+        />
+      </search>
+    </div>
+  );
+}
+
 export const RepeatedNames: Story = {
   name: 'Nombres repetidos (el departamento los distingue)',
   render: () => <Search initial="granada" />,
@@ -73,4 +115,16 @@ export const Empty: Story = {
 export const TooShort: Story = {
   name: 'Menos de 2 letras',
   render: () => <Search initial="m" />,
+};
+export const Floating: Story = {
+  name: 'Flotante sobre el mapa',
+  render: () => <FloatingSearch initial="granada" />,
+};
+export const FloatingTooShort: Story = {
+  name: 'Flotante · menos de 2 letras',
+  render: () => <FloatingSearch initial="m" />,
+};
+export const FloatingEmpty: Story = {
+  name: 'Flotante · sin resultados',
+  render: () => <FloatingSearch initial="medelin" />,
 };

@@ -1,0 +1,39 @@
+---
+// A place's page (ADR 0003): the approved map screen rendered to HTML with the place already chosen,
+// plus its metadata. No scripts of its own: the app Worker adds the current app's scripts. Rendered
+// `prerendered`: the sheet at half height and the place framed with CSS alone, as the app mounts them,
+// with only this page's outlines (`pageOutlines`).
+import type { MapRoute } from '../../../src/modules/mapa/ui/mapModel';
+import { MapPage } from '../../../src/modules/mapa/ui/MapPage/MapPage';
+import { loadSite } from '../lib/cut';
+import { jsonInHtml, metadata } from '../lib/site';
+import { pageOutlines } from '../lib/outlines';
+
+interface Props {
+  route: MapRoute;
+}
+
+const { route } = Astro.props;
+const { map, site } = await loadSite();
+const meta = metadata(map, route, site);
+---
+<!doctype html>
+<html lang="es-CO">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{meta.title}</title>
+    <meta name="description" content={meta.description} />
+    <link rel="canonical" href={meta.canonical} />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="EKOU Elephants" />
+    <meta property="og:locale" content="es_CO" />
+    <meta property="og:title" content={meta.title} />
+    <meta property="og:description" content={meta.description} />
+    <meta property="og:url" content={meta.canonical} />
+    <script type="application/ld+json" is:inline set:html={jsonInHtml(meta.jsonLd)} />
+  </head>
+  <body>
+    <div id="root"><MapPage state={{ status: 'ready', map: pageOutlines(map, route) }} route={route} onNavigate={() => {}} prerendered /></div>
+  </body>
+</html>

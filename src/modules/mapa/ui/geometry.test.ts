@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   shapesOf,
   PROVIDENCIA,
+  archipelagoInset,
   archipelagoPanel,
   projection,
   SAN_ANDRES,
@@ -80,5 +81,43 @@ describe('geometría del mapa', () => {
     const ancho = (c: readonly number[]) => (c[2] ?? 0) - (c[0] ?? 0);
     expect(ancho(providencia.box)).toBeCloseTo(ancho(sola?.box ?? []), 1);
     expect(box).toEqual(unionBox([san.box, providencia.box]));
+  });
+
+  it('amplía las islas del recuadro con un solo factor y las deja en el Caribe, al noroeste', () => {
+    const mainland = unionBox(
+      [...shapesOf(topo, 'departamentos').values()]
+        .filter((s) => s.code !== '88')
+        .map((s) => s.box),
+    );
+    const panel = archipelagoPanel(topo);
+    const { islands, box } = archipelagoInset(panel, mainland);
+    const [providencia, san] = islands;
+    expect(providencia?.code).toBe(PROVIDENCIA);
+    expect(san?.code).toBe(SAN_ANDRES);
+    if (!providencia || !san) return;
+    // Un solo factor: cada isla conserva su proporción (nunca se estira).
+    for (const island of islands) {
+      const shape = panel.shapes.find((s) => s.code === island.code);
+      if (!shape) throw new Error('isla sin forma');
+      const ratio = (b: readonly number[]) =>
+        ((b[2] ?? 0) - (b[0] ?? 0)) / ((b[3] ?? 0) - (b[1] ?? 0));
+      expect(ratio(island.box)).toBeCloseTo(ratio(shape.box), 6);
+      expect(island.transform.match(/scale\(([^)]+)\)/)?.[1]?.split(' ')).toHaveLength(1);
+    }
+    // Providencia arriba y a la derecha de San Andrés, sin tocarse.
+    expect(providencia.box[3]).toBeLessThan(san.box[1]);
+    expect(providencia.box[0]).toBeGreaterThan(san.box[0]);
+    // El recuadro mide cerca del 18 % del alto del continente y queda en su esquina noroeste.
+    const alto = mainland[3] - mainland[1];
+    expect((san.box[3] - providencia.box[1]) / alto).toBeCloseTo(0.18, 6);
+    expect(box[0]).toBeGreaterThan(mainland[0]);
+    // Separado del continente: el recuadro sube por encima de su borde norte (decisión 40).
+    expect(box[1]).toBeLessThan(mainland[1]);
+    expect(box[2]).toBeLessThan((mainland[0] + mainland[2]) / 2);
+    expect(box[3]).toBeLessThan((mainland[1] + mainland[3]) / 2);
+    for (const island of islands) {
+      expect(island.box[0]).toBeGreaterThanOrEqual(box[0]);
+      expect(island.box[3]).toBeLessThanOrEqual(box[3]);
+    }
   });
 });

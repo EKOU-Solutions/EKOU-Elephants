@@ -102,3 +102,27 @@ export const CurrentRow: Story = {
     },
   },
 };
+export const StickyHeader: Story = {
+  name: 'Encabezado fijo dentro de una ficha que se desplaza',
+  args: {
+    caption: 'Departamentos · datos ficticios',
+    columns: [{ label: 'Departamento' }, { label: 'Con señales', numeric: true }],
+    rows: rankingRows(12).map((row) => ({ ...row, cells: row.cells.slice(0, 1) })),
+    stickyHeader: true,
+  },
+  render: (args) => (
+    // The scrolling box stands for the map's sheet; it can take focus so the keyboard can scroll it.
+    // biome-ignore lint/a11y/noNoninteractiveTabindex: scrollable region needs keyboard focus.
+    <section aria-label="Ficha de ejemplo" tabIndex={0} style={{ height: 260, overflowY: 'auto' }}>
+      <DataTable {...args} />
+    </section>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          '`stickyHeader` (v1.6.0): el encabezado queda arriba mientras se desplaza el contenedor (la ficha del mapa). La tabla no tiene desplazamiento horizontal propio: úsalo solo con pocas columnas.',
+      },
+    },
+  },
+};

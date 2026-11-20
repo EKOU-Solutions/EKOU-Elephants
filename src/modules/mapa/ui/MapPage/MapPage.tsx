@@ -1,5 +1,17 @@
-import { type MouseEvent, type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  type MouseEvent,
+  type ReactNode,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react';
 import { Alert } from '../../../../components/ui/Alert/Alert';
+import {
+  BottomSheet,
+  type Detent,
+  type SheetFrame,
+} from '../../../../components/ui/BottomSheet/BottomSheet';
 import { Button } from '../../../../components/ui/Button/Button';
 import { Counter } from '../../../../components/ui/Counter/Counter';
 import { DataTable, type DataTableRow } from '../../../../components/ui/DataTable/DataTable';
@@ -7,24 +19,61 @@ import { Icon } from '../../../../components/ui/Icon/Icon';
 import { Input } from '../../../../components/ui/Input/Input';
 import { KeyFigure } from '../../../../components/ui/KeyFigure/KeyFigure';
 import { LegendKey } from '../../../../components/ui/LegendKey/LegendKey';
-import { RiskTag } from '../../../../components/ui/RiskTag/RiskTag';
 import { formatNumber } from '../../../../components/ui/format';
 import {
+  ARCHIPELAGO,
   BOGOTA,
   byName,
   departmentRoute,
+  fullscreenView,
   isKnownRoute,
   type MapRoute,
-  mapView,
   type PreparedMap,
   period,
   routePath,
   searchPlaces,
   sourceParts,
 } from '../mapModel';
-import { MapLegend, MapWithLegend } from '../MapWithLegend/MapWithLegend';
+import {
+  freeInsets,
+  PANEL_MAX,
+  PANEL_MIN,
+  PANEL_WIDTH,
+  PANEL_WIDTH_KEY,
+} from '../MapWithLegend/camera';
+import { MapWithLegend } from '../MapWithLegend/MapWithLegend';
 import { SearchResults } from '../SearchResults/SearchResults';
 import styles from './MapPage.module.css';
+import {
+  arrivalState,
+  clampPanelWidth,
+  crumbFocus,
+  crumbsFor,
+  lowered,
+  MIN_FREE_MAP,
+  mapTap,
+  PANEL_STEP,
+  type SheetState,
+  selectedText,
+} from './mapPageRules';
+
+// The desktop panel's width, from the one place that defines it (camera.ts), for the page's CSS.
+declare module 'react' {
+  interface CSSProperties {
+    '--map-panel-width'?: string;
+    '--static-map-min'?: string;
+  }
+}
+
+/** The width saved in this browser, or the default (storage may be missing or blocked). */
+function readPanelWidth(): number {
+  try {
+    const saved = Number(localStorage.getItem(PANEL_WIDTH_KEY));
+    return saved ? clampPanelWidth(saved, Number.POSITIVE_INFINITY) : PANEL_WIDTH;
+  } catch {
+    return PANEL_WIDTH;
+  }
+}
 
 export type MapPageState =
   | { status: 'loading' }
@@ -32,47 +81,217 @@ export type MapPageState =
   | { status: 'unavailable' }
   | { status: 'ready'; map: PreparedMap };
 
-/** How the person moved: choosing (tap, search, list, table) moves focus to the `h1`. */
-export type NavigationKind = 'choose' | 'link';
+/**
+ * How the place was reached (spec §3, focus): from the search or the table the focus goes to the `h1`;
+ * a tap on the map leaves it on the map; a crumb keeps it on the crumbs.
+ */
+export type NavigationKind = 'choose' | 'map' | 'crumb';
 
 export interface MapPageProps {
+  /** Carga, error o los datos del corte ya preparados (`prepareMap`). */
   state: MapPageState;
+  /** El lugar que se ve: Colombia, un departamento o un municipio (sale de la dirección). */
   route: MapRoute;
+  /** Pide otro lugar; quien la usa cambia la dirección y devuelve la nueva `route`. */
   onNavigate: (route: MapRoute, how: NavigationKind) => void;
+  /** «Reintentar» cuando los datos no están disponibles. */
   onRetry?: () => void;
+  /** Texto con el que empieza el buscador (historias de búsqueda). */
+  defaultQuery?: string;
   /**
-   * ONLY for the phase 2 preview in Storybook: invented risk levels, each one said «(ficticio)».
-   * The app never passes it: there is no risk in the contract until TASK-07.
+   * Altura con la que empieza la ficha. Sin ella, cada lugar llega a media altura, o recogido si al mapa
+   * le quedarían menos de 160 px (decisión 32).
    */
-  fictionalLevel?: (code: string) => 'low' | 'medium' | 'high';
+  defaultDetent?: Detent;
+  /**
+   * Página generada sin JavaScript (ADR 0003): el mapa y la ficha se acomodan solo con CSS, en la misma
+   * posición que toman al montar. Solo la usa `pages-site/`; la app nunca la pasa.
+   */
+  prerendered?: boolean;
 }
 
 const KICKER = 'Mapa de contratación pública';
-const AREA_TYPE = { area_no_municipalizada: 'Área no municipalizada', isla: 'Isla' } as const;
-const ARCHIPELAGO_NOTE =
-  'San Andrés y Providencia están a unos 90 km. En el mapa se acercan para verlas juntas a la misma escala, sin cambiar su forma.';
+const SEARCH_LABEL = 'Busca tu municipio o departamento';
+const SEARCH_PLACEHOLDER = 'Busca municipio o departamento';
+const RESULTS_ID = 'map-search-results';
+const AREA_TYPE: Record<string, string> = {
+  area_no_municipalizada: ' · Área no municipalizada',
+  isla: ' · Isla',
+};
+const RISK_NOTE = 'Este mapa todavía no mide riesgo.';
+const GREY_NOTE = 'Todavía no hay color por riesgo. Gris no quiere decir «sin problemas».';
+const ISLANDS_NOTE =
+  'En el mapa se acorta la distancia entre San Andrés y Providencia (unos 90 km) para verlas juntas, a la misma escala y sin cambiar su forma.';
+const NO_DATA_LEGEND = 'Sin datos: no hay contratos ubicados con certeza';
+const GLOSS = {
+  municipality: 'sabemos en qué municipio se firmaron',
+  department: 'sabemos el departamento, no el municipio',
+  nowhere: 'no sabemos dónde',
+} as const;
+// A repeated «Enlace copiado» is announced again: the region is emptied first, then filled.
+const ANNOUNCE_AGAIN_MS = 100;
 
-/** Map page (TASK-09): where public contracts were signed, by department and municipality. */
-export function MapPage({ state, route, onNavigate, onRetry, fictionalLevel }: MapPageProps) {
-  const title = useRef<HTMLHeadingElement>(null);
-  const figure = useRef<HTMLDivElement>(null);
-  const top = useRef<HTMLDivElement>(null);
-  const pending = useRef<NavigationKind | null>(null);
-  const [query, setQuery] = useState('');
+/** One key per place; an invalid link is its own place (its path would read as Colombia). */
+const keyOf = (route: MapRoute) => (route.view === 'invalid' ? 'invalid' : routePath(route));
+
+/** What the sheet shows for one place (spec §2): title, half-height header and full-height body. */
+interface SheetText {
+  kicker: string;
+  title: string;
+  /** The half-height header, before the buttons. */
+  summary: ReactNode;
+  /** Button that opens the full sheet; none for a broken link. */
+  more?: string;
+  /** «Copiar enlace»: only a municipality. */
+  copy: boolean;
+  body: ReactNode;
+}
+
+/** Map page (TASK-09, spec of 2026-11-17): the full-screen map with the search, the crumbs and the sheet. */
+export function MapPage({
+  state,
+  route,
+  onNavigate,
+  onRetry,
+  defaultQuery = '',
+  defaultDetent,
+  prerendered = false,
+}: MapPageProps) {
+  const pageRef = useRef<HTMLElement>(null);
+  const titleRef = useRef<HTMLHeadingElement>(null);
+  const crumbsRef = useRef<HTMLElement>(null);
+  const pending = useRef<{ how: NavigationKind; crumb?: string } | null>(null);
+  const announceTimer = useRef(0);
+  const routeKey = keyOf(route);
+  const arrived = useRef(routeKey);
+  const [query, setQuery] = useState(defaultQuery);
   const [announcement, setAnnouncement] = useState('');
+  const [sheet, setSheet] = useState<SheetFrame>();
+  // Decision 35: the desktop panel's width, which the person drags; kept in this browser only.
+  const [panelWidth, setPanelWidthState] = useState(readPanelWidth);
+  const setPanelWidth = (width: number) => {
+    const next = clampPanelWidth(width, pageRef.current?.clientWidth ?? Number.POSITIVE_INFINITY);
+    setPanelWidthState(next);
+    try {
+      localStorage.setItem(PANEL_WIDTH_KEY, String(next));
+    } catch {
+      // Storage may be blocked: the width just is not remembered.
+    }
+  };
+  // The height belongs to a place: a new place starts over (half, or collapsed on a short screen).
+  const [sheetState, setSheetState] = useState<SheetState>({
+    key: defaultDetent ? routeKey : '',
+    detent: defaultDetent ?? 'half',
+    auto: !defaultDetent,
+  });
+  const detent = sheetState.key === routeKey ? sheetState.detent : 'half';
+  const setDetent = (next: Detent) => setSheetState({ key: routeKey, detent: next, auto: false });
+  const map = state.status === 'ready' ? state.map : undefined;
+  const crumbs = map ? crumbsFor(map, route) : [];
+  const known = map ? isKnownRoute(map, route) : false;
+  const view = map && fullscreenView(map, known ? route : { view: 'country' });
+  // A chosen municipality carries its name above it: that room is not free map (decision 32).
+  const roomAbove = view?.labels.some((l) => l.anchor === 'above') ?? false;
 
-  const go = (next: MapRoute, how: NavigationKind) => {
-    // Choosing the place already open changes no view: clear the search and return focus here,
-    // instead of leaving a pending choice for the next Back.
-    if (routePath(next) === routePath(route)) {
-      setQuery('');
-      title.current?.focus({ preventScroll: true });
+  // Decision 32, on arrival: once the sheet has measured the new place, before paint. Here and not in
+  // the sheet's callback, which runs before the page's own ref is attached.
+  useLayoutEffect(() => {
+    const page = pageRef.current;
+    if (!page) return;
+    const box = {
+      width: page.clientWidth,
+      height: page.clientHeight,
+      roomAbove,
+      country: route.view === 'country',
+    };
+    setSheetState((s) => arrivalState(s, sheet, routeKey, box));
+  }, [sheet, routeKey, roomAbove, route.view]);
+
+  const announce = (text: string) => {
+    clearTimeout(announceTimer.current);
+    setAnnouncement('');
+    announceTimer.current = window.setTimeout(() => setAnnouncement(text), ANNOUNCE_AGAIN_MS);
+  };
+  useEffect(() => () => clearTimeout(announceTimer.current), []);
+
+  // After a change of place: focus as the spec asks (§3) and «Seleccionado: …» in the status region.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: runs on each new place only
+  useEffect(() => {
+    if (arrived.current === routeKey) return;
+    arrived.current = routeKey;
+    const done = pending.current;
+    pending.current = null;
+    if (done?.how === 'choose') titleRef.current?.focus({ preventScroll: true });
+    if (done?.how === 'crumb' && done.crumb) {
+      const target = crumbFocus(crumbs, done.crumb);
+      const crumb = crumbsRef.current?.querySelector<HTMLElement>(`[data-crumb="${target}"]`);
+      (crumb ?? titleRef.current)?.focus({ preventScroll: true });
+    }
+    if (map) announce(selectedText(map, route));
+  }, [routeKey]);
+
+  const go = (next: MapRoute, how: NavigationKind, crumb?: string) => {
+    setQuery('');
+    if (keyOf(next) === routeKey) {
+      if (how === 'choose') titleRef.current?.focus({ preventScroll: true });
       return;
     }
-    pending.current = how;
+    pending.current = { how, crumb };
     onNavigate(next, how);
   };
-  /** Real links (they open in a new tab and can be shared), handled in place on a plain click. */
+
+  const titleBlock = (kicker: string | undefined, title: string) => (
+    <>
+      {kicker ? <p className={styles.kicker}>{kicker}</p> : null}
+      <h1 ref={titleRef} tabIndex={-1} className={styles.title}>
+        {title}
+      </h1>
+    </>
+  );
+  // The generated page cannot read this browser's storage: it takes the width from `--saved-panel-width`,
+  // which a script in its head sets before the first paint (src/server/pages.ts), so the panel and the map
+  // are already framed for it and do not jump when the app starts.
+  const pageStyle = {
+    '--map-panel-width': prerendered
+      ? `var(--saved-panel-width, ${PANEL_WIDTH}px)`
+      : `${panelWidth}px`,
+  };
+
+  if (!map || !view) {
+    return (
+      <main ref={pageRef} className={styles.page} style={pageStyle}>
+        <div className={styles.placeholder} />
+        <div className={styles.sheetArea}>
+          <BottomSheet
+            label="Ficha del lugar"
+            contentKey={routeKey}
+            detent={detent}
+            onDetentChange={setDetent}
+            onLayoutChange={setSheet}
+            title={titleBlock(undefined, KICKER)}
+            header={() =>
+              state.status === 'loading' ? (
+                <p role="status">Cargando el mapa…</p>
+              ) : (
+                <Alert
+                  variant="inline"
+                  tone="danger"
+                  title="Los datos del mapa no están disponibles en este momento."
+                  message="Vuelve a intentarlo en unos minutos."
+                  action={onRetry ? 'Reintentar' : undefined}
+                  onAction={onRetry}
+                />
+              )
+            }
+          >
+            {null}
+          </BottomSheet>
+        </div>
+      </main>
+    );
+  }
+
+  /** Table names are real links (new tab, shareable), handled in place on a plain click. */
   const link = (next: MapRoute) => ({
     href: routePath(next),
     onClick: (e: MouseEvent<HTMLAnchorElement>) => {
@@ -81,180 +300,342 @@ export function MapPage({ state, route, onNavigate, onRetry, fictionalLevel }: M
       go(next, 'choose');
     },
   });
-
-  const map = state.status === 'ready' ? state.map : undefined;
-  const known = map ? isKnownRoute(map, route) : true;
-  const routeKey = routePath(route);
-
-  // Every view change clears the search; choosing moves focus to the h1 and brings the figure (or
-  // the top of the map) into view, instantly with reduced motion.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: runs on each new view only
-  useEffect(() => {
-    setQuery('');
-    const how = pending.current;
-    pending.current = null;
-    if (!how) return;
-    title.current?.focus({ preventScroll: true });
-    const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-    if (figure.current && window.innerWidth < 960)
-      figure.current.scrollIntoView({ block: 'center', behavior: reduced ? 'auto' : 'smooth' });
-    else top.current?.scrollIntoView({ block: 'start', behavior: 'auto' });
-    setAnnouncement(`Seleccionado: ${title.current?.textContent ?? ''}`);
-  }, [routeKey]);
-
-  const view = useMemo(
-    () => (map && known ? mapView(map, route, fictionalLevel) : undefined),
-    [map, known, route, fictionalLevel],
-  );
-
-  if (state.status === 'loading') {
-    return (
-      <main className={styles.page}>
-        <Header kicker={KICKER} title={KICKER} />
-        <p className={styles.loading} role="status">
-          Cargando el mapa…
-        </p>
-      </main>
-    );
-  }
-  if (state.status === 'unavailable') {
-    return (
-      <main className={styles.page}>
-        <Header kicker={KICKER} title={KICKER} />
-        <Alert
-          variant="inline"
-          tone="danger"
-          title="Los datos del mapa no están disponibles en este momento."
-          message="Vuelve a intentarlo en unos minutos."
-          action={onRetry ? 'Reintentar' : undefined}
-          onAction={onRetry}
-        />
-      </main>
-    );
-  }
-  if (!map || !view) {
-    return (
-      <main className={styles.page}>
-        <Header kicker={KICKER} title="No encontramos ese lugar" />
-        <Alert
-          variant="inline"
-          tone="warning"
-          title="Ese enlace no corresponde a un municipio de Colombia."
-          message="Revisa el enlace o busca el municipio en el mapa."
-          action="Ver el mapa de Colombia"
-          actionHref="/mapa"
-        />
-      </main>
-    );
-  }
-
-  const { data } = map;
-  const window_ = data.departments.ventana;
-  const { sentence, caption, cutDate } = period(data.cut, window_.desde);
-  const sources = sourceParts(data.cut);
-  const sourceLine = (
-    <>
-      {sources.map((p, i) =>
-        // The parts repeat (« y »): the position is their identity.
-        p.url ? (
-          // biome-ignore lint/suspicious/noArrayIndexKey: fixed list, never reordered
-          <a key={i} href={p.url}>
-            {p.text}
-          </a>
-        ) : (
-          // biome-ignore lint/suspicious/noArrayIndexKey: fixed list, never reordered
-          <span key={i}>{p.text}</span>
+  const text: SheetText = known
+    ? sheetText(map, route, link)
+    : {
+        kicker: KICKER,
+        title: 'No encontramos ese lugar',
+        summary: (
+          <Alert
+            variant="inline"
+            tone="warning"
+            title="Ese enlace no corresponde a un municipio de Colombia."
+            message="Revisa el enlace o busca el municipio."
+            action="Ver el mapa de Colombia"
+            onAction={() => go({ view: 'country' }, 'choose')}
+          />
         ),
+        copy: false,
+        body: null,
+      };
+
+  // Decision 32 in the generated page (arrivalDetent's free area): the sheet arrives collapsed unless
+  // the map keeps MIN_FREE_MAP px free over it at half height. CSS alone: the map's minimum height.
+  const { phone } = freeInsets(false, roomAbove);
+  const style = prerendered
+    ? { ...pageStyle, '--static-map-min': `${phone.top + MIN_FREE_MAP + phone.bottom}px` }
+    : pageStyle;
+  const found = searchPlaces(map, query);
+  const sheetFull = sheet?.shown === 'full' && !sheet.isPanel;
+  // The results (or the 2-letter hint) cover the zoom: it hides while they are open (validation, item 10).
+  const searchOpen = query.trim().length > 0;
+
+  const handleSelect = (code: string) => {
+    const tap = mapTap(code, sheet, detent);
+    if ('detent' in tap) setDetent(tap.detent);
+    else go(tap.route, 'map');
+  };
+
+  return (
+    <main
+      ref={pageRef}
+      className={prerendered ? `${styles.page} ${styles.prerendered}` : styles.page}
+      style={style}
+    >
+      <p className={styles.srOnly} role="status">
+        {announcement}
+      </p>
+      <search className={styles.search} hidden={sheetFull}>
+        <Input
+          label={SEARCH_LABEL}
+          hideLabel
+          icon={<Icon name="search" />}
+          fullWidth
+          type="search"
+          autoComplete="off"
+          placeholder={SEARCH_PLACEHOLDER}
+          aria-controls={RESULTS_ID}
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+        />
+        <SearchResults
+          id={RESULTS_ID}
+          variant="floating"
+          query={query}
+          results={found.map((e) => ({ id: routePath(e.route), name: e.name, context: e.context }))}
+          onChoose={(id) => {
+            const entry = found.find((e) => routePath(e.route) === id);
+            if (entry) go(entry.route, 'choose');
+          }}
+        />
+      </search>
+      {crumbs.length ? (
+        <nav ref={crumbsRef} className={styles.crumbs} aria-label="Volver" hidden={sheetFull}>
+          {crumbs.map((c) => (
+            <Button
+              key={c.key}
+              data-crumb={c.key}
+              variant="secondary"
+              label={c.label}
+              // The department may be long: cut with an ellipsis at 320 px; the h1 has it whole.
+              truncate={c.key !== 'country'}
+              icon={c.key === 'country' ? <Icon name="arrow-left" /> : undefined}
+              onClick={() => go(c.to, 'crumb', c.key)}
+            />
+          ))}
+        </nav>
+      ) : null}
+      <MapWithLegend
+        variant="fullscreen"
+        {...view}
+        sheet={sheet}
+        panelWidth={panelWidth}
+        controlsHidden={searchOpen}
+        prerendered={prerendered}
+        onSelect={handleSelect}
+        onZoomToCountry={() => go({ view: 'country' }, 'map')}
+      />
+      <div className={styles.sheetArea}>
+        <BottomSheet
+          label="Ficha del lugar"
+          contentKey={routeKey}
+          prerendered={prerendered}
+          detent={prerendered && route.view === 'country' ? 'peek' : detent}
+          onDetentChange={setDetent}
+          onLayoutChange={setSheet}
+          title={titleBlock(text.kicker, text.title)}
+          header={({ shown, isPanel }) => (
+            <>
+              {text.summary}
+              {text.copy || (text.more && !isPanel) ? (
+                <div className={styles.actions}>
+                  {text.copy ? (
+                    <CopyLink path={routePath(route)} onCopied={() => announce('Enlace copiado')} />
+                  ) : null}
+                  {/* In the panel the table is already in view (spec §6): no height button. */}
+                  {text.more && !isPanel ? (
+                    <Button
+                      data-height-button
+                      variant="secondary"
+                      label={shown === 'full' ? 'Volver al mapa' : text.more}
+                      aria-expanded={shown === 'full'}
+                      onClick={() => setDetent(shown === 'full' ? lowered(detent) : 'full')}
+                    />
+                  ) : null}
+                </div>
+              ) : null}
+            </>
+          )}
+        >
+          <div className={styles.body}>{text.body}</div>
+        </BottomSheet>
+      </div>
+      {prerendered ? null : (
+        // A separator that is also the handle: drag it, or use the arrow keys, Home and End.
+        // biome-ignore lint/a11y/useSemanticElements: an <hr> cannot take focus or be dragged
+        <div
+          role="separator"
+          aria-orientation="vertical"
+          aria-label="Ancho de la ficha"
+          aria-valuemin={PANEL_MIN}
+          aria-valuemax={PANEL_MAX}
+          aria-valuenow={panelWidth}
+          tabIndex={0}
+          className={styles.divider}
+          onPointerDown={(e) => {
+            e.currentTarget.setPointerCapture(e.pointerId);
+          }}
+          onPointerMove={(e) => {
+            if (!e.currentTarget.hasPointerCapture(e.pointerId)) return;
+            const right = pageRef.current?.getBoundingClientRect().right ?? e.clientX;
+            setPanelWidth(right - e.clientX);
+          }}
+          onKeyDown={(e) => {
+            const step = { ArrowLeft: PANEL_STEP, ArrowRight: -PANEL_STEP }[e.key];
+            if (step !== undefined) setPanelWidth(panelWidth + step);
+            else if (e.key === 'Home') setPanelWidth(PANEL_MIN);
+            else if (e.key === 'End') setPanelWidth(PANEL_MAX);
+            else return;
+            e.preventDefault();
+          }}
+        />
       )}
+    </main>
+  );
+}
+
+type Link = (next: MapRoute) => {
+  href: string;
+  onClick: (e: MouseEvent<HTMLAnchorElement>) => void;
+};
+
+/** «del Archipiélago de San Andrés…», «de Antioquia»: the archipelago's name takes an article. */
+const of = (name: string, code: string) => (code === ARCHIPELAGO ? `del ${name}` : `de ${name}`);
+
+/** The sheet of a known place: Colombia, a department or a municipality (spec §2 and §6). */
+function sheetText(map: PreparedMap, route: MapRoute, link: Link): SheetText {
+  const { cut, departments } = map.data;
+  const { sentence, caption, cutDate } = period(cut, departments.ventana.desde);
+  const shortSource = `Fuentes: SECOP II y SECOP I, DANE. Datos al ${cutDate}.`;
+  const placeSource = `${shortSource} ${RISK_NOTE}`;
+  const tableCaption = `En orden alfabético. ${shortSource}`;
+  const sources = (
+    <>
+      <h2>Fuentes</h2>
+      <p className={styles.sources}>
+        {sourceParts(cut).map((p, i) =>
+          // The parts repeat (« y »): the position is their identity.
+          p.url ? (
+            // biome-ignore lint/suspicious/noArrayIndexKey: fixed list, never reordered
+            <a key={i} href={p.url}>
+              {p.text}
+            </a>
+          ) : (
+            // biome-ignore lint/suspicious/noArrayIndexKey: fixed list, never reordered
+            <span key={i}>{p.text}</span>
+          ),
+        )}
+      </p>
+      <p className={styles.note}>{GREY_NOTE}</p>
     </>
   );
-  const risk = (code: string) => (fictionalLevel ? fictionalLevel(code) : undefined);
 
-  // ----- head, back link, figure, counts and table of the current view -----
-  let back: ReactNode = null;
-  let kicker = KICKER;
-  let heading: string;
-  let dek: string | undefined;
-  let keyFigure: ReactNode = null;
-  let countsTitle: string;
-  let counts: { value: number; label: string; note?: string }[];
-  let tableTitle: string;
-  let tableCaption: string;
-  let rows: DataTableRow[];
-  let columns: { label: string; numeric?: boolean }[];
-  let current: string | undefined;
-  let department: string | undefined;
-
-  if (route.view === 'country') {
-    const n = data.departments.nacional;
-    heading = `${formatNumber(n.contratos, 0)} contratos públicos firmados en Colombia`;
-    dek = `Del 1 ene ${window_.desde} al ${cutDate}. Elige un departamento para ver sus municipios. ${
-      fictionalLevel
-        ? 'Los colores de riesgo de esta vista previa son ficticios.'
-        : 'Este mapa muestra dónde se firmaron los contratos; todavía no mide riesgo.'
-    }`;
-    countsTitle = 'Dónde quedó cada contrato';
-    counts = [
-      {
-        value: n.contratosEnMunicipios,
-        label: 'en un municipio',
-        note: 'sabemos en qué municipio se firmaron',
-      },
-      {
-        value: n.contratosSoloDepartamento,
-        label: 'solo en un departamento',
-        note: 'sabemos el departamento, no el municipio',
-      },
-      { value: n.contratosSinLugar, label: 'sin lugar identificado', note: 'no sabemos dónde' },
-    ];
-    tableTitle = 'Tabla de departamentos';
-    tableCaption = `Contratos por departamento, ${caption}`;
-    columns = [
-      { label: 'Departamento' },
-      { label: 'En sus municipios', numeric: true },
-      { label: 'Solo en el departamento', numeric: true },
-      ...(fictionalLevel ? [{ label: 'Riesgo (ficticio)' }] : []),
-    ];
-    rows = [...data.departments.departamentos].sort(byName).map((d) => ({
+  if (route.view !== 'department' && route.view !== 'municipality') {
+    const n = departments.nacional;
+    const rows: DataTableRow[] = [...departments.departamentos].sort(byName).map((d) => ({
       id: d.codigo,
       header: <a {...link(departmentRoute(d.codigo))}>{d.nombre}</a>,
       cells: [
         formatNumber(d.contratosEnMunicipios, 0),
         formatNumber(d.contratosSoloDepartamento, 0),
-        ...(fictionalLevel ? [<FictionalTag key="r" level={fictionalLevel(d.codigo)} />] : []),
       ],
     }));
-  } else {
-    const municipality =
-      route.view === 'municipality' ? map.municipalities.get(route.code) : undefined;
-    department =
-      municipality?.departamento.codigo ?? (route.view === 'department' ? route.code : '');
-    const dep = map.departments.get(department);
-    const bogota = municipality?.codigo === BOGOTA;
-    const name = dep?.nombre ?? department;
-    current = municipality?.codigo;
-    if (municipality) {
-      const type =
-        municipality.tipo in AREA_TYPE
-          ? ` · ${AREA_TYPE[municipality.tipo as keyof typeof AREA_TYPE]}`
-          : '';
-      kicker = `${bogota ? 'Distrito Capital' : name} · Código DANE ${municipality.codigo}${type}`;
-      heading = municipality.nombre;
-      back = bogota ? (
-        <BackLink {...link({ view: 'country' })}>Colombia</BackLink>
-      ) : (
-        <BackLink {...link({ view: 'department', code: department })}>{name}</BackLink>
-      );
-      const value = municipality.contratosUbicados;
-      const level = value === null ? undefined : risk(municipality.codigo);
-      keyFigure = (
-        <div className={styles.figure} ref={figure}>
-          {level ? (
-            <p className={styles.fictional}>
-              <RiskTag level={level} large />
-              <span>(ficticio)</span>
-            </p>
-          ) : null}
+    return {
+      kicker: KICKER,
+      title: `${formatNumber(n.contratos, 0)} contratos públicos firmados en Colombia`,
+      summary: (
+        <>
+          <p className={styles.lead}>
+            Del 1 ene {departments.ventana.desde} al {cutDate}. Elige un departamento. {RISK_NOTE}
+          </p>
+          <p className={styles.note}>{shortSource}</p>
+        </>
+      ),
+      more: 'Ver cifras, tabla y fuentes',
+      copy: false,
+      body: (
+        <>
+          <h2>Dónde quedó cada contrato</h2>
+          <Counter
+            layout="adaptive"
+            counts={[
+              {
+                value: n.contratosEnMunicipios,
+                label: 'en un municipio',
+                note: GLOSS.municipality,
+              },
+              {
+                value: n.contratosSoloDepartamento,
+                label: 'sin municipio identificado',
+                note: GLOSS.department,
+              },
+              { value: n.contratosSinLugar, label: 'sin lugar identificado', note: GLOSS.nowhere },
+            ]}
+          />
+          <h2>Contratos por departamento, {caption}</h2>
+          <DataTable
+            caption={tableCaption}
+            columns={[
+              { label: 'Departamento' },
+              { label: 'En municipios', numeric: true },
+              { label: 'Sin municipio', numeric: true },
+            ]}
+            rows={rows}
+            stickyHeader
+          />
+          {sources}
+        </>
+      ),
+    };
+  }
+
+  const municipality =
+    route.view === 'municipality' ? map.municipalities.get(route.code) : undefined;
+  const code = municipality?.departamento.codigo ?? route.code;
+  const dep = map.departments.get(code);
+  const name = dep?.nombre ?? municipality?.departamento.nombre ?? code;
+  const bogota = municipality?.codigo === BOGOTA;
+  const islands = code === ARCHIPELAGO ? <p className={styles.note}>{ISLANDS_NOTE}</p> : null;
+  const list = [...(map.byDepartment.get(code) ?? [])].sort(byName);
+  const rows: DataTableRow[] = list.map((m) => ({
+    id: m.codigo,
+    header: <a {...link({ view: 'municipality', code: m.codigo })}>{m.nombre}</a>,
+    cells: [
+      m.contratosUbicados === null ? <NoData key="n" /> : formatNumber(m.contratosUbicados, 0),
+    ],
+  }));
+  // Without the department in the cut its figures are «Sin datos», never 0.
+  let counts: ReactNode = (
+    <p className={styles.legend}>
+      <LegendKey kind="unknown" />
+      {NO_DATA_LEGEND}
+    </p>
+  );
+  if (dep && bogota)
+    counts = (
+      <Counter
+        layout="adaptive"
+        counts={[
+          {
+            value: dep.contratosSoloDepartamento,
+            label: 'registrados solo como Bogotá, D.C. (departamento)',
+            note: GLOSS.department,
+          },
+        ]}
+      />
+    );
+  else if (dep)
+    counts = (
+      <Counter
+        layout="adaptive"
+        counts={[
+          {
+            value: dep.contratosEnMunicipios,
+            label: `en los municipios ${of(name, code)}`,
+            note: GLOSS.municipality,
+          },
+          {
+            value: dep.contratosSoloDepartamento,
+            label: 'sin municipio identificado',
+            note: GLOSS.department,
+          },
+        ]}
+      />
+    );
+  const table = (
+    <>
+      <h2>
+        Contratos por municipio {code === ARCHIPELAGO ? `del ${name}` : `en ${name}`}, {caption}
+      </h2>
+      <DataTable
+        caption={tableCaption}
+        columns={[{ label: 'Municipio' }, { label: 'Contratos ubicados', numeric: true }]}
+        rows={rows}
+        currentRowId={municipality?.codigo}
+        stickyHeader
+      />
+    </>
+  );
+
+  if (municipality) {
+    const value = municipality.contratosUbicados;
+    return {
+      kicker: `${bogota ? 'Distrito Capital' : name} · DANE ${municipality.codigo}${
+        AREA_TYPE[municipality.tipo] ?? ''
+      }`,
+      title: municipality.nombre,
+      summary: (
+        <>
           <KeyFigure
             value={value}
             context={
@@ -262,214 +643,60 @@ export function MapPage({ state, route, onNavigate, onRetry, fictionalLevel }: M
                 ? `No encontramos contratos ubicados con certeza en este lugar ${sentence}.`
                 : `contratos firmados ${sentence} y ubicados en ${municipality.nombre}`
             }
-            source={`SECOP II y SECOP I · ${caption} · datos al ${cutDate}`}
+            source={placeSource}
           />
-          <CopyLink path={routePath(route)} />
-        </div>
-      );
-    } else {
-      kicker = `Código DANE ${department}`;
-      heading = name;
-      dek = `Del 1 ene ${window_.desde} al ${cutDate}. Elige un municipio para ver cuántos contratos tiene.`;
-      back = <BackLink {...link({ view: 'country' })}>Colombia</BackLink>;
-    }
-    countsTitle = `Contratos de ${name}`;
-    counts = bogota
-      ? [
-          {
-            value: dep?.contratosSoloDepartamento ?? 0,
-            label: 'registrados solo como Bogotá, D.C. (departamento)',
-          },
-        ]
-      : [
-          {
-            value: dep?.contratosEnMunicipios ?? 0,
-            label: 'en sus municipios',
-            note: 'sabemos en qué municipio se firmaron',
-          },
-          {
-            value: dep?.contratosSoloDepartamento ?? 0,
-            label: 'solo en el departamento',
-            note: 'sabemos el departamento, no el municipio',
-          },
-        ];
-    tableTitle = 'Tabla de municipios';
-    tableCaption = `Contratos por municipio en ${name}, ${caption}`;
-    columns = [
-      { label: 'Municipio' },
-      { label: 'Código DANE' },
-      { label: 'Contratos ubicados', numeric: true },
-      ...(fictionalLevel ? [{ label: 'Riesgo (ficticio)' }] : []),
-    ];
-    rows = [...(map.byDepartment.get(department) ?? [])].sort(byName).map((m) => {
-      const noData = m.contratosUbicados === null;
-      return {
-        id: m.codigo,
-        header: <a {...link({ view: 'municipality', code: m.codigo })}>{m.nombre}</a>,
-        cells: [
-          m.codigo,
-          noData ? <NoData key="n" /> : formatNumber(m.contratosUbicados ?? 0, 0),
-          ...(fictionalLevel
-            ? [
-                noData ? (
-                  <NoData key="r" />
-                ) : (
-                  <FictionalTag key="r" level={fictionalLevel(m.codigo)} />
-                ),
-              ]
-            : []),
-        ],
-      };
-    });
+          {islands}
+        </>
+      ),
+      // Decision 31: Bogotá has no table (one row would repeat the key figure).
+      more: bogota ? 'Ver más cifras y fuentes' : `Ver ${name} y tabla`,
+      copy: true,
+      body: (
+        <>
+          <h2>{bogota ? 'Dónde quedó cada contrato' : name}</h2>
+          {counts}
+          {bogota ? null : table}
+          {sources}
+        </>
+      ),
+    };
   }
 
-  const legend = fictionalLevel ? (
-    <MapLegend
-      title="Contratos con señales · datos ficticios"
-      items={[
-        { fill: 'low', label: 'Bajo' },
-        { fill: 'medium', label: 'Intermedio' },
-        { fill: 'high', label: 'Alto' },
-        ...(view.withUnknown ? [{ fill: 'unknown' as const, label: 'Sin datos' }] : []),
-      ]}
-      notes={[
-        'Vista previa de la fase 2: los niveles de riesgo son inventados para mostrar el diseño. Las cifras de contratos sí son reales. El dato de riesgo llegará con la metodología (TASK-07).',
-        ...(view.archipelago ? [ARCHIPELAGO_NOTE] : []),
-      ]}
-    />
-  ) : (
-    <MapLegend
-      title="Qué muestra el mapa"
-      items={[
-        { fill: 'neutral', label: 'Territorio con contratos ubicados' },
-        ...(view.withUnknown
-          ? [
-              {
-                fill: 'unknown' as const,
-                label: 'Sin datos: no hay contratos ubicados con certeza',
-              },
-            ]
-          : []),
-      ]}
-      notes={[
-        'Todavía no hay color por riesgo. Gris no quiere decir «sin problemas».',
-        ...(view.archipelago ? [ARCHIPELAGO_NOTE] : []),
-      ]}
-    />
-  );
-
-  const found = searchPlaces(map, query);
-
-  return (
-    <main className={styles.page} ref={top}>
-      <p className={styles.srOnly} role="status">
-        {announcement}
-      </p>
-      {back ? <div className={styles.back}>{back}</div> : null}
-      <Header kicker={kicker} title={heading} dek={dek} titleRef={title} />
-      {fictionalLevel ? (
-        <Alert
-          variant="inline"
-          tone="warning"
-          title="Vista previa con datos ficticios."
-          message="Los colores y niveles de riesgo de este mapa son inventados para mostrar cómo se verá la fase 2. Las cifras de contratos son reales."
-        />
-      ) : null}
-      <div className={styles.body}>
-        <section className={styles.mapbox} aria-label="Mapa">
-          <MapWithLegend
-            {...view}
-            transitionName="map-zoom"
-            onSelect={(code) =>
-              go(
-                route.view === 'country' ? departmentRoute(code) : { view: 'municipality', code },
-                'choose',
-              )
-            }
-          />
-        </section>
-        <div className={styles.legend}>{legend}</div>
-        <div className={styles.side}>
-          <div className={styles.search}>
-            <search className={styles.searchField}>
-              <Input
-                label="Busca tu municipio o departamento"
-                type="search"
-                autoComplete="off"
-                placeholder="Ej.: Medellín"
-                aria-controls="map-search-results"
-                help={query.trim().length < 2 ? 'Escribe al menos 2 letras.' : undefined}
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-              />
-              <SearchResults
-                id="map-search-results"
-                query={query}
-                results={found.map((e) => ({
-                  id: routePath(e.route),
-                  name: e.name,
-                  context: e.context,
-                }))}
-                onChoose={(id) => {
-                  const entry = found.find((e) => routePath(e.route) === id);
-                  if (entry) go(entry.route, 'choose');
-                }}
-              />
-            </search>
-          </div>
-          {keyFigure}
-          <section className={styles.counts} aria-labelledby="map-counts-title">
-            <h2 id="map-counts-title">{countsTitle}</h2>
-            <Counter counts={counts} layout="adaptive" />
-          </section>
-          <p className={styles.source}>{sourceLine}</p>
-        </div>
-      </div>
-      <section className={styles.table} aria-labelledby="map-table-title">
-        <h2 id="map-table-title">{tableTitle}</h2>
-        <DataTable caption={tableCaption} columns={columns} rows={rows} currentRowId={current} />
-        <p className={styles.source}>{sourceLine}</p>
-      </section>
-    </main>
-  );
-}
-
-function Header({
-  kicker,
-  title,
-  dek,
-  titleRef,
-}: {
-  kicker: string;
-  title: string;
-  dek?: string;
-  titleRef?: React.Ref<HTMLHeadingElement>;
-}) {
-  return (
-    <header className={styles.head}>
-      <p className={styles.kicker}>{kicker}</p>
-      <h1 ref={titleRef} tabIndex={-1}>
-        {title}
-      </h1>
-      {dek ? <p className={styles.dek}>{dek}</p> : null}
-    </header>
-  );
-}
-
-function BackLink({
-  children,
-  ...props
-}: {
-  children: ReactNode;
-  href: string;
-  onClick: (e: MouseEvent<HTMLAnchorElement>) => void;
-}) {
-  return (
-    <a className={styles.backLink} {...props}>
-      <Icon name="arrow-left" />
-      {children}
-    </a>
-  );
+  const withUnknown = list.some((m) => m.contratosUbicados === null);
+  return {
+    kicker: `DANE ${code}`,
+    title: name,
+    summary: (
+      <>
+        {dep ? (
+          <p className={styles.lead}>Contratos firmados {sentence}. Elige un municipio.</p>
+        ) : (
+          <p className={styles.legend}>
+            <LegendKey kind="unknown" />
+            {NO_DATA_LEGEND}
+          </p>
+        )}
+        {islands}
+        {withUnknown && dep ? (
+          <p className={styles.legend}>
+            <LegendKey kind="unknown" />
+            {NO_DATA_LEGEND}
+          </p>
+        ) : null}
+        <p className={styles.note}>{placeSource}</p>
+      </>
+    ),
+    more: 'Ver tabla y fuentes',
+    copy: false,
+    body: (
+      <>
+        <h2>Dónde quedó cada contrato</h2>
+        {counts}
+        {table}
+        {sources}
+      </>
+    ),
+  };
 }
 
 function NoData() {
@@ -481,31 +708,22 @@ function NoData() {
   );
 }
 
-function FictionalTag({ level }: { level: 'low' | 'medium' | 'high' }) {
-  return (
-    <span className={styles.fictional}>
-      <RiskTag level={level} />
-      <span>(ficticio)</span>
-    </span>
-  );
-}
-
 /** «Copiar enlace» → «Enlace copiado»; if the clipboard is refused, the URL in a read-only field. */
-function CopyLink({ path }: { path: string }) {
+function CopyLink({ path, onCopied }: { path: string; onCopied: () => void }) {
   const [status, setStatus] = useState<'idle' | 'copied' | 'manual'>('idle');
   const url = typeof window === 'undefined' ? path : `${window.location.origin}${path}`;
   // biome-ignore lint/correctness/useExhaustiveDependencies: a new place starts a new copy
   useEffect(() => setStatus('idle'), [path]);
   return (
-    <div className={styles.copy}>
+    <>
       <Button
         variant="secondary"
-        label="Copiar enlace"
-        icon={<Icon name="link" />}
+        label={status === 'copied' ? 'Enlace copiado' : 'Copiar enlace'}
         onClick={async () => {
           try {
             await navigator.clipboard.writeText(url);
             setStatus('copied');
+            onCopied();
           } catch {
             setStatus('manual');
           }
@@ -521,11 +739,7 @@ function CopyLink({ path }: { path: string }) {
           autoFocus
           onFocus={(e) => e.currentTarget.select()}
         />
-      ) : (
-        <span className={styles.copied} role="status">
-          {status === 'copied' ? 'Enlace copiado' : ''}
-        </span>
-      )}
-    </div>
+      ) : null}
+    </>
   );
 }

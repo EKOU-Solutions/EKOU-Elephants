@@ -1,10 +1,16 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { flushSync } from 'react-dom';
+import { useEffect, useMemo, useState } from 'react';
+import { placeTitle } from '../../../../pages-site/src/lib/site';
 import type { CorteVigente, DepartamentosDelCorte, MunicipiosDelCorte } from '../domain/mapa';
 import type { TopoJson } from './geometry';
 import { MapPage, type MapPageState } from './MapPage/MapPage';
-import { withMapZoom } from './mapZoom';
-import { type MapRoute, type PreparedMap, parseRoute, prepareMap, routePath } from './mapModel';
+import {
+  canonicalPath,
+  type MapRoute,
+  type PreparedMap,
+  parseRoute,
+  prepareMap,
+  routePath,
+} from './mapModel';
 
 type Fetch = (
   url: string,
@@ -44,24 +50,53 @@ export async function loadMap(
   return prepareMap({ cut, departments, municipalities, topology });
 }
 
+// A generated page waits this long for the data before the app takes over anyway (it then loads them).
+const INITIAL_TIMEOUT_MS = 8000;
+
+/**
+ * The state to start with when `#root` already shows a place's generated page (ADR 0003): the data
+ * are read first, so the app replaces that page with the same place, never with «Cargando el mapa…».
+ * If they fail, the usual error; if they take longer than `timeout`, nothing: the app mounts and loads
+ * them itself (its usual loading state), so the page never stays static. Without a generated page (the
+ * SPA), nothing: the screen loads them.
+ */
+export async function initialState(
+  generated: boolean,
+  fetcher: Fetch = fetch,
+  timeout = INITIAL_TIMEOUT_MS,
+): Promise<MapPageState | undefined> {
+  if (!generated) return undefined;
+  const signal = AbortSignal.timeout(timeout);
+  return loadMap(signal, fetcher).then(
+    (map) => ({ status: 'ready', map }),
+    () => (signal.aborted ? undefined : { status: 'unavailable' }),
+  );
+}
+
+export interface MapScreenProps {
+  /** Data already read (`initialState`): the first load is skipped; «Reintentar» still loads. */
+  initial?: MapPageState;
+  /** What the person had typed in the generated page's search before the app took over. */
+  initialQuery?: string;
+}
+
 /**
  * The map page in the app: reads the cut from our API (contract: docs/design/pages/map/contract.md)
  * and the geometry file it names, and keeps the view in the address bar so every place has a link.
  */
-export function MapScreen() {
+export function MapScreen({ initial, initialQuery }: MapScreenProps) {
   const [route, setRoute] = useState<MapRoute>(() => {
-    const parsed = parseRoute(window.location.pathname);
     // One address per place: «/mapa/departamento/11» or a trailing slash become the canonical link.
-    const canonical = parsed.view === 'invalid' ? undefined : routePath(parsed);
-    if (canonical && canonical !== window.location.pathname)
-      window.history.replaceState(null, '', canonical);
-    return parsed;
+    const canonical = canonicalPath(window.location.pathname);
+    if (canonical) window.history.replaceState(null, '', canonical);
+    return parseRoute(window.location.pathname);
   });
-  const [state, setState] = useState<MapPageState>({ status: 'loading' });
+  const [state, setState] = useState<MapPageState>(initial ?? { status: 'loading' });
   const [attempt, setAttempt] = useState(0);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: `attempt` re-runs the load on «Reintentar»
+  // `attempt` re-runs the load on «Reintentar»; with data already read, the first load is skipped.
   useEffect(() => {
+    if (initial && attempt === 0) return;
     const control = new AbortController();
     const { signal } = control;
     setState({ status: 'loading' });
@@ -72,46 +107,35 @@ export function MapScreen() {
       },
     );
     return () => control.abort();
-  }, [attempt]);
+  }, [attempt, initial]);
 
-  // The current view, for the zoom between views (read when navigating, not rendered).
-  const current = useRef(route);
-  current.current = route;
-  /** Shows a new view, zooming in or out when it moves between Colombia and a department. */
-  const show = useCallback((next: MapRoute) => {
-    withMapZoom(current.current, next, () => flushSync(() => setRoute(next)));
-  }, []);
-
-  const navigate = useCallback(
-    (next: MapRoute) => {
-      const path = routePath(next);
-      if (path !== window.location.pathname) window.history.pushState(null, '', path);
-      show(next);
-    },
-    [show],
-  );
+  // Each place adds a history entry; the map flies to it (FullscreenMap), and Back flies back.
+  const navigate = (next: MapRoute) => {
+    const path = routePath(next);
+    if (path !== window.location.pathname) window.history.pushState(null, '', path);
+    setRoute(next);
+  };
 
   useEffect(() => {
-    const onPop = () => show(parseRoute(window.location.pathname));
+    const onPop = () => setRoute(parseRoute(window.location.pathname));
     window.addEventListener('popstate', onPop);
     return () => window.removeEventListener('popstate', onPop);
-  }, [show]);
+  }, []);
 
-  // The tab says where you are: «Medellín · Mapa de contratación pública».
-  const place = useMemo(() => {
-    if (state.status !== 'ready') return undefined;
-    if (route.view === 'municipality') return state.map.municipalities.get(route.code)?.nombre;
-    if (route.view === 'department') return state.map.departments.get(route.code)?.nombre;
-    return undefined;
-  }, [state, route]);
+  // The tab says where you are, with the generated page's own title, so it never changes on mount.
+  const title = useMemo(
+    () => (state.status === 'ready' ? placeTitle(state.map, route) : undefined),
+    [state, route],
+  );
   useEffect(() => {
-    document.title = `${place ? `${place} · ` : ''}Mapa de contratación pública · EKOU Elephants`;
-  }, [place]);
+    document.title = title ?? 'Mapa de contratación pública · EKOU Elephants';
+  }, [title]);
 
   return (
     <MapPage
       state={state}
       route={route}
+      defaultQuery={initialQuery}
       onNavigate={navigate}
       onRetry={() => setAttempt((n) => n + 1)}
     />

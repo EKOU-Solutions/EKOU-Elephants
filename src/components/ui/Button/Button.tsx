@@ -20,6 +20,11 @@ type Props = Omit<
   loading?: boolean;
   /** Texto mientras carga («Descargando CSV…»). Si no se da, se conserva `label`. */
   loadingLabel?: string;
+  /**
+   * Recorta la etiqueta con puntos suspensivos si no cabe (migas del mapa a 320 px, v1.6.0). El texto
+   * entero sigue siendo el nombre accesible; úsalo solo si también está completo a la vista en otro lugar.
+   */
+  truncate?: boolean;
   /** `submit` solo dentro de un formulario; por defecto no envía nada. */
   type?: 'button' | 'submit' | 'reset';
 };
@@ -33,6 +38,7 @@ export function Button({
   disabled,
   loading,
   loadingLabel,
+  truncate,
   type = 'button',
   onClick,
   ...button
@@ -45,11 +51,15 @@ export function Button({
     }
     onClick?.(event);
   };
+  const current = loading ? (loadingLabel ?? label) : label;
+  const text = truncate ? <span className={styles.label}>{current}</span> : current;
   return (
     <button
       aria-label={hideLabel ? label : undefined}
       {...button}
-      className={`${styles.button} ${styles[variant]}${hideLabel ? ` ${styles.iconOnly}` : ''}`}
+      className={`${styles.button} ${styles[variant]}${hideLabel ? ` ${styles.iconOnly}` : ''}${
+        truncate ? ` ${styles.truncate}` : ''
+      }`}
       type={type}
       disabled={disabled}
       aria-disabled={loading || undefined}
@@ -63,7 +73,7 @@ export function Button({
           {icon}
         </span>
       ) : null}
-      {hideLabel ? null : loading ? (loadingLabel ?? label) : label}
+      {hideLabel ? null : text}
     </button>
   );
 }

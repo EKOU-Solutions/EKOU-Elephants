@@ -5,7 +5,10 @@
   "compatibility_flags": ["nodejs_compat"],
   "assets": {
     "not_found_handling": "single-page-application",
-    "run_worker_first": ["/api", "/api/*"]
+    // The Worker reads index.html (its scripts) to serve the generated page of each place (ADR 0003).
+    "binding": "ASSETS",
+    // /mapa… and /sitemap.xml: the generated page from the data Worker, or the SPA as always.
+    "run_worker_first": ["/api", "/api/*", "/mapa", "/mapa/*", "/sitemap.xml"]
   },
   "observability": {
     "enabled": true

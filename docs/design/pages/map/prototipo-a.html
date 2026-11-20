@@ -25,14 +25,16 @@ button,input{font:inherit;color:inherit}
 .map .away{fill:var(--el-color-surface-subtle);stroke:var(--el-color-line)}
 .map .open{fill:none;stroke:none;pointer-events:none}
 .map .nodata{fill:url(#hatch)}
-.map path:hover{stroke:var(--el-color-control-border);stroke-width:1.5}
+.map .munis .away{fill:var(--el-color-surface-subtle);stroke:var(--el-color-line)}
+/* Spec decision 25: the place you are about to switch to gets a softer outline than the chosen one. */
+#world path[data-c]:not(.sel):hover,#world path.hot:not(.sel){stroke:var(--el-color-control-border);stroke-width:1.5}
 .map .sel{stroke:var(--el-color-text);stroke-width:2.5}
 .map .outline{fill:none;stroke:var(--el-color-control-border);stroke-width:1.5;pointer-events:none}
 .munis{transition:opacity .35s ease}.munis.in{opacity:0}
 .label{position:absolute;left:0;top:0;padding:0 var(--el-space-4);font-size:var(--el-size-small);font-weight:var(--el-weight-emphasis);background:var(--el-color-surface);border:var(--el-rule) solid var(--el-color-text);pointer-events:none;white-space:nowrap;will-change:transform}
 .ctl{display:inline-flex;align-items:center;justify-content:center;min-height:var(--el-control-height);padding:0 var(--el-space-12);border:var(--el-rule) solid var(--el-color-control-border);border-radius:var(--el-control-radius);background:var(--el-color-surface);font-size:var(--el-size-small);font-weight:var(--el-weight-emphasis);cursor:pointer}
 .ctl:hover{border-color:var(--el-color-text)}
-.top{position:absolute;left:12px;right:12px;top:12px}
+.top{position:absolute;left:12px;right:12px;top:12px;z-index:2}
 .top label{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
 .top input{width:100%;height:var(--el-control-height);padding:0 var(--el-space-12);border:var(--el-rule) solid var(--el-color-control-border);border-radius:var(--el-control-radius);background:var(--el-color-surface);font-size:var(--el-size-body)}
 .top input::placeholder{color:var(--el-color-text-muted)}
@@ -45,7 +47,18 @@ button,input{font:inherit;color:inherit}
 .zoom{position:absolute;right:12px;top:64px;display:grid;gap:var(--el-space-8)}
 .zoom .ctl{width:var(--el-control-height);padding:0;font-size:var(--el-size-section);font-weight:var(--el-weight-body)}
 .zoom .all{font-size:11px;line-height:1.1;font-weight:var(--el-weight-emphasis)}
-.inset{position:absolute;left:12px;width:84px;min-height:64px;padding:var(--el-space-4);border:var(--el-rule) dashed var(--el-color-control-border);border-radius:0;background:var(--el-color-surface);font-size:11px;line-height:1.2;font-weight:var(--el-weight-body);text-align:left;align-items:flex-end;justify-content:flex-start;color:var(--el-color-text-muted);transition:bottom .32s cubic-bezier(.2,.7,.2,1)}
+/* Archipelago inset (spec decision 24): enlarged islands at their approximate place, inside the map. */
+.map .archframe{fill:var(--el-color-surface);stroke:var(--el-color-control-border);stroke-width:1;stroke-dasharray:4 3;vector-effect:non-scaling-stroke;cursor:pointer}
+.archlabel,.isllabel{position:absolute;left:0;top:0;max-width:96px;font-size:11px;line-height:1.2;color:var(--el-color-text-muted);pointer-events:none;will-change:transform}
+.isllabel{max-width:none;white-space:nowrap;font-size:var(--el-size-small);color:var(--el-color-text);background:var(--el-color-surface);padding:0 var(--el-space-4)}
+/* Outside the country view the archipelago stays reachable as a fixed corner inset (user, 2026-11-17). */
+.archmini{position:absolute;left:12px;top:116px;width:68px;padding:var(--el-space-4);display:flex;flex-direction:column;align-items:center;gap:2px;border:var(--el-rule) dashed var(--el-color-control-border);border-radius:0;background:var(--el-color-surface);cursor:pointer;font-size:11px;line-height:1.15;color:var(--el-color-text-muted);text-align:center}
+.archmini:hover{border-color:var(--el-color-text)}
+.archmini svg{width:100%;height:56px;pointer-events:none}
+.archmini path{fill:var(--el-color-line);stroke:var(--el-color-map-border);stroke-width:1;vector-effect:non-scaling-stroke}
+.archmini span{pointer-events:none}
+.device.desk .archmini{top:72px}
+.device.sheetfull .crumbs,.device.sheetfull .zoom,.device.sheetfull .archmini,.device.sheetfull .label{visibility:hidden}
 .sheet{position:absolute;left:0;right:0;bottom:0;display:flex;flex-direction:column;background:var(--el-color-surface);border-top:var(--el-rule-strong) solid var(--el-color-line-strong);border-radius:var(--el-space-12) var(--el-space-12) 0 0;transition:transform .32s cubic-bezier(.2,.7,.2,1);will-change:transform}
 .sheet.dragging{transition:none}
 .grip{flex:none;height:28px;width:100%;border:0;background:none;cursor:grab;touch-action:none;display:flex;align-items:center;justify-content:center}
@@ -73,24 +86,43 @@ td button{min-height:var(--el-control-height);padding:0;border:0;background:none
 tr.current button,tr.current td{font-weight:var(--el-weight-heading)}
 .status{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
 [hidden]{display:none!important}
-@media (prefers-reduced-motion:reduce){.sheet,.inset,.munis{transition:none}}
+@media (prefers-reduced-motion:reduce){.sheet,.munis{transition:none}}
+/* Desktop (spec section 5, decision 22): the sheet becomes a fixed 400 px panel on the right; the map fills the rest. */
+.modes{display:flex;gap:var(--el-space-8);margin:var(--el-space-12) 0}
+.modes [aria-pressed="true"]{background:var(--el-color-text);color:var(--el-color-surface);border-color:var(--el-color-text)}
+body.desk{flex-direction:column;gap:var(--el-space-16);justify-content:flex-start}
+body.desk .notes{max-width:none;width:min(1280px,100%);display:flex;align-items:center;justify-content:space-between;gap:var(--el-space-16)}
+body.desk .notes>:not(h1):not(.modes){display:none}
+body.desk .modes{margin:0}
+body.desk .device{width:min(1280px,100%);height:min(760px,calc(100vh - 120px))}
+.device.desk .sheet{left:auto;top:0;width:400px;height:auto!important;transform:none!important;border-top:0;border-left:var(--el-rule-strong) solid var(--el-color-line-strong);border-radius:0;padding-top:calc(var(--el-control-height) + var(--el-space-24))}
+.device.desk .grip,.device.desk button[data-more]{display:none}
+.device.desk .scroll{overflow-y:auto;touch-action:pan-y;padding-top:var(--el-space-8)}
+.device.desk .head{cursor:auto;touch-action:auto}
+.device.desk .top{left:auto;right:12px;width:376px}
+.device.desk .crumbs{top:12px;max-width:calc(100% - 400px - 80px)}
+.device.desk .zoom{top:12px;right:412px}
 </style>
 </head>
 <body>
 <aside class="notes">
 <h1>Opción A · boceto interactivo</h1>
+<div class="modes" role="group" aria-label="Tamaño de pantalla"><button class="ctl" data-mode="phone" aria-pressed="true">Celular · 390 px</button><button class="ctl" data-mode="desk" aria-pressed="false">Escritorio · 1280 px</button></div>
 <p>Baja fidelidad: sin color ni íconos. Las cifras son la muestra real del corte 2026-11 (datos al 7 nov 2026). Sirve para probar el comportamiento, no el acabado. Ábrelo también en el celular.</p>
 <h2>Qué probar</h2>
 <ol>
 <li><strong>La ficha:</strong> arrástrala desde su borde o su encabezado; se queda en tres alturas. También sube con su botón y con un toque en el borde.</li>
 <li><strong>El contenido de abajo:</strong> con la ficha arriba del todo, desplaza las cifras, la tabla y las fuentes.</li>
-<li><strong>El vuelo:</strong> toca un departamento y luego un municipio. Vuelve con «← Colombia», con «Ver todo» o alejando el mapa.</li>
+<li><strong>El vuelo:</strong> toca un departamento y luego un municipio: el municipio recibe el mismo foco que el departamento, grande y con sus vecinos atenuados alrededor (decisión 20 del spec, 2026-11-17). Vuelve con «← Colombia», con «Ver todo» o alejando el mapa.</li>
 <li><strong>El mapa:</strong> arrástralo con un dedo o el ratón; acerca con dos dedos, la rueda o «+» y «−».</li>
 <li><strong>El buscador:</strong> «granada» (nombre repetido), «bogota», «puerto colombia» (Guainía, «Sin datos»).</li>
 <li><strong>La dirección:</strong> cambia con cada lugar y el botón Atrás del navegador funciona.</li>
+<li><strong>Aviso de cambio:</strong> con un lugar elegido, pasa el ratón (o apoya el dedo) sobre otro: se delinea con un contorno menos fuerte (decisión 25).</li>
+<li><strong>San Andrés y Providencia:</strong> el recuadro está en el Caribe, con las islas ampliadas sin deformar (decisión 24).</li>
+<li><strong>Escritorio:</strong> con el botón de arriba; la ficha pasa a ser un panel fijo a la derecha (decisión 22). También con <code>?vista=escritorio</code> en la dirección.</li>
 </ol>
 <h2>Lo que no está</h2>
-<p>Riesgo (no existe en el contrato), estados de carga y error, el recuadro definitivo de San Andrés y el acabado visual.</p>
+<p>Riesgo (no existe en el contrato), estados de carga y error, y el acabado visual.</p>
 </aside>
 
 <main class="device" id="device">
@@ -102,7 +134,9 @@ tr.current button,tr.current td{font-weight:var(--el-weight-heading)}
 <div class="top"><label for="q">Busca tu municipio o departamento</label><input id="q" type="search" autocomplete="off" placeholder="Busca tu municipio o departamento"><div id="results"></div></div>
 <nav class="crumbs" id="crumbs" aria-label="Volver"></nav>
 <div class="zoom"><button class="ctl" id="zin" aria-label="Acercar">+</button><button class="ctl" id="zout" aria-label="Alejar">−</button><button class="ctl all" id="zall" hidden>Ver todo</button></div>
-<button class="ctl inset" id="inset">San Andrés y Providencia</button>
+<div class="archlabel" id="archlabel" hidden>San Andrés y Providencia</div>
+<div class="isllabel" id="isl-88001" hidden>San Andrés</div><div class="isllabel" id="isl-88564" hidden>Providencia</div>
+<button class="archmini" id="archmini" data-go="88" hidden aria-label="Ir a San Andrés y Providencia"><svg id="archminisvg" aria-hidden="true" preserveAspectRatio="xMidYMid meet"></svg><span>San Andrés y&nbsp;Providencia</span></button>
 <section class="sheet" id="sheet" aria-label="Ficha del lugar">
 <button class="grip" id="grip" aria-label="Cambiar la altura de la ficha"><i></i></button>
 <div class="scroll" id="scroll"><div class="head" id="head"></div><div class="body" id="body"></div></div>
@@ -140,6 +174,35 @@ function box(item) {
 }
 // National frame: the mainland. The archipelago (88) is reached through its own button.
 const mainland = [...deps.values()].filter((d) => d.c !== '88').map(box).reduce((a, b) => [Math.min(a[0], b[0]), Math.min(a[1], b[1]), Math.max(a[2], b[2]), Math.max(a[3], b[3])]);
+// Archipelago inset: at the country's scale the islands are two dots, so they are enlarged with one uniform
+// factor (never stretched) and placed at their approximate location, the sea northwest of the mainland.
+// As in spec decision 12, both islands share one scale and only the ~90 km of sea between them is shortened:
+// Providencia (north-east) sits just above and to the right of San Andrés.
+const isl = { sa: munis.get('88001'), pr: munis.get('88564') };
+const bs = box(isl.sa), bp = box(isl.pr);
+const [wS, hS, wP, hP] = [bs[2] - bs[0], bs[3] - bs[1], bp[2] - bp[0], bp[3] - bp[1]];
+const gap = hS * 0.35;
+const mh = mainland[3] - mainland[1];
+const archScale = (mh * 0.18) / (hP + gap + hS);
+const archAt = [mainland[0] + (mainland[2] - mainland[0]) * 0.04, mainland[1] + mh * 0.03];
+const islandTransform = (b, ox, oy) => `translate(${archAt[0] + ox * archScale - b[0] * archScale} ${archAt[1] + oy * archScale - b[1] * archScale}) scale(${archScale})`;
+// The islands always live at the inset, in every view, like any other department: the archipelago view
+// flies to the inset, so they never vanish to their real (off-screen) place nor shrink back to dots.
+const archShapes = [
+  { code: '88564', item: isl.pr, b: bp, ox: wS * 0.6, oy: 0 },
+  { code: '88001', item: isl.sa, b: bs, ox: 0, oy: hP + gap },
+].map((s) => ({
+  ...s,
+  transform: islandTransform(s.b, s.ox, s.oy),
+  box: [archAt[0] + s.ox * archScale, archAt[1] + s.oy * archScale, archAt[0] + (s.ox + s.b[2] - s.b[0]) * archScale, archAt[1] + (s.oy + s.b[3] - s.b[1]) * archScale],
+}));
+const archByCode = new Map(archShapes.map((s) => [s.code, s]));
+const archPad = mh * 0.015;
+const archBox = [archAt[0] - archPad, archAt[1] - archPad, archAt[0] + Math.max(wS, wS * 0.6 + wP) * archScale + archPad, archAt[1] + (hP + gap + hS) * archScale + archPad];
+// The country's frame includes the inset, so it is always in view on arrival.
+const national = [Math.min(mainland[0], archBox[0]), Math.min(mainland[1], archBox[1]), Math.max(mainland[2], archBox[2]), Math.max(mainland[3], archBox[3])];
+// Where a place is drawn: the archipelago and its islands at the inset, everything else at its shape.
+const placeBox = (code) => (code === '88' ? archBox : archByCode.has(code) ? archByCode.get(code).box : box(code.length === 2 ? deps.get(code) : munis.get(code)));
 
 const device = $('device'), map = $('map'), world = $('world'), sheet = $('sheet'), scroll = $('scroll');
 let view = { level: 'co' };
@@ -148,8 +211,15 @@ let moved = false, flight = 0;
 let detent = 'half', heights = { peek: 96, half: 240, full: 600 };
 
 /* ---------- Camera ---------- */
+const desk = () => device.classList.contains('desk');
+const miniShown = () => view.level !== 'co' && view.dep !== '88';
 function freeRect(visible = heights[detent === 'full' ? 'half' : detent]) {
-  const top = 116, left = 16, right = device.clientWidth - 68;
+  // The corner inset takes a column on the left, as the zoom buttons do on the right.
+  const left = miniShown() ? 88 : 16;
+  // Desktop: the map area left of the 400 px panel, below the crumbs and left of the zoom buttons.
+  if (desk()) { const y = view.level === 'mun' ? 104 : 72; return { x: left, y, w: device.clientWidth - 400 - 68 - left, h: device.clientHeight - y - 16 }; }
+  // A chosen place carries its name: leave room so a label never meets the crumbs.
+  const top = view.level === 'mun' ? 148 : 116, right = device.clientWidth - 68;
   const bottom = Math.max(top + 140, device.clientHeight - visible - 12);
   return { x: left, y: top, w: right - left, h: bottom - top };
 }
@@ -159,21 +229,39 @@ function fit(b, pad = 0.9) {
   return { k, x: r.x + r.w / 2 - ((b[0] + b[2]) / 2) * k, y: r.y + r.h / 2 - ((b[1] + b[3]) / 2) * k };
 }
 function target() {
-  if (view.level === 'co') return fit(mainland);
-  const b = box(deps.get(view.dep));
-  // A selected municipality keeps its department in frame, never a zoom so close that the context is lost.
-  return fit(b, view.dep === '88' ? 0.7 : 0.9);
+  if (view.level === 'co') return fit(national);
+  // Spec decision 20: a municipality gets the same focus as a department, it fills the free area with the same margin.
+  // Decision 20, capped: the municipality fills at most ~55 % of the free area, so the department's outline and
+  // several neighbours stay in view and the simplified shape is not blown up until it looks crude.
+  if (view.level === 'mun') return fit(placeBox(view.mun), 0.55);
+  return fit(placeBox(view.dep), 0.9);
 }
 function apply() {
   world.setAttribute('transform', `translate(${cam.x} ${cam.y}) scale(${cam.k})`);
   $('hatch').setAttribute('patternTransform', `scale(${1 / cam.k})`);
   const label = $('label');
   if (view.level === 'mun') {
-    const b = box(munis.get(view.mun));
+    const b = placeBox(view.mun);
     const x = ((b[0] + b[2]) / 2) * cam.k + cam.x, y = b[1] * cam.k + cam.y;
     label.style.transform = `translate(${Math.round(x)}px, ${Math.round(y - 6)}px) translate(-50%, -100%)`;
   }
+  // Inside the archipelago each island carries its name below it.
+  for (const s of archShapes) {
+    const el = $('isl-' + s.code);
+    el.hidden = view.dep !== '88';
+    if (!el.hidden) el.style.transform = `translate(${Math.round(((s.box[0] + s.box[2]) / 2) * cam.k + cam.x)}px, ${Math.round(s.box[3] * cam.k + cam.y + 4)}px) translate(-50%, 0)`;
+  }
+  const archLabel = $('archlabel');
+  archLabel.hidden = view.level !== 'co';
+  if (!archLabel.hidden) archLabel.style.transform = `translate(${Math.round(archBox[0] * cam.k + cam.x)}px, ${Math.round(archBox[3] * cam.k + cam.y + 4)}px)`;
   $('zall').hidden = !moved;
+}
+// The spec's curve, cubic-bezier(0.2, 0.7, 0.2, 1): x(u) = 0.6u − 0.6u² + u³, solved for u by Newton's method.
+function ease(t) {
+  let u = t;
+  for (let i = 0; i < 6; i++) u -= (0.6 * u - 0.6 * u * u + u * u * u - t) / (0.6 - 1.2 * u + 3 * u * u);
+  u = Math.min(1, Math.max(0, u));
+  return 3 * (1 - u) * (1 - u) * u * 0.7 + 3 * (1 - u) * u * u + u * u * u;
 }
 function fly(to, ms = 650) {
   cancelAnimationFrame(flight);
@@ -184,7 +272,7 @@ function fly(to, ms = 650) {
   const start = performance.now();
   const step = (now) => {
     const t = Math.min(1, (now - start) / ms);
-    const e = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    const e = ease(t);
     const k = from.k * Math.pow(to.k / from.k, e);
     cam = { k, x: ax - (c0[0] + (c1[0] - c0[0]) * e) * k, y: ay - (c0[1] + (c1[1] - c0[1]) * e) * k };
     apply();
@@ -215,22 +303,61 @@ function shape(item, cls) {
 }
 function drawMap(previous) {
   const gd = $('deps'), gm = $('munis');
-  if (!gd.childElementCount) for (const d of deps.values()) gd.append(shape(d));
-  for (const p of gd.children) p.setAttribute('class', view.level === 'co' ? '' : p.dataset.c === view.dep ? 'open' : 'away');
+  if (!gd.childElementCount) {
+    for (const d of deps.values()) gd.append(shape(d));
+    // The inset: a dashed frame and the two enlarged islands, all of it a target for the archipelago.
+    const g = document.createElementNS(NS, 'g');
+    g.id = 'arch';
+    const frame = document.createElementNS(NS, 'rect');
+    frame.setAttribute('class', 'archframe');
+    frame.dataset.c = '88';
+    frame.setAttribute('x', archBox[0]); frame.setAttribute('y', archBox[1]);
+    frame.setAttribute('width', archBox[2] - archBox[0]); frame.setAttribute('height', archBox[3] - archBox[1]);
+    g.append(frame);
+    for (const s of archShapes) { const p = shape({ c: '88', d: s.item.d }); p.setAttribute('transform', s.transform); g.append(p); }
+    gd.after(g);
+    // The corner inset draws the same two islands, framed on their own box.
+    const mini = $('archminisvg');
+    mini.setAttribute('viewBox', `${archBox[0]} ${archBox[1]} ${archBox[2] - archBox[0]} ${archBox[3] - archBox[1]}`);
+    for (const s of archShapes) { const p = document.createElementNS(NS, 'path'); p.setAttribute('d', s.item.d); p.setAttribute('transform', s.transform); mini.append(p); }
+  }
+  // Country view: the inset sits in the map at the islands' approximate place. Archipelago view: its dashed frame
+  // stays as the outline and the municipalities layer draws the two islands at the same spot. Anywhere else the
+  // archipelago is the fixed corner inset (#archmini), so it never vanishes off screen.
+  $('arch').style.display = view.level === 'co' || view.dep === '88' ? '' : 'none';
+  for (const p of $('arch').querySelectorAll('path')) p.style.display = view.dep === '88' ? 'none' : '';
+  $('archmini').hidden = !miniShown();
+  for (const p of gd.children) {
+    p.setAttribute('class', view.level === 'co' ? '' : p.dataset.c === view.dep ? 'open' : 'away');
+    if (p.dataset.c === '88') p.style.display = 'none'; // never at its real, far-away place
+  }
   if (view.level === 'co') { gm.replaceChildren(); $('outline').removeAttribute('d'); return; }
   if (previous.dep !== view.dep) {
-    gm.replaceChildren(...munisOf(view.dep).map((m) => shape(m, m.v === null ? 'nodata' : '')));
+    gm.replaceChildren(...munisOf(view.dep).map((m) => {
+      const p = shape(m, m.v === null ? 'nodata' : '');
+      if (archByCode.has(m.c)) p.setAttribute('transform', archByCode.get(m.c).transform);
+      return p;
+    }));
     if (!reduced.matches) { gm.classList.add('in'); requestAnimationFrame(() => requestAnimationFrame(() => gm.classList.remove('in'))); }
   }
-  $('outline').setAttribute('d', deps.get(view.dep).d);
-  for (const p of gm.children) {
+  if (view.dep === '88') $('outline').removeAttribute('d'); // the islands are not at their real place
+  else $('outline').setAttribute('d', deps.get(view.dep).d);
+  // A static copy: moving the chosen shape to the end while walking the live list skipped the next one,
+  // which left the previously chosen municipality still marked.
+  for (const p of [...gm.children]) {
+    p.classList.remove('hot');
     p.classList.toggle('sel', p.dataset.c === view.mun);
+    // Neighbours dim around the chosen municipality, like the other departments around a department.
+    p.classList.toggle('away', view.level === 'mun' && p.dataset.c !== view.mun);
     if (p.dataset.c === view.mun) gm.append(p); // drawn last so neighbours never cover its outline
   }
 }
 
 /* ---------- Sheet ---------- */
 const sourceLine = '<p class="muted small">Fuentes: SECOP II y SECOP I, DANE. Datos al 7 nov 2026.</p>';
+// Whoever arrives by a link to a place also learns that the map does not rate anyone yet.
+const placeSourceLine = '<p class="muted small">Fuentes: SECOP II y SECOP I, DANE. Datos al 7 nov 2026. Este mapa todavía no mide riesgo.</p>';
+const archNote = '<p class="muted small">En el mapa se acorta la distancia entre San Andrés y Providencia (unos 90 km) para verlas juntas, a la misma escala y sin cambiar su forma.</p>';
 function counts(items) {
   return `<ul class="counts">${items.map(([v, l, g]) => `<li><b>${fmt(v)}</b><span>${l}</span>${g || ''}</li>`).join('')}</ul>`;
 }
@@ -240,7 +367,7 @@ function depTable(dep) {
 }
 function depCounts(dep) {
   if (dep.c === '11') return counts([[dep.s, 'registrados solo como Bogotá, D.C. (departamento)', 'sabemos el departamento, no el municipio']]);
-  return counts([[dep.m, `en los municipios de ${esc(dep.n)}`, 'sabemos en qué municipio se firmaron'], [dep.s, 'solo en el departamento', 'sabemos el departamento, no el municipio']]);
+  return counts([[dep.m, `en los municipios de ${esc(dep.n)}`, 'sabemos en qué municipio se firmaron'], [dep.s, 'sin municipio identificado', 'sabemos el departamento, no el municipio']]);
 }
 function drawSheet() {
   let head, body, more;
@@ -250,13 +377,13 @@ function drawSheet() {
     head = `<div class="title"><p class="kicker">Mapa de contratación pública</p><h1 tabindex="-1">${fmt(n.contratos)} contratos públicos firmados en Colombia</h1></div>
       <p class="muted">${WINDOW[0].toUpperCase() + WINDOW.slice(1)}. Elige un departamento. Este mapa todavía no mide riesgo.</p>${sourceLine}`;
     const rows = [...deps.values()].sort((a, b) => a.n.localeCompare(b.n, 'es')).map((d) => `<tr><td><button data-go="${d.c}">${esc(d.n)}</button></td><td class="num">${fmt(d.m)}</td><td class="num">${fmt(d.s)}</td></tr>`).join('');
-    body = `<h2>Dónde quedó cada contrato</h2>${counts([[n.contratosEnMunicipios, 'en un municipio', 'sabemos en qué municipio se firmaron'], [n.contratosSoloDepartamento, 'solo en un departamento', 'sabemos el departamento, no el municipio'], [n.contratosSinLugar, 'sin lugar identificado', 'no sabemos dónde']])}
-      <h2>Contratos por departamento, 2021 – 7 nov 2026</h2><table><thead><tr><th>Departamento</th><th class="num">En municipios</th><th class="num">Solo depto.</th></tr></thead><tbody>${rows}</tbody></table>`;
+    body = `<h2>Dónde quedó cada contrato</h2>${counts([[n.contratosEnMunicipios, 'en un municipio', 'sabemos en qué municipio se firmaron'], [n.contratosSoloDepartamento, 'sin municipio identificado', 'sabemos el departamento, no el municipio'], [n.contratosSinLugar, 'sin lugar identificado', 'no sabemos dónde']])}
+      <h2>Contratos por departamento, 2021 – 7 nov 2026</h2><table><thead><tr><th>Departamento</th><th class="num">En municipios</th><th class="num">Sin municipio</th></tr></thead><tbody>${rows}</tbody></table>`;
   } else if (view.level === 'dep') {
     const d = deps.get(view.dep);
     more = 'Ver tabla y fuentes';
     head = `<div class="title"><p class="kicker">Mapa de contratación pública · Código DANE ${d.c}</p><h1 tabindex="-1">${esc(d.n)}</h1></div>
-      <p><strong>${fmt(d.m)}</strong> contratos en sus municipios y <strong>${fmt(d.s)}</strong> solo en el departamento, ${WINDOW}. Elige un municipio.</p>${sourceLine}`;
+      <p><strong>${fmt(d.m)}</strong> contratos en sus municipios y <strong>${fmt(d.s)}</strong> sin municipio identificado, ${WINDOW}. Elige un municipio.</p>${d.c === '88' ? archNote : ''}${placeSourceLine}`;
     body = `<h2>Dónde quedó cada contrato</h2>${depCounts(d)}${depTable(d)}`;
   } else {
     const m = munis.get(view.mun), d = deps.get(m.dep);
@@ -264,7 +391,7 @@ function drawSheet() {
     const figure = m.v === null
       ? `<p class="figure"><span class="swatch"></span>Sin datos</p><p>No encontramos contratos ubicados con certeza en este lugar ${WINDOW}.</p>`
       : `<p class="figure">${fmt(m.v)}</p><p>contratos firmados ${WINDOW} y ubicados en ${esc(m.n)}</p>`;
-    head = `<div class="title"><p class="kicker">Mapa de contratación pública · ${esc(d.n)} · Código DANE ${m.c}</p><h1 tabindex="-1">${esc(m.n)}</h1></div>${figure}${sourceLine}`;
+    head = `<div class="title"><p class="kicker">Mapa de contratación pública · ${esc(d.n)} · Código DANE ${m.c}</p><h1 tabindex="-1">${esc(m.n)}</h1></div>${figure}${placeSourceLine}`;
     body = `<h2>${esc(d.n)}</h2>${depCounts(d)}${depTable(d)}`;
   }
   const copy = view.level === 'mun' ? '<button class="ctl" data-copy>Copiar enlace</button>' : '';
@@ -273,7 +400,9 @@ function drawSheet() {
   $('head').dataset.more = more;
 }
 function measure() {
-  const full = device.clientHeight - 68;
+  if (desk()) { sheet.style.height = ''; return; } // the panel has no heights
+  // Full height still leaves 68 px of map visible below the search field (12 + 44 + 68).
+  const full = device.clientHeight - 124;
   sheet.style.height = `${full}px`;
   const grip = $('grip').offsetHeight;
   heights = {
@@ -285,14 +414,21 @@ function measure() {
 function setDetent(name, { refit = true } = {}) {
   detent = name;
   sheet.classList.remove('dragging');
+  device.classList.toggle('sheetfull', name === 'full' && !desk());
+  if (desk()) {
+    // The panel shows head and body together, always reachable.
+    sheet.classList.remove('full');
+    sheet.style.transform = '';
+    $('body').inert = false;
+    if (refit && !moved) fly(target(), 450);
+    return;
+  }
   sheet.classList.toggle('full', name === 'full');
   sheet.style.transform = `translateY(${heights.full - heights[name]}px)`;
   if (name !== 'full') scroll.scrollTop = 0;
   $('body').inert = name !== 'full';
   const more = $('head').querySelector('[data-more]');
   if (more) more.textContent = name === 'full' ? 'Volver al mapa' : $('head').dataset.more;
-  $('inset').hidden = view.level !== 'co' || name === 'full';
-  $('inset').style.bottom = `${heights[name] + 12}px`;
   if (refit && !moved && name !== 'full') fly(target(), 450);
 }
 
@@ -316,7 +452,7 @@ function go(next, { focus = false, instant = false } = {}) {
   if (view.level === 'mun' && view.dep !== '11') crumbs.push(`<button class="ctl" data-go="${view.dep}">${esc(deps.get(view.dep).n)}</button>`);
   $('crumbs').innerHTML = crumbs.join('');
   const label = $('label');
-  label.hidden = view.level !== 'mun';
+  label.hidden = view.level !== 'mun' || view.dep === '88'; // in the archipelago both islands are already named
   if (view.level === 'mun') label.textContent = munis.get(view.mun).n;
   measure();
   setDetent('half', { refit: false });
@@ -336,7 +472,19 @@ function goCode(code, opts) {
 const pointers = new Map();
 let gesture = null;
 const local = (e) => { const r = device.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+// The candidate is drawn above its neighbours but below the chosen place (decision 12b), so neither outline is covered.
+function raise(p) {
+  if (!p || !p.dataset || !p.dataset.c || p.classList.contains('sel')) return;
+  // Only shapes move up. Raising the inset's white-filled frame put it on top of the islands and hid them.
+  if (p.tagName !== 'path' || p.parentNode.id === 'arch') return;
+  const sel = p.parentNode.querySelector('.sel');
+  if (sel) p.parentNode.insertBefore(p, sel); else p.parentNode.append(p);
+}
+map.addEventListener('pointerover', (e) => { if (e.pointerType === 'mouse' && !gesture) raise(e.target); });
+const clearHot = () => map.querySelectorAll('.hot').forEach((p) => p.classList.remove('hot'));
 map.addEventListener('pointerdown', (e) => {
+  // On touch there is no hover: the outline shows while the finger rests on the place.
+  if (e.pointerType !== 'mouse' && e.target.dataset && e.target.dataset.c) { raise(e.target); e.target.classList.add('hot'); }
   map.setPointerCapture(e.pointerId);
   pointers.set(e.pointerId, local(e));
   cancelAnimationFrame(flight);
@@ -353,6 +501,7 @@ map.addEventListener('pointermove', (e) => {
     const dx = pts[0][0] - gesture.start[0], dy = pts[0][1] - gesture.start[1];
     gesture.travel = Math.max(gesture.travel, Math.hypot(dx, dy));
     if (gesture.travel < 6) return;
+    clearHot(); // a drag is not a choice
     map.classList.add('dragging');
     moved = true;
     cam = { k: cam.k, x: gesture.cam.x + dx, y: gesture.cam.y + dy };
@@ -369,13 +518,14 @@ map.addEventListener('pointermove', (e) => {
 function endPointer(e) {
   if (!pointers.has(e.pointerId)) return;
   pointers.delete(e.pointerId);
+  clearHot();
   map.classList.remove('dragging');
   const g = gesture;
   gesture = null;
   if (!g) return;
   if (g.type === 'pinch') { leaveIfFar(); return; }
   if (e.type === 'pointerup' && g.travel < 6 && g.hit && g.hit.dataset && g.hit.dataset.c) {
-    if (detent === 'full') { setDetent('half'); return; }
+    if (detent === 'full' && !desk()) { setDetent('half'); return; }
     goCode(g.hit.dataset.c);
   }
 }
@@ -399,11 +549,11 @@ function zoomButton(factor) {
 $('zin').addEventListener('click', () => zoomButton(1.8));
 $('zout').addEventListener('click', () => zoomButton(1 / 1.8));
 $('zall').addEventListener('click', () => { moved = false; fly(target(), 450); $('zin').focus(); });
-$('inset').addEventListener('click', () => goCode('88'));
 
 /* ---------- Sheet gestures: only the grip and the header move the sheet ---------- */
 let drag = null;
 function sheetDown(e) {
+  if (desk()) return;
   if (e.target.closest('button:not(.grip), a, input')) return;
   if (detent === 'full' && e.currentTarget.id === 'head' && scroll.scrollTop > 0) return;
   drag = { id: e.pointerId, y: e.clientY, from: heights[detent], h: heights[detent], travel: 0, t: performance.now(), v: 0, grip: e.currentTarget.id === 'grip' };
@@ -481,6 +631,24 @@ $('results').addEventListener('click', (e) => {
 /* ---------- Start ---------- */
 addEventListener('popstate', () => go(parseHash()));
 addEventListener('resize', () => { measure(); setDetent(detent, { refit: false }); if (!moved) fly(target(), 0); });
+function setMode(mode) {
+  document.body.classList.toggle('desk', mode === 'desk');
+  device.classList.toggle('desk', mode === 'desk');
+  for (const b of document.querySelectorAll('[data-mode]')) b.setAttribute('aria-pressed', String(b.dataset.mode === mode));
+  moved = false;
+  measure();
+  setDetent('half', { refit: false });
+  fly(target(), 0);
+}
+document.querySelector('.modes').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-mode]');
+  if (b) setMode(b.dataset.mode);
+});
+if (new URLSearchParams(location.search).get('vista') === 'escritorio') {
+  document.body.classList.add('desk');
+  device.classList.add('desk');
+  for (const b of document.querySelectorAll('[data-mode]')) b.setAttribute('aria-pressed', String(b.dataset.mode === 'desk'));
+}
 sheet.classList.add('dragging'); // no slide-in on first paint
 go(parseHash(), { instant: true });
 requestAnimationFrame(() => sheet.classList.remove('dragging'));

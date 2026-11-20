@@ -12,6 +12,8 @@ import { Button } from '../../../../components/ui/Button/Button';
 import { Icon } from '../../../../components/ui/Icon/Icon';
 import { LegendKey } from '../../../../components/ui/LegendKey/LegendKey';
 import type { Box } from '../geometry';
+import { FullscreenMap, type FullscreenMapProps } from './FullscreenMap';
+import { StaticFullscreenMap } from './StaticFullscreenMap';
 import styles from './MapWithLegend.module.css';
 
 /** Fill of a territory: neutral (locates, measures nothing), a risk level, or «Sin datos» (hatch). */
@@ -42,6 +44,8 @@ export interface MapInset {
 }
 
 export interface MapWithLegendProps {
+  /** `inline` (por defecto): el mapa en un marco dentro de la página. `fullscreen`: ver `FullscreenMapProps`. */
+  variant?: 'inline';
   /** The map's `<title>`: what it shows and where the values are («… en la tabla de municipios»). */
   title: string;
   territories: MapTerritory[];
@@ -55,11 +59,6 @@ export interface MapWithLegendProps {
   onSelect?: (code: string) => void;
   /** Maximum height in px. By default 640 from 960 px wide, or 62 % of the window below. */
   maxHeight?: number;
-  /**
-   * `view-transition-name` of the map drawing, for a page that animates between views (the Map
-   * page uses `map-zoom`). Only one map on the page may carry a given name.
-   */
-  transitionName?: string;
 }
 
 const MAX_ZOOM = 12;
@@ -79,12 +78,20 @@ function defaultMaxHeight() {
   return window.innerWidth >= 960 ? 640 : Math.round(window.innerHeight * 0.62);
 }
 
+export type { FullscreenMapProps } from './FullscreenMap';
+
+/** Map of territories: inline in a page (default) or at full screen under a sheet (`variant="fullscreen"`). */
+export function MapWithLegend(props: MapWithLegendProps | FullscreenMapProps) {
+  if (props.variant !== 'fullscreen') return <InlineMap {...props} />;
+  return props.prerendered ? <StaticFullscreenMap {...props} /> : <FullscreenMap {...props} />;
+}
+
 /**
  * Map of territories. Zoom with buttons, Ctrl + wheel and pinch; a mouse drags at any zoom; a click
  * without moving chooses. On touch, one finger scrolls the page at full view. The keyboard reaches
  * every territory through the data table that always comes with the map.
  */
-export function MapWithLegend({
+function InlineMap({
   title,
   territories,
   box,
@@ -93,7 +100,6 @@ export function MapWithLegend({
   selected,
   onSelect,
   maxHeight,
-  transitionName,
 }: MapWithLegendProps) {
   const hatchId = `hatch-${useId().replace(/[^a-zA-Z0-9-]/g, '')}`;
   const titleId = `${hatchId}-title`;
@@ -280,8 +286,6 @@ export function MapWithLegend({
           height={H}
           viewBox={`0 0 ${W} ${H}`}
           data-zoomed={view.z > 1 ? 'true' : undefined}
-          data-view-transition={transitionName}
-          style={transitionName ? { viewTransitionName: transitionName } : undefined}
           data-dragging={dragging ? 'true' : undefined}
           onPointerDown={onPointerDown}
           onPointerMove={onPointerMove}
