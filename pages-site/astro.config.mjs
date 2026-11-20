@@ -9,7 +9,7 @@ export default defineConfig({
   // `/mapa/05001` → `mapa/05001.html`: the data Worker serves it at `/paginas/mapa/05001`.
   build: { format: 'file', inlineStylesheets: 'never' },
   trailingSlash: 'never',
-  // No CSS of its own: scripts/paginas.mjs removes Astro's copy and the app Worker links the app's
+  // No CSS of its own: scripts/pages.mjs removes Astro's copy and the app Worker links the app's
   // stylesheet. Both use Vite's default CSS Modules names (from the file's content), so they match
   // while the components' CSS is the same as in the deployed app.
   devToolbar: { enabled: false },

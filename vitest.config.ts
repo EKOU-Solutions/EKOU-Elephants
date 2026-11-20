@@ -6,7 +6,7 @@ export default defineConfig({
       'src/**/*.test.{ts,tsx}',
       'tests/**/*.test.ts',
       'scripts/**/*.test.mjs',
-      'paginas/src/**/*.test.ts',
+      'pages-site/src/**/*.test.ts',
     ],
     environment: 'node',
   },

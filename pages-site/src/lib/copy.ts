@@ -5,7 +5,7 @@ import { formatNumber } from '../../../src/components/ui/format';
 const MARCA = 'EKOU Elephants';
 const CIERRE = 'Fuentes: SECOP II y SECOP I, DANE. Este mapa todavía no mide riesgo.';
 
-export type LugarParaTextos =
+export type PlaceForCopy =
   | { tipo: 'pais'; contratos: number }
   | {
       tipo: 'departamento';
@@ -33,8 +33,8 @@ const sinDatos = (donde: string, periodo: string) =>
   `Sin datos: no encontramos contratos públicos ubicados con certeza en ${donde} ${periodo}. ${CIERRE}`;
 
 /** `<title>` and `description` of a place's page. `periodo`: «del 1 ene 2021 al 7 nov 2026», as the app says it. */
-export function textosDelLugar(
-  lugar: LugarParaTextos,
+export function placeCopy(
+  lugar: PlaceForCopy,
   periodo: string,
 ): { title: string; description: string } {
   if (lugar.tipo === 'pais') {

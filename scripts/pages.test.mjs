@@ -13,36 +13,34 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { punteroLatest } from './datos.mjs';
-import { leerArgs, limpiarHtml } from './paginas.mjs';
+import { parseArgs, cleanHtml } from './pages.mjs';
 
 const RAIZ = fileURLToPath(new URL('..', import.meta.url));
 const MUESTRA = join(RAIZ, 'docs/design/pages/map/sample');
 
-describe('leerArgs', () => {
+describe('parseArgs', () => {
   it('the site URL is required, from --sitio or EKOU_SITIO_URL', () => {
-    expect(() => leerArgs([], {})).toThrow('Falta la URL del sitio');
-    expect(leerArgs([], { EKOU_SITIO_URL: 'https://a.co' })).toMatchObject({
+    expect(() => parseArgs([], {})).toThrow('Falta la URL del sitio');
+    expect(parseArgs([], { EKOU_SITIO_URL: 'https://a.co' })).toMatchObject({
       carpeta: 'datos-locales',
       sitio: 'https://a.co',
     });
-    expect(leerArgs(['--carpeta', 'x', '--sitio', 'https://b.co'], {})).toMatchObject({
+    expect(parseArgs(['--carpeta', 'x', '--sitio', 'https://b.co'], {})).toMatchObject({
       carpeta: 'x',
       sitio: 'https://b.co',
     });
-    expect(() => leerArgs(['--otro'], {})).toThrow('Argumento desconocido');
+    expect(() => parseArgs(['--otro'], {})).toThrow('Argumento desconocido');
   });
 });
 
-describe('limpiarHtml', () => {
+describe('cleanHtml', () => {
   it("drops Astro's stylesheets and refuses a script that runs", () => {
     expect(
-      limpiarHtml(
+      cleanHtml(
         '<head><link rel="stylesheet" href="/_astro/a.css"><style>a{}</style><script type="application/ld+json">{}</script></head>',
       ),
     ).toBe('<head><script type="application/ld+json">{}</script></head>');
-    expect(() => limpiarHtml('<script type="module" src="/x.js"></script>')).toThrow(
-      'script propio',
-    );
+    expect(() => cleanHtml('<script type="module" src="/x.js"></script>')).toThrow('script propio');
   });
 });
 
@@ -72,7 +70,7 @@ describe('npm run paginas', () => {
     execFileSync(
       process.execPath,
       [
-        join(RAIZ, 'scripts/paginas.mjs'),
+        join(RAIZ, 'scripts/pages.mjs'),
         ...['--carpeta', carpeta, '--sitio', 'https://ejemplo.co/'],
         ...['--solo', '/mapa/05001,/mapa/departamento/05,/mapa/11001,/mapa/94884'],
       ],

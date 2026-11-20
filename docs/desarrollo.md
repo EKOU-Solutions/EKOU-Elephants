@@ -37,11 +37,11 @@ Cada corte genera una página HTML por lugar del mapa, con el nombre, la cifra, 
 
 | Dónde | Qué hace |
 | --- | --- |
-| `scripts/paginas.mjs` | `npm run paginas`: lee la carpeta de publicación, ejecuta el build de Astro y deja el resultado en `<carpeta>/paginas/`. |
-| `paginas/astro.config.mjs` y `paginas/src/pages/` | Una ruta por tipo de lugar (`mapa.astro`, `mapa/[codigo].astro`, `mapa/departamento/[codigo].astro`) y `sitemap.xml`. |
-| `paginas/src/components/Lugar.astro` | La página: metadatos y `MapPage` (la pantalla aprobada) renderizada a HTML con el lugar elegido. Sin scripts propios. |
-| `paginas/src/lib/` | Lee el corte con el mismo adaptador y casos de uso que la API (`publicacion.ts`), metadatos, JSON-LD y sitemap (`sitio.ts`) y los textos de `<title>` y `description` (`textos.ts`, aparte para pasar por `/ajuste`). |
-| `src/server/paginas.ts` | En el Worker de la app: para `/mapa…` y `/sitemap.xml`, pide la página al binding `DATOS` y le agrega los scripts y estilos de la app; si no hay, entrega la SPA. |
+| `scripts/pages.mjs` | `npm run paginas`: lee la carpeta de publicación, ejecuta el build de Astro y deja el resultado en `<carpeta>/paginas/`. |
+| `pages-site/astro.config.mjs` y `pages-site/src/pages/` | Una ruta por tipo de lugar (`mapa.astro`, `mapa/[codigo].astro`, `mapa/departamento/[codigo].astro`) y `sitemap.xml`. |
+| `pages-site/src/components/Place.astro` | La página: metadatos y `MapPage` (la pantalla aprobada) renderizada a HTML con el lugar elegido. Sin scripts propios. |
+| `pages-site/src/lib/` | Lee el corte con el mismo adaptador y casos de uso que la API (`publication.ts`), metadatos, JSON-LD y sitemap (`site.ts`) y los textos de `<title>` y `description` (`copy.ts`, aparte para pasar por `/ajuste`). |
+| `src/server/pages.ts` | En el Worker de la app: para `/mapa…` y `/sitemap.xml`, pide la página al binding `DATOS` y le agrega los scripts y estilos de la app; si no hay, entrega la SPA. |
 
 Para generar y probar en local, con un corte en `datos-locales/` (`npm run datos:descargar` o `npm run datos:local`):
 
@@ -55,8 +55,8 @@ curl -s http://localhost:5173/mapa/05001 | grep -o '<title>[^<]*</title>'
 - `npm run dev` y `npm run preview` sirven las páginas con el Worker de datos local (`scripts/datos-local.worker.ts`). Si generas páginas con el servidor encendido, reinícialo para que las encuentre. Sin `datos-locales/paginas/`, `/mapa…` entrega la SPA, como en producción antes del primer corte con páginas.
 - En Git Bash (Windows), una ruta como `/mapa/05001` en un argumento se convierte en ruta de Windows: usa `MSYS_NO_PATHCONV=1` si pasas `--solo`.
 - Las páginas usan los nombres de clase de los CSS Modules de la app (Vite los calcula con el contenido de cada `.module.css`), así que se ven bien con la hoja de estilos de la versión desplegada mientras los estilos de la pantalla no cambien. Si cambian, hay que volver a generar las páginas del corte vigente.
-- El HTML lleva un mapa estático (`StaticFullscreenMap`): solo el contorno del departamento con el lugar marcado (en Colombia, el país por departamentos), simplificado (`paginas/src/lib/trazos.ts`, unos 2 KB por página, 15 KB como máximo) y con el mismo encuadre que hará la cámara al montar, así que la página no salta cuando carga la app.
-- Pruebas: `paginas/src/lib/sitio.test.ts` (páginas, metadatos y sitemap), `scripts/paginas.test.mjs` (build real de Astro con la muestra de `docs/design/pages/map/sample/`) y `src/server/paginas.test.ts` (enrutado del Worker; Node no trae `HTMLRewriter`, así que la prueba usa uno mínimo y el real se comprueba con `npm run dev` y `curl`).
+- El HTML lleva un mapa estático (`StaticFullscreenMap`): solo el contorno del departamento con el lugar marcado (en Colombia, el país por departamentos), simplificado (`pages-site/src/lib/outlines.ts`, unos 2 KB por página, 15 KB como máximo) y con el mismo encuadre que hará la cámara al montar, así que la página no salta cuando carga la app.
+- Pruebas: `pages-site/src/lib/site.test.ts` (páginas, metadatos y sitemap), `scripts/pages.test.mjs` (build real de Astro con la muestra de `docs/design/pages/map/sample/`) y `src/server/paginas.test.ts` (enrutado del Worker; Node no trae `HTMLRewriter`, así que la prueba usa uno mínimo y el real se comprueba con `npm run dev` y `curl`).
 
 ### Verificar un corte antes de su PR
 
@@ -70,7 +70,7 @@ npm run corte:verificar -- --anterior <publicación del corte anterior> --umbral
 
 - Imprime el resumen en Markdown y sale con 1 si algo falla. `--anterior` es otra carpeta de publicación (con su `datos/latest.json`). Sin ella, compara con el otro corte de la carpeta si lo hay; `datos-locales/` trae solo uno, así que no compara.
 - Para reproducir la publicación del CI: `npm run corte:armar -- --carpeta <ruta>` (baja de los Releases los cortes de `pipeline/worker-datos/corte-vigente.json`; requiere `gh auth login`), `npm run paginas -- --carpeta <ruta> --sitio <URL>` y `npm run corte:verificar -- --carpeta <ruta>`.
-- Pruebas: `scripts/corte.test.mjs` (referencia y armado, con `gh` simulado) y `scripts/corte-verificar.test.mjs` (con la muestra de `docs/design/pages/map/sample/`).
+- Pruebas: `scripts/cut.test.mjs` (referencia y armado, con `gh` simulado) y `scripts/cut-verify.test.mjs` (con la muestra de `docs/design/pages/map/sample/`).
 
 ## Sistema de diseño (Storybook)
 

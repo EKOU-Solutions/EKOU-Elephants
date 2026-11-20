@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { tituloDelLugar } from '../../../../paginas/src/lib/sitio';
+import { placeTitle } from '../../../../pages-site/src/lib/site';
 import type { CorteVigente, DepartamentosDelCorte, MunicipiosDelCorte } from '../domain/mapa';
 import type { TopoJson } from './geometry';
 import { MapPage, type MapPageState } from './MapPage/MapPage';
@@ -124,7 +124,7 @@ export function MapScreen({ initial, initialQuery }: MapScreenProps) {
 
   // The tab says where you are, with the generated page's own title, so it never changes on mount.
   const title = useMemo(
-    () => (state.status === 'ready' ? tituloDelLugar(state.map, route) : undefined),
+    () => (state.status === 'ready' ? placeTitle(state.map, route) : undefined),
     [state, route],
   );
   useEffect(() => {

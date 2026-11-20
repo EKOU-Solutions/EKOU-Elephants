@@ -13,7 +13,7 @@ import {
  * 700 px on a desktop (90 % of the free area), so the error stays under a pixel; Colombia by
  * departments weighs about 14 KB.
  */
-export const DETALLE = 1 / 1000;
+export const DETAIL = 1 / 1000;
 
 type Punto = [number, number];
 
@@ -57,7 +57,7 @@ function numero(valor: number, decimales: number): string {
  * An outline of `shapesOf` (`M x yL…Z` rings) simplified within `tolerancia` (projected units) and
  * written with relative steps. Rings smaller than the tolerance are dropped.
  */
-export function simplificar(d: string, tolerancia: number): string {
+export function simplify(d: string, tolerancia: number): string {
   const decimales = Math.max(0, Math.ceil(-Math.log10(tolerancia)));
   const factor = 10 ** decimales;
   const redondo = (v: number) => Math.round(v * factor) / factor;
@@ -97,7 +97,7 @@ const largo = (b: readonly number[]) =>
  * The prepared map as a page draws it: only the outlines StaticFullscreenMap uses, simplified for the
  * box it frames; every other outline is empty. Names, boxes and figures stay.
  */
-export function trazosDeLaPagina(map: PreparedMap, route: MapRoute): PreparedMap {
+export function pageOutlines(map: PreparedMap, route: MapRoute): PreparedMap {
   const municipio = route.view === 'municipality' ? map.municipalities.get(route.code) : undefined;
   const departamento = route.view === 'department' ? route.code : municipio?.departamento.codigo;
   const vacio = <T extends { d: string }>(s: T): T => ({ ...s, d: '' });
@@ -109,7 +109,7 @@ export function trazosDeLaPagina(map: PreparedMap, route: MapRoute): PreparedMap
     new Map(
       [...m].map(([k, s]) => [
         k,
-        conservar(k) ? { ...s, d: simplificar(s.d, tolerancia(s)) } : vacio(s),
+        conservar(k) ? { ...s, d: simplify(s.d, tolerancia(s)) } : vacio(s),
       ]),
     );
   // The box the page frames: the department (its municipalities), or the country.
@@ -119,7 +119,7 @@ export function trazosDeLaPagina(map: PreparedMap, route: MapRoute): PreparedMap
       : departamento
         ? (map.departmentShapes.get(departamento)?.box ?? map.home)
         : map.home;
-  const tol = largo(caja) * DETALLE;
+  const tol = largo(caja) * DETAIL;
   const islas = !departamento || departamento === ARCHIPELAGO;
   return {
     ...map,
@@ -132,13 +132,13 @@ export function trazosDeLaPagina(map: PreparedMap, route: MapRoute): PreparedMap
     municipalityShapes: formas(
       map.municipalityShapes,
       (k) => k === municipio?.codigo,
-      (s) => largo(s.box) * DETALLE,
+      (s) => largo(s.box) * DETAIL,
     ),
     archipelago: { ...map.archipelago, shapes: map.archipelago.shapes.map(vacio) },
     inset: {
       ...map.inset,
       islands: map.inset.islands.map((i) =>
-        islas ? { ...i, d: simplificar(i.d, tol / map.inset.scale) } : vacio(i),
+        islas ? { ...i, d: simplify(i.d, tol / map.inset.scale) } : vacio(i),
       ),
     },
   };

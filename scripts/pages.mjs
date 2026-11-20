@@ -11,9 +11,9 @@ import { join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const RAIZ_REPO = fileURLToPath(new URL('..', import.meta.url));
-export const SALIDA = 'paginas';
+export const OUTPUT = 'paginas';
 
-export function leerArgs(argv, env = process.env) {
+export function parseArgs(argv, env = process.env) {
   const args = { carpeta: 'datos-locales', sitio: env.EKOU_SITIO_URL, solo: undefined };
   for (let i = 0; i < argv.length; i++) {
     if (argv[i] === '--carpeta') args.carpeta = argv[++i];
@@ -41,7 +41,7 @@ function archivos(dir) {
  * enlaza las de la app, con los mismos nombres de clase) y se comprueba que no haya scripts que
  * ejecuten (solo el JSON-LD).
  */
-export function limpiarHtml(html) {
+export function cleanHtml(html) {
   const limpio = html
     .replace(/<link rel="stylesheet"[^>]*>/g, '')
     .replace(/<style[^>]*>[\s\S]*?<\/style>/g, '');
@@ -52,11 +52,11 @@ export function limpiarHtml(html) {
   return limpio;
 }
 
-export async function generarPaginas({ carpeta, sitio, solo }) {
+export async function generatePages({ carpeta, sitio, solo }) {
   const publicacion = resolve(RAIZ_REPO, carpeta);
   if (!existsSync(join(publicacion, 'datos', 'latest.json')))
     throw new Error(`No hay datos/latest.json en ${publicacion}: primero arma la publicación.`);
-  const salida = join(publicacion, SALIDA);
+  const salida = join(publicacion, OUTPUT);
   Object.assign(process.env, {
     EKOU_PUBLICACION: publicacion,
     EKOU_GEOMETRIA: join(RAIZ_REPO, 'public', 'geometria'),
@@ -68,7 +68,7 @@ export async function generarPaginas({ carpeta, sitio, solo }) {
 
   const { build } = await import('astro');
   await build({
-    root: join(RAIZ_REPO, 'paginas'),
+    root: join(RAIZ_REPO, 'pages-site'),
     outDir: salida,
     logLevel: process.env.EKOU_ASTRO_LOG ?? 'warn',
   });
@@ -79,7 +79,7 @@ export async function generarPaginas({ carpeta, sitio, solo }) {
   let bytes = 0;
   for (const archivo of archivos(salida)) {
     if (archivo.endsWith('.html')) {
-      writeFileSync(archivo, limpiarHtml(readFileSync(archivo, 'utf8')));
+      writeFileSync(archivo, cleanHtml(readFileSync(archivo, 'utf8')));
       paginas++;
     } else if (!archivo.endsWith('sitemap.xml')) {
       throw new Error(`Archivo inesperado en la salida: ${relative(salida, archivo)}`);
@@ -91,7 +91,7 @@ export async function generarPaginas({ carpeta, sitio, solo }) {
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   try {
-    const { salida, paginas, bytes } = await generarPaginas(leerArgs(process.argv.slice(2)));
+    const { salida, paginas, bytes } = await generatePages(parseArgs(process.argv.slice(2)));
     console.log(
       `${paginas} páginas y sitemap.xml en ${relative(process.cwd(), salida) || '.'} (${(bytes / 1024 / 1024).toFixed(1)} MB).`,
     );

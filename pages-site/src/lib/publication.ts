@@ -15,7 +15,7 @@ import type { TopoJson } from '../../../src/modules/mapa/ui/geometry';
 import { type PreparedMap, prepareMap } from '../../../src/modules/mapa/ui/mapModel';
 
 /** The data Worker's files on disk: a key is a path under `raiz`, a missing file is `null`. */
-export function almacenEnDisco(raiz: string): AlmacenObjetos {
+export function diskStore(raiz: string): AlmacenObjetos {
   return {
     async get(clave) {
       try {
@@ -33,8 +33,8 @@ export function almacenEnDisco(raiz: string): AlmacenObjetos {
  * The current cut of a publication folder, prepared as the app prepares it (`prepareMap`). The
  * geometry is the app's own static file (`public/geometria/<version>.topojson`), as in the browser.
  */
-export async function leerPublicacion(raiz: string, geometrias: string): Promise<PreparedMap> {
-  const mapa = mapaDesdeDatos(almacenEnDisco(raiz));
+export async function readPublication(raiz: string, geometrias: string): Promise<PreparedMap> {
+  const mapa = mapaDesdeDatos(diskStore(raiz));
   const cut = await obtenerCorte(mapa)();
   const [departments, municipalities] = await Promise.all([
     listarDepartamentos(mapa)(),

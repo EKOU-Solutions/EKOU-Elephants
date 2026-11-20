@@ -37,7 +37,7 @@ flowchart LR
 | `npm run corte:verificar -- [--carpeta <ruta>] [--url <sitio>]` | Bot de verificación del corte: conteos, cambios frente al corte anterior, páginas y, con `--url`, el sitio desplegado. Sale con 1 si algo falla. |
 | `npm run datos:local -- [AAAA-MM]` | Copia a `datos-locales/` un corte exportado en tu máquina (`ekou-pipeline export-mapa`), con la misma estructura que el Worker de datos. Con `datos-locales/`, `npm run dev` también sirve esos datos por el binding `DATOS`. |
 
-Biome es la única herramienta de lint y formato de la app. Su alcance es `src/`, `.storybook/`, `tests/`, `scripts/`, los `.ts` y `.mjs` de `paginas/` y la configuración TypeScript/JSON de la raíz. Markdown, SQL y HTML quedan fuera. El pipeline de Python usa Ruff.
+Biome es la única herramienta de lint y formato de la app. Su alcance es `src/`, `.storybook/`, `tests/`, `scripts/`, los `.ts` y `.mjs` de `pages-site/` y la configuración TypeScript/JSON de la raíz. Markdown, SQL y HTML quedan fuera. El pipeline de Python usa Ruff.
 
 ## Preview por PR
 
@@ -95,7 +95,7 @@ El Worker de datos es un espejo de los Releases: `datos/AAAA-MM/` tiene los JSON
 
 ## Páginas de cada lugar en el corte (ADR 0003)
 
-Con cada corte, `npm run paginas` genera con Astro una página HTML por lugar del mapa (`/mapa`, 32 departamentos —Bogotá, D.C. abre 11001— y 1.122 municipios: 1.155) y `sitemap.xml`, a partir de los mismos JSON que lee la API. Las escribe en `paginas/` dentro de la carpeta de publicación del Worker de datos, que las sube junto a los datos con el mismo `wrangler deploy`:
+Con cada corte, `npm run paginas` genera con Astro una página HTML por lugar del mapa (`/mapa`, 32 departamentos —Bogotá, D.C. abre 11001— y 1.122 municipios: 1.155) y `sitemap.xml`, a partir de los mismos JSON que lee la API. Las escribe en `pages-site/` dentro de la carpeta de publicación del Worker de datos, que las sube junto a los datos con el mismo `wrangler deploy`:
 
 | Archivo en `publicacion/` | Lo sirve el Worker de datos en | Lo entrega la app en |
 | --- | --- | --- |
@@ -143,8 +143,8 @@ Sin este archivo, ni el preview ni el despliegue tienen cómo saber qué corte s
 
 | Comando | Qué hace |
 | --- | --- |
-| `node scripts/corte.mjs referencia <AAAA-MM> --publicado <ISO>` (`npm run corte:referencia`) | Pone ese corte como vigente y conserva el anterior. Un mes anterior al vigente no cambia nada (solo su Release, como antes). |
-| `node scripts/corte.mjs armar [--carpeta <ruta>]` (`npm run corte:armar`) | Lo que hacía en línea «armar la publicación»: borra la carpeta (por defecto `pipeline/worker-datos/publicacion`), baja de los Releases los JSON de `cortes` (menos `reporte-extraccion.json`) y escribe `datos/latest.json` con `punteroLatest`. Falla si el Release vigente no trae `corte.json`, `departamentos.json` y `municipios.json`, o si su `publicadoEn` no es el de la referencia. Requiere `gh` con `GH_TOKEN`. |
+| `node scripts/cut.mjs referencia <AAAA-MM> --publicado <ISO>` (`npm run corte:referencia`) | Pone ese corte como vigente y conserva el anterior. Un mes anterior al vigente no cambia nada (solo su Release, como antes). |
+| `node scripts/cut.mjs armar [--carpeta <ruta>]` (`npm run corte:armar`) | Lo que hacía en línea «armar la publicación»: borra la carpeta (por defecto `pipeline/worker-datos/publicacion`), baja de los Releases los JSON de `cortes` (menos `reporte-extraccion.json`) y escribe `datos/latest.json` con `punteroLatest`. Falla si el Release vigente no trae `corte.json`, `departamentos.json` y `municipios.json`, o si su `publicadoEn` no es el de la referencia. Requiere `gh` con `GH_TOKEN`. |
 | `npm run paginas -- --carpeta <ruta> --sitio <URL>` | Las 1.155 páginas y el sitemap en `<ruta>/paginas/`. |
 | `npm run corte:verificar -- --carpeta <ruta> [--url <sitio>]` | El bot de verificación (abajo). |
 
@@ -158,7 +158,7 @@ Revisa una publicación armada y escribe un resumen en Markdown (en la salida y,
 | --- | --- |
 | Lugares y totales | No son 33 departamentos y 1.122 municipios sin repetidos; un municipio no tiene su departamento; el total nacional no cuadra con sus niveles ni con la suma de municipios y departamentos; los tres JSON no son del mismo corte. |
 | Frente al corte anterior | Una cifra (nacional, de un departamento o de un municipio) cambia más del umbral (`--umbral`, por defecto 0,25 = 25 %) entre cifras desde `--minimo` (por defecto 100 contratos); pasar a «Sin datos» cuenta como −100 %; o falta un lugar del corte anterior. Siempre lista las 10 mayores variaciones. El anterior es el otro corte de la misma publicación o `--anterior <carpeta>`; sin él, no compara. Si la ventana cambió (enero), lo advierte. |
-| Páginas generadas | La lista de lugares con página no son 1.155 (sale de `paginasDelSitio`, la misma regla con la que se generan, cargada con Vite); no hay una página por lugar, el sitemap no tiene 1.155 URL, o hay títulos o descripciones repetidos o vacíos. |
+| Páginas generadas | La lista de lugares con página no son 1.155 (sale de `sitePages`, la misma regla con la que se generan, cargada con Vite); no hay una página por lugar, el sitemap no tiene 1.155 URL, o hay títulos o descripciones repetidos o vacíos. |
 | Sitio (`--url`) | `/mapa`, `/mapa/05001` o `/mapa/11001` (la que abre el enlace de Bogotá, D.C.) no responden 200 con la página generada (con `canonical`) y su nombre y cifra en el HTML; `/api/salud` no responde; `/api/mapa/corte` no da el mismo corte. Reintenta 3 veces cada petición. |
 
 El umbral es una primera propuesta: el corte acumula desde el 1 de enero de la ventana, así que de un mes a otro una cifra sube pocos puntos. Ajústalo con lo que muestren los primeros cortes revisados.
@@ -218,7 +218,7 @@ Los agentes no tocan `.github/workflows/`: una persona del equipo aplica estos c
 +        run: |
 +          # El Release de esta ejecución ya está publicado: su corte.json dice cuándo.
 +          publicado=$(gh release download "corte-$CORTE" --pattern corte.json --output - | jq -r .publicadoEn)
-+          node scripts/corte.mjs referencia "$CORTE" --publicado "$publicado"
++          node scripts/cut.mjs referencia "$CORTE" --publicado "$publicado"
 +          if git diff --quiet -- pipeline/worker-datos/corte-vigente.json; then
 +            echo "El corte $CORTE no cambia la referencia: no se abre PR." | tee -a "$GITHUB_STEP_SUMMARY"
 +            exit 0

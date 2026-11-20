@@ -1,13 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import worker from './index';
-import {
-  CACHE_PAGINA,
-  CACHE_SITEMAP,
-  clavePagina,
-  etagPagina,
-  etiquetasDeLaApp,
-  servirPagina,
-} from './paginas';
+import { PAGE_CACHE, SITEMAP_CACHE, pageKey, pageEtag, appTags, servePage } from './pages';
 
 /**
  * Node has no HTMLRewriter: a small stand-in with the part of its API these routes use (selectors
@@ -139,26 +132,26 @@ const ETAG_SIN_ORIGEN = /^W\/"[0-9a-f]{16}-[0-9a-f]{16}"$/;
 
 const pedir = (ruta: string, init?: RequestInit) => new Request(`https://ekou.test${ruta}`, init);
 
-describe('clavePagina', () => {
+describe('pageKey', () => {
   it('one generated file per place, as the app links it', () => {
-    expect(clavePagina('/mapa')).toBe('paginas/mapa');
-    expect(clavePagina('/mapa/')).toBe('paginas/mapa');
-    expect(clavePagina('/mapa/05001')).toBe('paginas/mapa/05001');
-    expect(clavePagina('/mapa/05001/')).toBe('paginas/mapa/05001');
-    expect(clavePagina('/mapa/departamento/05')).toBe('paginas/mapa/departamento/05');
-    expect(clavePagina('/mapa/departamento/11')).toBe('paginas/mapa/11001');
-    expect(clavePagina('/sitemap.xml')).toBe('paginas/sitemap.xml');
+    expect(pageKey('/mapa')).toBe('paginas/mapa');
+    expect(pageKey('/mapa/')).toBe('paginas/mapa');
+    expect(pageKey('/mapa/05001')).toBe('paginas/mapa/05001');
+    expect(pageKey('/mapa/05001/')).toBe('paginas/mapa/05001');
+    expect(pageKey('/mapa/departamento/05')).toBe('paginas/mapa/departamento/05');
+    expect(pageKey('/mapa/departamento/11')).toBe('paginas/mapa/11001');
+    expect(pageKey('/sitemap.xml')).toBe('paginas/sitemap.xml');
   });
 
   it('nothing else', () => {
     for (const ruta of ['/', '/mapa/hola', '/mapa/123', '/mapas', '/api/mapa/corte', '/x.xml'])
-      expect(clavePagina(ruta), ruta).toBeUndefined();
+      expect(pageKey(ruta), ruta).toBeUndefined();
   });
 });
 
-describe('etiquetasDeLaApp', () => {
+describe('appTags', () => {
   it("copies the app's module scripts, preloads and stylesheets in order, nothing else", async () => {
-    expect(await etiquetasDeLaApp(new Response(INDICE))).toBe(
+    expect(await appTags(new Response(INDICE))).toBe(
       '<script type="module" crossorigin src="/assets/index-abc.js"></script>' +
         '<link rel="modulepreload" crossorigin href="/assets/vendor-def.js">' +
         '<link rel="stylesheet" crossorigin href="/assets/index-ghi.css">',
@@ -167,22 +160,22 @@ describe('etiquetasDeLaApp', () => {
 
   it('keeps an inline module script (Vite in `npm run dev`)', async () => {
     expect(
-      await etiquetasDeLaApp(
+      await appTags(
         new Response('<head><script type="module">import "/@vite/client"</script></head>'),
       ),
     ).toBe('<script type="module">import "/@vite/client"</script>');
   });
 });
 
-describe('servirPagina', () => {
+describe('servePage', () => {
   it('found: the generated page with the app scripts in its head, always revalidated', async () => {
     const a = assets();
     const d = datos();
-    const res = await servirPagina(pedir('/mapa/05001'), { ASSETS: a.fetcher, DATOS: d.fetcher });
+    const res = await servePage(pedir('/mapa/05001'), { ASSETS: a.fetcher, DATOS: d.fetcher });
     expect(res.status).toBe(200);
     expect(res.headers.get('Content-Type')).toBe('text/html; charset=utf-8');
-    expect(res.headers.get('Cache-Control')).toBe(CACHE_PAGINA);
-    expect(CACHE_PAGINA).toBe('public, no-cache');
+    expect(res.headers.get('Cache-Control')).toBe(PAGE_CACHE);
+    expect(PAGE_CACHE).toBe('public, no-cache');
     expect(res.headers.get('ETag')).toMatch(ETAG_SIN_ORIGEN);
     const html = await res.text();
     expect(html).toContain(
@@ -200,7 +193,7 @@ describe('servirPagina', () => {
 
   it('/mapa/departamento/11 is the page of 11001', async () => {
     const d = datos({ 'paginas/mapa/11001': PAGINA });
-    const res = await servirPagina(pedir('/mapa/departamento/11'), {
+    const res = await servePage(pedir('/mapa/departamento/11'), {
       ASSETS: assets().fetcher,
       DATOS: d.fetcher,
     });
@@ -209,7 +202,7 @@ describe('servirPagina', () => {
 
   it('not found: the SPA as always, without reading the index', async () => {
     const a = assets();
-    const res = await servirPagina(pedir('/mapa/05002'), {
+    const res = await servePage(pedir('/mapa/05002'), {
       ASSETS: a.fetcher,
       DATOS: datos().fetcher,
     });
@@ -225,20 +218,20 @@ describe('servirPagina', () => {
       ASSETS: assets(INDICE, '"indice-1"').fetcher,
       DATOS: datos(undefined, '"pagina-1"').fetcher,
     };
-    const res = await servirPagina(pedir('/mapa/05001'), env);
+    const res = await servePage(pedir('/mapa/05001'), env);
     const etag = res.headers.get('ETag') ?? '';
     expect(etag).toMatch(/^W\/"pagina-1-[0-9a-f]{16}"$/);
     for (const cabecera of [etag, etag.slice(2), `"otra", ${etag}`, '*']) {
-      const r304 = await servirPagina(
+      const r304 = await servePage(
         pedir('/mapa/05001', { headers: { 'If-None-Match': cabecera } }),
         env,
       );
       expect(r304.status, cabecera).toBe(304);
       expect(r304.headers.get('ETag')).toBe(etag);
-      expect(r304.headers.get('Cache-Control')).toBe(CACHE_PAGINA);
+      expect(r304.headers.get('Cache-Control')).toBe(PAGE_CACHE);
       expect(await r304.text()).toBe('');
     }
-    const otra = await servirPagina(
+    const otra = await servePage(
       pedir('/mapa/05001', { headers: { 'If-None-Match': 'W/"pagina-0-x"' } }),
       env,
     );
@@ -249,7 +242,7 @@ describe('servirPagina', () => {
   it('ETag: a new deploy (another index) or a new cut (another page) changes it', async () => {
     const etag = async (indice: string, etagIndice?: string, etagDePagina?: string) =>
       (
-        await servirPagina(pedir('/mapa/05001'), {
+        await servePage(pedir('/mapa/05001'), {
           ASSETS: assets(indice, etagIndice).fetcher,
           DATOS: datos(undefined, etagDePagina).fetcher,
         })
@@ -262,7 +255,7 @@ describe('servirPagina', () => {
     const dev = await etag(INDICE.replace('index-abc', 'index-dev'));
     expect(dev).toMatch(ETAG_SIN_ORIGEN);
     expect(await etag(INDICE.replace('index-abc', 'index-dev2'))).not.toBe(dev);
-    expect(etagPagina('a', 'b')).toBe('W/"a-b"');
+    expect(pageEtag('a', 'b')).toBe('W/"a-b"');
   });
 
   it('the index is processed once per deploy (its ETag), not on every request', async () => {
@@ -272,7 +265,7 @@ describe('servirPagina', () => {
       DATOS: datos().fetcher,
     };
     for (let i = 0; i < 3; i++)
-      expect(await (await servirPagina(pedir('/mapa/05001'), env)).text()).toContain(
+      expect(await (await servePage(pedir('/mapa/05001'), env)).text()).toContain(
         '/assets/index-once.js',
       );
     // Once for the index, then once per request to add the tags to the page.
@@ -289,7 +282,7 @@ describe('servirPagina', () => {
       () => new Response(null, { status: 307, headers: { Location: '/x' } }),
     ]) {
       const error = vi.spyOn(console, 'error').mockImplementation(() => {});
-      const res = await servirPagina(pedir('/mapa/05001'), {
+      const res = await servePage(pedir('/mapa/05001'), {
         ASSETS: assets().fetcher,
         DATOS: fetcher(falla).fetcher,
       });
@@ -299,9 +292,9 @@ describe('servirPagina', () => {
   });
 
   it('without the DATOS binding, or an index without scripts: the SPA', async () => {
-    const sinDatos = await servirPagina(pedir('/mapa/05001'), { ASSETS: assets().fetcher });
+    const sinDatos = await servePage(pedir('/mapa/05001'), { ASSETS: assets().fetcher });
     expect(await sinDatos.text()).toBe('SPA');
-    const sinScripts = await servirPagina(pedir('/mapa/05001'), {
+    const sinScripts = await servePage(pedir('/mapa/05001'), {
       ASSETS: assets('<html><head></head></html>').fetcher,
       DATOS: datos().fetcher,
     });
@@ -311,14 +304,14 @@ describe('servirPagina', () => {
   it('an unknown place or another method: the SPA, without asking DATOS', async () => {
     const d = datos();
     for (const req of [pedir('/mapa/hola'), pedir('/mapa/05001', { method: 'POST' })]) {
-      const res = await servirPagina(req, { ASSETS: assets().fetcher, DATOS: d.fetcher });
+      const res = await servePage(req, { ASSETS: assets().fetcher, DATOS: d.fetcher });
       expect(await res.text()).toBe('SPA');
     }
     expect(d.fetch).not.toHaveBeenCalled();
   });
 
   it('HEAD: the same headers, no body', async () => {
-    const res = await servirPagina(pedir('/mapa/05001', { method: 'HEAD' }), {
+    const res = await servePage(pedir('/mapa/05001', { method: 'HEAD' }), {
       ASSETS: assets().fetcher,
       DATOS: datos().fetcher,
     });
@@ -329,15 +322,15 @@ describe('servirPagina', () => {
 
   it('sitemap.xml: as generated, as XML; the SPA if there is none', async () => {
     const a = assets();
-    const res = await servirPagina(pedir('/sitemap.xml'), {
+    const res = await servePage(pedir('/sitemap.xml'), {
       ASSETS: a.fetcher,
       DATOS: datos({ 'paginas/sitemap.xml': SITEMAP }).fetcher,
     });
     expect(res.headers.get('Content-Type')).toBe('application/xml; charset=utf-8');
-    expect(res.headers.get('Cache-Control')).toBe(CACHE_SITEMAP);
+    expect(res.headers.get('Cache-Control')).toBe(SITEMAP_CACHE);
     expect(await res.text()).toBe(SITEMAP);
     expect(a.fetch).not.toHaveBeenCalled();
-    const sin = await servirPagina(pedir('/sitemap.xml'), {
+    const sin = await servePage(pedir('/sitemap.xml'), {
       ASSETS: assets().fetcher,
       DATOS: datos({}).fetcher,
     });

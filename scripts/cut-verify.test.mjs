@@ -3,19 +3,19 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { afterEach, describe, expect, it } from 'vitest';
-import { paginasDelSitio } from '../paginas/src/lib/sitio';
+import { sitePages } from '../pages-site/src/lib/site';
 import { departmentRoute, routePath } from '../src/modules/mapa/ui/mapModel';
 import {
-  ESPERADO,
+  EXPECTED,
   expectedPagePaths,
-  leerArgs,
+  parseArgs,
   loadPageRules,
-  revisarConteos,
-  revisarPaginas,
-  revisarSitio,
-  variaciones,
-  verificarCorte,
-} from './corte-verificar.mjs';
+  checkCounts,
+  checkPages,
+  checkSite,
+  variations,
+  verifyCut,
+} from './cut-verify.mjs';
 
 const MUESTRA = fileURLToPath(new URL('../docs/design/pages/map/sample/', import.meta.url));
 const leer = (archivo) => JSON.parse(readFileSync(join(MUESTRA, archivo), 'utf8'));
@@ -28,7 +28,7 @@ const muestra = () => ({
 });
 
 /** The modules the bot loads through Vite (`loadPageRules`), here imported by Vitest. */
-const RULES = { paginasDelSitio, departmentRoute, routePath };
+const RULES = { sitePages, departmentRoute, routePath };
 const rutas = () => expectedPagePaths(RULES, muestra());
 
 const carpetas = [];
@@ -56,7 +56,7 @@ function publicacion(cortes, { paginas = true, cambiarPagina } = {}) {
   }
   writeFileSync(join(raiz, 'datos', 'latest.json'), JSON.stringify({ corte: cortes[0].corte }));
   if (paginas) {
-    // Written by hand on purpose: an oracle independent of `paginasDelSitio`.
+    // Written by hand on purpose: an oracle independent of `sitePages`.
     const { departamentos, municipios } = cortes[0];
     const rutas = [
       'mapa',
@@ -87,26 +87,26 @@ function anterior(cambiar = (m) => m) {
   return c;
 }
 
-describe('revisarConteos', () => {
+describe('checkCounts', () => {
   it('the real cut: 33 departments, 1.122 municipalities and totals that add up', () => {
-    expect(revisarConteos(muestra()).every((r) => r.ok)).toBe(true);
+    expect(checkCounts(muestra()).every((r) => r.ok)).toBe(true);
   });
 
   it('a missing municipality or a total that does not add up fails', () => {
     const c = muestra();
     c.municipios.municipios.pop();
     c.departamentos.nacional.contratos += 1;
-    const fallos = revisarConteos(c).filter((r) => !r.ok);
+    const fallos = checkCounts(c).filter((r) => !r.ok);
     expect(fallos.map((r) => r.texto).join('\n')).toMatch(/1\.121 municipios[\s\S]*total nacional/);
   });
 });
 
-describe('variaciones', () => {
+describe('variations', () => {
   it('marks a figure that jumps past the threshold and ranks it first', () => {
     const antes = anterior((m) =>
       m.codigo === '05266' ? { ...m, contratosUbicados: m.contratosUbicados * 2 } : m,
     );
-    const { marcadas, lista, faltan } = variaciones(muestra(), antes, {
+    const { marcadas, lista, faltan } = variations(muestra(), antes, {
       umbral: 0.25,
       minimo: 100,
     });
@@ -121,26 +121,26 @@ describe('variaciones', () => {
       if (m.codigo === '05001') return { ...m, contratosUbicados: m.contratosUbicados };
       return m;
     });
-    expect(variaciones(muestra(), antes, { umbral: 0.25, minimo: 100 }).marcadas).toEqual([]);
+    expect(variations(muestra(), antes, { umbral: 0.25, minimo: 100 }).marcadas).toEqual([]);
     const ahora = muestra();
     ahora.municipios.municipios = ahora.municipios.municipios.map((m) =>
       m.codigo === '05001' ? { ...m, contratosUbicados: null } : m,
     );
-    const { marcadas } = variaciones(ahora, anterior(), { umbral: 0.25, minimo: 100 });
+    const { marcadas } = variations(ahora, anterior(), { umbral: 0.25, minimo: 100 });
     expect(marcadas[0]).toMatchObject({ ahora: null, cambio: -1 });
   });
 
   it('a place of the previous cut that is gone is reported', () => {
     const ahora = muestra();
     ahora.municipios.municipios = ahora.municipios.municipios.filter((m) => m.codigo !== '05001');
-    expect(variaciones(ahora, anterior()).faltan).toEqual(['Medellín, Antioquia (05001)']);
+    expect(variations(ahora, anterior()).faltan).toEqual(['Medellín, Antioquia (05001)']);
   });
 });
 
 describe('expectedPagePaths', () => {
   it("the generator's own list: Colombia, each department but Bogotá, D.C., each municipality", () => {
     const lista = rutas();
-    expect(lista).toHaveLength(ESPERADO.paginas);
+    expect(lista).toHaveLength(EXPECTED.paginas);
     expect(new Set(lista).size).toBe(lista.length);
     expect(lista[0]).toBe('/mapa');
     expect(lista).toContain('/mapa/departamento/05');
@@ -156,18 +156,18 @@ describe('expectedPagePaths', () => {
 });
 
 // Writing 1.155 small pages takes a few seconds on Windows.
-describe('revisarPaginas', { timeout: 60_000 }, () => {
+describe('checkPages', { timeout: 60_000 }, () => {
   it('1.155 pages, the sitemap and unique titles', () => {
-    expect(revisarPaginas(publicacion([muestra()]), rutas()).every((r) => r.ok)).toBe(true);
+    expect(checkPages(publicacion([muestra()]), rutas()).every((r) => r.ok)).toBe(true);
   });
 
   it('a missing page, or a list that is not the 1.155 places, fails', () => {
     const carpeta = publicacion([muestra()]);
     rmSync(join(carpeta, 'paginas', 'mapa', '05001.html'));
-    const fallos = revisarPaginas(carpeta, rutas()).filter((r) => !r.ok);
+    const fallos = checkPages(carpeta, rutas()).filter((r) => !r.ok);
     expect(fallos.map((r) => r.texto).join('\n')).toContain('faltan: mapa/05001.html');
-    // Pages and list agree, but the list is not the 1.155 places of ESPERADO.paginas.
-    const corta = revisarPaginas(
+    // Pages and list agree, but the list is not the 1.155 places of EXPECTED.paginas.
+    const corta = checkPages(
       carpeta,
       rutas().filter((r) => r !== '/mapa/05001'),
     ).filter((r) => !r.ok);
@@ -176,19 +176,19 @@ describe('revisarPaginas', { timeout: 60_000 }, () => {
   });
 
   it('no pages, or a repeated title, fails', () => {
-    const sin = revisarPaginas(publicacion([muestra()], { paginas: false }), rutas());
+    const sin = checkPages(publicacion([muestra()], { paginas: false }), rutas());
     expect(sin).toEqual([{ ok: false, texto: expect.stringContaining('npm run paginas') }]);
     const repetido = publicacion([muestra()], {
       cambiarPagina: (ruta) => (ruta === 'mapa/05002' ? 'mapa/05001' : undefined),
     });
-    const fallos = revisarPaginas(repetido, rutas()).filter((r) => !r.ok);
+    const fallos = checkPages(repetido, rutas()).filter((r) => !r.ok);
     expect(fallos.map((r) => r.texto).join('\n')).toContain(
       'Títulos repetidos o vacíos: mapa/05001',
     );
   });
 });
 
-describe('revisarSitio', () => {
+describe('checkSite', () => {
   const sitio = (paginas) => async (url) => {
     const ruta = new URL(url).pathname;
     if (ruta === '/api/salud') return new Response('{"ok":true}');
@@ -199,7 +199,7 @@ describe('revisarSitio', () => {
   const pagina = (texto) => `<link rel="canonical" href="x">${texto}`;
 
   it('each page brings its name and its figure in the HTML, and the API answers', async () => {
-    const revisiones = await revisarSitio(
+    const revisiones = await checkSite(
       'https://pr-1.example.dev',
       muestra(),
       RULES,
@@ -214,18 +214,18 @@ describe('revisarSitio', () => {
   });
 
   it('the SPA without the generated page fails', async () => {
-    const revisiones = await revisarSitio('https://pr-1.example.dev', muestra(), RULES, sitio({}));
+    const revisiones = await checkSite('https://pr-1.example.dev', muestra(), RULES, sitio({}));
     expect(revisiones.filter((r) => !r.ok)).toHaveLength(3);
     expect(revisiones[1]?.texto).toContain('sin página generada');
   });
 });
 
-describe('verificarCorte', { timeout: 60_000 }, () => {
+describe('verifyCut', { timeout: 60_000 }, () => {
   it('compares with the other cut of the same publication and writes the summary', async () => {
     const antes = anterior((m) =>
       m.codigo === '05266' ? { ...m, contratosUbicados: m.contratosUbicados * 2 } : m,
     );
-    const { ok, markdown } = await verificarCorte({
+    const { ok, markdown } = await verifyCut({
       carpeta: publicacion([muestra(), antes]),
       umbral: 0.25,
       minimo: 100,
@@ -239,7 +239,7 @@ describe('verificarCorte', { timeout: 60_000 }, () => {
   });
 
   it('without a previous cut it does not compare, and passes', async () => {
-    const { ok, markdown } = await verificarCorte({
+    const { ok, markdown } = await verifyCut({
       carpeta: publicacion([muestra()]),
       umbral: 0.25,
       minimo: 100,
@@ -249,14 +249,14 @@ describe('verificarCorte', { timeout: 60_000 }, () => {
   });
 });
 
-describe('leerArgs', () => {
+describe('parseArgs', () => {
   it('defaults and validation', () => {
-    expect(leerArgs([])).toEqual({ carpeta: 'datos-locales', umbral: 0.25, minimo: 100 });
-    expect(leerArgs(['--umbral', '0.1', '--url', 'https://a.dev'])).toMatchObject({
+    expect(parseArgs([])).toEqual({ carpeta: 'datos-locales', umbral: 0.25, minimo: 100 });
+    expect(parseArgs(['--umbral', '0.1', '--url', 'https://a.dev'])).toMatchObject({
       umbral: 0.1,
       url: 'https://a.dev',
     });
-    expect(() => leerArgs(['--umbral', '0'])).toThrow('--umbral');
-    expect(() => leerArgs(['--otro', 'x'])).toThrow('Argumento desconocido');
+    expect(() => parseArgs(['--umbral', '0'])).toThrow('--umbral');
+    expect(() => parseArgs(['--otro', 'x'])).toThrow('Argumento desconocido');
   });
 });

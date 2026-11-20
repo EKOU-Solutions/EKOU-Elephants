@@ -2,12 +2,7 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
-import {
-  actualizarReferencia,
-  armarPublicacion,
-  leerReferencia,
-  validarReferencia,
-} from './corte.mjs';
+import { updateReference, assemblePublication, readReference, validateReference } from './cut.mjs';
 
 const P = '2026-11-16T00:00:00Z';
 const Q = '2026-12-16T00:00:00Z';
@@ -18,17 +13,17 @@ afterEach(() => {
 
 describe('referencia del corte vigente', () => {
   it('the one in the repository is valid', () => {
-    expect(leerReferencia()).toMatchObject({ corte: '2026-11', cortes: ['2026-11'] });
+    expect(readReference()).toMatchObject({ corte: '2026-11', cortes: ['2026-11'] });
   });
 
   it('a new cut becomes current and keeps the previous one', () => {
     const ref = { corte: '2026-11', publicado: P, cortes: ['2026-11', '2026-10'] };
-    expect(actualizarReferencia(ref, '2026-12', Q)).toEqual({
+    expect(updateReference(ref, '2026-12', Q)).toEqual({
       corte: '2026-12',
       publicado: Q,
       cortes: ['2026-12', '2026-11'],
     });
-    expect(actualizarReferencia(null, '2026-11', P)).toEqual({
+    expect(updateReference(null, '2026-11', P)).toEqual({
       corte: '2026-11',
       publicado: P,
       cortes: ['2026-11'],
@@ -37,36 +32,36 @@ describe('referencia del corte vigente', () => {
 
   it('reprocessing the current cut or an older one changes nothing', () => {
     const ref = { corte: '2026-11', publicado: P, cortes: ['2026-11', '2026-10'] };
-    expect(actualizarReferencia(ref, '2026-11', P)).toBeNull();
-    expect(actualizarReferencia(ref, '2026-09', Q)).toBeNull();
-    expect(() => actualizarReferencia(ref, '2026-13', Q)).toThrow('AAAA-MM');
-    expect(() => actualizarReferencia(ref, '2026-12')).toThrow('--publicado');
+    expect(updateReference(ref, '2026-11', P)).toBeNull();
+    expect(updateReference(ref, '2026-09', Q)).toBeNull();
+    expect(() => updateReference(ref, '2026-13', Q)).toThrow('AAAA-MM');
+    expect(() => updateReference(ref, '2026-12')).toThrow('--publicado');
   });
 
   it('reprocessing the current cut changes `publicado`: it opens its own PR', () => {
     const ref = { corte: '2026-11', publicado: P, cortes: ['2026-11', '2026-10'] };
-    expect(actualizarReferencia(ref, '2026-11', Q)).toEqual({ ...ref, publicado: Q });
+    expect(updateReference(ref, '2026-11', Q)).toEqual({ ...ref, publicado: Q });
   });
 
   it('rejects a reference out of order or with too many cuts', () => {
     expect(() =>
-      validarReferencia({ corte: '2026-10', publicado: P, cortes: ['2026-10', '2026-11'] }),
+      validateReference({ corte: '2026-10', publicado: P, cortes: ['2026-10', '2026-11'] }),
     ).toThrow('del más reciente');
     expect(() =>
-      validarReferencia({
+      validateReference({
         corte: '2026-12',
         publicado: P,
         cortes: ['2026-12', '2026-11', '2026-10'],
       }),
     ).toThrow('a lo sumo 2');
     expect(() =>
-      validarReferencia({ corte: '2026-11', publicado: P, cortes: ['2026-10'] }),
+      validateReference({ corte: '2026-11', publicado: P, cortes: ['2026-10'] }),
     ).toThrow();
-    expect(() => validarReferencia({ corte: '2026-11', cortes: ['2026-11'] })).toThrow('publicado');
+    expect(() => validateReference({ corte: '2026-11', cortes: ['2026-11'] })).toThrow('publicado');
   });
 });
 
-describe('armarPublicacion', () => {
+describe('assemblePublication', () => {
   it('downloads each cut from its Release and points latest.json to the current one', () => {
     const raiz = mkdtempSync(join(tmpdir(), 'ekou-armar-'));
     carpetas.push(raiz);
@@ -84,7 +79,7 @@ describe('armarPublicacion', () => {
       writeFileSync(join(dir, 'departamentos.json'), '{}');
       writeFileSync(join(dir, 'reporte-extraccion.json'), '{}');
     };
-    const { puntero } = armarPublicacion(
+    const { puntero } = assemblePublication(
       {
         referencia: { corte: '2026-11', publicado: P, cortes: ['2026-11', '2026-10'] },
         carpeta: raiz,
@@ -116,7 +111,7 @@ describe('armarPublicacion', () => {
       writeFileSync(join(dir, 'corte.json'), JSON.stringify({ publicadoEn: Q }));
     };
     expect(() =>
-      armarPublicacion(
+      assemblePublication(
         { referencia: { corte: '2026-11', publicado: P, cortes: ['2026-11'] }, carpeta: raiz },
         run,
       ),
@@ -131,7 +126,7 @@ describe('armarPublicacion', () => {
       writeFileSync(join(dir, 'calidad_corte.json'), '{}');
     };
     expect(() =>
-      armarPublicacion(
+      assemblePublication(
         { referencia: { corte: '2026-11', publicado: P, cortes: ['2026-11'] }, carpeta: raiz },
         run,
       ),

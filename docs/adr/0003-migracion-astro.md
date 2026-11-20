@@ -27,7 +27,7 @@ Al cargar el JavaScript, React monta la pantalla como hoy y el mapa queda intera
 | --- | --- | --- |
 | API (`/api/*`) | Ninguno | — |
 | App y despliegue (`vite build`, `scripts/despliegue.mjs`) | Ninguno | — |
-| `scripts/paginas.mjs` + Astro como dependencia de desarrollo | Nuevo | Este PR |
+| `scripts/pages.mjs` + Astro como dependencia de desarrollo | Nuevo | Este PR |
 | Enrutado del Worker de la app | Para `/mapa/...`, buscar primero la página generada | Este PR |
 | `scripts/` (verificación del corte) | Nuevo: el bot de pruebas del corte | Este PR |
 | `corte-mensual.yml`, `app-preview.yml`, `app-deploy.yml` | El flujo de «Publicación del corte con PR y preview» | Una persona del equipo (los agentes no tocan `.github/workflows/`); los cambios van escritos en `docs/ci-cd.md` |

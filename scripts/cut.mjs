@@ -3,10 +3,10 @@
 // `pipeline/worker-datos/corte-vigente.json`. El preview de ese PR y el despliegue de `main` arman la
 // publicación desde los Releases a partir de ese archivo, con el mismo comando.
 // Uso:
-//   node scripts/corte.mjs referencia <AAAA-MM> --publicado <ISO>
+//   node scripts/cut.mjs referencia <AAAA-MM> --publicado <ISO>
 //       Pone ese corte como vigente (conserva el anterior). --publicado es el `publicadoEn` del
 //       corte.json de su Release: cambia también al reprocesar el mismo mes.
-//   node scripts/corte.mjs armar [--carpeta <ruta>]
+//   node scripts/cut.mjs armar [--carpeta <ruta>]
 //       Baja de los Releases los JSON de los cortes de la referencia y escribe datos/latest.json.
 //       Por defecto en pipeline/worker-datos/publicacion (la carpeta que despliega el Worker de datos).
 // Opción común: --referencia <ruta> (por defecto pipeline/worker-datos/corte-vigente.json).
@@ -18,10 +18,10 @@ import { fileURLToPath } from 'node:url';
 import { punteroLatest, validarCorte } from './datos.mjs';
 
 const RAIZ_REPO = fileURLToPath(new URL('..', import.meta.url));
-export const REFERENCIA = 'pipeline/worker-datos/corte-vigente.json';
-export const PUBLICACION = 'pipeline/worker-datos/publicacion';
+export const REFERENCE = 'pipeline/worker-datos/corte-vigente.json';
+export const PUBLICATION = 'pipeline/worker-datos/publicacion';
 // El vigente y el anterior: una petición que leyó el latest.json previo encuentra aún sus archivos.
-export const CORTES_PUBLICADOS = 2;
+export const PUBLISHED_CUTS = 2;
 // Diagnóstico de la extracción: está en el Release, pero el Worker de datos no lo publica.
 const NO_PUBLICABLES = ['reporte-extraccion.json'];
 // Los que lee la API del mapa (`ekou-pipeline export-mapa`).
@@ -31,7 +31,7 @@ const DEL_MAPA = ['corte.json', 'departamentos.json', 'municipios.json'];
  * `{ corte, publicado, cortes }`: el corte vigente, el `publicadoEn` de su corte.json (el Release que
  * se revisó) y los cortes que publica el Worker de datos, del más reciente al más viejo.
  */
-export function validarReferencia(ref) {
+export function validateReference(ref) {
   if (!ref || typeof ref !== 'object') throw new Error('La referencia del corte no es un objeto.');
   validarCorte(ref.corte);
   if (typeof ref.publicado !== 'string' || Number.isNaN(Date.parse(ref.publicado)))
@@ -44,13 +44,13 @@ export function validarReferencia(ref) {
     throw new Error('`cortes` debe ir del más reciente al más viejo, sin repetidos.');
   if (ref.cortes[0] !== ref.corte)
     throw new Error('El corte vigente debe ser el primero de `cortes`.');
-  if (ref.cortes.length > CORTES_PUBLICADOS)
-    throw new Error(`El Worker de datos publica a lo sumo ${CORTES_PUBLICADOS} cortes.`);
+  if (ref.cortes.length > PUBLISHED_CUTS)
+    throw new Error(`El Worker de datos publica a lo sumo ${PUBLISHED_CUTS} cortes.`);
   return { corte: ref.corte, publicado: ref.publicado, cortes: ref.cortes };
 }
 
-export function leerReferencia(ruta = join(RAIZ_REPO, REFERENCIA)) {
-  return validarReferencia(JSON.parse(readFileSync(ruta, 'utf8')));
+export function readReference(ruta = join(RAIZ_REPO, REFERENCE)) {
+  return validateReference(JSON.parse(readFileSync(ruta, 'utf8')));
 }
 
 /**
@@ -58,7 +58,7 @@ export function leerReferencia(ruta = join(RAIZ_REPO, REFERENCIA)) {
  * reproceso de un mes viejo) solo actualiza su Release, como antes. Reprocesar el vigente cambia
  * `publicado`, así que también abre su PR.
  */
-export function actualizarReferencia(ref, corte, publicado) {
+export function updateReference(ref, corte, publicado) {
   validarCorte(corte);
   if (typeof publicado !== 'string' || Number.isNaN(Date.parse(publicado)))
     throw new Error('Falta --publicado: el publicadoEn del corte.json del Release.');
@@ -66,7 +66,7 @@ export function actualizarReferencia(ref, corte, publicado) {
   const cortes = [...new Set([corte, ...(ref?.cortes ?? [])])]
     .sort()
     .reverse()
-    .slice(0, CORTES_PUBLICADOS);
+    .slice(0, PUBLISHED_CUTS);
   const nueva = { corte, publicado, cortes };
   return ref && JSON.stringify(ref) === JSON.stringify(nueva) ? null : nueva;
 }
@@ -78,8 +78,8 @@ const ejecutar = (comando, args, opciones = {}) =>
  * Arma la carpeta del Worker de datos desde los Releases: `datos/<corte>/*.json` de cada corte de la
  * referencia y `datos/latest.json` del vigente. Borra la carpeta antes (también sus páginas).
  */
-export function armarPublicacion({ referencia, carpeta }, run = ejecutar) {
-  const ref = validarReferencia(referencia);
+export function assemblePublication({ referencia, carpeta }, run = ejecutar) {
+  const ref = validateReference(referencia);
   const raiz = resolve(RAIZ_REPO, carpeta);
   rmSync(raiz, { recursive: true, force: true });
   for (const corte of ref.cortes) {
@@ -106,8 +106,8 @@ export function armarPublicacion({ referencia, carpeta }, run = ejecutar) {
   return { raiz, puntero };
 }
 
-function leerArgs(argv) {
-  const args = { posicionales: [], carpeta: PUBLICACION, referencia: REFERENCIA, publicado: '' };
+function parseArgs(argv) {
+  const args = { posicionales: [], carpeta: PUBLICATION, referencia: REFERENCE, publicado: '' };
   for (let i = 0; i < argv.length; i++) {
     if (argv[i] === '--carpeta') args.carpeta = argv[++i];
     else if (argv[i] === '--referencia') args.referencia = argv[++i];
@@ -119,12 +119,12 @@ function leerArgs(argv) {
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const [comando, ...resto] = process.argv.slice(2);
-  const { posicionales, carpeta, referencia, publicado } = leerArgs(resto);
+  const { posicionales, carpeta, referencia, publicado } = parseArgs(resto);
   const rutaReferencia = resolve(RAIZ_REPO, referencia);
   try {
     if (comando === 'referencia') {
-      const actual = existsSync(rutaReferencia) ? leerReferencia(rutaReferencia) : null;
-      const nueva = actualizarReferencia(actual, posicionales[0], publicado);
+      const actual = existsSync(rutaReferencia) ? readReference(rutaReferencia) : null;
+      const nueva = updateReference(actual, posicionales[0], publicado);
       if (!nueva) {
         console.log(
           `El corte ${posicionales[0]} no cambia la referencia (vigente: ${actual?.corte}).`,
@@ -134,14 +134,14 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
         console.log(`Corte vigente: ${nueva.corte}; publicados: ${nueva.cortes.join(', ')}.`);
       }
     } else if (comando === 'armar') {
-      const { raiz, puntero } = armarPublicacion({
-        referencia: leerReferencia(rutaReferencia),
+      const { raiz, puntero } = assemblePublication({
+        referencia: readReference(rutaReferencia),
         carpeta,
       });
       console.log(`Publicación en ${raiz}: latest.json → ${puntero.corte}.`);
     } else {
       throw new Error(
-        'Uso: node scripts/corte.mjs referencia <AAAA-MM> --publicado <ISO> | armar [--carpeta <ruta>]',
+        'Uso: node scripts/cut.mjs referencia <AAAA-MM> --publicado <ISO> | armar [--carpeta <ruta>]',
       );
     }
   } catch (error) {

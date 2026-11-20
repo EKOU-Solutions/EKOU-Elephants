@@ -1,10 +1,10 @@
 ---
-import Lugar from '../../components/Lugar.astro';
-import { cargarSitio } from '../../lib/corte';
+import Lugar from '../../components/Place.astro';
+import { loadSite } from '../../lib/cut';
 
 export async function getStaticPaths() {
-  const { aGenerar } = await cargarSitio();
-  return aGenerar.flatMap(({ route }) =>
+  const { toGenerate } = await loadSite();
+  return toGenerate.flatMap(({ route }) =>
     route.view === 'municipality' ? [{ params: { codigo: route.code }, props: { route } }] : [],
   );
 }

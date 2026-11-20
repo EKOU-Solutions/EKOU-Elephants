@@ -15,8 +15,8 @@ import { join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { runnerImport } from 'vite';
 
-export const ESPERADO = { departamentos: 33, municipios: 1122, paginas: 1155 };
-export const POR_DEFECTO = { umbral: 0.25, minimo: 100 };
+export const EXPECTED = { departamentos: 33, municipios: 1122, paginas: 1155 };
+export const DEFAULTS = { umbral: 0.25, minimo: 100 };
 const MEDELLIN = '05001';
 const RAIZ_REPO = fileURLToPath(new URL('..', import.meta.url));
 const CORTE = /^\d{4}-(0[1-9]|1[0-2])$/;
@@ -27,7 +27,7 @@ const porcentaje = (r) =>
   `${r > 0 ? '+' : ''}${new Intl.NumberFormat('es-CO', { maximumFractionDigits: 1 }).format(r * 100)} %`;
 
 /** Los JSON de un corte de la publicación (`datos/<corte>/`). */
-export function leerCorte(carpeta, corte) {
+export function readCut(carpeta, corte) {
   const dir = join(carpeta, 'datos', corte);
   return {
     corte,
@@ -38,16 +38,16 @@ export function leerCorte(carpeta, corte) {
 }
 
 /** El corte vigente (según `datos/latest.json`) y, si la carpeta lo trae, el anterior más reciente. */
-export function leerPublicacion(carpeta) {
+export function readPublication(carpeta) {
   const { corte } = leerJson(join(carpeta, 'datos', 'latest.json'));
   const otros = readdirSync(join(carpeta, 'datos'))
     .filter((d) => CORTE.test(d) && d < corte)
     .sort();
-  return { vigente: leerCorte(carpeta, corte), anterior: otros.at(-1) };
+  return { vigente: readCut(carpeta, corte), anterior: otros.at(-1) };
 }
 
 /** Lugares y totales del corte: los 33 departamentos, los 1.122 municipios y que todo cuadre. */
-export function revisarConteos({ info, departamentos, municipios }) {
+export function checkCounts({ info, departamentos, municipios }) {
   const deps = departamentos.departamentos;
   const munis = municipios.municipios;
   const codigosDep = new Set(deps.map((d) => d.codigo));
@@ -58,12 +58,12 @@ export function revisarConteos({ info, departamentos, municipios }) {
   const sumaMun = munis.reduce((s, m) => s + (m.contratosUbicados ?? 0), 0);
   return [
     {
-      ok: deps.length === ESPERADO.departamentos && codigosDep.size === deps.length,
-      texto: `${deps.length} departamentos (se esperan ${ESPERADO.departamentos}, sin repetidos)`,
+      ok: deps.length === EXPECTED.departamentos && codigosDep.size === deps.length,
+      texto: `${deps.length} departamentos (se esperan ${EXPECTED.departamentos}, sin repetidos)`,
     },
     {
-      ok: munis.length === ESPERADO.municipios && codigosMun.size === munis.length,
-      texto: `${numero(munis.length)} municipios (se esperan ${numero(ESPERADO.municipios)}, sin repetidos)`,
+      ok: munis.length === EXPECTED.municipios && codigosMun.size === munis.length,
+      texto: `${numero(munis.length)} municipios (se esperan ${numero(EXPECTED.municipios)}, sin repetidos)`,
     },
     {
       ok: sinDepartamento.length === 0,
@@ -125,7 +125,7 @@ function cifras({ departamentos, municipios }) {
  * `minimo` en alguno de los dos cortes (en un pueblo con 3 contratos, pasar a 6 es +100 % y no dice
  * nada). Pasar a «Sin datos» es −100 %; dejar de serlo, +100 %. Un lugar que falta es un fallo.
  */
-export function variaciones(actual, anterior, { umbral, minimo } = POR_DEFECTO) {
+export function variations(actual, anterior, { umbral, minimo } = DEFAULTS) {
   const antes = cifras(anterior);
   const ahora = cifras(actual);
   const faltan = [...antes.keys()].filter((k) => !ahora.has(k)).map((k) => antes.get(k).lugar);
@@ -152,18 +152,18 @@ export function variaciones(actual, anterior, { umbral, minimo } = POR_DEFECTO) 
 
 /**
  * Which places get a page and their paths, from the same TypeScript modules the pages are generated
- * with (`paginasDelSitio` in paginas/src/lib/sitio.ts, the routes of mapModel.ts), loaded through
+ * with (`sitePages` in pages-site/src/lib/site.ts, the routes of mapModel.ts), loaded through
  * Vite so the rule is never copied here. Takes about half a second.
  */
 export async function loadPageRules() {
   const importar = async (ruta) =>
     (await runnerImport(join(RAIZ_REPO, ruta), { configFile: false, logLevel: 'silent' })).module;
   const [sitio, mapa] = await Promise.all([
-    importar('paginas/src/lib/sitio.ts'),
+    importar('pages-site/src/lib/site.ts'),
     importar('src/modules/mapa/ui/mapModel.ts'),
   ]);
   return {
-    paginasDelSitio: sitio.paginasDelSitio,
+    sitePages: sitio.sitePages,
     departmentRoute: mapa.departmentRoute,
     routePath: mapa.routePath,
   };
@@ -171,12 +171,12 @@ export async function loadPageRules() {
 
 /**
  * The paths of the pages the cut must have (`/mapa`, `/mapa/departamento/05`, `/mapa/05001`…).
- * `paginasDelSitio` only reads the cut's places, so the JSONs are enough (no map outlines needed).
+ * `sitePages` only reads the cut's places, so the JSONs are enough (no map outlines needed).
  */
 export function expectedPagePaths(rules, { departamentos, municipios }) {
   return rules
-    .paginasDelSitio({ data: { departments: departamentos, municipalities: municipios } })
-    .map((p) => p.ruta);
+    .sitePages({ data: { departments: departamentos, municipalities: municipios } })
+    .map((p) => p.path);
 }
 
 const archivosHtml = (dir) =>
@@ -186,9 +186,9 @@ const archivosHtml = (dir) =>
 
 /**
  * The generated pages: one per path of `rutas` (`expectedPagePaths`, which must be the 1.155 of
- * `ESPERADO.paginas`), the sitemap with all of them, and unique titles and descriptions.
+ * `EXPECTED.paginas`), the sitemap with all of them, and unique titles and descriptions.
  */
-export function revisarPaginas(carpeta, rutas) {
+export function checkPages(carpeta, rutas) {
   const dir = join(carpeta, 'paginas');
   if (!existsSync(dir))
     return [{ ok: false, texto: 'No hay páginas generadas: falta `npm run paginas`' }];
@@ -214,8 +214,8 @@ export function revisarPaginas(carpeta, rutas) {
   const dRep = repetidos(descripciones);
   return [
     {
-      ok: esperadas.length === ESPERADO.paginas,
-      texto: `${numero(esperadas.length)} lugares con página (se esperan ${numero(ESPERADO.paginas)}: Colombia, los departamentos menos Bogotá, D.C. y los municipios)`,
+      ok: esperadas.length === EXPECTED.paginas,
+      texto: `${numero(esperadas.length)} lugares con página (se esperan ${numero(EXPECTED.paginas)}: Colombia, los departamentos menos Bogotá, D.C. y los municipios)`,
     },
     {
       ok: html.length === esperadas.length && faltan.length === 0,
@@ -257,12 +257,7 @@ async function pedir(url, fetcher, intentos = 3) {
  * El sitio desplegado: cada página trae en su HTML su nombre y su cifra (no la SPA vacía) y la API
  * sigue respondiendo con el mismo corte.
  */
-export async function revisarSitio(
-  url,
-  { info, departamentos, municipios },
-  rules,
-  fetcher = fetch,
-) {
+export async function checkSite(url, { info, departamentos, municipios }, rules, fetcher = fetch) {
   const muni = (c) => municipios.municipios.find((m) => m.codigo === c);
   // Medellín and the page Bogotá, D.C.'s link opens (11001, by the app's own rule).
   const bogota = rules.departmentRoute('11');
@@ -303,7 +298,7 @@ export async function revisarSitio(
 
 const lineas = (revisiones) => revisiones.map((r) => `- ${r.ok ? '✅' : '❌'} ${r.texto}`);
 
-export function resumenMarkdown({ vigente, anterior, conteos, cambio, paginas, sitio, opciones }) {
+export function markdownSummary({ vigente, anterior, conteos, cambio, paginas, sitio, opciones }) {
   const fallos = [...conteos, ...paginas, ...(sitio ?? [])].filter((r) => !r.ok).length;
   const marcadas = cambio?.marcadas.length ?? 0;
   const faltan = cambio?.faltan.length ?? 0;
@@ -350,31 +345,31 @@ export function resumenMarkdown({ vigente, anterior, conteos, cambio, paginas, s
   return { ok, markdown: `${out.join('\n')}\n` };
 }
 
-export async function verificarCorte(opciones, fetcher = fetch, rules = undefined) {
+export async function verifyCut(opciones, fetcher = fetch, rules = undefined) {
   rules ??= await loadPageRules();
   const carpeta = resolve(opciones.carpeta);
-  const { vigente, anterior: otro } = leerPublicacion(carpeta);
+  const { vigente, anterior: otro } = readPublication(carpeta);
   let anterior;
   if (opciones.anterior) {
     const dir = resolve(opciones.anterior);
-    anterior = leerCorte(dir, leerJson(join(dir, 'datos', 'latest.json')).corte);
+    anterior = readCut(dir, leerJson(join(dir, 'datos', 'latest.json')).corte);
   } else if (otro) {
-    anterior = leerCorte(carpeta, otro);
+    anterior = readCut(carpeta, otro);
   }
   const resultado = {
     vigente,
     anterior,
-    conteos: revisarConteos(vigente),
-    cambio: anterior ? variaciones(vigente, anterior, opciones) : undefined,
-    paginas: revisarPaginas(carpeta, expectedPagePaths(rules, vigente)),
-    sitio: opciones.url ? await revisarSitio(opciones.url, vigente, rules, fetcher) : undefined,
+    conteos: checkCounts(vigente),
+    cambio: anterior ? variations(vigente, anterior, opciones) : undefined,
+    paginas: checkPages(carpeta, expectedPagePaths(rules, vigente)),
+    sitio: opciones.url ? await checkSite(opciones.url, vigente, rules, fetcher) : undefined,
     opciones,
   };
-  return resumenMarkdown(resultado);
+  return markdownSummary(resultado);
 }
 
-export function leerArgs(argv) {
-  const args = { carpeta: 'datos-locales', ...POR_DEFECTO };
+export function parseArgs(argv) {
+  const args = { carpeta: 'datos-locales', ...DEFAULTS };
   for (let i = 0; i < argv.length; i++) {
     const valor = argv[i + 1];
     if (argv[i] === '--carpeta') args.carpeta = valor;
@@ -393,7 +388,7 @@ export function leerArgs(argv) {
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   try {
-    const { ok, markdown } = await verificarCorte(leerArgs(process.argv.slice(2)));
+    const { ok, markdown } = await verifyCut(parseArgs(process.argv.slice(2)));
     console.log(markdown);
     if (process.env.GITHUB_STEP_SUMMARY) appendFileSync(process.env.GITHUB_STEP_SUMMARY, markdown);
     process.exitCode = ok ? 0 : 1;

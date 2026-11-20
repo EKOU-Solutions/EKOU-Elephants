@@ -87,7 +87,7 @@ export interface MapPageProps {
   defaultDetent?: Detent;
   /**
    * Página generada sin JavaScript (ADR 0003): el mapa y la ficha se acomodan solo con CSS, en la misma
-   * posición que toman al montar. Solo la usa `paginas/`; la app nunca la pasa.
+   * posición que toman al montar. Solo la usa `pages-site/`; la app nunca la pasa.
    */
   prerendered?: boolean;
 }

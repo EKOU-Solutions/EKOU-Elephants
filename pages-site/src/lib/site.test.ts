@@ -1,44 +1,37 @@
 import { describe, expect, it } from 'vitest';
 import { sampleMap } from '../../../src/modules/mapa/ui/sample';
-import {
-  jsonEnHtml,
-  metadatos,
-  paginasDelSitio,
-  sitemap,
-  tituloDelLugar,
-  urlDelSitio,
-} from './sitio';
-import { textosDelLugar } from './textos';
+import { jsonInHtml, metadata, sitePages, sitemap, placeTitle, siteUrl } from './site';
+import { placeCopy } from './copy';
 
 // The real sample of the map contract (cut 2026-11, data to 7 Nov 2026).
 const SITIO = 'https://ejemplo.co';
-const paginas = paginasDelSitio(sampleMap);
-const todos = paginas.map((p) => metadatos(sampleMap, p.route, SITIO));
+const paginas = sitePages(sampleMap);
+const todos = paginas.map((p) => metadata(sampleMap, p.route, SITIO));
 const CIERRE = 'Fuentes: SECOP II y SECOP I, DANE. Este mapa todavía no mide riesgo.';
 const meta = (ruta: string) => {
-  const pagina = paginas.find((p) => p.ruta === ruta);
+  const pagina = paginas.find((p) => p.path === ruta);
   if (!pagina) throw new Error(`sin página ${ruta}`);
-  return metadatos(sampleMap, pagina.route, SITIO);
+  return metadata(sampleMap, pagina.route, SITIO);
 };
 
-describe('paginasDelSitio', () => {
+describe('sitePages', () => {
   it('one page per place: Colombia, 32 departments and 1.122 municipalities', () => {
     expect(paginas).toHaveLength(1155);
-    expect(new Set(paginas.map((p) => p.ruta)).size).toBe(1155);
-    expect(paginas[0]?.ruta).toBe('/mapa');
+    expect(new Set(paginas.map((p) => p.path)).size).toBe(1155);
+    expect(paginas[0]?.path).toBe('/mapa');
     expect(paginas.filter((p) => p.route.view === 'department')).toHaveLength(32);
     expect(paginas.filter((p) => p.route.view === 'municipality')).toHaveLength(1122);
   });
 
   it('Bogotá, D.C. has no department page: its link is 11001, as in the app', () => {
-    const rutas = paginas.map((p) => p.ruta);
+    const rutas = paginas.map((p) => p.path);
     expect(rutas).not.toContain('/mapa/departamento/11');
     expect(rutas).toContain('/mapa/11001');
     expect(rutas).toContain('/mapa/departamento/05');
   });
 });
 
-describe('metadatos', () => {
+describe('metadata', () => {
   it('a municipality: name, department, figure, period and sources', () => {
     const m = meta('/mapa/05001');
     expect(m.title).toBe('Medellín, Antioquia: contratos públicos · EKOU Elephants');
@@ -136,14 +129,14 @@ describe('metadatos', () => {
   });
 
   it('JSON-LD never closes its script tag', () => {
-    expect(jsonEnHtml({ a: '</script><b>' })).toBe('{"a":"\\u003c/script>\\u003cb>"}');
+    expect(jsonInHtml({ a: '</script><b>' })).toBe('{"a":"\\u003c/script>\\u003cb>"}');
   });
 });
 
-describe('textosDelLugar', () => {
+describe('placeCopy', () => {
   it('one contract is singular', () => {
     expect(
-      textosDelLugar(
+      placeCopy(
         { tipo: 'municipio', nombre: 'X', departamento: 'Y', contratos: 1 },
         'del 1 ene 2021 al 7 nov 2026',
       ).description,
@@ -152,7 +145,7 @@ describe('textosDelLugar', () => {
 
   it('0 measured is written 0, not «Sin datos»', () => {
     expect(
-      textosDelLugar(
+      placeCopy(
         { tipo: 'municipio', nombre: 'X', departamento: 'Y', contratos: 0 },
         'del 1 ene 2021 al 7 nov 2026',
       ).description,
@@ -161,7 +154,7 @@ describe('textosDelLugar', () => {
 
   it('a department missing one of its figures is «Sin datos»', () => {
     expect(
-      textosDelLugar(
+      placeCopy(
         { tipo: 'departamento', nombre: 'Y', enMunicipios: 3, soloDepartamento: null },
         'del 1 ene 2021 al 7 nov 2026',
       ).description,
@@ -181,22 +174,22 @@ describe('sitemap', () => {
   });
 });
 
-describe('urlDelSitio', () => {
+describe('siteUrl', () => {
   it('absolute http(s), without the trailing slash', () => {
-    expect(urlDelSitio('https://ejemplo.co/')).toBe('https://ejemplo.co');
-    expect(() => urlDelSitio(undefined)).toThrow('Falta la URL del sitio');
-    expect(() => urlDelSitio('ftp://ejemplo.co')).toThrow('http(s)');
+    expect(siteUrl('https://ejemplo.co/')).toBe('https://ejemplo.co');
+    expect(() => siteUrl(undefined)).toThrow('Falta la URL del sitio');
+    expect(() => siteUrl('ftp://ejemplo.co')).toThrow('http(s)');
   });
 });
 
-describe('tituloDelLugar', () => {
+describe('placeTitle', () => {
   it('is the page title of every place, so the app tab never changes on mount', () => {
     paginas.forEach((p, i) => {
-      expect(tituloDelLugar(sampleMap, p.route)).toBe(todos[i]?.title);
+      expect(placeTitle(sampleMap, p.route)).toBe(todos[i]?.title);
     });
   });
 
   it('a place out of the cut has none (the app keeps its generic title)', () => {
-    expect(tituloDelLugar(sampleMap, { view: 'municipality', code: '99999' })).toBeUndefined();
+    expect(placeTitle(sampleMap, { view: 'municipality', code: '99999' })).toBeUndefined();
   });
 });

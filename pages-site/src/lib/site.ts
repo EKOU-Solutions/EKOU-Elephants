@@ -9,11 +9,11 @@ import {
   period,
   routePath,
 } from '../../../src/modules/mapa/ui/mapModel';
-import { type LugarParaTextos, textosDelLugar } from './textos';
+import { type PlaceForCopy, placeCopy } from './copy';
 
-export interface Pagina {
+export interface Page {
   /** Canonical path in the app: `/mapa`, `/mapa/departamento/05`, `/mapa/05001`. */
-  ruta: string;
+  path: string;
   route: MapRoute;
 }
 
@@ -21,7 +21,7 @@ export interface Pagina {
  * One page per place: Colombia, each department but Bogotá, D.C. (its link opens 11001, as in the
  * app) and each municipality of the cut.
  */
-export function paginasDelSitio(map: PreparedMap): Pagina[] {
+export function sitePages(map: PreparedMap): Page[] {
   const routes: MapRoute[] = [
     { view: 'country' },
     ...map.data.departments.departamentos
@@ -31,15 +31,15 @@ export function paginasDelSitio(map: PreparedMap): Pagina[] {
       (m): MapRoute => ({ view: 'municipality', code: m.codigo }),
     ),
   ];
-  return routes.map((route) => ({ ruta: routePath(route), route }));
+  return routes.map((route) => ({ path: routePath(route), route }));
 }
 
 /** The site's URL without a trailing slash; rejects anything that is not an absolute http(s) URL. */
-export function urlDelSitio(valor: string | undefined): string {
-  if (!valor) throw new Error('Falta la URL del sitio (EKOU_SITIO_URL o --sitio).');
-  const url = new URL(valor);
+export function siteUrl(value: string | undefined): string {
+  if (!value) throw new Error('Falta la URL del sitio (EKOU_SITIO_URL o --sitio).');
+  const url = new URL(value);
   if (url.protocol !== 'https:' && url.protocol !== 'http:')
-    throw new Error(`La URL del sitio debe ser http(s): ${valor}`);
+    throw new Error(`La URL del sitio debe ser http(s): ${value}`);
   return url.href.replace(/\/+$/, '');
 }
 
@@ -49,7 +49,7 @@ const LICENCIAS: Record<string, string> = {
 };
 
 /** What a place's page says in its head: title, description, canonical and the JSON-LD `Dataset`. */
-export interface Metadatos {
+export interface Metadata {
   title: string;
   description: string;
   canonical: string;
@@ -61,7 +61,7 @@ const nombreCorto = (codigo: string, nombre: string) =>
   codigo === ARCHIPELAGO ? 'San Andrés y Providencia' : nombre;
 
 /** The place as the copy function sees it, from the same figures the sheet shows. */
-function lugarParaTextos(map: PreparedMap, route: MapRoute): LugarParaTextos {
+function placeForCopy(map: PreparedMap, route: MapRoute): PlaceForCopy {
   if (route.view === 'municipality') {
     const m = map.municipalities.get(route.code);
     if (!m) throw new Error(`Municipio fuera del corte: ${route.code}`);
@@ -88,7 +88,7 @@ function lugarParaTextos(map: PreparedMap, route: MapRoute): LugarParaTextos {
 }
 
 /** Name of the place for the dataset: «Medellín, Antioquia, Colombia». */
-function nombreCompleto(map: PreparedMap, route: MapRoute): string {
+function fullName(map: PreparedMap, route: MapRoute): string {
   if (route.view === 'municipality') {
     const m = map.municipalities.get(route.code);
     if (m?.codigo === BOGOTA) return `${m.nombre}, Colombia`;
@@ -98,33 +98,30 @@ function nombreCompleto(map: PreparedMap, route: MapRoute): string {
   return 'Colombia';
 }
 
-/** `<title>` and `description` of a place of the cut (`textosDelLugar`). */
-function textos(map: PreparedMap, route: MapRoute) {
+/** `<title>` and `description` of a place of the cut (`placeCopy`). */
+function copyOf(map: PreparedMap, route: MapRoute) {
   const { cut, departments } = map.data;
-  return textosDelLugar(
-    lugarParaTextos(map, route),
-    period(cut, departments.ventana.desde).sentence,
-  );
+  return placeCopy(placeForCopy(map, route), period(cut, departments.ventana.desde).sentence);
 }
 
 /**
  * The page's `<title>`, which the app also puts on the tab, so it never changes on mount. A place out
  * of the cut (a broken link) has none.
  */
-export function tituloDelLugar(map: PreparedMap, route: MapRoute): string | undefined {
+export function placeTitle(map: PreparedMap, route: MapRoute): string | undefined {
   try {
-    return textos(map, route).title;
+    return copyOf(map, route).title;
   } catch {
     return undefined;
   }
 }
 
-export function metadatos(map: PreparedMap, route: MapRoute, sitio: string): Metadatos {
+export function metadata(map: PreparedMap, route: MapRoute, site: string): Metadata {
   const { cut, departments } = map.data;
   const desde = departments.ventana.desde;
-  const { title, description } = textos(map, route);
-  const canonical = `${sitio}${routePath(route)}`;
-  const lugar = nombreCompleto(map, route);
+  const { title, description } = copyOf(map, route);
+  const canonical = `${site}${routePath(route)}`;
+  const place = fullName(map, route);
   return {
     title,
     description,
@@ -132,13 +129,13 @@ export function metadatos(map: PreparedMap, route: MapRoute, sitio: string): Met
     jsonLd: {
       '@context': 'https://schema.org',
       '@type': 'Dataset',
-      name: `Contratos públicos ubicados en ${lugar}`,
+      name: `Contratos públicos ubicados en ${place}`,
       description,
       url: canonical,
       inLanguage: 'es-CO',
       dateModified: cut.fechaCorte,
       temporalCoverage: `${desde}-01-01/${cut.fechaCorte}`,
-      spatialCoverage: { '@type': 'Place', name: lugar },
+      spatialCoverage: { '@type': 'Place', name: place },
       isAccessibleForFree: true,
       isBasedOn: cut.fuentes.map((f) => ({
         '@type': 'Dataset',
@@ -152,19 +149,18 @@ export function metadatos(map: PreparedMap, route: MapRoute, sitio: string): Met
   };
 }
 
-const escaparXml = (s: string) =>
+const escapeXml = (s: string) =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
 /** `sitemap.xml` with every page and the cut date as `lastmod`. */
-export function sitemap(paginas: Pagina[], sitio: string, lastmod: string): string {
-  const urls = paginas
+export function sitemap(pages: Page[], site: string, lastmod: string): string {
+  const urls = pages
     .map(
-      (p) =>
-        `<url><loc>${escaparXml(`${sitio}${p.ruta}`)}</loc><lastmod>${lastmod}</lastmod></url>`,
+      (p) => `<url><loc>${escapeXml(`${site}${p.path}`)}</loc><lastmod>${lastmod}</lastmod></url>`,
     )
     .join('\n');
   return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`;
 }
 
 /** JSON for a `<script type="application/ld+json">`: `<` escaped so no text can close the tag. */
-export const jsonEnHtml = (valor: unknown) => JSON.stringify(valor).replace(/</g, '\\u003c');
+export const jsonInHtml = (value: unknown) => JSON.stringify(value).replace(/</g, '\\u003c');
