@@ -83,6 +83,15 @@ describe('arrival height (decision 32)', () => {
     );
   });
 
+  it('the country arrives collapsed on the phone; the desktop panel has no heights', () => {
+    const half = { shown: 'half', isPanel: false, height: 400 } as const;
+    expect(arrivalDetent(half, 390, 844, false, true)).toBe('peek');
+    expect(arrivalDetent(half, 390, 844, false, false)).toBe('half');
+    expect(arrivalDetent({ shown: 'half', isPanel: true, height: 0 }, 1280, 800, false, true)).toBe(
+      'half',
+    );
+  });
+
   it('a municipality counts the room for its name above it (320 × 640)', () => {
     // 640 − 340 − 12 − 116 = 172 px free for a department; 32 px less for a municipality's name.
     const half = { shown: 'half', isPanel: false, height: 340 } as const;

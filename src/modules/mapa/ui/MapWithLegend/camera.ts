@@ -41,6 +41,15 @@ export interface FreeAreaInput {
   roomAbove: boolean;
 }
 
+/**
+ * The free area's left margin. On the phone, without the corner inset, it matches the zoom buttons'
+ * column on the right so the framed place sits centred on the screen, not pushed left.
+ */
+function leftMargin(corner: boolean, isPanel: boolean): number {
+  if (corner) return CORNER_COLUMN;
+  return isPanel ? EDGE : ZOOM_COLUMN;
+}
+
 /** The free area over the sheet, below the search and the crumbs, left of the zoom buttons. */
 export function freeRect({
   width,
@@ -50,7 +59,7 @@ export function freeRect({
   corner,
   roomAbove,
 }: FreeAreaInput): Rect {
-  const left = corner ? CORNER_COLUMN : EDGE;
+  const left = leftMargin(corner, isPanel);
   const top = (isPanel ? PANEL_TOP : PHONE_TOP) + (roomAbove ? LABEL_ROOM : 0);
   if (isPanel) {
     return { x: left, y: top, w: width - PANEL_WIDTH - ZOOM_COLUMN - left, h: height - top - EDGE };
@@ -75,7 +84,7 @@ export function freeInsets(
   corner: boolean,
   roomAbove: boolean,
 ): Record<'phone' | 'panel', FreeInsets> {
-  const left = corner ? CORNER_COLUMN : EDGE;
+  const left = leftMargin(corner, false);
   const above = roomAbove ? LABEL_ROOM : 0;
   return {
     phone: {
@@ -87,7 +96,7 @@ export function freeInsets(
     },
     panel: {
       top: PANEL_TOP + above,
-      left,
+      left: leftMargin(corner, true),
       right: PANEL_WIDTH + ZOOM_COLUMN,
       bottom: EDGE,
       minHeight: 0,
@@ -250,4 +259,19 @@ export function flightDuration(
   toDepartment: string | undefined,
 ): FlightDuration {
   return fromDepartment === toDepartment ? 'base' : 'long';
+}
+
+/**
+ * Whether a `wheel` event is two fingers sliding on a trackpad (pan) and not a mouse wheel (zoom). A
+ * pinch arrives with `ctrlKey` and is not a slide. A wheel notch is a whole, large vertical step (100,
+ * 120…) or in lines; a trackpad sends small or fractional deltas, or any horizontal one.
+ */
+export function isTrackpadScroll(e: {
+  ctrlKey: boolean;
+  deltaMode: number;
+  deltaX: number;
+  deltaY: number;
+}): boolean {
+  if (e.ctrlKey || e.deltaMode !== 0) return false;
+  return e.deltaX !== 0 || !Number.isInteger(e.deltaY) || Math.abs(e.deltaY) < 50;
 }

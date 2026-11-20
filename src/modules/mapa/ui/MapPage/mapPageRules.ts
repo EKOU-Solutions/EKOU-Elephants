@@ -71,8 +71,12 @@ export function arrivalDetent(
   width: number,
   height: number,
   roomAbove: boolean,
+  country = false,
 ): Detent {
   if (frame.isPanel) return 'half';
+  // On the phone the map comes first: the country arrives with the sheet collapsed, and choosing a
+  // place brings it up to half.
+  if (country) return 'peek';
   if (frame.shown === 'full') return 'peek';
   const free = freeRect({
     width,
@@ -101,10 +105,10 @@ export function arrivalState(
   state: SheetState,
   frame: SheetFrame | undefined,
   key: string,
-  page: { width: number; height: number; roomAbove: boolean },
+  page: { width: number; height: number; roomAbove: boolean; country?: boolean },
 ): SheetState {
   if (!frame || frame.contentKey !== key || frame.shown === 'peek') return state;
-  const detent = arrivalDetent(frame, page.width, page.height, page.roomAbove);
+  const detent = arrivalDetent(frame, page.width, page.height, page.roomAbove, page.country);
   if (state.key === key && (!state.auto || state.detent === detent)) return state;
   return { key, detent, auto: true };
 }

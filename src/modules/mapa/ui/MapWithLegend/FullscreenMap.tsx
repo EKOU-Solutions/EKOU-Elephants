@@ -23,6 +23,7 @@ import {
   frameWithin,
   freeRect,
   isNearCountry,
+  isTrackpadScroll,
   zoomAround,
   zoomLimits,
 } from './camera';
@@ -45,6 +46,7 @@ export interface FullscreenMapProps extends FullscreenView {
 const DRAG_THRESHOLD = 6; // px: a press that moves less is a tap (spec §3)
 const ZOOM_STEP = 1.8;
 const WHEEL_RATE = 0.0022; // zoom factor per wheel delta unit: e^(−delta · rate)
+const PINCH_RATE = 0.01; // a trackpad pinch sends small deltas with `ctrlKey`: it needs a bigger rate
 const WHEEL_SETTLE_MS = 250; // after the last wheel tick, check whether the map went back to the country
 export const HATCH = 7; // «Sin datos» hatch size in screen pixels
 const LABEL_INSET = 4; // px between an island's name and the dashed frame
@@ -298,11 +300,21 @@ export function FullscreenMap({
   };
 
   const handleWheel = useEffectEvent((e: WheelEvent) => {
-    e.preventDefault(); // the page never scrolls: the wheel always zooms the map
+    e.preventDefault(); // the page never scrolls
     stopFlight();
     const g = live.current();
-    const factor = Math.exp(-e.deltaY * WHEEL_RATE);
-    cam.current = g.clamp(zoomAround(cam.current, local(e), factor, zoomLimits(g.homeK)));
+    if (isTrackpadScroll(e)) {
+      // Two fingers sliding on a trackpad: pan the map (the pinch arrives with `ctrlKey` and zooms).
+      cam.current = g.clamp({
+        ...cam.current,
+        x: cam.current.x - e.deltaX,
+        y: cam.current.y - e.deltaY,
+      });
+    } else {
+      // The wheel, or a trackpad pinch (`ctrlKey`), zooms around the pointer.
+      const factor = Math.exp(-e.deltaY * (e.ctrlKey ? PINCH_RATE : WHEEL_RATE));
+      cam.current = g.clamp(zoomAround(cam.current, local(e), factor, zoomLimits(g.homeK)));
+    }
     apply();
     markMoved(true);
     clearTimeout(wheelTimer.current);

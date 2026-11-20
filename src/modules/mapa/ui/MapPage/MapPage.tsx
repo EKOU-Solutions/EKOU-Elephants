@@ -169,9 +169,14 @@ export function MapPage({
   useLayoutEffect(() => {
     const page = pageRef.current;
     if (!page) return;
-    const box = { width: page.clientWidth, height: page.clientHeight, roomAbove };
+    const box = {
+      width: page.clientWidth,
+      height: page.clientHeight,
+      roomAbove,
+      country: route.view === 'country',
+    };
     setSheetState((s) => arrivalState(s, sheet, routeKey, box));
-  }, [sheet, routeKey, roomAbove]);
+  }, [sheet, routeKey, roomAbove, route.view]);
 
   const announce = (text: string) => {
     clearTimeout(announceTimer.current);

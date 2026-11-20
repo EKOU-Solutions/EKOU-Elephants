@@ -13,6 +13,7 @@ import {
   freeInsets,
   PANEL_WIDTH,
   freeRect,
+  isTrackpadScroll,
   isNearCountry,
   zoomAround,
   zoomLimits,
@@ -22,7 +23,12 @@ const phone = { width: 390, height: 760, isPanel: false, corner: false, roomAbov
 
 describe('zona libre del mapa', () => {
   it('en celular queda sobre la ficha, bajo buscador y migas, a la izquierda del zoom', () => {
-    expect(freeRect({ ...phone, sheetHeight: 240 })).toEqual({ x: 16, y: 116, w: 306, h: 392 });
+    expect(freeRect({ ...phone, sheetHeight: 240 })).toEqual({ x: 68, y: 116, w: 254, h: 392 });
+  });
+
+  it('en celular sin recuadro de esquina queda centrada en la pantalla (márgenes iguales)', () => {
+    const r = freeRect({ ...phone, sheetHeight: 240 });
+    expect(r.x + r.w / 2).toBe(phone.width / 2);
   });
 
   it('reserva la columna del recuadro de esquina y el sitio del rótulo', () => {
@@ -203,5 +209,28 @@ describe('zona libre sin JavaScript (página generada)', () => {
           freeRect({ ...phone, ...flags, width: 1280, isPanel: true, sheetHeight: 0 }),
         ).toEqual({ x: q.left, y: q.top, w: 1280 - q.left - q.right, h: 760 - q.top - q.bottom });
       }
+  });
+});
+
+describe('isTrackpadScroll', () => {
+  const wheel = (o: Partial<Parameters<typeof isTrackpadScroll>[0]>) => ({
+    ctrlKey: false,
+    deltaMode: 0,
+    deltaX: 0,
+    deltaY: 0,
+    ...o,
+  });
+
+  it('two fingers sliding: small, fractional or horizontal deltas pan', () => {
+    expect(isTrackpadScroll(wheel({ deltaY: 7 }))).toBe(true);
+    expect(isTrackpadScroll(wheel({ deltaY: 120.5 }))).toBe(true);
+    expect(isTrackpadScroll(wheel({ deltaX: 12, deltaY: 130 }))).toBe(true);
+  });
+
+  it('a mouse wheel notch, in pixels or lines, and a pinch (ctrlKey) are not a slide', () => {
+    expect(isTrackpadScroll(wheel({ deltaY: 100 }))).toBe(false);
+    expect(isTrackpadScroll(wheel({ deltaY: -120 }))).toBe(false);
+    expect(isTrackpadScroll(wheel({ deltaMode: 1, deltaY: 3 }))).toBe(false);
+    expect(isTrackpadScroll(wheel({ ctrlKey: true, deltaY: 4 }))).toBe(false);
   });
 });
