@@ -302,7 +302,7 @@
 /* The BottomSheet's side panel: 440 px unless dragged (map spec decisions 22 and 35; camera.test.ts checks it against PANEL_WIDTH). */
 .screenZoom[data-panel="true"] {
   top: var(--el-space-12);
-  right: calc(var(--map-panel-width, 440px) + var(--el-space-12));
+  right: calc(var(--map-panel-width, 440px) + var(--el-space-16));
 }
 
 /* Outside Colombia and the archipelago: a fixed 68 px corner inset under the crumbs, 12 px apart (decisions 23 and 37). */

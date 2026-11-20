@@ -189,7 +189,7 @@
     width: var(--map-panel-width);
     padding: var(--el-space-12);
     background: var(--el-color-surface);
-    border-left: var(--el-rule-strong) solid var(--el-color-line-strong);
+    border-left: var(--el-rule) solid var(--el-color-line);
   }
 
   .crumbs {
@@ -207,21 +207,36 @@
     top: calc(var(--el-space-12) * 2 + var(--el-control-height));
   }
 
-  /* Decision 35: the panel's left edge, 8 px wide and centred on it. */
+  /* Decision 35: a 16 px hit area centred on the panel's edge. The edge is a thin line; the handle is a
+     small grip in the middle, so it reads as resizable without a heavy bar (ref. reui.io/components/resizable). */
   .divider {
     display: block;
     position: absolute;
     top: 0;
     bottom: 0;
-    right: calc(var(--map-panel-width) - var(--el-space-4));
-    width: var(--el-space-8);
+    right: calc(var(--map-panel-width) - var(--el-space-8));
+    width: var(--el-space-16);
     cursor: col-resize;
     touch-action: none;
     z-index: 1;
   }
 
-  .divider:hover {
+  .divider::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: var(--el-space-4);
+    height: var(--el-space-32);
+    transform: translate(-50%, -50%);
+    border-radius: var(--el-space-4);
     background: var(--el-color-line-strong);
+    opacity: 0.55;
+  }
+
+  .divider:hover::after,
+  .divider:focus-visible::after {
+    opacity: 1;
   }
 
   /* The panel has no height button (spec §6); the generated page cannot ask the sheet, so CSS hides it. */
