@@ -64,8 +64,8 @@ En local respondieron bien `/mapa`, `/mapa/05001`, `/api/salud`, `/api/mapa/*`, 
 - **Lo que hacía la SPA ahora debe hacerlo el sitio:**
   - las redirecciones (ya están);
   - una página 404 para lugares que no existen. Hoy la app muestra «Ese enlace no corresponde…»; ahora sale la 404 por defecto. Pasa por el flujo de diseño;
-  - el favicon;
-  - publicar Storybook en `/storybook/`, como hace hoy `npm run build`.
+  - el favicon.
+- **Storybook se publica en `/storybook/` de la web:** `npm run build:web` lo genera en `web/dist/client/storybook/`, como `npm run build` en la app.
 
 ## Para repetirla
 

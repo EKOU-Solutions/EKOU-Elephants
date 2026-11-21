@@ -3,9 +3,10 @@
 //   EKOU_PUBLICACION  folder with datos/latest.json and the cut's JSON (default: datos-locales)
 //   EKOU_SITIO_URL    the site's URL: canonical, og:url and sitemap (default: the web's workers.dev)
 //   EKOU_VERSION      the app version, part of cache keys (default: the git commit)
-// Leaves Wrangler's configuration in web/dist/server/wrangler.json.
-// Usage: npm run build:web [-- --solo /mapa,/mapa/05001]
-import { execSync } from 'node:child_process';
+// Adds the static Storybook at /storybook/ (as `npm run build` does for the app) and leaves Wrangler's
+// configuration in web/dist/server/wrangler.json.
+// Usage: npm run build:web [-- --solo /mapa,/mapa/05001] [-- --sin-storybook]
+import { execFileSync, execSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -38,3 +39,12 @@ const start = performance.now();
 const { build } = await import('astro');
 await build({ root: join(repo, 'web'), logLevel: process.env.EKOU_ASTRO_LOG ?? 'warn' });
 console.log(`web built in ${((performance.now() - start) / 1000).toFixed(1)} s`);
+
+// After Astro, which empties web/dist. Served by the web Worker as static assets.
+if (!process.argv.includes('--sin-storybook')) {
+  const output = join(repo, 'web', 'dist', 'client', 'storybook');
+  execFileSync('npx', ['storybook', 'build', '--quiet', '--output-dir', output], {
+    cwd: repo,
+    stdio: 'inherit',
+  });
+}
