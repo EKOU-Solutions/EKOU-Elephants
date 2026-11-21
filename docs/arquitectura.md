@@ -22,6 +22,38 @@ flowchart LR
 
 El mismo Worker atiende las dos rutas: `/api/*` llega primero a Hono y el resto devuelve la SPA (`wrangler.jsonc`). Para `/mapa…` y `/sitemap.xml`, el Worker entrega primero la página de ese lugar generada con Astro en el corte mensual y publicada en el Worker de datos, con los scripts de la versión actual de la app; sin página, la SPA ([ADR-0003](adr/0003-migracion-astro.md), [desarrollo](desarrollo.md#páginas-de-cada-lugar-astro)). Al cargar el JavaScript, React monta la pantalla como siempre.
 
+## Cómo consume la app la API (ADR-0004)
+
+Con el [ADR-0004](adr/0004-paginas-de-contratos.md) la web (Astro) y la API (Hono) pasan a Workers distintos: `ekou-elephants-web` y `ekou-elephants-api`. Aplica desde el #54; hasta entonces la app corre en un solo Worker, como se describe arriba. El código de la web en el navegador **nunca llama a la API por su dirección**: siempre pide `/api/...` en su propio dominio. Así no necesita saber dónde vive la API y no hay permisos entre dominios (CORS).
+
+```mermaid
+flowchart LR
+    NAV["🖥️ Navegador<br/>pide /api/... en el dominio de la web"]
+    WEB["🌐 Worker de la web<br/>ekou-elephants-web"]
+    API["⚙️ Worker de la API<br/>ekou-elephants-api"]
+    DATOS["📦 Worker de datos<br/>ekou-elephants-datos"]
+    DB[("🐘 PostgreSQL<br/>Neon")]
+
+    NAV -->|"/api/*"| WEB
+    WEB -->|"service binding<br/>o URL (API_URL)"| API
+    API -->|"binding DATOS"| DATOS
+    API -->|"SQL"| DB
+```
+
+Quién atiende `/api/*` depende del entorno:
+
+| Entorno | Camino de `/api/*` |
+| --- | --- |
+| Producción con dominio propio | Una ruta de Cloudflare manda `/api/*` directo al Worker de la API. La web no interviene. |
+| `workers.dev` (producción sin dominio y previews) | No hay rutas por camino: la web recibe `/api/*` y se lo pasa a la API (`web/src/lib/apiGateway.ts`). |
+
+La web le pasa la petición a la API de dos formas:
+
+- **Service binding**, en producción y en los previews que usan la API de producción. Es una llamada interna, sin petición extra.
+- **URL pública** (variable `API_URL`), solo cuando el preview usa el preview de una API, la de su PR o la de otro. Un service binding desde un Preview siempre llega a la producción del otro Worker, así que no sirve para eso. Cuesta una petición más, solo en pruebas.
+
+Qué API usa cada preview: [CI/CD](ci-cd.md#qué-api-usa-el-preview).
+
 ## Alcance del ejemplo y refinamiento del mapa
 
 El módulo `mapa` y la tabla `gasto_territorial` son una demostración del recorrido UI → API → caso de uso → PostgreSQL, con cifras ficticias. No representan todavía el contrato definitivo del Mapa Interactivo ni se alimentan de la ingesta.

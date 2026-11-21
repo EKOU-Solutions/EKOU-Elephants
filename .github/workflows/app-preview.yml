@@ -6,8 +6,9 @@ name: app-preview
 #   del corte de producción (Worker `ekou-elephants-datos`, solo lectura).
 # - El comentario "Preview de este PR" (uno por PR, se actualiza en su lugar) tiene casillas: copia propia de la base
 #   (rama de Neon desde `dev`) y datos propios (Worker `ekou-elephants-datos-pr-<n>`, subido
-#   con `npm run datos:preview`). Al editarlas se redespliega. Con la web y la API separadas, también
-#   elige la API que usa la web: la de producción (por defecto), la del PR o la de otro PR.
+#   con `npm run datos:preview`). Al editarlas se redespliega. Con la web y la API separadas, su
+#   valor «API» elige la API: la del PR si cambia la API, si no la de producción, o la que escriba
+#   una persona (producción u otro PR).
 # - Al cerrar el PR se borran el preview, la rama de Neon y el Worker de datos del PR.
 # Configuración y flujo: docs/ci-cd.md.
 
@@ -55,8 +56,8 @@ jobs:
       sha: ${{ steps.pr.outputs.sha }}
       copia_bd: ${{ steps.opciones.outputs.copia_bd }}
       datos_propios: ${{ steps.opciones.outputs.datos_propios }}
-      api_propia: ${{ steps.opciones.outputs.api_propia }}
-      api_pr: ${{ steps.opciones.outputs.api_pr }}
+      api_elegida: ${{ steps.opciones.outputs.api_elegida }}
+      api_manual: ${{ steps.opciones.outputs.api_manual }}
       api_cambiada: ${{ steps.opciones.outputs.api_cambiada }}
       api: ${{ steps.opciones.outputs.api }}
       bloqueo: ${{ steps.opciones.outputs.bloqueo }}
@@ -117,8 +118,8 @@ jobs:
       SHA: ${{ needs.opciones.outputs.sha }}
       COPIA_BD: ${{ needs.opciones.outputs.copia_bd }}
       DATOS_PROPIOS: ${{ needs.opciones.outputs.datos_propios }}
-      API_PROPIA: ${{ needs.opciones.outputs.api_propia }}
-      API_PR: ${{ needs.opciones.outputs.api_pr }}
+      API_ELEGIDA: ${{ needs.opciones.outputs.api_elegida }}
+      API_MANUAL: ${{ needs.opciones.outputs.api_manual }}
       API_CAMBIADA: ${{ needs.opciones.outputs.api_cambiada }}
       DATOS_CORTE_ENABLED: ${{ vars.DATOS_CORTE_ENABLED }}
       EJECUCION: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}

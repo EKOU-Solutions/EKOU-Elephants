@@ -475,7 +475,7 @@ async function desplegarPreviewWebApi({
   const migra = env.MIGRAR === 'true';
   if (migra && destino !== 'propia') {
     throw new Bloqueo(
-      'Este PR migra su propia base, pero la web usaría otra API. Marca «API de este PR» para que use la base migrada.',
+      `Este PR migra su propia base, pero la web usaría otra API. Pon \`${WORKER_API}-${env.PREVIEW_NAME}\` en «API» para que use la base migrada.`,
     );
   }
   const sub = await subdominio(env, request);
@@ -502,7 +502,7 @@ async function desplegarPreviewWebApi({
       await verifyApi(apiUrl);
     } catch {
       throw new Bloqueo(
-        `El PR #${destino.slice(3)} no tiene un preview de la API que responda. Despliégalo marcando «API de este PR» en ese PR.`,
+        `El PR #${destino.slice(3)} no tiene un preview de la API que responda. En ese PR, pon \`${WORKER_API}-${destino}\` en «API» (o cambia su API) para desplegarlo.`,
       );
     }
   }
@@ -543,7 +543,8 @@ async function desplegarPreviewWebApi({
   if (env.GITHUB_OUTPUT)
     appendFileSync(
       env.GITHUB_OUTPUT,
-      `url=${url}\narquitectura=web-api\napi_url=${apiUrl ?? ''}\n`,
+      // Sin preview de una API, la web usa la de producción: el comentario muestra su URL.
+      `url=${url}\narquitectura=web-api\napi_url=${apiUrl ?? urlProduccion(WORKER_API, sub)}\n`,
     );
   return { url, apiUrl };
 }
