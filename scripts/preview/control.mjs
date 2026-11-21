@@ -113,16 +113,31 @@ export const STORYBOOK_PATH = '/storybook/';
 
 const casilla = (marcada, clave, texto) => `- [${marcada ? 'x' : ' '}] ${texto} <!-- ${clave} -->`;
 
-/** «API»: el valor que usa el preview, por qué, y cómo cambiarlo. */
+/** «API»: cuál usa la web y por qué, y cómo cambiarla, como las demás opciones. */
 function lineaApi({ pr, elegida, manual, cambiosApi }) {
   const automatica = apiAutomatica(pr, cambiosApi);
   const valor = elegida || automatica;
-  const motivo = manual
-    ? 'Elegida a mano.'
-    : cambiosApi
-      ? 'La de este PR, porque cambia la API: se despliega su preview.'
-      : 'La de producción, porque este PR no cambia la API.';
-  return `- **API:** \`${valor}\` <!-- ${CAMPO_API} --> ${motivo} Para usar otra, cambia el valor: \`${WORKER_API}\` (producción) o \`${WORKER_API}-pr-<número>\` (el preview de la API de un PR abierto). <!-- ${CAMPO_API_AUTO}: ${automatica} -->`;
+  const numero = interpretarApi(valor);
+  const cual =
+    numero === undefined
+      ? `La web no tiene API: «${valor}» no es un valor válido.`
+      : numero === null
+        ? 'La web usa la API de producción'
+        : numero === Number(pr)
+          ? 'La web usa el preview de la API de este PR'
+          : `La web usa el preview de la API del PR #${numero}`;
+  const porque =
+    numero === undefined
+      ? ''
+      : manual
+        ? `, elegida a mano. Para volver a la automática, escribe \`${automatica}\`.`
+        : cambiosApi
+          ? ', porque este PR cambia la API.'
+          : ', porque este PR no cambia la API.';
+  return [
+    `- **API:** \`${valor}\` <!-- ${CAMPO_API} --> ${cual}${porque}`,
+    `  Para usar otra, edita este comentario (\`⋯\` → *Edit*) y cambia ese valor por \`${WORKER_API}\` (producción) o \`${WORKER_API}-pr-<número>\` (el preview de la API de ese PR, que debe estar abierto y tener su preview desplegado). <!-- ${CAMPO_API_AUTO}: ${automatica} -->`,
+  ].join('\n');
 }
 
 /**
@@ -183,7 +198,7 @@ export function renderizarComentario({
     '',
     '### Opciones',
     '',
-    'Marca o desmarca una casilla y el preview se vuelve a desplegar con esa configuración.',
+    'Marca o desmarca una casilla, o cambia el valor de «API», y el preview se vuelve a desplegar con esa configuración.',
     '',
     casilla(
       opciones.copiaBd,
@@ -199,7 +214,7 @@ export function renderizarComentario({
     ),
     lineaApi({ pr, elegida: apiElegida, manual: apiManual, cambiosApi }),
     '',
-    '<sub>Comentario gestionado por el workflow `app-preview`. Al cerrar el PR se borran los previews y la rama de Neon. No edites el texto: solo las casillas y el valor de «API», que aplica a la web y la API en Workers distintos (ADR-0004).</sub>',
+    '<sub>Comentario gestionado por el workflow `app-preview`. Al cerrar el PR se borran los previews y la rama de Neon. No edites el resto del texto: solo las casillas y el valor de «API». «API» aplica a la web y la API en Workers distintos (ADR-0004).</sub>',
   );
   return lineas.join('\n');
 }

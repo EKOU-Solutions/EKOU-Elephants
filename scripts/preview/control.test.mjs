@@ -163,18 +163,32 @@ describe('comentario de control', () => {
     expect(mala.elegida).toBe('otrab');
   });
 
-  it('el comentario dice qué API usa y por qué', () => {
-    const linea = (o) =>
-      renderizarComentario({ pr: 7, sha: 'a', opciones, estado: 'desplegado', ...o })
-        .split('\n')
-        .find((l) => l.startsWith('- **API:**'));
-    expect(linea({})).toContain('La de producción, porque este PR no cambia la API.');
-    expect(linea({ cambiosApi: true })).toContain(
-      '`ekou-elephants-api-pr-7` <!-- api --> La de este PR',
+  it('el comentario dice qué API usa, por qué y cómo cambiarla', () => {
+    const texto = (o) => {
+      const cuerpo = renderizarComentario({
+        pr: 7,
+        sha: 'a',
+        opciones,
+        estado: 'desplegado',
+        ...o,
+      });
+      return cuerpo.slice(cuerpo.indexOf('- **API:**'), cuerpo.indexOf('<sub>'));
+    };
+    expect(texto({})).toContain(
+      '`ekou-elephants-api` <!-- api --> La web usa la API de producción, porque este PR no cambia la API.',
     );
-    expect(linea({ cambiosApi: true })).toContain('<!-- api-auto: ekou-elephants-api-pr-7 -->');
-    expect(linea({ apiElegida: 'ekou-elephants-api-pr-57', apiManual: true })).toContain(
-      '`ekou-elephants-api-pr-57` <!-- api --> Elegida a mano.',
+    expect(texto({ cambiosApi: true })).toContain(
+      '`ekou-elephants-api-pr-7` <!-- api --> La web usa el preview de la API de este PR, porque este PR cambia la API.',
+    );
+    expect(texto({ cambiosApi: true })).toContain('<!-- api-auto: ekou-elephants-api-pr-7 -->');
+    expect(
+      texto({ cambiosApi: true, apiElegida: 'ekou-elephants-api-pr-57', apiManual: true }),
+    ).toContain(
+      'La web usa el preview de la API del PR #57, elegida a mano. Para volver a la automática, escribe `ekou-elephants-api-pr-7`.',
+    );
+    expect(texto({})).toContain('edita este comentario (`⋯` → *Edit*) y cambia ese valor');
+    expect(texto({ apiElegida: 'otra', apiManual: true })).toContain(
+      '«otra» no es un valor válido',
     );
   });
 
