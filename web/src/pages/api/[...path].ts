@@ -2,7 +2,7 @@ import type { APIRoute } from 'astro';
 import { env } from 'cloudflare:workers';
 import { apiGateway } from '../../lib/apiGateway';
 
-// Rendered on demand: this is the only route that runs the web Worker until contracts arrive.
+// Rendered on demand: with the contract pages, the only routes that run the web Worker.
 export const prerender = false;
 
 /**

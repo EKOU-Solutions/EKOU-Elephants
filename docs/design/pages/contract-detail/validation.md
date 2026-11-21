@@ -93,6 +93,24 @@ Corregido:
 
 Sigue sin comprobarse: el enlace a SECOP no se limita a los dominios de SECOP (no se conoce la lista completa de dominios del corte).
 
+## Página armada en el servidor (ADR-0004, 2026-11-21)
+
+Con la web en Astro y la API en su propio Worker (prueba técnica del ADR-0004, #54), `/contratos/{id}` se arma en el Worker de la web (`web/src/pages/contratos/[id].astro`) con el mismo componente y los datos de `GET /api/contracts/:id`, y se guarda en la caché de Cloudflare por corte y versión (`web/src/middleware.ts`).
+
+Probado en local con los tres Workers (`wrangler dev`: web, API y datos) y dos contratos reales, en Chromium a 390 y 1280 px:
+
+| Qué | Resultado |
+| --- | --- |
+| HTML sin JavaScript | Trae el `h1`, las cinco preguntas con sus respuestas, la fuente y la fecha. 16 kB sin comprimir |
+| `<title>`, `description`, `canonical` y Open Graph | Presentes en el contrato; el 404 lleva `noindex` y ninguno de esos |
+| Estados | Contrato 200, «no existe» 404 (también con un id de forma inválida) |
+| `Cache-Control` | Contrato: `public, max-age=3600, s-maxage=2592000`. 404: `public, max-age=300`. 503: `no-store` |
+| Al cargar el JavaScript | Sin errores ni avisos en la consola; ninguna llamada a `/api`; «Leer completo» y «Copiar» funcionan |
+| JavaScript de la página | Cinco archivos, unos 20 kB transferidos (Preact incluido). No descarga el código del mapa |
+| Aspecto | Igual a la pantalla aprobada en 390 y 1280 px (capturas comparadas a ojo) |
+
+Sin comprobar: la caché de Cloudflare en un despliegue real (en local la segunda visita bajó de 41 ms a 3 ms, pero `workers.dev` puede no guardar copias); la CPU que gasta armar un contrato (decide el plan, ADR-0004); el estado 503 en el navegador; Lighthouse sobre un contrato; el sitemap de contratos, que el ADR-0004 deja para el pipeline. La dirección canónica sale del dominio de la petición, no de `EKOU_SITIO_URL`.
+
 ## Peso
 
 `npm run build`: JavaScript 276,84 kB (88,03 kB con gzip) y CSS 26,60 kB (5,75 kB con gzip). Es un solo paquete: la ficha descarga también el código del mapa. No se midió contra `main`.

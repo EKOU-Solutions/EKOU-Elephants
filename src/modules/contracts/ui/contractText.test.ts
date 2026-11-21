@@ -1,10 +1,18 @@
 import { describe, expect, it } from 'vitest';
 import type { ContractDetail } from '../domain/contract';
 import {
+  noValueContract,
+  pastoContract,
+  providenciaContract,
+  unreliableValueContract,
+  zeroValueContract,
+} from './ContractDetailPage/ContractDetailPage.fixtures';
+import {
   cutLabel,
   exactPesos,
   headline,
   methodText,
+  pageDescription,
   pageTitle,
   paymentText,
   percent,
@@ -233,5 +241,27 @@ describe('termSegments', () => {
     expect(termSegments(dates({ end: '2025-07-01' }))).toBeNull();
     expect(termSegments(dates({ addedDays: 448 }))).toBeNull();
     expect(termSegments(dates({ addedDays: 900 }))).toBeNull();
+  });
+});
+
+describe('pageDescription', () => {
+  it('puts the value first with its source and date, and the entity last', () => {
+    expect(pageDescription(pastoContract, '2026-11-07')).toBe(
+      'Valor: $ 67,8 millones (SECOP II, datos al 7 nov 2026). Contrato de obra en Pasto, Nariño. Entidad: ALCALDIA DE PASTO.',
+    );
+    expect(pageDescription(pastoContract)).toContain('(SECOP II, datos de nov 2026)');
+  });
+
+  it('says «Sin datos» only when the value is missing, and leaves out an uncertain or $ 0 one', () => {
+    expect(pageDescription(noValueContract)).toMatch(/^Valor: Sin datos \(/);
+    for (const contract of [unreliableValueContract, zeroValueContract]) {
+      const text = pageDescription(contract, '2026-11-07');
+      expect(text).not.toContain('Valor:');
+      expect(text).toMatch(/Fuente: SECOP I{1,2}, datos al 7 nov 2026\.$/);
+    }
+  });
+
+  it('never names the supplier', () => {
+    expect(pageDescription(providenciaContract)).not.toMatch(/persona|contratista/i);
   });
 });

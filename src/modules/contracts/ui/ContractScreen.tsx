@@ -113,31 +113,47 @@ export function tabTitle(state: ContractDetailState): string {
     : `${TITLE[state.status]} · EKOU Elephants`;
 }
 
+export interface ContractScreenProps {
+  /**
+   * The state the server already rendered (ADR-0004): the first load is skipped and the page keeps
+   * its focus and its title. «Reintentar» still loads.
+   */
+  initial?: ContractDetailState;
+}
+
 /** The contract detail page in the app, at `/contratos/{id}`. */
-export function ContractScreen() {
-  const [state, setState] = useState<ContractDetailState>({ status: 'loading' });
+export function ContractScreen({ initial }: ContractScreenProps = {}) {
+  const [state, setState] = useState<ContractDetailState>(initial ?? { status: 'loading' });
   const [attempt, setAttempt] = useState(0);
   const title = useRef<HTMLHeadingElement>(null);
+  const served = initial !== undefined && attempt === 0;
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: `attempt` re-runs the load on «Reintentar»
   useEffect(() => {
+    const origin = arrivalOrigin(document.referrer, window.location.origin, window.history.length);
+    if (served) {
+      // The server cannot know where the person came from: it offers «Ir al mapa».
+      setState((now) => (now.status === 'not_found' ? { status: 'not_found', origin } : now));
+      return;
+    }
     const control = new AbortController();
     setState({ status: 'loading' });
-    loadContract(
-      contractIdFromPath(window.location.pathname),
-      arrivalOrigin(document.referrer, window.location.origin, window.history.length),
-      control.signal,
-    ).then(setState, () => {
-      // Aborted: this effect was replaced, its answer no longer matters.
-    });
+    loadContract(contractIdFromPath(window.location.pathname), origin, control.signal).then(
+      setState,
+      () => {
+        // Aborted: this effect was replaced, its answer no longer matters.
+      },
+    );
     return () => control.abort();
   }, [attempt]);
 
   // The tab says what the page is, and focus lands on the `h1` once there is something to read.
+  // A served page already has its title, and the browser starts reading it from the top.
   useEffect(() => {
+    if (served) return;
     document.title = tabTitle(state);
     if (state.status !== 'loading') title.current?.focus({ preventScroll: true });
-  }, [state]);
+  }, [state, served]);
 
   return (
     <ContractDetailPage

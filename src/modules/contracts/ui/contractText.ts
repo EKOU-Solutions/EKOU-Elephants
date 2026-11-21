@@ -81,6 +81,25 @@ export function pageTitle(contract: Pick<ContractDetail, 'type' | 'buyer'>): str
   return `${headline(contract.type)} · ${contract.buyer.name} · EKOU Elephants`;
 }
 
+/**
+ * What a search result or a shared link says under the title. The value goes first with its source and
+ * date, so a cut text never leaves a figure without them; the entity, already in the title, goes last.
+ * Never the supplier: a natural person is not identified (TASK-08). A value that is not certain or is
+ * $ 0 is left out; a missing one says «Sin datos».
+ */
+export function pageDescription(contract: ContractDetail, cutDate?: string): string {
+  const { municipality, department } = contract.location;
+  const place =
+    municipality.name === department.name
+      ? municipality.name
+      : `${municipality.name}, ${department.name}`;
+  const source = `${SOURCE_NAME[contract.source]}, ${cutLabel(contract.cut, cutDate)}`;
+  const what = `${headline(contract.type)} en ${place}. Entidad: ${contract.buyer.name}.`;
+  const { figure, noData } = valueText(contract.amounts);
+  const value = noData ? 'Sin datos' : figure;
+  return value ? `Valor: ${value} (${source}). ${what}` : `${what} Fuente: ${source}.`;
+}
+
 export interface MethodText {
   /** The method with its law. */
   name: string;

@@ -115,6 +115,7 @@ El «(con ofertas)» que SECOP II agrega a algunas modalidades no se explica: no
 - **Leer completo:** abre el objeto en su lugar, sin salir de la página, y el botón pasa a «Leer menos». `aria-expanded` refleja el estado. Solo aparece si el objeto pasa de 220 caracteres. El foco se queda en el botón.
 - **Anuncios:** los mensajes de copiar y compartir salen en una alerta flotante (`Alert`, variante flotante), fija abajo de la ventana. La confirmación se cierra sola a los 5 segundos (`TOAST_DURATION_MS`); el tiempo se detiene mientras el puntero o el foco están sobre ella. El mensaje de falla no se cierra solo, porque trae qué hacer (WCAG 2.2.1). Las dos se cierran con «Cerrar» o con Escape; Escape no mueve el foco, así que la alerta nunca deja tapado un control enfocado (WCAG 2.4.11). No se reserva espacio en blanco para ella. El foco se queda en el botón que se tocó; «Cerrar» lo devuelve a ese botón.
 - **Foco al llegar:** en el `h1`. Título de la pestaña: «{titular} · {entidad} · EKOU Elephants».
+- **Página armada en el servidor (ADR-0004):** en la web de Astro, `/contratos/{id}` llega con todo el contenido en el HTML, legible sin JavaScript, y queda en la caché de Cloudflare por corte y versión. El JavaScript solo agrega «Leer completo», copiar, compartir, volver y reintentar; no vuelve a pedir el contrato. Al llegar así el foco no se mueve al `h1`: es una carga normal de página y el navegador empieza a leer desde arriba. El 404 llega con «Ir al mapa»; el navegador lo cambia a «Volver» si la persona venía de Elephants. «No existe» responde 404 y «datos no disponibles» 503; ninguna de las dos se indexa (`noindex`).
 - **Movimiento:** ninguno.
 
 ## 4. Estados
@@ -151,6 +152,12 @@ Los de las tablas de arriba, más:
 - Señales (fase 2): «Tiene 2 señales para revisar» · «Una señal pide revisar. No prueba nada irregular: puede tener una explicación.» El enlace «Cómo se calculan» entra cuando exista la página de metodología (TASK-07). Cada señal dice su nivel en texto («Gravedad alta», «Gravedad intermedia», «Gravedad baja»): califica la señal, no el contrato. En la vista previa, un aviso «Señales de ejemplo.» y la marca «Ejemplo» junto a la pregunta.
 - Fechas: «9 jun 2025». Pesos: «$ 67.815.383». Porcentaje: «20,9 %».
 
+- Descripción para buscadores y enlaces compartidos (`description` y Open Graph), revisada por `elephant-ux` el 2026-11-21. El valor va primero, con su fuente y su fecha, para que un texto cortado nunca deje una cifra sin ellas; la entidad, que ya está en el título, va al final:
+  - Con valor: «Valor: $ 67,8 millones (SECOP II, datos al 17 nov 2026). Contrato de obra en Pasto, Nariño. Entidad: ALCALDIA DE PASTO.»
+  - Sin valor: «Valor: Sin datos (SECOP II, datos al 17 nov 2026). Contrato de obra en Pasto, Nariño. Entidad: ALCALDIA DE PASTO.»
+  - Valor no confiable o de $ 0: «Contrato de obra en Pasto, Nariño. Entidad: ALCALDIA DE PASTO. Fuente: SECOP II, datos al 17 nov 2026.»
+  - Nunca nombra al contratista. El título es el de la pestaña. «No existe» y «datos no disponibles» no llevan descripción.
+
 La fecha de «datos al» es la del corte. La API del detalle entrega el mes (`cut`, «2026-11»); el día sale de `/api/mapa/corte` (`fechaCorte`).
 
 Ningún texto usa «corrupción», «robo», «sospechoso», «incumplido» ni «irregular» como afirmación. No aparece ningún nombre de persona natural.
@@ -167,3 +174,5 @@ Ningún texto usa «corrupción», «robo», «sospechoso», «incumplido» ni �
 9. **Valor $ 0:** «SECOP lo registra sin valor» puede leerse como «sin datos». ¿Se cambia a «SECOP lo registra por $ 0»?
 10. **Régimen especial** va sin norma: no hay una sola ley que lo cubra.
 6. **Encabezado del sitio:** no hay una estructura aprobada de encabezado y navegación común. La ficha solo trae su «volver».
+11. **Título largo en buscadores:** con «Contrato de prestación de servicios · {entidad} · EKOU Elephants», Google corta cerca de los 60 caracteres y se pierden la marca y parte de la entidad (`elephant-ux`, 2026-11-21). ¿Se acepta así?
+12. **Marca repetida al compartir:** `og:title` lleva «· EKOU Elephants» y además va `og:site_name`, así que la marca puede salir dos veces en la vista previa. ¿Se quita del `og:title`?

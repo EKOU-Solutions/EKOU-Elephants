@@ -10,6 +10,7 @@ Estado: **Maqueta en revisión**. Contrato de la API aprobado el 2026-11-17. Tar
 | Datos y API | `pipeline/`, `src/modules/contracts/` | 2026-11-18: modelo gold `contract_detail`, `export-contracts` y `GET /api/contracts/:id`, con pruebas. Falta activar la publicación en `corte-mensual.yml` ([CI/CD](../../../ci-cd.md#detalle-de-los-contratos-task-12-pendiente-de-activar)) |
 | 3. Componentes | `src/components/ui/SignalItem/`, `src/components/ui/Button/`, `src/modules/contracts/ui/ContractTerm/`, `.storybook/docs/patterns/Navigation.mdx` | 2026-11-19: Señal confirmada con color por gravedad; `Button` acepta enlace; plazo en tramos; patrón «Volver» documentado. |
 | 4. Maqueta en Storybook | `src/modules/contracts/ui/ContractDetailPage/` | 2026-11-19: pantalla con una historia por estado, conectada a `/contratos/{id}` |
+| 4b. Página armada en el servidor | `web/src/pages/contratos/[id].astro` | 2026-11-21: la web de Astro arma la ficha con el mismo componente y la guarda en caché ([ADR-0004](../../../adr/0004-paginas-de-contratos.md)); ver `validation.md` |
 | 5. Validación | [validation.md](validation.md) | 2026-11-19: hecha, con los hallazgos corregidos |
 | 6. Aprobación 2 | — | Pendiente: revisión de Jouler |
 
