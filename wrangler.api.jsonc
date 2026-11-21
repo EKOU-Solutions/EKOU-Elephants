@@ -1,0 +1,14 @@
+// The API Worker (ADR-0004): Hono at /api/*. On the custom domain a route sends `dominio/api/*` here;
+// on workers.dev previews the web Worker forwards /api/* through its API binding.
+{
+  "name": "ekou-elephants-api",
+  "main": "src/server/api.ts",
+  "compatibility_date": "2026-11-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": { "enabled": true },
+  "services": [{ "binding": "DATOS", "service": "ekou-elephants-datos" }],
+  // Previews do not inherit bindings; the deploy sets the PR's data Worker here when it has one.
+  "previews": {
+    "services": [{ "binding": "DATOS", "service": "ekou-elephants-datos" }]
+  }
+}

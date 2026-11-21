@@ -91,6 +91,7 @@ const preview: Preview = {
           'Fundamentos',
           ['Color', 'Tipografía', 'Espacio y forma', 'Íconos', 'Voz y tono', 'Formato de datos'],
           'Accesibilidad',
+          'Patrones',
           'Componentes',
           ['Catálogo', 'UI', 'Candidatos', '*'],
           'Módulos',

@@ -1,0 +1,723 @@
+<!doctype html>
+<html lang="es-CO" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Detalle de contrato · Bocetos de la experiencia</title>
+<link rel="stylesheet" href="../../guide/tokens.css">
+<style>
+/* Low-fidelity sketches: greyscale, tokens only, real texts and figures from data.md. */
+body{margin:0;padding:var(--el-space-24);font:var(--el-size-body)/var(--el-line-body) var(--el-font-ui);color:var(--el-color-text);background:var(--el-color-surface-subtle);font-variant-numeric:var(--el-numbers)}
+h1{font-size:var(--el-size-title);line-height:var(--el-line-heading);margin:0 0 var(--el-space-8)}
+h2{font-size:var(--el-size-section);margin:0}
+h3{font-size:var(--el-size-small);margin:var(--el-space-16) 0 var(--el-space-4)}
+p,ol,ul,dl,dd{margin:0}.intro{max-width:72ch}.intro li{margin-top:var(--el-space-4)}
+.option{margin-top:var(--el-space-48);padding-top:var(--el-space-24);border-top:var(--el-rule-strong) solid var(--el-color-line-strong)}
+.lead{max-width:72ch;margin:var(--el-space-8) 0 var(--el-space-24)}
+.rec{font-size:var(--el-size-small);border:var(--el-rule-strong) solid var(--el-color-line-strong);padding:0 var(--el-space-8);margin-left:var(--el-space-8)}
+.row{display:flex;gap:var(--el-space-24);align-items:flex-start;flex-wrap:wrap}
+figure{margin:0}figcaption{font-size:var(--el-size-small);margin-top:var(--el-space-8);color:var(--el-color-text-muted);max-width:390px}
+.notes{flex:1;min-width:280px;font-size:var(--el-size-small)}.notes h3:first-child{margin-top:0}.notes ol,.notes ul{padding-left:var(--el-space-16)}
+.phone,.desk{box-sizing:border-box;background:var(--el-color-surface);border:var(--el-rule) solid var(--el-color-control-border);padding:var(--el-space-16)}
+.phone{width:390px;flex:none}.desk{width:1232px;padding:var(--el-space-32) var(--el-space-48)}
+.cols{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:var(--el-space-48);margin-top:var(--el-space-24)}
+.kicker,.muted,.small{font-size:var(--el-size-small)}.kicker,.muted{color:var(--el-color-text-muted)}
+.back{font-size:var(--el-size-small);text-decoration:underline;display:block;margin-bottom:var(--el-space-16)}
+.head{font-size:var(--el-size-title-mobile);line-height:var(--el-line-heading);font-weight:var(--el-weight-heading);margin-top:var(--el-space-4)}
+.desk .head{font-size:var(--el-size-title)}
+.dek{margin-top:var(--el-space-8)}
+.figure{font-size:var(--el-size-figure-mobile);line-height:var(--el-line-figure);font-weight:var(--el-weight-heading)}
+.block{border-top:var(--el-rule-strong) solid var(--el-color-line-strong);padding-top:var(--el-space-8);margin-top:var(--el-space-24)}
+.label{font-size:var(--el-size-small);font-weight:var(--el-weight-emphasis)}
+.rows{list-style:none;padding:0;margin-top:var(--el-space-8)}
+.rows li{border-top:var(--el-rule) solid var(--el-color-line);padding:var(--el-space-8) 0;display:flex;justify-content:space-between;gap:var(--el-space-16);font-size:var(--el-size-small)}
+.rows li>span:first-child{color:var(--el-color-text-muted);flex:none;max-width:45%}.rows li>span:last-child{text-align:right;font-weight:var(--el-weight-emphasis)}
+.stack li{display:block}.stack li>span{display:block;max-width:none!important;text-align:left!important}
+.pill{display:inline-block;font-size:var(--el-size-small);border:var(--el-rule) solid var(--el-color-control-border);padding:0 var(--el-space-8);border-radius:var(--el-control-radius)}
+.btn{display:flex;align-items:center;justify-content:center;box-sizing:border-box;min-height:var(--el-control-height);padding:0 var(--el-space-16);border:var(--el-rule) solid var(--el-color-control-border);border-radius:var(--el-control-radius);font-weight:var(--el-weight-emphasis);margin-top:var(--el-space-12)}
+.solid{background:var(--el-color-text);color:var(--el-color-surface)}
+.note{font-size:var(--el-size-small);border-left:var(--el-rule-strong) solid var(--el-color-line-strong);padding-left:var(--el-space-12);margin-top:var(--el-space-12)}
+.sentence{font-size:var(--el-size-section);line-height:1.3;font-weight:var(--el-weight-emphasis);margin-top:var(--el-space-8)}
+.q{font-weight:var(--el-weight-emphasis);margin-top:var(--el-space-16)}
+.more{font-size:var(--el-size-small);text-decoration:underline}
+.source{font-size:var(--el-size-small);color:var(--el-color-text-muted);border-top:var(--el-rule) solid var(--el-color-line);padding-top:var(--el-space-8);margin-top:var(--el-space-24)}
+.track{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--el-space-8);margin-top:var(--el-space-8);font-size:var(--el-size-small)}
+.track div{border-top:var(--el-rule-strong) solid var(--el-color-control-border);padding-top:var(--el-space-4)}.track b{display:block}
+table{width:100%;border-collapse:collapse;font-size:var(--el-size-small);margin-top:var(--el-space-8)}caption{text-align:left;font-weight:var(--el-weight-emphasis);padding-bottom:var(--el-space-4)}
+th{text-align:left;font-weight:var(--el-weight-body);color:var(--el-color-text-muted);width:42%;vertical-align:top}td,th{border-top:var(--el-rule) solid var(--el-color-line);padding:var(--el-space-8) 0}
+.sig{list-style:none;padding:0;margin-top:var(--el-space-8);counter-reset:s}
+.sig li{counter-increment:s;border-top:var(--el-rule) solid var(--el-color-line);padding:var(--el-space-8) 0 var(--el-space-8) var(--el-space-32);position:relative;font-size:var(--el-size-small)}
+.sig li::before{content:counter(s);position:absolute;left:0;top:var(--el-space-8);width:var(--el-space-24);height:var(--el-space-24);border:var(--el-rule-strong) solid var(--el-color-line-strong);border-radius:50%;text-align:center;font-weight:var(--el-weight-heading);line-height:var(--el-space-24)}
+.sig b{display:block;font-size:var(--el-size-body)}
+.flag{display:inline-block;margin-top:var(--el-space-8);font-size:var(--el-size-small);font-weight:var(--el-weight-emphasis);border:var(--el-rule-strong) solid var(--el-color-line-strong);padding:var(--el-space-4) var(--el-space-8)}
+.crumb{display:inline-flex;align-items:center;min-height:var(--el-control-height);padding:0 var(--el-space-16);border:var(--el-rule) solid var(--el-color-control-border);border-radius:var(--el-control-radius);font-weight:var(--el-weight-emphasis);margin-bottom:var(--el-space-16)}
+.d1{display:grid;grid-template-columns:680px 360px;gap:var(--el-space-48);justify-content:center}
+.rail{border-top:var(--el-rule-strong) solid var(--el-color-line-strong);padding-top:var(--el-space-8);align-self:start;margin-top:calc(var(--el-space-48) + var(--el-space-16))}
+.span{display:flex;gap:var(--el-space-4);margin-top:var(--el-space-12);font-size:var(--el-size-small)}.span b{display:block}
+.span i{display:block;box-sizing:border-box;height:var(--el-space-12);margin-bottom:var(--el-space-4);background:var(--el-color-text);border:var(--el-rule-strong) solid var(--el-color-text)}.span .add i{background:none}
+.d2-head{display:grid;grid-template-columns:1fr 1fr;gap:var(--el-space-48);align-items:end}
+.d2-cols{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--el-space-32)}
+.d2-actions{display:grid;grid-template-columns:repeat(2,240px);gap:var(--el-space-16);margin-top:var(--el-space-12)}
+.d3{width:640px;margin:0 auto}
+.sig.two{display:grid;grid-template-columns:1fr 1fr;gap:0 var(--el-space-32)}
+.tl{display:flex;height:var(--el-space-12);margin-top:var(--el-space-12);border:var(--el-rule) solid var(--el-color-text)}
+.tl span,.key{background:var(--el-color-text)}
+.tl .add,.key.add{background:repeating-linear-gradient(135deg,var(--el-color-text) 0 2px,var(--el-color-surface) 2px 6px)}
+.key{display:inline-block;width:var(--el-space-12);height:var(--el-space-12);margin-right:var(--el-space-4);border:var(--el-rule) solid var(--el-color-text);vertical-align:middle}
+.tl-ends{display:flex;justify-content:space-between;font-size:var(--el-size-small);margin-top:var(--el-space-4)}
+.d4-top{display:flex;justify-content:space-between;align-items:center}.d4-acts{display:flex;gap:var(--el-space-12)}
+.step{display:grid;grid-template-columns:240px minmax(0,1fr);gap:var(--el-space-48);border-top:var(--el-rule) solid var(--el-color-line);padding:var(--el-space-16) 0 var(--el-space-8);margin-top:var(--el-space-16)}
+.step.main{border-top:var(--el-rule-strong) solid var(--el-color-line-strong);margin-top:var(--el-space-24)}
+.side{font-size:var(--el-size-body);font-weight:var(--el-weight-emphasis);line-height:var(--el-line-heading)}.step.main .side{font-size:var(--el-size-section);font-weight:var(--el-weight-heading)}
+.d4-end{display:flex;justify-content:space-between;align-items:center;gap:var(--el-space-32);border-top:var(--el-rule-strong) solid var(--el-color-line-strong);padding-top:var(--el-space-16);margin-top:var(--el-space-24)}.d4-end .d4-acts{flex:none}
+.figure.big{font-size:var(--el-size-figure)}
+.facts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--el-space-32);margin-top:var(--el-space-8);font-size:var(--el-size-small);color:var(--el-color-text-muted)}.facts.two{grid-template-columns:repeat(2,minmax(0,1fr));margin-top:0}
+.facts b{display:block;font-size:var(--el-size-body);color:var(--el-color-text)}
+.sig.wide{margin-top:0}.sig.wide li{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:var(--el-space-32);align-items:baseline}.sig.wide li:first-child{border-top:0}
+code{font-size:inherit}
+</style>
+</head>
+<body>
+<h1>Detalle de contrato · Bocetos de la experiencia</h1>
+<div class="intro">
+<p>Paso 2a de «Construir una página», 2026-11-18. Parte de <a href="contract.md">contract.md</a> (aprobado el 2026-11-17) y <a href="data.md">data.md</a> (corte 2026-11). Baja fidelidad: sin color, sin íconos, con un contrato real de la muestra (<code>CO1.PCCNTR.7954915</code>). <strong>Elegida por el flujo: A, versión 2, ya iterada con la crítica de <code>elephant-ux</code> (2026-11-18). Pendiente: la revisión de Jouler.</strong></p>
+<h3>Qué viene a hacer la persona</h3>
+<ol>
+<li><strong>Quién llega:</strong> alguien que tocó un contrato en la lista de su municipio, o que abrió un enlace que le compartieron por WhatsApp. En un celular de gama media, sin saber de contratación.</li>
+<li><strong>Qué quiere:</strong> entender en pocas palabras qué se contrató, quién lo contrató, con quién y por cuánto. Después, si le importa, comprobarlo en la fuente oficial o compartirlo.</li>
+<li><strong>Recorrido:</strong> lee de qué se trata y cuánto vale → ve quién contrata y con quién → mira si el valor o el plazo cambiaron y en qué va → abre el registro en SECOP o copia el enlace.</li>
+</ol>
+<h3>Lo que los datos imponen (data.md)</h3>
+<ul>
+<li>El 85 % de los contratos son con una persona natural: la ficha típica dice «Persona natural», sin nombre.</li>
+<li>El objeto viene largo (mediana de 228 caracteres), a veces en mayúsculas y cortado.</li>
+<li>El estado más común (53 %) es «plazo vencido, sin cierre en SECOP». No es una señal: hay que decirlo sin alarmar.</li>
+<li>El pago solo se reporta en la mitad de SECOP II. «No reportado» no es «no pagado».</li>
+<li>Sin señales ni retraso: entran con TASK-13. Cada opción trae una variante «con alerta» como vista previa de dónde irían (pedida por Jouler el 2026-11-18).</li>
+</ul>
+</div>
+
+<section class="option">
+<h2>A · La cifra y las partes primero <span class="rec">Recomendada · elegida · versión 2</span></h2>
+<p class="lead">Una ficha editorial: el titular dice qué tipo de contrato es, la cifra grande dice cuánto vale, y enseguida quién contrata y con quién. Cada hecho lleva su explicación al lado. Esta es la versión 2, redibujada con la crítica de <code>elephant-ux</code>; los cambios están al final de la sección.</p>
+
+<h3>Caso típico: prestación de servicios con una persona natural (85 % de los contratos)</h3>
+<div class="row">
+<figure>
+<div class="phone">
+<a class="back">← Providencia en el mapa</a>
+<p class="kicker">Providencia, Archipiélago de San Andrés, Providencia y Santa Catalina</p>
+<p class="head">Contrato de prestación de servicios</p>
+<p class="small" style="margin-top:var(--el-space-4)">SAN ANDRÉS; PROVIDENCIA Y SANTA CATALINA - ALCALDÍA MUNICIPIO DE PROVIDENCIA Y SANTA CATALINA</p>
+
+<div class="block">
+<p class="label">Valor del contrato</p>
+<p class="figure">$ 10,9 millones</p>
+<p class="small">$ 10.920.000 · Es el mismo valor con el que se firmó.</p>
+<p class="small muted" style="margin-top:var(--el-space-4)">SECOP I no publica cuánto se ha pagado.</p>
+</div>
+
+<div class="block">
+<p class="label">Objeto, según SECOP</p>
+<p class="small" style="margin-top:var(--el-space-8)">PRESTAR SUS SERVICIOS ASISTENCIALES CON PLENA AUTONOMiA E INDEPENDENCIA AL MUNICIPIO DE PROVIDENCIA Y SANTA CATALINA ISLAS EN EL aREA DONDE SEA… <span class="more">Leer completo</span></p>
+</div>
+
+<div class="block">
+<p class="label">Quiénes</p>
+<ul class="rows stack">
+<li><span>Entidad que contrata</span><span>SAN ANDRÉS; PROVIDENCIA Y SANTA CATALINA - ALCALDÍA MUNICIPIO DE PROVIDENCIA Y SANTA CATALINA · NIT 8002224989</span></li>
+<li><span>Contratista</span><span>Persona natural</span><span class="muted" style="font-weight:var(--el-weight-body)">No mostramos nombres de personas para proteger sus datos. El registro oficial está en SECOP.</span></li>
+</ul>
+</div>
+
+<div class="block">
+<p class="label">Plazo</p>
+<div class="track">
+<div><b>17 feb 2025</b>Firma</div><div><b>5 mar 2025</b>Inicio</div><div><b>5 sep 2025</b>Fin</div>
+</div>
+<p class="small" style="margin-top:var(--el-space-8)">Ya pasó la fecha de fin y SECOP no registra el cierre. Es común: muchas entidades no registran el cierre.</p>
+</div>
+
+<div class="block">
+<p class="label">¿Cómo se eligió al contratista?</p>
+<p class="small" style="margin-top:var(--el-space-8)"><strong>Contratación directa (Ley 1150 de 2007).</strong> La entidad contrata sin concurso; la ley lo permite en ciertos casos.</p>
+<p class="small muted">Motivo registrado: Prestación de Servicios Profesionales y de Apoyo a la Gestión (Literal H)</p>
+</div>
+
+<a class="btn solid">Ver el registro en SECOP I</a>
+<a class="btn">Compartir</a>
+<p class="source">Fuente: SECOP I, Colombia Compra Eficiente · datos al 7 nov 2026 · Contrato 25-12-14382349-13325351 · Elephants, de EKOU</p>
+</div>
+<figcaption>390 px, contrato real de SECOP I. El nombre de la entidad es de los más largos del corte.</figcaption>
+</figure>
+
+<figure>
+<div class="phone">
+<a class="back">← Pasto en el mapa</a>
+<p class="kicker">Pasto, Nariño</p>
+<p class="head">Contrato de obra</p>
+<p class="small" style="margin-top:var(--el-space-4)">ALCALDIA DE PASTO</p>
+
+<div class="block">
+<p class="label">Valor actual del contrato</p>
+<p class="figure">$ 67,8 millones</p>
+<p class="small">$ 67.815.383 · Se firmó por $ 56.095.566: subió $ 11,7 millones (20,9 %).</p>
+<p class="small muted" style="margin-top:var(--el-space-4)">La entidad no ha reportado pagos en SECOP.</p>
+</div>
+
+<div class="block">
+<p class="label">Objeto, según SECOP</p>
+<p class="small" style="margin-top:var(--el-space-8)">Aunar esfuerzos administrativos; técnicos y financieros entre el MUNICIPIO DE PASTO y JUNTA DE ACCIÓN COMUNAL DE LA VEREDA MOJONDINOY para la ejecución del… <span class="more">Leer completo</span></p>
+</div>
+
+<div class="block">
+<p class="label">Quiénes</p>
+<ul class="rows stack">
+<li><span>Entidad que contrata</span><span>ALCALDIA DE PASTO · NIT 891280000</span></li>
+<li><span>Contratista</span><span>JAC Mojondinoy · NIT 800167184</span></li>
+</ul>
+</div>
+
+<div class="block">
+<p class="label">Plazo</p>
+<div class="track">
+<div><b>9 jun 2025</b>Firma</div><div><b>9 jul 2025</b>Inicio</div><div><b>30 sep 2026</b>Fin</div>
+</div>
+<p class="small" style="margin-top:var(--el-space-8)">Al plazo se le agregaron 273 días.</p>
+<p class="small" style="margin-top:var(--el-space-4)">Ya pasó la fecha de fin y SECOP no registra el cierre. Es común: muchas entidades no registran el cierre.</p>
+</div>
+
+<div class="block">
+<p class="label">¿Cómo se eligió al contratista?</p>
+<p class="small" style="margin-top:var(--el-space-8)"><strong>Contratación directa.</strong> La entidad contrata sin concurso; la ley lo permite en ciertos casos.</p>
+<p class="small muted">Motivo registrado: Convenios Solidarios Regimen articulo 92 Ley 2166 de 2021</p>
+</div>
+
+<a class="btn solid">Ver el registro en SECOP II</a>
+<a class="btn">Compartir</a>
+<p class="source">Fuente: SECOP II, Colombia Compra Eficiente · datos al 7 nov 2026 · Contrato CO1.PCCNTR.7954915 · Elephants, de EKOU</p>
+</div>
+<figcaption>390 px, contrato real de SECOP II con una persona jurídica, valor que subió y días agregados.</figcaption>
+</figure>
+
+<div class="notes">
+<h3>Orden de lectura</h3>
+<ol>
+<li><strong>Titular y entidad:</strong> qué tipo de contrato es, dónde y quién lo contrata.</li>
+<li><strong>La cifra:</strong> cuánto vale, con el valor exacto y si cambió desde la firma.</li>
+<li><strong>Objeto y quiénes:</strong> para qué es y con quién se firmó.</li>
+<li>Plazo, cómo se eligió al contratista y la salida a SECOP.</li>
+</ol>
+<h3>Comportamiento</h3>
+<ul>
+<li>El enlace de volver lleva al municipio en el mapa. Cuando exista la lista (TASK-11), llevará a «Contratos de Pasto».</li>
+<li>«Leer completo» abre el objeto en su lugar, sin salir de la página.</li>
+<li>«Ver el registro en SECOP» abre la fuente oficial en otra pestaña; el texto nombra SECOP I o SECOP II según el contrato.</li>
+<li>«Compartir» abre el menú de compartir del teléfono; donde no exista, copia el enlace y lo confirma con un texto.</li>
+<li>La dirección es propia del contrato y se puede compartir: <code>/contratos/CO1.PCCNTR.7954915</code>.</li>
+</ul>
+<h3>Favorece</h3>
+<ul><li>La prueba de 10 segundos: qué, quién y cuánto, en la primera pantalla.</li><li>La captura compartida: titular, entidad y cifra viajan juntos, con la fuente.</li><li>Ningún texto se arma con gramática que dependa del dato: funciona con «Persona natural», con nombres en mayúsculas y con cualquier tipo.</li></ul>
+<h3>Sacrifica</h3>
+<ul><li>Quien verifica debe bajar hasta el final para llegar a SECOP.</li><li>El titular es el mismo en muchas fichas («Contrato de prestación de servicios»): lo que distingue cada una es la entidad, la cifra y el objeto.</li></ul>
+<h3>Apuesta fuerte</h3>
+<p>La cifra grande bajo el titular. El resto es sobrio: líneas y texto.</p>
+</div>
+</div>
+
+<h3>Casos difíciles</h3>
+<div class="row">
+<figure>
+<div class="phone">
+<p class="kicker">Bogotá, D.C.</p>
+<p class="head">Contrato</p>
+<p class="small" style="margin-top:var(--el-space-4)">SUBRED INTEGRADA DE SERVICIOS DE SALUD NORTE E.S.E. (OFICIAL)</p>
+<div class="block">
+<p class="label">Valor del contrato</p>
+<p style="margin-top:var(--el-space-4)"><strong>SECOP registra $ 2.185.208.667</strong></p>
+<p class="note">Esta cifra puede tener un error de registro en SECOP: se firmó por $ 1.464.677. Revisa el contrato en la fuente antes de citarla.</p>
+<p class="small muted" style="margin-top:var(--el-space-8)">La entidad no ha reportado pagos en SECOP.</p>
+</div>
+<div class="block">
+<p class="label">Quiénes</p>
+<ul class="rows stack"><li><span>Contratista</span><span>Persona natural</span></li></ul>
+</div>
+</div>
+<figcaption>Contrato real <code>CO1.PCCNTR.2242576</code>, con valor no confiable (401 contratos en el corte): sin cifra grande y con aviso. Su tipo en SECOP es «Decreto 092 de 2017»: cuando el tipo no es un nombre común, falta o es «Otro», el titular es solo «Contrato». Si SECOP no trae el documento del contratista: «Sin datos del contratista».</figcaption>
+</figure>
+<figure>
+<div class="phone">
+<p class="kicker">Detalle de contrato</p>
+<p class="head">No encontramos ese contrato</p>
+<p class="dek small">Puede que el enlace esté incompleto, o que el contrato no esté entre los que tenemos: los firmados desde 2021 y ubicados en un municipio.</p>
+<a class="btn solid">Ir al mapa</a>
+<p class="source">Datos al 7 nov 2026</p>
+</div>
+<figcaption>Contrato inexistente (404). Los otros estados van en la especificación: carga, datos no disponibles con «Reintentar», y el aviso de contrato reciente («SECOP puede no haberlo cargado completo»).</figcaption>
+</figure>
+<div class="notes">
+<h3>Variantes del valor</h3>
+<ul>
+<li>Subió: «Se firmó por $ X: subió $ Y (Z %)».</li>
+<li>Bajó: «Se firmó por $ X: bajó $ Y (Z %)».</li>
+<li>Igual: «Es el mismo valor con el que se firmó».</li>
+<li>Sin valor al firmar: «Sin datos del valor al firmar», sin porcentaje.</li>
+<li>Valor $ 0: «SECOP lo registra sin valor», sin cifra grande.</li>
+</ul>
+<h3>Variantes del pago</h3>
+<ul>
+<li>Reportado: «Pagado según SECOP: $ X».</li>
+<li>SECOP II sin reporte: «La entidad no ha reportado pagos en SECOP».</li>
+<li>SECOP I: «SECOP I no publica cuánto se ha pagado».</li>
+</ul>
+<h3>Variantes del estado</h3>
+<ul>
+<li>Sin iniciar: «Todavía no empieza».</li>
+<li>En ejecución: «Está en ejecución».</li>
+<li>Suspendido: «Está suspendido, según SECOP».</li>
+<li>Terminado: «Ya terminó».</li>
+<li>Plazo vencido sin cierre: el texto de los bocetos.</li>
+</ul>
+</div>
+</div>
+
+<h3>A con alerta (vista previa de TASK-13)</h3>
+<div class="row">
+<figure>
+<div class="phone">
+<a class="back">← Pasto en el mapa</a>
+<p class="kicker">Pasto, Nariño</p>
+<p class="head">Contrato de obra</p>
+<p class="small" style="margin-top:var(--el-space-4)">ALCALDIA DE PASTO</p>
+<p><a class="flag">Tiene 2 señales para revisar ↓</a></p>
+
+<div class="block">
+<p class="label">Valor actual del contrato</p>
+<p class="figure">$ 67,8 millones</p>
+<p class="small">$ 67.815.383 · Se firmó por $ 56.095.566: subió $ 11,7 millones (20,9 %).</p>
+<p class="small muted" style="margin-top:var(--el-space-4)">La entidad no ha reportado pagos en SECOP.</p>
+</div>
+
+<div class="block">
+<p class="label">Por qué tiene señales</p>
+<ol class="sig">
+<li><b>Ya cuesta 20,9 % más de lo firmado</b>Pasó de $ 56,1 a $ 67,8 millones.</li>
+<li><b>Termina 8 meses después de lo previsto</b>Debía terminar el 29 ene 2026; ahora, el 30 sep 2026.</li>
+</ol>
+<p class="note">Una señal pide revisar. No prueba nada irregular: puede tener una explicación. <span class="more">Cómo se calculan</span></p>
+</div>
+
+<div class="block">
+<p class="label">Objeto, según SECOP</p>
+<p class="small" style="margin-top:var(--el-space-8)">Aunar esfuerzos administrativos; técnicos y financieros entre el MUNICIPIO DE PASTO y JUNTA DE ACCIÓN COMUNAL DE LA VEREDA MOJONDINOY para la ejecución del… <span class="more">Leer completo</span></p>
+</div>
+<div class="block"><p class="label">Quiénes</p><p class="small muted">Igual que sin alerta.</p></div>
+<div class="block"><p class="label">Plazo</p><p class="small muted">Igual que sin alerta.</p></div>
+<div class="block"><p class="label">¿Cómo se eligió al contratista?</p><p class="small muted">Igual que sin alerta.</p></div>
+<a class="btn solid">Ver el registro en SECOP II</a>
+<a class="btn">Compartir</a>
+<p class="source">Fuente: SECOP II, Colombia Compra Eficiente · datos al 7 nov 2026 · Contrato CO1.PCCNTR.7954915 · Elephants, de EKOU</p>
+</div>
+<figcaption>390 px. Un aviso corto bajo el titular lleva al bloque de señales, que va justo después de la cifra.</figcaption>
+</figure>
+<div class="notes">
+<h3>Qué es esta variante</h3>
+<ul>
+<li><strong>Vista previa.</strong> Las señales entran con TASK-13; aquí solo se reserva su lugar para que el diseño no haya que rehacerlo.</li>
+<li>Los dos hechos son reales en este contrato (el valor subió 20,9 % y el fin pasó del 29 ene al 30 sep 2026). <strong>Que cuenten como señal es ilustrativo:</strong> las reglas y los umbrales los define TASK-07 y TASK-13.</li>
+<li>Sin nivel de riesgo ni color: el nivel no se inventa.</li>
+</ul>
+<h3>Dónde va la alerta en A</h3>
+<ul>
+<li>Bajo el titular, un aviso con el número de señales: se ve en la primera pantalla y en una captura compartida.</li>
+<li>El bloque «Por qué tiene señales» va segundo, después de la cifra y antes del objeto: cada señal es un hecho con su número.</li>
+<li>La aclaración va pegada a las señales, no al final de la página.</li>
+<li>Un contrato sin señales no muestra ni el aviso ni el bloque. «Sin información para evaluar» se dice con esas palabras, distinto de «sin señales».</li>
+</ul>
+</div>
+</div>
+
+<h3>A en escritorio: ronda 2 (2026-11-19)</h3>
+<div class="notes" style="max-width:90ch">
+<p>Jouler aprobó A en celular el 2026-11-19 y pidió otra ronda solo de escritorio: la versión 1 (dos columnas 7/5, con la cifra a la derecha) no convenció. Las tres opciones usan los mismos bloques y textos del celular; cambia cómo ocupan 1280 px. Se dibujan en el caso más cargado (contrato real <code>CO1.PCCNTR.7954915</code>, con la vista previa de señales) porque es el que más exige al ancho.</p>
+<p style="margin-top:var(--el-space-8)">Ya traen tres observaciones de Jouler: <strong>el plazo como barra</strong> (plazo inicial y plazo agregado), <strong>«volver» como en el mapa</strong> (botón secundario con flecha y el nombre del lugar, el patrón de las migas del PR #47) y <strong>las señales con la forma del componente Señal</strong> del catálogo. El color por gravedad entra en la maqueta; aquí todo sigue en gris.</p>
+</div>
+
+<h3>D1 · Columna de lectura y riel fijo <span class="rec">Recomendada · versión 2, tras la crítica de elephant-ux</span></h3>
+<p class="small" style="margin-bottom:var(--el-space-8)">Caso más cargado: empresa, valor que subió, días agregados y vista previa de señales.</p>
+<div class="desk">
+<div class="d1">
+<div>
+<a class="crumb">← Pasto</a>
+<p class="kicker">Pasto, Nariño</p>
+<p class="head">Contrato de obra</p>
+<p style="margin-top:var(--el-space-4)">ALCALDIA DE PASTO</p>
+<p><span class="flag">Tiene 2 señales para revisar</span></p>
+<div class="block"><p class="label">Valor actual del contrato</p><p class="figure">$ 67,8 millones</p><p class="small">$ 67.815.383 · Se firmó por $ 56.095.566: subió $ 11,7 millones (20,9 %).</p><p class="small muted" style="margin-top:var(--el-space-4)">La entidad no ha reportado pagos en SECOP.</p></div>
+<div class="block"><p class="label">Por qué tiene señales</p>
+<ol class="sig"><li><b>Ya cuesta 20,9 % más de lo firmado</b>Pasó de $ 56,1 a $ 67,8 millones.</li><li><b>Al plazo se le agregaron 273 días</b>Terminaba el 31 dic 2025; ahora, el 30 sep 2026.</li></ol>
+<p class="note">Una señal pide revisar. No prueba nada irregular: puede tener una explicación. <span class="more">Cómo se calculan</span></p></div>
+<div class="block"><p class="label">Objeto, según SECOP</p><p style="margin-top:var(--el-space-8)">Aunar esfuerzos administrativos; técnicos y financieros entre el MUNICIPIO DE PASTO y JUNTA DE ACCIÓN COMUNAL DE LA VEREDA MOJONDINOY para la ejecución del mantenimiento rutinario de las vías rurales del Corregimiento de El Encano mediante el proyecto… <span class="more">Leer completo</span></p></div>
+<div class="block"><p class="label">Quiénes</p><ul class="rows stack"><li><span>Entidad que contrata</span><span>ALCALDIA DE PASTO · NIT 891280000</span></li><li><span>Contratista</span><span>JAC Mojondinoy · NIT 800167184</span></li></ul></div>
+<div class="block"><p class="label">Plazo</p>
+<div class="span"><div style="flex:39"><i></i><b>Plazo inicial · 175 días</b>9 jul 2025 a 31 dic 2025</div><div class="add" style="flex:61"><i></i><b>Agregado después · 273 días</b>hasta el 30 sep 2026</div></div>
+<p class="small" style="margin-top:var(--el-space-8)">Se firmó el 9 jun 2025. Ya pasó la fecha de fin y SECOP no registra el cierre. Es común: muchas entidades no registran el cierre.</p></div>
+<div class="block"><p class="label">¿Cómo se eligió al contratista?</p><p class="small" style="margin-top:var(--el-space-8)"><strong>Contratación directa (Ley 1150 de 2007).</strong> La entidad contrata sin concurso; la ley lo permite en ciertos casos.</p><p class="small muted">Motivo registrado: Convenios Solidarios Regimen articulo 92 Ley 2166 de 2021</p></div>
+</div>
+<aside class="rail">
+<p class="label">Comprobar en SECOP</p>
+<a class="btn solid">Ver el registro en SECOP II ↗</a>
+<p class="small muted" style="margin-top:var(--el-space-4)">Abre el sitio de SECOP en otra pestaña.</p>
+<ul class="rows stack" style="margin-top:var(--el-space-12)"><li><span>Fuente</span><span>SECOP II, Colombia Compra Eficiente</span></li><li><span>Datos al</span><span>7 nov 2026</span></li><li><span>Número en SECOP</span><span>CO1.PCCNTR.7954915 · <span class="more">Copiar</span></span></li></ul>
+<a class="btn">Compartir esta ficha</a>
+<p class="small muted" style="margin-top:var(--el-space-12)">Elephants, de EKOU</p>
+</aside>
+</div>
+</div>
+
+<p class="small" style="margin:var(--el-space-24) 0 var(--el-space-8)">Caso típico (85 %): persona natural, sin señales, sin días agregados, con uno de los nombres de entidad más largos del corte.</p>
+<div class="desk">
+<div class="d1">
+<div>
+<a class="crumb">← Providencia</a>
+<p class="kicker">Providencia, Archipiélago de San Andrés, Providencia y Santa Catalina</p>
+<p class="head">Contrato de prestación de servicios</p>
+<p style="margin-top:var(--el-space-4)">SAN ANDRÉS; PROVIDENCIA Y SANTA CATALINA - ALCALDÍA MUNICIPIO DE PROVIDENCIA Y SANTA CATALINA</p>
+<div class="block"><p class="label">Valor del contrato</p><p class="figure">$ 10,9 millones</p><p class="small">$ 10.920.000 · Es el mismo valor con el que se firmó.</p><p class="small muted" style="margin-top:var(--el-space-4)">SECOP I no publica cuánto se ha pagado.</p></div>
+<div class="block"><p class="label">Objeto, según SECOP</p><p style="margin-top:var(--el-space-8)">PRESTAR SUS SERVICIOS ASISTENCIALES CON PLENA AUTONOMiA E INDEPENDENCIA AL MUNICIPIO DE PROVIDENCIA Y SANTA CATALINA ISLAS EN EL aREA DONDE SEA… <span class="more">Leer completo</span></p></div>
+<div class="block"><p class="label">Quiénes</p><ul class="rows stack"><li><span>Entidad que contrata</span><span>SAN ANDRÉS; PROVIDENCIA Y SANTA CATALINA - ALCALDÍA MUNICIPIO DE PROVIDENCIA Y SANTA CATALINA · NIT 8002224989</span></li><li><span>Contratista</span><span>Persona natural</span><span class="muted" style="font-weight:var(--el-weight-body)">No mostramos nombres de personas para proteger sus datos. El registro oficial está en SECOP.</span></li></ul></div>
+<div class="block"><p class="label">Plazo</p>
+<div class="track"><div><b>17 feb 2025</b>Firma</div><div><b>5 mar 2025</b>Inicio</div><div><b>5 sep 2025</b>Fin</div></div>
+<p class="small" style="margin-top:var(--el-space-8)">Ya pasó la fecha de fin y SECOP no registra el cierre. Es común: muchas entidades no registran el cierre.</p></div>
+<div class="block"><p class="label">¿Cómo se eligió al contratista?</p><p class="small" style="margin-top:var(--el-space-8)"><strong>Contratación directa (Ley 1150 de 2007).</strong> La entidad contrata sin concurso; la ley lo permite en ciertos casos.</p><p class="small muted">Motivo registrado: Prestación de Servicios Profesionales y de Apoyo a la Gestión (Literal H)</p></div>
+</div>
+<aside class="rail">
+<p class="label">Comprobar en SECOP</p>
+<a class="btn solid">Ver el registro en SECOP I ↗</a>
+<p class="small muted" style="margin-top:var(--el-space-4)">Abre el sitio de SECOP en otra pestaña.</p>
+<ul class="rows stack" style="margin-top:var(--el-space-12)"><li><span>Fuente</span><span>SECOP I, Colombia Compra Eficiente</span></li><li><span>Datos al</span><span>7 nov 2026</span></li><li><span>Número en SECOP</span><span>25-12-14382349-13325351 · <span class="more">Copiar</span></span></li></ul>
+<a class="btn">Compartir esta ficha</a>
+<p class="small muted" style="margin-top:var(--el-space-12)">Elephants, de EKOU</p>
+</aside>
+</div>
+</div>
+<div class="notes" style="max-width:90ch;margin-top:var(--el-space-8)">
+<p><strong>Cómo ocupa el ancho:</strong> una columna de lectura de 680 px, en el mismo orden del celular, y a 56 px un riel de 360 px que se queda fijo al desplazar. El conjunto va centrado, con 1.120 px como máximo. A 1024 px la columna se encoge (mínimo 560) y el riel baja a 300; por debajo, el riel pasa al final, como en celular.</p>
+<p><strong>Favorece:</strong> el orden de lectura es uno solo en celular y escritorio; los nombres largos caben; comprobar en SECOP, la fuente y la fecha están en la primera pantalla. <strong>Sacrifica:</strong> la primera pantalla (720 px de alto) llega hasta las señales; el contratista y el plazo piden desplazar.</p>
+<h3>Cambios tras la crítica de elephant-ux (2026-11-19)</h3>
+<ol>
+<li><strong>El plazo ya no es una barra que se llena:</strong> parecía «39 % ejecutado». Ahora son dos tramos rotulados, con sus días y sus fechas. El tramo agregado va en contorno, no con trama: la trama significa «Sin datos» en el sistema.</li>
+<li><strong>Los tramos solo aparecen si hay días agregados.</strong> En el caso típico quedan las tres fechas. Sin tramos tampoco cuando el fin es anterior al inicio o los días agregados superan la duración.</li>
+<li><strong>«Quiénes» apilado:</strong> etiqueta arriba y valor abajo; un nombre de 161 caracteres ya no queda como párrafo alineado a la derecha.</li>
+<li><strong>Riel más liviano:</strong> sin caja, con una línea arriba. Se llama «Comprobar en SECOP», no «Registro oficial» (Elephants no es un sitio oficial); el botón avisa que abre otro sitio; el número dice que es de SECOP y se puede copiar; «Compartir» va aparte.</li>
+<li><strong>Anchos:</strong> contenedor centrado y riel pegado a la columna, para que no se aleje en pantallas de 1920 px ni se rompa a 1024.</li>
+<li><strong>El aviso de señales</strong> es texto, sin flecha: en escritorio el bloque ya está a la vista.</li>
+<li><strong>«← Pasto»</strong> es siempre un enlace al municipio en el mapa, no «atrás» del navegador: quien llega por un enlace compartido no tiene historial.</li>
+</ol>
+<p style="margin-top:var(--el-space-8)"><strong>No se acogió:</strong> subir el objeto bajo el titular en escritorio. Se respeta el orden aprobado en celular; queda como pregunta para Jouler.</p>
+</div>
+
+<h3>D2 · Cabecera a dos lados y tres columnas</h3>
+<div class="desk">
+<a class="crumb">← Pasto</a>
+<div class="d2-head">
+<div>
+<p class="kicker">Pasto, Nariño</p>
+<p class="head">Contrato de obra</p>
+<p style="margin-top:var(--el-space-4)">ALCALDIA DE PASTO</p>
+<p><a class="flag">Tiene 2 señales para revisar ↓</a></p>
+</div>
+<div>
+<p class="label">Valor actual del contrato</p><p class="figure">$ 67,8 millones</p><p class="small">$ 67.815.383 · Se firmó por $ 56.095.566: subió $ 11,7 millones (20,9 %).</p><p class="small muted" style="margin-top:var(--el-space-4)">La entidad no ha reportado pagos en SECOP.</p>
+</div>
+</div>
+<div class="block"><p class="label">Por qué tiene señales</p>
+<ol class="sig two"><li><b>Ya cuesta 20,9 % más de lo firmado</b>Pasó de $ 56,1 a $ 67,8 millones.</li><li><b>Al plazo se le agregaron 273 días</b>Ahora termina el 30 sep 2026.</li></ol>
+<p class="note">Una señal pide revisar. No prueba nada irregular: puede tener una explicación. <span class="more">Cómo se calculan</span></p></div>
+<div class="block"><p class="label">Objeto, según SECOP</p><p style="margin-top:var(--el-space-8);max-width:90ch">Aunar esfuerzos administrativos; técnicos y financieros entre el MUNICIPIO DE PASTO y JUNTA DE ACCIÓN COMUNAL DE LA VEREDA MOJONDINOY para la ejecución del mantenimiento rutinario de las vías rurales del Corregimiento de El Encano mediante el proyecto… <span class="more">Leer completo</span></p></div>
+<div class="d2-cols">
+<div class="block"><p class="label">Quiénes</p><ul class="rows stack"><li><span>Entidad que contrata</span><span>ALCALDIA DE PASTO · NIT 891280000</span></li><li><span>Contratista</span><span>JAC Mojondinoy · NIT 800167184</span></li></ul></div>
+<div class="block"><p class="label">Plazo</p>
+<div class="tl"><span style="flex:39"></span><span class="add" style="flex:61"></span></div>
+<div class="tl-ends"><span><b>9 jul 2025</b> Inicio</span><span><b>30 sep 2026</b> Fin</span></div>
+<p class="small" style="margin-top:var(--el-space-8)"><span class="key add"></span>Agregado después: 273 días</p>
+<p class="small" style="margin-top:var(--el-space-8)">Ya pasó la fecha de fin y SECOP no registra el cierre. Es común.</p></div>
+<div class="block"><p class="label">¿Cómo se eligió al contratista?</p><p class="small" style="margin-top:var(--el-space-8)"><strong>Contratación directa (Ley 1150 de 2007).</strong> La entidad contrata sin concurso; la ley lo permite en ciertos casos.</p><p class="small muted">Motivo registrado: Convenios Solidarios Regimen articulo 92 Ley 2166 de 2021</p></div>
+</div>
+<div class="d2-actions"><a class="btn solid">Ver el registro en SECOP II</a><a class="btn">Compartir</a></div>
+<p class="source">Fuente: SECOP II, Colombia Compra Eficiente · datos al 7 nov 2026 · Contrato CO1.PCCNTR.7954915 · Elephants, de EKOU</p>
+</div>
+<div class="notes" style="max-width:90ch;margin-top:var(--el-space-8)">
+<p><strong>Cómo ocupa el ancho:</strong> el titular a la izquierda y la cifra a la derecha, a la misma altura; las señales lado a lado; quiénes, plazo y forma de contratación en tres columnas.</p>
+<p><strong>Favorece:</strong> casi toda la ficha cabe en una pantalla, sin desplazar; se compara de un vistazo. <strong>Sacrifica:</strong> el orden cambia frente al celular; con el nombre de entidad más largo del corte (161 caracteres) o con tres señales las columnas quedan disparejas; los botones vuelven al final.</p>
+</div>
+
+<h3>D3 · La ficha del celular, centrada</h3>
+<div class="desk">
+<div class="d3">
+<a class="crumb">← Pasto</a>
+<p class="kicker">Pasto, Nariño</p>
+<p class="head">Contrato de obra</p>
+<p style="margin-top:var(--el-space-4)">ALCALDIA DE PASTO</p>
+<p><a class="flag">Tiene 2 señales para revisar ↓</a></p>
+<div class="block"><p class="label">Valor actual del contrato</p><p class="figure">$ 67,8 millones</p><p class="small">$ 67.815.383 · Se firmó por $ 56.095.566: subió $ 11,7 millones (20,9 %).</p></div>
+<div class="block"><p class="label">Por qué tiene señales</p>
+<ol class="sig"><li><b>Ya cuesta 20,9 % más de lo firmado</b>Pasó de $ 56,1 a $ 67,8 millones.</li><li><b>Al plazo se le agregaron 273 días</b>Ahora termina el 30 sep 2026.</li></ol></div>
+<div class="block"><p class="label">Objeto · Quiénes · Plazo · ¿Cómo se eligió?</p><p class="small muted">Los mismos bloques, uno debajo del otro.</p></div>
+<div class="d2-actions"><a class="btn solid">Ver el registro en SECOP II</a><a class="btn">Compartir</a></div>
+<p class="source">Fuente: SECOP II, Colombia Compra Eficiente · datos al 7 nov 2026 · Contrato CO1.PCCNTR.7954915 · Elephants, de EKOU</p>
+</div>
+</div>
+<div class="notes" style="max-width:90ch;margin-top:var(--el-space-8)">
+<p><strong>Cómo ocupa el ancho:</strong> no lo ocupa: una sola columna de 640 px al centro, idéntica al celular; los dos botones quedan lado a lado.</p>
+<p><strong>Favorece:</strong> la lectura más cómoda y la menor construcción. <strong>Sacrifica:</strong> dos tercios de la pantalla quedan vacíos y los botones solo aparecen al final, después de desplazar toda la ficha.</p>
+</div>
+
+<h3>A en escritorio: ronda 3 (2026-11-19)</h3>
+<div class="notes" style="max-width:90ch">
+<p>Jouler revisó la ronda 2: en D1 queda espacio muerto bajo el riel; D2 le gusta más, pero obliga a leer de lado a lado (titular a la izquierda, cifra a la derecha) y la jerarquía se marca menos que en celular. Pide guiar a la persona. D4 responde a eso: una sola bajada, como en celular, que ocupa todo el ancho.</p>
+</div>
+
+<h3>D4 · Una sola bajada, en preguntas, a todo el ancho <span class="rec">Recomendada · versión 2, tras la crítica de elephant-ux</span></h3>
+<p class="small" style="margin-bottom:var(--el-space-8)">Caso más cargado.</p>
+<div class="desk">
+<div class="d4-top"><a class="crumb" style="margin:0">← Pasto</a><span class="d4-acts"><a class="btn" style="margin:0">Compartir esta ficha</a><a class="btn solid" style="margin:0">Ver el registro en SECOP II ↗</a></span></div>
+<p class="kicker" style="margin-top:var(--el-space-24)">Pasto, Nariño</p>
+<p class="head">Contrato de obra</p>
+<p style="margin-top:var(--el-space-4)">ALCALDIA DE PASTO</p>
+<p><span class="flag">Tiene 2 señales para revisar</span></p>
+<div class="step main"><p class="side">¿Cuánto vale?</p><div><p class="figure big">$ 67,8 millones</p>
+<p>Se firmó por $ 56.095.566: subió $ 11,7 millones (20,9 %). Hoy vale $ 67.815.383.</p>
+<p class="small muted" style="margin-top:var(--el-space-4)">La entidad no ha reportado pagos en SECOP.</p>
+<p class="small muted" style="margin-top:var(--el-space-4)">Según SECOP II · datos al 7 nov 2026</p></div></div>
+<div class="step main"><p class="side">¿Por qué tiene señales?</p><div><ol class="sig" style="margin-top:0"><li style="border-top:0"><b>Ya cuesta 20,9 % más de lo firmado</b>Pasó de $ 56,1 a $ 67,8 millones.</li><li><b>Al plazo se le agregaron 273 días</b>Terminaba el 31 dic 2025; ahora, el 30 sep 2026.</li></ol>
+<p class="note">Una señal pide revisar. No prueba nada irregular: puede tener una explicación. <span class="more">Cómo se calculan</span></p></div></div>
+<div class="step"><p class="side">¿Qué se contrató?</p><div><p class="small muted">Objeto, según SECOP</p><p style="max-width:72ch">Aunar esfuerzos administrativos; técnicos y financieros entre el MUNICIPIO DE PASTO y JUNTA DE ACCIÓN COMUNAL DE LA VEREDA MOJONDINOY para la ejecución del mantenimiento rutinario de las vías rurales del Corregimiento de El Encano mediante el proyecto… <span class="more">Leer completo</span></p></div></div>
+<div class="step"><p class="side">¿Entre quiénes?</p><div><ul class="rows stack" style="margin-top:0"><li style="border-top:0;padding-top:0"><span>Entidad que contrata</span><span>ALCALDIA DE PASTO · NIT 891280000</span></li><li><span>Contratista</span><span>JAC Mojondinoy · NIT 800167184</span></li></ul></div></div>
+<div class="step"><p class="side">¿Cuánto dura?</p><div><div class="span" style="margin-top:0"><div style="flex:39"><i></i><b>Plazo inicial · 175 días</b>9 jul 2025 a 31 dic 2025</div><div class="add" style="flex:61"><i></i><b>Agregado después · 273 días</b>hasta el 30 sep 2026</div></div>
+<p class="small" style="margin-top:var(--el-space-8);max-width:72ch">Se firmó el 9 jun 2025. Ya pasó la fecha de fin y SECOP no registra el cierre. Es común: muchas entidades no registran el cierre.</p></div></div>
+<div class="step"><p class="side">¿Cómo se eligió al contratista?</p><div><p style="max-width:72ch"><strong>Contratación directa (Ley 1150 de 2007).</strong> La entidad contrata sin concurso; la ley lo permite en ciertos casos.</p><p class="small muted">Motivo registrado: Convenios Solidarios Regimen articulo 92 Ley 2166 de 2021</p></div></div>
+<div class="d4-end"><p class="source" style="border:0;margin:0;padding:0">Fuente: SECOP II, Colombia Compra Eficiente · datos al 7 nov 2026 · Número en SECOP: CO1.PCCNTR.7954915 · <span class="more">Copiar</span> · Elephants, de EKOU</p><span class="d4-acts"><a class="btn" style="margin:0">Compartir esta ficha</a><a class="btn" style="margin:0">Ver el registro en SECOP II ↗</a></span></div>
+</div>
+<p class="small" style="margin:var(--el-space-24) 0 var(--el-space-8)">Caso típico (85 %): persona natural, sin señales, sin días agregados, nombre de entidad muy largo.</p>
+<div class="desk">
+<div class="d4-top"><a class="crumb" style="margin:0">← Providencia</a><span class="d4-acts"><a class="btn" style="margin:0">Compartir esta ficha</a><a class="btn solid" style="margin:0">Ver el registro en SECOP I ↗</a></span></div>
+<p class="kicker" style="margin-top:var(--el-space-24)">Providencia, Archipiélago de San Andrés, Providencia y Santa Catalina</p>
+<p class="head">Contrato de prestación de servicios</p>
+<p style="margin-top:var(--el-space-4)">SAN ANDRÉS; PROVIDENCIA Y SANTA CATALINA - ALCALDÍA MUNICIPIO DE PROVIDENCIA Y SANTA CATALINA</p>
+<div class="step main"><p class="side">¿Cuánto vale?</p><div><p class="figure big">$ 10,9 millones</p>
+<p>$ 10.920.000. No ha cambiado desde la firma.</p>
+<p class="small muted" style="margin-top:var(--el-space-4)">SECOP I no publica cuánto se ha pagado.</p>
+<p class="small muted" style="margin-top:var(--el-space-4)">Según SECOP I · datos al 7 nov 2026</p></div></div>
+<div class="step"><p class="side">¿Qué se contrató?</p><div><p class="small muted">Objeto, según SECOP</p><p style="max-width:72ch">PRESTAR SUS SERVICIOS ASISTENCIALES CON PLENA AUTONOMiA E INDEPENDENCIA AL MUNICIPIO DE PROVIDENCIA Y SANTA CATALINA ISLAS EN EL aREA DONDE SEA… <span class="more">Leer completo</span></p></div></div>
+<div class="step"><p class="side">¿Entre quiénes?</p><div><ul class="rows stack" style="margin-top:0"><li style="border-top:0;padding-top:0"><span>Entidad que contrata</span><span>SAN ANDRÉS; PROVIDENCIA Y SANTA CATALINA - ALCALDÍA MUNICIPIO DE PROVIDENCIA Y SANTA CATALINA · NIT 8002224989</span></li><li><span>Contratista</span><span>Persona natural</span><span class="muted" style="font-weight:var(--el-weight-body)">No mostramos nombres de personas para proteger sus datos. El registro oficial está en SECOP.</span></li></ul></div></div>
+<div class="step"><p class="side">¿Cuánto dura?</p><div><div class="facts" style="margin-top:0"><div><b>17 feb 2025</b>Firma</div><div><b>5 mar 2025</b>Inicio</div><div><b>5 sep 2025</b>Fin</div></div>
+<p class="small" style="margin-top:var(--el-space-8);max-width:72ch">Ya pasó la fecha de fin y SECOP no registra el cierre. Es común: muchas entidades no registran el cierre.</p></div></div>
+<div class="step"><p class="side">¿Cómo se eligió al contratista?</p><div><p style="max-width:72ch"><strong>Contratación directa (Ley 1150 de 2007).</strong> La entidad contrata sin concurso; la ley lo permite en ciertos casos.</p><p class="small muted">Motivo registrado: Prestación de Servicios Profesionales y de Apoyo a la Gestión (Literal H)</p></div></div>
+<div class="d4-end"><p class="source" style="border:0;margin:0;padding:0">Fuente: SECOP I, Colombia Compra Eficiente · datos al 7 nov 2026 · Número en SECOP: 25-12-14382349-13325351 · <span class="more">Copiar</span> · Elephants, de EKOU</p><span class="d4-acts"><a class="btn" style="margin:0">Compartir esta ficha</a><a class="btn" style="margin:0">Ver el registro en SECOP I ↗</a></span></div>
+</div>
+<div class="notes" style="max-width:90ch;margin-top:var(--el-space-8)">
+<p><strong>Cómo ocupa el ancho:</strong> cada bloque es una franja a todo el ancho. A la izquierda, la pregunta; a la derecha, la respuesta. Los botones van en la esquina de arriba, en la línea de «volver», y se repiten al cierre junto a la fuente.</p>
+<p><strong>Cómo guía:</strong> se lee de arriba abajo, igual que en celular. Hay dos niveles: «¿Cuánto vale?» y «¿Por qué tiene señales?» llevan línea fuerte y pregunta grande; las demás, línea fina y pregunta pequeña. La cifra va a 48 px y trae su fuente y su fecha pegadas. Sin señales, esa franja no existe.</p>
+<p><strong>Favorece:</strong> una sola dirección de lectura; no hay columna vacía; comprobar y compartir están en la primera pantalla. <strong>Sacrifica:</strong> es más larga que D2 (cerca de pantalla y media en el caso cargado).</p>
+<p><strong>Anchos:</strong> tope de 1.200 px, centrado. Por debajo de 1.100 px la pregunta pasa encima de la respuesta. Falta comprobarlo con capturas a 1024 y 1440 px: se hace en la maqueta.</p>
+<h3>Cambios tras la crítica de elephant-ux (2026-11-19)</h3>
+<ol>
+<li><strong>Fuente y fecha junto a la cifra:</strong> antes estaban solo al final y una captura de la cifra no las llevaba.</li>
+<li><strong>Sin números de paso:</strong> convivían tres «2» (el aviso, el paso y la señal) y el número de cada paso cambiaba según el caso. Guían las preguntas y el orden fijo.</li>
+<li><strong>Todas las etiquetas son preguntas:</strong> «¿Cuánto vale?», «¿Qué se contrató?», «¿Entre quiénes?», «¿Cuánto dura?».</li>
+<li><strong>El valor es una frase, no una rejilla de cuatro datos:</strong> el dato que importa («subió $ 11,7 millones») iba tercero y partido en dos líneas.</li>
+<li><strong>Cada señal lleva su hecho debajo,</strong> no a 150 px a la derecha.</li>
+<li><strong>Dos niveles de franja,</strong> para que valor y señales pesen más que el resto.</li>
+<li><strong>Las partes, una bajo la otra,</strong> para que un nombre de 161 caracteres no quede en media columna.</li>
+<li><strong>Acciones repetidas al cierre</strong> (en secundario), para no tener que subir después de leer.</li>
+</ol>
+<p style="margin-top:var(--el-space-8)"><strong>Pregunta abierta de la crítica:</strong> un contrato sin señales no dice nada sobre señales. ¿Se queda en silencio o TASK-13 define un texto que no suene a «todo está bien»?</p>
+</div>
+
+<h3>El plazo en tramos (observación de Jouler)</h3>
+<div class="notes" style="max-width:90ch">
+<ul>
+<li>Dos tramos del inicio al fin: el plazo inicial (lleno) y lo que se agregó después (en contorno), cada uno con sus días y sus fechas. En D2 y D3 todavía se ve la primera versión, una barra con trama, que la crítica descartó.</li>
+<li><strong>Límite de los datos:</strong> no se pinta el tiempo que pasó después del fin. El 53 % de los contratos está «vencido sin cierre» y eso no es una señal (data.md); un tramo rojo en la mitad de las fichas alarmaría sin razón.</li>
+<li><strong>Color de atraso:</strong> entra con TASK-13, cuando el atraso sea una señal con su regla. Hoy <code>retraso_dias</code> no es confiable (negativo en 1,45 M de contratos).</li>
+<li>El tramo agregado sale de <code>dates.addedDays</code>, que ya está en el contrato de la API; el fin inicial es el fin menos esos días. SECOP lo subregistra (regla S06).</li>
+</ul>
+</div>
+
+<h3>Cambios tras la crítica de elephant-ux (2026-11-18)</h3>
+<div class="notes" style="max-width:90ch">
+<ol>
+<li><strong>Caso típico dibujado:</strong> el boceto principal es ahora una prestación de servicios con persona natural, con la explicación de por qué no hay nombre.</li>
+<li><strong>Titular sin gramática armada:</strong> la versión 1 decía «La Alcaldía de Pasto contrató una obra por $ 67,8 millones»; se rompía con nombres en mayúsculas y tipos como «Otro». Ahora es el tipo de contrato, y la entidad va en su línea.</li>
+<li><strong>La cifra ya no se repite</strong> en el titular y en el bloque.</li>
+<li><strong>Casos difíciles con diseño:</strong> valor no confiable, valor $ 0, valor al firmar desconocido, contratista sin documento, contrato inexistente.</li>
+<li><strong>El pago subió al bloque del valor</strong> y distingue SECOP I de SECOP II.</li>
+<li><strong>El estado dejó de ser una etiqueta:</strong> «Plazo vencido» parecía una señal y sale en la mitad de las fichas. Ahora es una frase, sin la palabra «incumplido».</li>
+<li><strong>Cada hecho lleva su contexto:</strong> la contratación directa dice que la ley la permite y muestra el motivo registrado.</li>
+<li><strong>El objeto se rotula «según SECOP»</strong> y se recorta a tres líneas también en escritorio.</li>
+<li><strong>«Volver» no promete una lista que no existe;</strong> «Copiar enlace» pasó a «Compartir»; el botón y la fuente nombran SECOP I o II; el pie dice quién publica.</li>
+</ol>
+<p style="margin-top:var(--el-space-8)"><strong>No se acogió:</strong> separar el NIT con puntos (SECOP lo trae con y sin dígito de verificación: se muestra como viene) y pasar a minúsculas los nombres y el objeto (daña las siglas y deja de ser «tal como viene»). <strong>Decidido por el flujo:</strong> «superó el límite legal de adición» no se muestra aquí; es una señal y entra con TASK-13, igual que el retraso.</p>
+</div>
+</section>
+
+<section class="option">
+<h2>B · Preguntas y respuestas</h2>
+<p class="lead">La página es una conversación: cada bloque es una pregunta que haría cualquier persona, con su respuesta en una frase. Sin cifra protagonista.</p>
+<div class="row">
+<figure>
+<div class="phone">
+<a class="back">← Contratos de Pasto</a>
+<p class="kicker">Contrato · Pasto, Nariño</p>
+<p class="sentence">La Alcaldía de Pasto contrató a JAC Mojondinoy para una obra.</p>
+<p class="q">¿Para qué?</p>
+<p class="small">Aunar esfuerzos administrativos; técnicos y financieros entre el MUNICIPIO DE PASTO y JUNTA DE ACCIÓN COMUNAL DE LA VEREDA MOJONDINOY para la ejecución del mantenimiento… <span class="more">Leer más</span></p>
+<p class="q">¿Cuánto cuesta?</p>
+<p class="small"><strong>$ 67,8 millones.</strong> Al firmarse valía $ 56,1 millones: subió 20,9 %.</p>
+<p class="q">¿Cuándo?</p>
+<p class="small">Se firmó el 9 jun 2025 y debía terminar el 30 sep 2026. Se le agregaron 273 días.</p>
+<p class="q">¿En qué va?</p>
+<p class="small">El plazo ya venció y la entidad no ha registrado el cierre en SECOP.</p>
+<p class="q">¿Cómo se eligió al contratista?</p>
+<p class="small">Por contratación directa.</p>
+<p class="q">¿Ya se pagó?</p>
+<p class="small">SECOP no reporta pagos de este contrato.</p>
+<a class="btn solid">Ver el registro en SECOP II</a>
+<a class="btn">Copiar enlace</a>
+<p class="source">Fuente: SECOP II, Colombia Compra Eficiente · datos al 7 nov 2026</p>
+</div>
+<figcaption>390 px. Todo es texto corrido; el valor es una respuesta más.</figcaption>
+</figure>
+<div class="notes">
+<h3>Orden de lectura</h3>
+<ol><li><strong>La frase:</strong> quién contrató a quién y para qué tipo de cosa.</li><li><strong>¿Para qué?</strong> y <strong>¿Cuánto cuesta?</strong></li><li>El resto de preguntas, en el orden en que alguien las haría.</li></ol>
+<h3>Comportamiento</h3>
+<ul><li>Igual que A: volver, leer más, SECOP y copiar enlace.</li></ul>
+<h3>Favorece</h3>
+<ul><li>A quien no sabe nada de contratación: no hay etiquetas que interpretar.</li><li>El lector de pantalla: es prosa en orden.</li></ul>
+<h3>Sacrifica</h3>
+<ul><li>La cifra no destaca: una captura no se entiende de un vistazo.</li><li>Comparar o citar cuesta más: los datos están dentro de frases.</li><li>Cada frase se arma por código con textos de origen; con «Persona natural» o un tipo «Otro» puede sonar forzada.</li></ul>
+<h3>Apuesta fuerte</h3>
+<p>La frase inicial.</p>
+</div>
+</div>
+<h3>B con alerta (vista previa de TASK-13)</h3>
+<div class="row">
+<figure>
+<div class="phone">
+<a class="back">← Pasto en el mapa</a>
+<p class="kicker">Contrato · Pasto, Nariño</p>
+<p class="sentence">La Alcaldía de Pasto contrató a JAC Mojondinoy para una obra.</p>
+<p class="q">¿Hay algo para revisar?</p>
+<p class="small"><strong>Sí, 2 señales.</strong> Ya cuesta 20,9 % más de lo firmado: pasó de $ 56,1 a $ 67,8 millones. Y termina 8 meses después de lo previsto: debía terminar el 29 ene 2026; ahora, el 30 sep 2026.</p>
+<p class="note">Una señal pide revisar. No prueba nada irregular: puede tener una explicación.</p>
+<p class="q">¿Para qué?</p>
+<p class="small muted">Igual que sin alerta, y lo mismo las demás preguntas.</p>
+<a class="btn solid">Ver el registro en SECOP II</a>
+<a class="btn">Compartir</a>
+<p class="source">Fuente: SECOP II, Colombia Compra Eficiente · datos al 7 nov 2026 · Contrato CO1.PCCNTR.7954915 · Elephants, de EKOU</p>
+</div>
+<figcaption>390 px. La alerta es la primera pregunta, respondida en prosa.</figcaption>
+</figure>
+<div class="notes">
+<h3>Qué es esta variante</h3>
+<ul>
+<li><strong>Vista previa.</strong> Las señales entran con TASK-13; aquí solo se reserva su lugar para que el diseño no haya que rehacerlo.</li>
+<li>Los dos hechos son reales en este contrato (el valor subió 20,9 % y el fin pasó del 29 ene al 30 sep 2026). <strong>Que cuenten como señal es ilustrativo:</strong> las reglas y los umbrales los define TASK-07 y TASK-13.</li>
+<li>Sin nivel de riesgo ni color: el nivel no se inventa.</li>
+</ul>
+<h3>Dónde va la alerta en B</h3>
+<ul>
+<li>Es una pregunta más, la primera: «¿Hay algo para revisar?».</li>
+<li>Las señales quedan dentro de un párrafo: con tres o más cuesta separarlas y contarlas.</li>
+<li>Sin señales, la respuesta sería «No encontramos señales en este contrato», que puede leerse como «está limpio».</li>
+</ul>
+</div>
+</div>
+</section>
+
+<section class="option">
+<h2>C · Ficha de registro</h2>
+<p class="lead">Una tabla completa, como una ficha técnica: todo a la vista, agrupado, con la salida a SECOP arriba. Pensada para quien verifica.</p>
+<div class="row">
+<figure>
+<div class="phone">
+<a class="back">← Contratos de Pasto</a>
+<p class="kicker">Contrato CO1.PCCNTR.7954915 · SECOP II</p>
+<p class="head">Contrato de obra · ALCALDIA DE PASTO</p>
+<a class="btn solid">Ver el registro en SECOP II</a>
+<table><caption>Partes</caption>
+<tr><th>Entidad</th><td>ALCALDIA DE PASTO<br>NIT 891280000</td></tr>
+<tr><th>Contratista</th><td>JAC Mojondinoy<br>NIT 800167184</td></tr>
+<tr><th>Lugar</th><td>Pasto, Nariño</td></tr></table>
+<table><caption>Valor</caption>
+<tr><th>Actual</th><td>$ 67.815.383</td></tr>
+<tr><th>Al firmar</th><td>$ 56.095.566</td></tr>
+<tr><th>Cambio</th><td>+20,9 %</td></tr>
+<tr><th>Pagado</th><td>No reportado</td></tr></table>
+<table><caption>Plazo y estado</caption>
+<tr><th>Firma</th><td>9 jun 2025</td></tr>
+<tr><th>Inicio</th><td>9 jul 2025</td></tr>
+<tr><th>Fin</th><td>30 sep 2026</td></tr>
+<tr><th>Días agregados</th><td>273</td></tr>
+<tr><th>Estado</th><td>Plazo vencido, sin cierre en SECOP</td></tr></table>
+<table><caption>Contratación</caption>
+<tr><th>Tipo</th><td>Obra</td></tr>
+<tr><th>Modalidad</th><td>Contratación directa</td></tr>
+<tr><th>Objeto</th><td>Aunar esfuerzos administrativos; técnicos y financieros entre el MUNICIPIO DE PASTO y JUNTA DE… <span class="more">Leer más</span></td></tr></table>
+<a class="btn">Copiar enlace</a>
+<p class="source">Fuente: SECOP II, Colombia Compra Eficiente · datos al 7 nov 2026</p>
+</div>
+<figcaption>390 px. Cuatro tablas de dos columnas.</figcaption>
+</figure>
+<div class="notes">
+<h3>Orden de lectura</h3>
+<ol><li><strong>Identificador y titular</strong> (tipo y entidad).</li><li><strong>La salida a SECOP.</strong></li><li>Las tablas, de arriba abajo.</li></ol>
+<h3>Comportamiento</h3>
+<ul><li>Igual que A, con SECOP arriba.</li></ul>
+<h3>Favorece</h3>
+<ul><li>Periodistas y veedurías: cifras exactas, todo a la vista, fácil de citar.</li><li>Es la más barata de construir: la tabla de datos ya existe.</li></ul>
+<h3>Sacrifica</h3>
+<ul><li>La prueba de 10 segundos: nada dice qué es lo importante.</li><li>La audiencia por defecto (público general): parece un formulario del Estado, lo contrario del brief.</li><li>Manda a SECOP antes de explicar nada.</li></ul>
+<h3>Apuesta fuerte</h3>
+<p>Ninguna: es densidad pura.</p>
+</div>
+</div>
+<h3>C con alerta (vista previa de TASK-13)</h3>
+<div class="row">
+<figure>
+<div class="phone">
+<a class="back">← Pasto en el mapa</a>
+<p class="kicker">Contrato CO1.PCCNTR.7954915 · SECOP II</p>
+<p class="head">Contrato de obra · ALCALDIA DE PASTO</p>
+<a class="btn solid">Ver el registro en SECOP II</a>
+<table><caption>Señales (2)</caption>
+<tr><th>Valor</th><td>Ya cuesta 20,9 % más de lo firmado</td></tr>
+<tr><th>Plazo</th><td>Termina 8 meses después de lo previsto</td></tr></table>
+<p class="note">Una señal pide revisar. No prueba nada irregular: puede tener una explicación.</p>
+<table><caption>Partes</caption>
+<tr><th>Entidad</th><td>ALCALDIA DE PASTO<br>NIT 891280000</td></tr>
+<tr><th>Contratista</th><td>JAC Mojondinoy<br>NIT 800167184</td></tr></table>
+<p class="small muted" style="margin-top:var(--el-space-12)">Las demás tablas, igual que sin alerta.</p>
+<p class="source">Fuente: SECOP II, Colombia Compra Eficiente · datos al 7 nov 2026 · Contrato CO1.PCCNTR.7954915 · Elephants, de EKOU</p>
+</div>
+<figcaption>390 px. Las señales son la primera tabla.</figcaption>
+</figure>
+<div class="notes">
+<h3>Qué es esta variante</h3>
+<ul>
+<li><strong>Vista previa.</strong> Las señales entran con TASK-13; aquí solo se reserva su lugar para que el diseño no haya que rehacerlo.</li>
+<li>Los dos hechos son reales en este contrato (el valor subió 20,9 % y el fin pasó del 29 ene al 30 sep 2026). <strong>Que cuenten como señal es ilustrativo:</strong> las reglas y los umbrales los define TASK-07 y TASK-13.</li>
+<li>Sin nivel de riesgo ni color: el nivel no se inventa.</li>
+</ul>
+<h3>Dónde va la alerta en C</h3>
+<ul>
+<li>Una tabla más, la primera, con el mismo peso visual que «Partes» o «Valor».</li>
+<li>La señal queda como una fila de datos: sin el hecho que la sustenta, se lee como un sello.</li>
+</ul>
+</div>
+</div>
+</section>
+</body>
+</html>

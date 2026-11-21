@@ -123,3 +123,46 @@
   width: 16px;
   height: 16px;
 }
+
+/* Toast: confirms an action that changes nothing on the page. Fixed to the window, at the bottom. */
+.toastRegion {
+  position: fixed;
+  z-index: 10;
+  left: var(--el-space-16);
+  right: var(--el-space-16);
+  bottom: calc(var(--el-space-16) + env(safe-area-inset-bottom, 0px));
+  display: flex;
+  justify-content: center;
+  /* The empty region and its margins never catch a tap meant for the page. */
+  pointer-events: none;
+}
+
+/* No shadow token: a strong border lifts it from the content. */
+.toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--el-space-12);
+  width: 100%;
+  max-width: 48ch;
+  padding: var(--el-space-8) var(--el-space-8) var(--el-space-8) var(--el-space-16);
+  background: var(--el-color-surface);
+  border: var(--el-rule-strong) solid var(--el-color-line-strong);
+  border-radius: var(--el-control-radius);
+  color: var(--el-color-text);
+  font-size: var(--el-size-small);
+  overflow-wrap: anywhere;
+}
+
+.toast.danger {
+  border-color: var(--el-color-danger);
+}
+
+.toast .badge {
+  flex-shrink: 0;
+}
+
+.toast .message {
+  flex: 1 1 0;
+  min-width: 0;
+}

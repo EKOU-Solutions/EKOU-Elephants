@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="es-CO" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Detalle de contrato · Prototipo D4</title>
+<link rel="stylesheet" href="../../guide/tokens.css">
+<style>
+*{box-sizing:border-box}
+body{margin:0;font:var(--el-size-body)/var(--el-line-body) var(--el-font-ui);color:var(--el-color-text);background:var(--el-color-surface);font-variant-numeric:var(--el-numbers)}
+p,ol,ul{margin:0}a{color:inherit}
+.proto{display:flex;flex-wrap:wrap;gap:var(--el-space-8) var(--el-space-24);align-items:center;padding:var(--el-space-8) var(--el-space-16);background:var(--el-color-surface-subtle);border-bottom:var(--el-rule) solid var(--el-color-line);font-size:var(--el-size-small)}
+.proto b{font-weight:var(--el-weight-emphasis)}.proto span{display:flex;gap:var(--el-space-8);align-items:center}
+.proto a,.proto button{font:inherit;color:inherit;background:none;border:var(--el-rule) solid var(--el-color-control-border);border-radius:var(--el-control-radius);padding:var(--el-space-4) var(--el-space-12);text-decoration:none;cursor:pointer}
+.proto [aria-current],.proto [aria-pressed=true]{background:var(--el-color-text);color:var(--el-color-surface);border-color:var(--el-color-text)}
+.page{max-width:1200px;margin:0 auto;padding:var(--el-space-24) var(--el-space-16) var(--el-space-48)}
+@media (min-width:900px){.page{padding:var(--el-space-32) var(--el-space-48) var(--el-space-48)}}
+.kicker,.muted,.small{font-size:var(--el-size-small)}.kicker,.muted{color:var(--el-color-text-muted)}
+.head{font-size:var(--el-size-title-mobile);line-height:var(--el-line-heading);font-weight:var(--el-weight-heading);margin:var(--el-space-4) 0 0}
+.figure{font-size:var(--el-size-figure-mobile);line-height:var(--el-line-figure);font-weight:var(--el-weight-heading)}
+@media (min-width:900px){.head{font-size:var(--el-size-title)}}
+.label{font-size:var(--el-size-small);font-weight:var(--el-weight-emphasis)}
+.block{border-top:var(--el-rule-strong) solid var(--el-color-line-strong);padding-top:var(--el-space-8);margin-top:var(--el-space-24)}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:var(--el-control-height);padding:0 var(--el-space-16);border:var(--el-rule) solid var(--el-color-control-border);border-radius:var(--el-control-radius);font:inherit;font-weight:var(--el-weight-emphasis);color:var(--el-color-text);background:var(--el-color-surface);text-decoration:none;cursor:pointer}
+.btn.solid{background:var(--el-color-text);color:var(--el-color-surface);border-color:var(--el-color-text)}
+.btn:focus-visible,.link:focus-visible,.proto :focus-visible{outline:var(--el-rule-strong) solid var(--el-color-focus);outline-offset:2px}
+.link{font:inherit;font-size:var(--el-size-small);color:inherit;background:none;border:0;padding:0;text-decoration:underline;cursor:pointer}
+.flag{display:inline-block;margin-top:var(--el-space-8);font-size:var(--el-size-small);font-weight:var(--el-weight-emphasis);border:var(--el-rule-strong) solid var(--el-color-line-strong);padding:var(--el-space-4) var(--el-space-8)}
+.sig{list-style:none;padding:0;counter-reset:s}
+.sig li{counter-increment:s;border-top:var(--el-rule) solid var(--el-color-line);padding:var(--el-space-8) 0 var(--el-space-8) var(--el-space-32);position:relative;font-size:var(--el-size-small)}
+.sig li:first-child{border-top:0}
+.sig li::before{content:counter(s);position:absolute;left:0;top:var(--el-space-8);width:var(--el-space-24);height:var(--el-space-24);border:var(--el-rule-strong) solid var(--el-color-line-strong);border-radius:50%;text-align:center;font-weight:var(--el-weight-heading);line-height:var(--el-space-24)}
+.sig b{display:block;font-size:var(--el-size-body)}
+.note{font-size:var(--el-size-small);border-left:var(--el-rule-strong) solid var(--el-color-line-strong);padding-left:var(--el-space-12);margin-top:var(--el-space-12)}
+.parties{list-style:none;padding:0}.parties li{border-top:var(--el-rule) solid var(--el-color-line);padding:var(--el-space-8) 0;font-size:var(--el-size-small)}
+.parties li:first-child{border-top:0;padding-top:0}.parties span{display:block;color:var(--el-color-text-muted)}.parties b{display:block;font-weight:var(--el-weight-emphasis)}
+.span{display:flex;gap:var(--el-space-4);font-size:var(--el-size-small)}.span b{display:block}
+.span i{display:block;height:var(--el-space-12);margin-bottom:var(--el-space-4);background:var(--el-color-text);border:var(--el-rule-strong) solid var(--el-color-text)}.span .add i{background:none}
+.dates{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--el-space-8);font-size:var(--el-size-small);max-width:560px}.dates b{display:block;font-size:var(--el-size-body)}
+.text{max-width:72ch}
+.crumb{margin-bottom:var(--el-space-16)}
+[hidden]{display:none!important}
+.status{font-size:var(--el-size-small);min-height:var(--el-space-24);margin-top:var(--el-space-4)}
+
+.top{display:flex;justify-content:space-between;align-items:center;gap:var(--el-space-16);margin-bottom:var(--el-space-24)}.top .crumb{margin:0}
+.acts{display:flex;flex-wrap:wrap;gap:var(--el-space-12)}
+.top .acts{display:none}
+.step{border-top:var(--el-rule) solid var(--el-color-line);padding:var(--el-space-16) 0 var(--el-space-8);margin-top:var(--el-space-16)}
+.step.main{border-top:var(--el-rule-strong) solid var(--el-color-line-strong);margin-top:var(--el-space-24)}
+.side{font-size:var(--el-size-body);font-weight:var(--el-weight-emphasis);line-height:var(--el-line-heading);margin:0 0 var(--el-space-8)}
+.step.main .side{font-size:var(--el-size-subsection);font-weight:var(--el-weight-heading)}
+.end{border-top:var(--el-rule-strong) solid var(--el-color-line-strong);padding-top:var(--el-space-16);margin-top:var(--el-space-24)}
+.end .acts{margin-top:var(--el-space-16)}.end .acts .btn{flex:1 1 200px}
+@media (min-width:900px){
+.top .acts{display:flex}
+.figure{font-size:var(--el-size-figure)}
+.step.main .side{font-size:var(--el-size-section)}
+.end{display:flex;justify-content:space-between;align-items:center;gap:var(--el-space-32)}.end .acts{margin-top:0;flex:none}.end .acts .btn{flex:none}
+}
+@media (min-width:1100px){
+.step{display:grid;grid-template-columns:240px minmax(0,1fr);gap:var(--el-space-48)}.side{margin-bottom:0}
+}
+</style>
+</head>
+<body>
+<!-- Prototype of TASK-12, low fidelity (grey, no icons). Built by a script; real contracts of cut 2026-11. -->
+<div class="proto"><b>Prototipo D4 · una sola bajada, en preguntas</b>
+<span>Opción: <a href="prototipo-d4.html" aria-current="page">D4</a><a href="prototipo-d1.html" data-other="prototipo-d1.html">D1</a></span>
+<span>Caso: <button type="button" data-pick="senales" aria-pressed="false">Con señales</button><button type="button" data-pick="tipico" aria-pressed="false">Caso típico</button></span>
+<span class="muted">Baja fidelidad: sin color ni íconos. Las señales son una vista previa.</span></div>
+<main class="page"><div data-case="senales" hidden><div class="top"><nav aria-label="Volver"><a class="btn crumb" href="#">← Pasto</a></nav><span class="acts"><button class="btn" type="button" data-share>Compartir esta ficha</button><a class="btn solid" href="https://community.secop.gov.co/Public/Tendering/OpportunityDetail/Index?noticeUID=CO1.NTC.8249008&amp;isFromPublicArea=True&amp;isModal=true&amp;asPopupView=true" target="_blank" rel="noopener">Ver el registro en SECOP II ↗</a></span></div>
+<p class="kicker">Pasto, Nariño</p><h1 class="head">Contrato de obra</h1><p style="margin-top:var(--el-space-4)">ALCALDIA DE PASTO</p><p><span class="flag">Tiene 2 señales para revisar</span></p>
+<section class="step main"><h2 class="side">¿Cuánto vale?</h2><div><p class="figure">$ 67,8 millones</p><p>Se firmó por $ 56.095.566: subió $ 11,7 millones (20,9 %). Hoy vale $ 67.815.383.</p><p class="small muted" style="margin-top:var(--el-space-4)">La entidad no ha reportado pagos en SECOP.</p><p class="small muted" style="margin-top:var(--el-space-4)">Según SECOP II · datos al 7 nov 2026</p></div></section>
+<section class="step main"><h2 class="side">¿Por qué tiene señales?</h2><div><ol class="sig"><li><b>Ya cuesta 20,9 % más de lo firmado</b>Pasó de $ 56,1 a $ 67,8 millones.</li><li><b>Al plazo se le agregaron 273 días</b>Terminaba el 31 dic 2025; ahora, el 30 sep 2026.</li></ol><p class="note">Una señal pide revisar. No prueba nada irregular: puede tener una explicación. <a class="link" href="#">Cómo se calculan</a></p></div></section>
+<section class="step"><h2 class="side">¿Qué se contrató?</h2><div><p class="small muted">Objeto, según SECOP</p><p class="text" data-object data-short="Aunar esfuerzos administrativos; técnicos y financieros entre el MUNICIPIO DE PASTO y JUNTA DE ACCIÓN COMUNAL DE LA VEREDA MOJONDINOY para la ejecución del mantenimiento rutinario de las vías rurales del Corregimiento de El Encano mediante el proyecto…" data-full="Aunar esfuerzos administrativos; técnicos y financieros entre el MUNICIPIO DE PASTO y JUNTA DE ACCIÓN COMUNAL DE LA VEREDA MOJONDINOY para la ejecución del mantenimiento rutinario de las vías rurales del Corregimiento de El Encano mediante el proyecto denominado camineros del municipio de Pasto. (SRC-0005-062)"><span data-text>Aunar esfuerzos administrativos; técnicos y financieros entre el MUNICIPIO DE PASTO y JUNTA DE ACCIÓN COMUNAL DE LA VEREDA MOJONDINOY para la ejecución del mantenimiento rutinario de las vías rurales del Corregimiento de El Encano mediante el proyecto…</span> <button class="link" type="button" data-more aria-expanded="false">Leer completo</button></p></div></section>
+<section class="step"><h2 class="side">¿Entre quiénes?</h2><div><ul class="parties"><li><span>Entidad que contrata</span><b>ALCALDIA DE PASTO · NIT 891280000</b></li><li><span>Contratista</span><b>JAC Mojondinoy · NIT 800167184</b></li></ul></div></section>
+<section class="step"><h2 class="side">¿Cuánto dura?</h2><div><div class="span"><div style="flex:39"><i></i><b>Plazo inicial · 175 días</b>9 jul 2025 a 31 dic 2025</div><div class="add" style="flex:61"><i></i><b>Agregado después · 273 días</b>hasta el 30 sep 2026</div></div><p class="small text" style="margin-top:var(--el-space-8)">Se firmó el 9 jun 2025. Ya pasó la fecha de fin y SECOP no registra el cierre. Es común: muchas entidades no registran el cierre.</p></div></section>
+<section class="step"><h2 class="side">¿Cómo se eligió al contratista?</h2><div><p class="text"><strong>Contratación directa (Ley 1150 de 2007).</strong> La entidad contrata sin concurso; la ley lo permite en ciertos casos.</p><p class="small muted">Motivo registrado: Convenios Solidarios Regimen articulo 92 Ley 2166 de 2021</p></div></section>
+
+<div class="end"><p class="small muted">Fuente: SECOP II, Colombia Compra Eficiente · datos al 7 nov 2026 · Número en SECOP: CO1.PCCNTR.7954915 · <button class="link" type="button" data-copy="CO1.PCCNTR.7954915">Copiar</button> · Elephants, de EKOU</p>
+<span class="acts"><button class="btn" type="button" data-share>Compartir esta ficha</button><a class="btn solid" href="https://community.secop.gov.co/Public/Tendering/OpportunityDetail/Index?noticeUID=CO1.NTC.8249008&amp;isFromPublicArea=True&amp;isModal=true&amp;asPopupView=true" target="_blank" rel="noopener">Ver el registro en SECOP II ↗</a></span></div>
+<p class="status" role="status"></p></div><div data-case="tipico" hidden><div class="top"><nav aria-label="Volver"><a class="btn crumb" href="#">← Providencia</a></nav><span class="acts"><button class="btn" type="button" data-share>Compartir esta ficha</button><a class="btn solid" href="https://www.contratos.gov.co/consultas/detalleProceso.do?numConstancia=25-12-14382349" target="_blank" rel="noopener">Ver el registro en SECOP I ↗</a></span></div>
+<p class="kicker">Providencia, Archipiélago de San Andrés, Providencia y Santa Catalina</p><h1 class="head">Contrato de prestación de servicios</h1><p style="margin-top:var(--el-space-4)">SAN ANDRÉS; PROVIDENCIA Y SANTA CATALINA - ALCALDÍA MUNICIPIO DE PROVIDENCIA Y SANTA CATALINA</p>
+<section class="step main"><h2 class="side">¿Cuánto vale?</h2><div><p class="figure">$ 10,9 millones</p><p>$ 10.920.000. No ha cambiado desde la firma.</p><p class="small muted" style="margin-top:var(--el-space-4)">SECOP I no publica cuánto se ha pagado.</p><p class="small muted" style="margin-top:var(--el-space-4)">Según SECOP I · datos al 7 nov 2026</p></div></section>
+<section class="step"><h2 class="side">¿Qué se contrató?</h2><div><p class="small muted">Objeto, según SECOP</p><p class="text" data-object data-short="PRESTAR SUS SERVICIOS ASISTENCIALES CON PLENA AUTONOMiA E INDEPENDENCIA AL MUNICIPIO DE PROVIDENCIA Y SANTA CATALINA ISLAS EN EL aREA DONDE SEA…" data-full="PRESTAR SUS SERVICIOS ASISTENCIALES CON PLENA AUTONOMiA E INDEPENDENCIA AL MUNICIPIO DE PROVIDENCIA Y SANTA CATALINA ISLAS EN EL aREA DONDE SEA DESIGNADO ACORDE A LAS OBLIGACIONES CONTRACTUALES Y/O NECESIDADES DEL ENTE TERRITORIAL."><span data-text>PRESTAR SUS SERVICIOS ASISTENCIALES CON PLENA AUTONOMiA E INDEPENDENCIA AL MUNICIPIO DE PROVIDENCIA Y SANTA CATALINA ISLAS EN EL aREA DONDE SEA…</span> <button class="link" type="button" data-more aria-expanded="false">Leer completo</button></p></div></section>
+<section class="step"><h2 class="side">¿Entre quiénes?</h2><div><ul class="parties"><li><span>Entidad que contrata</span><b>SAN ANDRÉS; PROVIDENCIA Y SANTA CATALINA - ALCALDÍA MUNICIPIO DE PROVIDENCIA Y SANTA CATALINA · NIT 8002224989</b></li><li><span>Contratista</span><b>Persona natural</b><span>No mostramos nombres de personas para proteger sus datos. El registro oficial está en SECOP.</span></li></ul></div></section>
+<section class="step"><h2 class="side">¿Cuánto dura?</h2><div><div class="dates"><div><b>17 feb 2025</b>Firma</div><div><b>5 mar 2025</b>Inicio</div><div><b>5 sep 2025</b>Fin</div></div><p class="small text" style="margin-top:var(--el-space-8)">Ya pasó la fecha de fin y SECOP no registra el cierre. Es común: muchas entidades no registran el cierre.</p></div></section>
+<section class="step"><h2 class="side">¿Cómo se eligió al contratista?</h2><div><p class="text"><strong>Contratación directa (Ley 1150 de 2007).</strong> La entidad contrata sin concurso; la ley lo permite en ciertos casos.</p><p class="small muted">Motivo registrado: Prestación de Servicios Profesionales y de Apoyo a la Gestión (Literal H)</p></div></section>
+
+<div class="end"><p class="small muted">Fuente: SECOP I, Colombia Compra Eficiente · datos al 7 nov 2026 · Número en SECOP: 25-12-14382349-13325351 · <button class="link" type="button" data-copy="25-12-14382349-13325351">Copiar</button> · Elephants, de EKOU</p>
+<span class="acts"><button class="btn" type="button" data-share>Compartir esta ficha</button><a class="btn solid" href="https://www.contratos.gov.co/consultas/detalleProceso.do?numConstancia=25-12-14382349" target="_blank" rel="noopener">Ver el registro en SECOP I ↗</a></span></div>
+<p class="status" role="status"></p></div></main>
+<script>
+const cases=[...document.querySelectorAll('[data-case]')];
+const pick=id=>{cases.forEach(c=>c.hidden=c.dataset.case!==id);
+document.querySelectorAll('[data-pick]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.pick===id));
+document.querySelectorAll('[data-other]').forEach(a=>a.href=a.dataset.other+'#'+id);history.replaceState(null,'','#'+id)};
+document.querySelectorAll('[data-pick]').forEach(b=>b.onclick=()=>pick(b.dataset.pick));
+pick(location.hash==='#tipico'?'tipico':'senales');
+// «Leer completo»: opens the object in place and can fold it again.
+document.querySelectorAll('[data-more]').forEach(b=>b.onclick=()=>{const p=b.closest('[data-object]');const open=b.getAttribute('aria-expanded')!=='true';
+p.querySelector('[data-text]').textContent=open?p.dataset.full:p.dataset.short;b.setAttribute('aria-expanded',open);b.textContent=open?'Leer menos':'Leer completo'});
+const say=(el,t)=>{const s=el.closest('[data-case]').querySelector('[role=status]');s.textContent=t;setTimeout(()=>s.textContent='',4000)};
+document.querySelectorAll('[data-copy]').forEach(b=>b.onclick=async()=>{try{await navigator.clipboard.writeText(b.dataset.copy);say(b,'Número copiado.')}catch{say(b,'No se pudo copiar. Selecciona el número y cópialo.')}});
+document.querySelectorAll('[data-share]').forEach(b=>b.onclick=async()=>{const d={title:document.title,url:location.href};
+try{if(navigator.share){await navigator.share(d)}else{await navigator.clipboard.writeText(d.url);say(b,'Enlace copiado.')}}catch(e){if(e.name!=='AbortError')say(b,'No se pudo compartir. Copia la dirección de la página.')}});
+</script>
+</body>
+</html>

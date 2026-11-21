@@ -1,0 +1,45 @@
+---
+// A contract's page (ADR-0004): rendered on demand from the API with the same component as always;
+// the middleware keeps it in Cloudflare's cache by cut and version.
+import '../../../../src/styles/global.css';
+import { env } from 'cloudflare:workers';
+import { jsonInHtml } from '../../../../pages-site/src/lib/site';
+import { ContractIsland } from '../../islands/ContractIsland';
+import { apiGateway } from '../../lib/apiGateway';
+import { contractResponse, contractState } from '../../lib/contractPage';
+
+export const prerender = false;
+
+const state = await contractState(Astro.params.id ?? '', apiGateway(env), Astro.url.origin);
+const { status, cacheControl, title, description } = contractResponse(state);
+const canonical = `${Astro.url.origin}${Astro.url.pathname}`;
+Astro.response.status = status;
+Astro.response.headers.set('Cache-Control', cacheControl);
+---
+<!doctype html>
+<html lang="es-CO">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+    {
+      description ? (
+        <>
+          <meta name="description" content={description} />
+          <link rel="canonical" href={canonical} />
+          <meta property="og:type" content="website" />
+          <meta property="og:site_name" content="EKOU Elephants" />
+          <meta property="og:locale" content="es_CO" />
+          <meta property="og:title" content={title} />
+          <meta property="og:description" content={description} />
+          <meta property="og:url" content={canonical} />
+        </>
+      ) : (
+        <meta name="robots" content="noindex" />
+      )
+    }
+  </head>
+  <body>
+    <div id="root"><ContractIsland client:load state={jsonInHtml(state)} /></div>
+  </body>
+</html>

@@ -375,3 +375,25 @@ def test_every_contract_in_the_window_falls_in_one_level(
     assert warehouse.execute(
         "select contratos from mapa_niveles_corte where nivel = 'departamento' and cod_dpto = '81'"
     ).fetchone() == (1,)
+
+
+def test_contract_detail_covers_the_contracts_of_the_municipal_map(
+    warehouse: duckdb.DuckDBPyConnection,
+) -> None:
+    # TASK-12: every contract counted in a municipality has a detail, and no other.
+    detalle = warehouse.execute("select count(*) from contract_detail").fetchone()
+    mapa = warehouse.execute("select sum(contratos_ubicados) from mapa_municipios_corte").fetchone()
+    assert detalle is not None and mapa is not None and detalle[0] == mapa[0] > 0
+
+
+def test_contract_detail_never_identifies_a_natural_person(
+    warehouse: duckdb.DuckDBPyConnection,
+) -> None:
+    kinds = dict(
+        warehouse.execute(
+            "select supplier_kind, count(*) filter (where supplier_name is not null "
+            "or supplier_tax_id is not null) from contract_detail group by 1"
+        ).fetchall()
+    )
+    assert kinds.get("natural_person") == 0  # there is at least one, and none is identified
+    assert kinds.get("company", 0) > 0
