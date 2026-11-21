@@ -16,7 +16,7 @@ flowchart LR
 
 | Workflow | Cuándo | Qué hace |
 | --- | --- | --- |
-| `app-ci.yml` | Lo llaman los otros dos; también manual | Lint y formato con Biome, tipos, pruebas (incluida integración con PostgreSQL 17 desechable), build y validación del paquete de Wrangler. No usa secretos, así que también corre en PRs desde forks. |
+| `app-ci.yml` | Lo llaman los otros dos; también manual | Lint y formato con Biome, tipos, pruebas (incluida integración con PostgreSQL 17 desechable), pruebas de las historias de Storybook en Chromium (`npm run test:stories`), build y validación del paquete de Wrangler. No usa secretos, así que también corre en PRs desde forks. |
 | `app-preview.yml` | PR abierto, actualizado, reabierto o cerrado; edición del comentario de control | Despliega el preview del PR, publica y actualiza el comentario del preview y limpia al cerrar. |
 | `app-deploy.yml` | Push a `main` | CI, migraciones en la base compartida `dev` y despliegue a producción tras la aprobación. |
 
@@ -364,6 +364,25 @@ Notas:
 - **(sin verificar)** el tiempo del job: armar (~10 s), páginas (~40 s) y subir unas 1.160 entradas al Worker de datos.
 
 Para probar con datos propios en un preview, como antes: `npm run datos:descargar`, `npm run paginas -- --sitio <URL del preview>` y `npm run datos:preview -- <pr>`, que sube `datos-locales/` completa, páginas incluidas, y marcar «Datos propios».
+
+### Detalle de los contratos (TASK-12): pendiente de activar
+
+`GET /api/contracts/:id` lee `datos/AAAA-MM/contratos/<grupo>.ndjson` del Worker de datos: 16.384 archivos por corte, 7,9 GB con el corte 2026-11 ([contrato](design/pages/contract-detail/contract.md#archivos-publicados)). El pipeline ya los genera, pero **el corte mensual todavía no los publica**: mientras tanto, la ruta responde `404 contract_not_found`. Activarlo exige cambiar `corte-mensual.yml` y el armado de la publicación (`scripts/cut.mjs armar`, ADR 0003), y lo hace una persona del equipo:
+
+1. **Exportar:** después de `export-mapa`, correr `uv run ekou-pipeline export-contracts --corte AAAA-MM --pack`. Deja `contratos-0.tar.gz` a `contratos-3.tar.gz` (300 MB cada uno) en la carpeta de publicación, y suben al Release con los demás archivos.
+2. **Desplegar:** después de `npm run corte:armar` (que solo baja los `*.json` del Release), bajar esos cuatro archivos **solo del corte vigente** y descomprimirlos en `datos/AAAA-MM/contratos/` de la carpeta de publicación. Con dos cortes se pasa el límite de 20.000 archivos por Worker; con uno, los 16.384 grupos más las 1.155 páginas de cada lugar y los JSON quedan cerca de 17.550.
+
+```bash
+gh release download "corte-$VIGENTE" --dir "$RUNNER_TEMP/contratos" --pattern 'contratos-*.tar.gz'
+mkdir -p "$raiz/datos/$VIGENTE/contratos"
+for paquete in "$RUNNER_TEMP"/contratos/contratos-*.tar.gz; do
+  tar -xzf "$paquete" -C "$raiz/datos/$VIGENTE/contratos"
+done
+```
+
+Antes de activarlo en producción, pruébalo una vez con un Worker de datos de PR: no está comprobado que Cloudflare acepte 7,9 GB de archivos estáticos en el plan gratuito ni cuánto tarda en subirlos. Si no pasa, la salida acordada es publicar solo los contratos de 2025 y 2026.
+
+En local, `npm run dev` sirve los grupos que copies a `datos-locales/datos/AAAA-MM/contratos/`. Copia solo unos pocos: el Worker local los incluye al compilar.
 
 ## Producción
 

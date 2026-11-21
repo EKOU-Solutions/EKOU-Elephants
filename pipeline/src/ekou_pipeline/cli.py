@@ -5,6 +5,7 @@ Ejemplo::
     ekou-pipeline extract secop_contratos --corte 2026-11
     ekou-pipeline transform --corte 2026-11
     ekou-pipeline export-mapa --corte 2026-11
+    ekou-pipeline export-contracts --corte 2026-11 --pack
     ekou-pipeline compuertas --corte 2026-11 --anterior calidad_corte_anterior.csv
     ekou-pipeline export --corte 2026-11
 """
@@ -24,6 +25,7 @@ from ekou_pipeline.bronze import extract_dataset
 from ekou_pipeline.catalog import CATALOG
 from ekou_pipeline.compuertas import evaluar, reporte
 from ekou_pipeline.config import Settings
+from ekou_pipeline.contracts import export_contracts, pack
 from ekou_pipeline.log_config import configure_logging
 from ekou_pipeline.mapa import export_mapa, fecha_de_los_datos
 from ekou_pipeline.publish import check_corte, export_corte, publication_dir
@@ -65,6 +67,22 @@ def build_parser() -> argparse.ArgumentParser:
         "--out",
         type=Path,
         help="directorio de salida (por defecto, <data_dir>/publicacion/<corte>)",
+    )
+
+    export_contracts_cmd = commands.add_parser(
+        "export-contracts",
+        help="exporta el detalle de los contratos (TASK-12) en grupos para el Worker de datos",
+    )
+    _add_corte(export_contracts_cmd)
+    export_contracts_cmd.add_argument(
+        "--out",
+        type=Path,
+        help="directorio de los grupos (por defecto, <data_dir>/contratos/<corte>)",
+    )
+    export_contracts_cmd.add_argument(
+        "--pack",
+        action="store_true",
+        help="además empaqueta los grupos en contratos-<n>.tar.gz en la carpeta de publicación",
     )
 
     compuertas = commands.add_parser(
@@ -123,6 +141,17 @@ def main(argv: Sequence[str] | None = None) -> int:
             fecha = fecha_de_los_datos(conn, settings.data_dir / "bronze", args.corte)
             paths = export_mapa(conn, corte=args.corte, fecha_datos=fecha, out_dir=out_dir)
         sys.stdout.write("".join(f"{p.as_posix()}\n" for p in paths))
+        return 0
+
+    if args.command == "export-contracts":
+        groups_dir = args.out or settings.data_dir / "contratos" / args.corte
+        with duckdb.connect(str(database), read_only=True) as conn:
+            exported = export_contracts(conn, corte=args.corte, out_dir=groups_dir)
+        json.dump({"dir": groups_dir.as_posix(), **asdict(exported)}, sys.stdout)
+        sys.stdout.write("\n")
+        if args.pack:
+            packages = pack(groups_dir, publication_dir(settings.data_dir, args.corte))
+            sys.stdout.write("".join(f"{p.as_posix()}\n" for p in packages))
         return 0
 
     if args.command == "compuertas":

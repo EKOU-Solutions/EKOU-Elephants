@@ -23,9 +23,9 @@ export function levelOf(t: Territory): Level {
 // Expanded accessibility notes for the docs; components.json keeps the short version in its `a11y` field.
 const A11Y_NOTES: Record<string, string> = {
   Button:
-    'elemento `button` nativo, mínimo 44 px de alto; foco visible de 3 px; `disabled` real (no solo opacidad), con el motivo cerca y ligado con `aria-describedby`; mientras carga, `aria-disabled` y `aria-busy` (no `disabled`, para que no pierda el foco); un botón solo con ícono necesita `aria-label`.',
+    'elemento `button` nativo (con `href`, un `a` nativo; si es `external`, abre otra pestaña con `rel="noopener"` y su nombre accesible termina en «(abre en otra pestaña)»), mínimo 44 px de alto; foco visible de 3 px; `disabled` real (no solo opacidad), con el motivo cerca y ligado con `aria-describedby`; mientras carga, `aria-disabled` y `aria-busy` (no `disabled`, para que no pierda el foco); un botón solo con ícono necesita `aria-label`.',
   Alert:
-    'el significado está en el título y el ícono, no solo en el color. Error nuevo: `role="alert"`; información y confirmación: `aria-live="polite"`. No se anuncian las alertas que ya estaban al cargar.',
+    'el significado está en el título y el ícono, no solo en el color. Error nuevo: `role="alert"`; información y confirmación: `aria-live="polite"`. No se anuncian las alertas que ya estaban al cargar. La flotante monta su región viva vacía desde el inicio para que el mensaje se anuncie al llegar; su botón «Cerrar» mide 44 px y tiene nombre accesible; no se anima; un error no se cierra solo, la confirmación detiene su tiempo con el puntero o el foco encima, y Escape la cierra sin mover el foco.',
   Input:
     '`label` asociado con `for`; con error, `aria-invalid="true"` y `aria-describedby` apuntando al mensaje; la ayuda también va en `aria-describedby`; el borde de error es de 2 px y va con ícono y texto. `inputMode="numeric"` solo si el dato es un número.',
   Select:
@@ -49,7 +49,8 @@ const A11Y_NOTES: Record<string, string> = {
     'con `label`, la barra es una imagen (`role="img"`) cuyo nombre da el reparto completo; sin `label` es decorativa y los números deben estar en texto al lado. El color nunca va solo: la página pone la leyenda en texto.',
   'Breakdown bars': 'los valores van en texto; las barras son decorativas.',
   'Progress vs expected': 'los dos porcentajes (avance y esperado) van escritos en texto.',
-  'Signal item': 'lista ordenada; el número de cada señal no depende del color.',
+  'Signal item':
+    'va dentro de una lista ordenada (`ol`), que pone el número de cada señal; con nivel, el número toma el color de riesgo con su texto `on-risk` (contraste ≥ 4,5:1 en ambos temas) y la gravedad de la señal se escribe debajo en palabras («Gravedad alta»), así que nunca depende solo del color.',
   BottomSheet:
     'el borde es un `button` de 44 px cuyo nombre dice la altura; toque, Enter o Espacio mueven un paso y Escape baja la completa a la media. Nunca depende del arrastre. Cada cambio se anuncia en `role="status"`; lo que no se ve es `inert` y el foco que quedaba ahí pasa al borde. Con `prefers-reduced-motion` no se anima.',
 };

@@ -1,0 +1,65 @@
+/* The number comes from the list itself: each item increments the counter its first sibling starts. */
+.item {
+  counter-increment: signal;
+  position: relative;
+  list-style: none;
+  display: grid;
+  gap: var(--el-space-4);
+  min-height: calc(var(--el-space-32) + 2 * var(--el-space-12));
+  padding: var(--el-space-12) 0 var(--el-space-12) calc(var(--el-space-32) + var(--el-space-12));
+  overflow-wrap: anywhere;
+}
+
+.item + .item {
+  border-top: var(--el-rule) solid var(--el-color-line);
+}
+
+/* Without a level: outlined, no risk colour. */
+.item::before {
+  content: counter(signal);
+  position: absolute;
+  left: 0;
+  top: var(--el-space-12);
+  display: grid;
+  place-items: center;
+  width: var(--el-space-32);
+  height: var(--el-space-32);
+  border: var(--el-rule-strong) solid var(--el-color-line-strong);
+  border-radius: var(--el-control-radius);
+  font-weight: var(--el-weight-heading);
+  line-height: 1;
+}
+
+.low::before {
+  background: var(--el-color-risk-low);
+  border-color: var(--el-color-risk-low);
+  color: var(--el-color-on-risk-low);
+}
+
+.medium::before {
+  background: var(--el-color-risk-medium);
+  border-color: var(--el-color-risk-medium);
+  color: var(--el-color-on-risk-medium);
+}
+
+.high::before {
+  background: var(--el-color-risk-high);
+  border-color: var(--el-color-risk-high);
+  color: var(--el-color-on-risk-high);
+}
+
+.title {
+  font-size: var(--el-size-body);
+  font-weight: var(--el-weight-emphasis);
+  line-height: var(--el-line-heading);
+}
+
+.fact {
+  font-size: var(--el-size-small);
+}
+
+/* The level in words: the colour of the number never goes alone. */
+.level {
+  font-size: var(--el-size-small);
+  color: var(--el-color-text-muted);
+}

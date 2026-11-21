@@ -21,6 +21,7 @@ La maqueta no es un archivo de esta carpeta: es la pantalla en Storybook, `Módu
 | Página | Estado | Contrato |
 | --- | --- | --- |
 | [Mapa](map/README.md) | *Aprobada* 2026-11-17 (Aprobación 2 de la experiencia en una sola pantalla: mapa a pantalla completa con ficha deslizable; sin color de riesgo hasta TASK-07) | [contract.md](map/contract.md) |
+| [Detalle de contrato](contract-detail/README.md) | *Maqueta en revisión* (contrato aprobado el 2026-11-17; bocetos aprobados el 2026-11-19) | [contract.md](contract-detail/contract.md) |
 
 Estados: *Bloqueada: sin contrato* · *Explorando* · *Especificación pendiente de aprobación* · *Maqueta en revisión* · *Aprobada*.
 

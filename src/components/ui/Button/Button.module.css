@@ -10,6 +10,8 @@
   border: 1px solid transparent;
   border-radius: var(--el-control-radius);
   cursor: pointer;
+  /* As a link (`href`) it keeps the shape of a button. */
+  text-decoration: none;
 }
 
 .button svg {

@@ -1,5 +1,5 @@
 {
-  "version": "1.6.1",
+  "version": "1.7.0",
   "about": "Catálogo legible por máquina de los componentes de Elephants. 'core' = revisado y aceptado (Ronda 05); 'candidate' = se puede usar, pero lo debe confirmar la primera página que lo necesite (ver .claude/skills/elephant-designer/references/build-page.md). Los componentes con 'component' ya son React en src/components/ui/ y traen sus propios estilos ('styles', CSS Modules); los demás son especificación con clases de components.css. build.py comprueba que los archivos, las clases y los tokens existan.",
   "components": [
     {
@@ -7,13 +7,15 @@
       "label_es": "Botón",
       "status": "core",
       "reference": "preview.html#boton",
-      "use": "Ejecuta una acción en la pantalla actual. Para ir a otra página se usa un enlace.",
+      "use": "Ejecuta una acción en la pantalla actual. Con href es un enlace con forma de botón, para la acción principal que lleva a otro lugar.",
       "variants": [
         "primary (una por vista)",
         "secondary",
         "text",
         "disabled (deshabilitado)",
         "solo ícono (hideLabel, 44 px; zoom del mapa, v1.3.0)",
+        "enlace (href: <a> con la misma forma; v1.7.0)",
+        "enlace externo (external: otra pestaña, ícono external-link; v1.7.0)",
         "etiqueta recortada (truncate, v1.6.0): puntos suspensivos si no cabe; el texto entero sigue siendo el nombre accesible y debe estar completo a la vista en otro lugar (migas del mapa)"
       ],
       "tokens": [
@@ -31,7 +33,8 @@
         "Anillo de foco visible con --el-color-focus",
         "Mientras carga: aria-disabled + aria-busy, no disabled, para no perder el foco",
         "Deshabilitado: el motivo va cerca, ligado con aria-describedby",
-        "Solo ícono: label pasa a ser el aria-label; úsalo solo cuando el lugar explica el ícono"
+        "Solo ícono: label pasa a ser el aria-label; úsalo solo cuando el lugar explica el ícono",
+        "Con href es un <a> nativo; external agrega rel=\"noopener\" y «(abre en otra pestaña)» al nombre accesible"
       ],
       "component": "src/components/ui/Button/Button.tsx",
       "styles": "src/components/ui/Button/Button.module.css"
@@ -46,6 +49,7 @@
         "bloque (el-alert)",
         "banner de página (el-banner)",
         "nota en línea (el-inline-note)",
+        "flotante (toast: fija abajo; la confirmación se cierra sola a los 5 segundos, TOAST_DURATION_MS; el error no se cierra solo; «Cerrar» o Escape la quitan; v1.7.0)",
         "tonos: info, warning, danger, success"
       ],
       "tokens": [
@@ -55,11 +59,14 @@
         "--el-color-danger-soft",
         "--el-color-success",
         "--el-color-success-soft",
-        "--el-color-line"
+        "--el-color-line",
+        "--el-color-line-strong",
+        "--el-color-surface"
       ],
       "a11y": [
         "El color va en el ícono y el borde; el texto queda en --el-color-text",
-        "Las alertas dinámicas usan role=status (información) o role=alert (error)"
+        "Las alertas dinámicas usan role=status (información) o role=alert (error)",
+        "Flotante: la región viva se monta vacía desde el inicio; «Cerrar» es un botón de 44 px con nombre accesible; sin animación; el tiempo se detiene con el puntero o el foco encima (WCAG 2.2.1); Escape la cierra sin mover el foco (WCAG 2.4.11)"
       ],
       "component": "src/components/ui/Alert/Alert.tsx",
       "styles": "src/components/ui/Alert/Alert.module.css"
@@ -529,24 +536,34 @@
     {
       "name": "Signal item",
       "label_es": "Señal",
-      "status": "candidate",
-      "reference": "examples.html#contrato",
-      "classes": [
-        "el-signal"
-      ],
-      "use": "Una señal numerada con un título corto y el hecho que la sustenta. Una señal, no un veredicto.",
+      "status": "core",
+      "reference": "Storybook: Componentes/UI/SignalItem",
+      "use": "Una señal numerada dentro de una lista ordenada: un título corto y el hecho que la sustenta. Una señal, no un veredicto.",
       "variants": [
-        "por defecto"
+        "sin nivel (neutra, en contorno)",
+        "low (gravedad baja)",
+        "medium (gravedad intermedia)",
+        "high (gravedad alta)"
       ],
       "tokens": [
         "--el-color-line",
+        "--el-color-line-strong",
+        "--el-color-risk-low",
+        "--el-color-risk-medium",
         "--el-color-risk-high",
+        "--el-color-on-risk-low",
+        "--el-color-on-risk-medium",
         "--el-color-on-risk-high",
-        "--el-color-text-muted"
+        "--el-color-text-muted",
+        "--el-control-radius"
       ],
       "a11y": [
-        "Usa una lista ordenada; el número no depende solo del color"
-      ]
+        "Va dentro de una lista ordenada (<ol>); el número lo pone la lista",
+        "El color nunca va solo: la gravedad se escribe en texto bajo el hecho («Gravedad alta»); califica la señal, no el contrato",
+        "El nivel sale de la metodología (TASK-07 y TASK-13); nunca se elige a mano"
+      ],
+      "component": "src/components/ui/SignalItem/SignalItem.tsx",
+      "styles": "src/components/ui/SignalItem/SignalItem.module.css"
     }
   ]
 }

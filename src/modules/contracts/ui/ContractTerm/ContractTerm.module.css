@@ -1,0 +1,111 @@
+/* Term of a contract. Ink only: no risk colour, a delay is a signal of TASK-13. */
+.term {
+  display: grid;
+  gap: var(--el-space-8);
+  font-size: var(--el-size-small);
+}
+
+/* ---- dates: the value first, its name below ---- */
+.dates {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--el-space-8);
+  margin: 0;
+  max-width: 60ch;
+}
+
+.date {
+  display: flex;
+  flex-direction: column-reverse;
+}
+
+.date dd {
+  margin: 0;
+  font-size: var(--el-size-body);
+  font-weight: var(--el-weight-emphasis);
+}
+
+/* ---- two spans: filled = initial term, outlined = added afterwards ---- */
+.bar {
+  display: flex;
+  gap: var(--el-space-4);
+}
+
+.bar span {
+  flex-basis: 0;
+  min-width: var(--el-space-8);
+  height: var(--el-space-12);
+}
+
+.initial {
+  background: var(--el-color-text);
+  border: var(--el-rule-strong) solid var(--el-color-text);
+}
+
+.added {
+  border: var(--el-rule-strong) solid var(--el-color-control-border);
+}
+
+.segments {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--el-space-8) var(--el-space-24);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.segments li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: var(--el-space-8);
+  align-items: center;
+}
+
+.range {
+  grid-column: 2;
+}
+
+.key {
+  width: var(--el-space-12);
+  height: var(--el-space-12);
+}
+
+.span {
+  display: none;
+}
+
+/* From 768 px each label sits under its own span, as wide as its share of the term. */
+@media (min-width: 768px) {
+  .bar,
+  .key {
+    display: none;
+  }
+
+  .segments {
+    flex-wrap: nowrap;
+    gap: var(--el-space-4);
+  }
+
+  /* A very short span still fits its label: it never shrinks below its text. */
+  .segments li {
+    display: block;
+    flex-basis: 0;
+    min-width: max-content;
+  }
+
+  .span,
+  .segments strong,
+  .range {
+    display: block;
+  }
+
+  .span {
+    height: var(--el-space-12);
+    margin-bottom: var(--el-space-4);
+  }
+}
+
+.status {
+  max-width: 72ch;
+}

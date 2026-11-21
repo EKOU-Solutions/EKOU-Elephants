@@ -80,6 +80,12 @@ Por último, `export` escribe los archivos abiertos del corte en `data/publicaci
 uv run ekou-pipeline export --corte 2026-11
 ```
 
+`export-contracts` escribe el detalle de los contratos (TASK-12) para la API: los 6,8 M de contratos del mapa municipal, repartidos en 16.384 archivos en `data/contratos/<corte>/`. Con `--pack` los empaqueta además en cuatro `contratos-<n>.tar.gz` dentro de la carpeta de publicación, para el Release. Con el corte 2026-11 tarda unos 3 minutos y pesa 7,9 GB (1,2 GB empaquetado). El corte mensual todavía no lo ejecuta: ver [CI/CD](../docs/ci-cd.md#detalle-de-los-contratos-task-12-pendiente-de-activar).
+
+```bash
+uv run ekou-pipeline export-contracts --corte 2026-11 --pack
+```
+
 ## Ejecución mensual
 
 El workflow [`corte-mensual`](../.github/workflows/corte-mensual.yml) corre el día 1 de cada mes a las 11:17 UTC en GitHub Actions: `extract` → `transform` → `compuertas` → `export` → publicación.
@@ -154,6 +160,7 @@ src/ekou_pipeline/
 ├── transform.py   # ejecuta dbt para un corte
 ├── compuertas.py  # compuertas de calidad del corte antes de publicar
 ├── publish.py     # exporta el corte a Parquet, CSV y JSON para publicarlo
+├── contracts.py   # exporta el detalle de los contratos en grupos para la API (TASK-12)
 ├── seudonimo.py   # HMAC-SHA256 de los documentos de personas naturales
 ├── dbt_plugin.py  # expone ekou_seudonimo() dentro de DuckDB
 └── cli.py         # comando ekou-pipeline

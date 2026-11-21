@@ -99,7 +99,7 @@ describe('selectStories', () => {
 describe('storyUrl', () => {
   it('builds the iframe URL with the theme global', () => {
     expect(storyUrl('http://host', 'a--b', 'dark')).toBe(
-      'http://host/iframe.html?id=a--b&viewMode=story&globals=theme:dark',
+      'http://host/iframe.html?id=a--b&viewMode=story&globals=theme:dark;a11y.manual:!true',
     );
   });
 });
