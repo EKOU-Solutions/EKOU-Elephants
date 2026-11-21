@@ -4,20 +4,67 @@
 export const MARCA = '<!-- ekou-preview-control -->';
 // Worker solo de archivos estáticos con los JSON del corte mensual (lo despliega TASK-15).
 export const WORKER_DATOS = 'ekou-elephants-datos';
+// Arquitectura del ADR-0004: la web (Astro) y la API (Hono), cada una en su Worker.
+export const WORKER_WEB = 'ekou-elephants-web';
+export const WORKER_API = 'ekou-elephants-api';
 
 const CASILLAS = {
   copiaBd: 'copia-bd',
   datosPropios: 'datos-propios',
+  apiPropia: 'api-propia',
 };
+const CAMPO_API_PR = 'api-pr';
 
-/** Lee las casillas marcadas del comentario. Sin comentario, todo queda en su valor por defecto. */
+/**
+ * Lee las opciones del comentario: las casillas marcadas y el número de «API de otro PR».
+ * Sin comentario, todo queda en su valor por defecto.
+ */
 export function leerOpciones(cuerpo) {
   const marcada = (clave) =>
     new RegExp(`^\\s*[-*] \\[[xX]\\] .*<!-- ${clave} -->`, 'm').test(cuerpo ?? '');
+  const apiPr = new RegExp(`API de otro PR:\\**\\s*#?\\s*(\\d*)\\s*<!-- ${CAMPO_API_PR} -->`).exec(
+    cuerpo ?? '',
+  )?.[1];
   return {
     copiaBd: marcada(CASILLAS.copiaBd),
     datosPropios: marcada(CASILLAS.datosPropios),
+    apiPropia: marcada(CASILLAS.apiPropia),
+    apiPr: apiPr ? Number(apiPr) : null,
   };
+}
+
+/**
+ * Si el PR cambia la API: su servidor, su configuración, la lógica de un módulo (todo menos `ui/`) o
+ * las migraciones. Entonces el preview despliega también la API del PR, aunque nadie marque la casilla.
+ */
+export function apiCambiada(archivos) {
+  return archivos.some(
+    (ruta) =>
+      ruta === 'wrangler.api.jsonc' ||
+      ruta.startsWith('src/server/') ||
+      ruta.startsWith('migrations/') ||
+      /^src\/modules\/[^/]+\/(?!ui\/)/.test(ruta),
+  );
+}
+
+/**
+ * A qué API apunta la web del preview: '' (la de producción, por service binding), 'propia' (un
+ * preview de la API con el código de este PR) o 'pr-<n>' (el preview de la API de otro PR).
+ */
+export function destinoApi({ pr, opciones, cambiosApi }) {
+  const otro = opciones.apiPr && opciones.apiPr !== Number(pr) ? opciones.apiPr : null;
+  const propia = opciones.apiPropia || cambiosApi || opciones.apiPr === Number(pr);
+  if (otro && propia) {
+    return {
+      api: '',
+      bloqueo: cambiosApi
+        ? `Este PR cambia la API, así que su preview usa la API del PR. Borra el número de «API de otro PR» (#${otro}).`
+        : `Elige una sola API: desmarca «API de este PR» o borra el número de «API de otro PR» (#${otro}).`,
+    };
+  }
+  if (propia) return { api: 'propia', bloqueo: null };
+  if (otro) return { api: `pr-${otro}`, bloqueo: null };
+  return { api: '', bloqueo: null };
 }
 
 export function nombreRamaNeon(pr) {
@@ -54,6 +101,9 @@ export function renderizarComentario({
   motivo,
   ejecucion,
   datosCorte,
+  arquitectura,
+  apiUrl,
+  cambiosApi = false,
 }) {
   const bd = opciones.copiaBd
     ? `copia propia \`${nombreRamaNeon(pr)}\` (rama de Neon desde \`dev\`, con las migraciones de este PR)`
@@ -78,13 +128,23 @@ export function renderizarComentario({
     `**Estado:** ${estados[estado]}${ejecucion ? ` · [ver ejecución](${ejecucion})` : ''}`,
   ];
   if (motivo) lineas.push('', `> ${motivo}`);
+  const enlace = (href) => (href ? `[${href}](${href})` : '—');
+  const storybook = `| Storybook (sistema de diseño) | ${url ? enlace(new URL(STORYBOOK_PATH, url).href) : '—'} |`;
+  // ADR-0004: la web y la API en Workers distintos. La web sigue sirviendo /api por la API elegida.
+  const filas =
+    arquitectura === 'web-api'
+      ? [
+          `| Web | ${enlace(url)} |`,
+          `| API que usa la web | ${apiUrl ? `${enlace(apiUrl)} (preview)` : `de producción \`${WORKER_API}\` (service binding)`} |`,
+          `| API desde la web | ${enlace(api)} |`,
+          storybook,
+        ]
+      : [`| App | ${enlace(url)} |`, `| API | ${enlace(api)} |`, storybook];
   lineas.push(
     '',
     '| | |',
     '| --- | --- |',
-    `| App | ${url ? `[${url}](${url})` : '—'} |`,
-    `| API | ${api ? `[${api}](${api})` : '—'} |`,
-    `| Storybook (sistema de diseño) | ${url ? `[${STORYBOOK_PATH}](${new URL(STORYBOOK_PATH, url).href})` : '—'} |`,
+    ...filas,
     `| Base de datos | ${bd} |`,
     `| Datos del corte | ${datos} |`,
     '',
@@ -104,8 +164,14 @@ export function renderizarComentario({
       CASILLAS.datosPropios,
       `**Datos propios.** El preview lee \`${WORKER_DATOS}-pr-${pr}\` en lugar de los datos de producción. Antes, súbelos desde tu máquina: \`npm run datos:descargar\`, edita los JSON y \`npm run datos:preview -- ${pr}\`.`,
     ),
+    casilla(
+      opciones.apiPropia,
+      CASILLAS.apiPropia,
+      `**API de este PR.** Despliega un preview de \`${WORKER_API}\` con el código del PR y la web lo usa en lugar de la API de producción.${cambiosApi ? ' Este PR cambia la API: se despliega aunque no esté marcada.' : ''}`,
+    ),
+    `- **API de otro PR:** #${opciones.apiPr ?? ''} <!-- ${CAMPO_API_PR} --> Escribe el número de un PR abierto para que la web use el preview de su API.`,
     '',
-    '<sub>Comentario gestionado por el workflow `app-preview`. Al cerrar el PR se borran el preview y la rama de Neon. No edites el texto, solo las casillas.</sub>',
+    '<sub>Comentario gestionado por el workflow `app-preview`. Al cerrar el PR se borran los previews y la rama de Neon. No edites el texto: solo las casillas y el número de «API de otro PR». Las opciones de la API aplican a la arquitectura del ADR-0004 (web y API en Workers distintos).</sub>',
   );
   return lineas.join('\n');
 }
