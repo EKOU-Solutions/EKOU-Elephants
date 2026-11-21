@@ -1,0 +1,7 @@
+// Spike (ADR-0004): the data Worker for local runs, like pipeline/worker-datos (static files only),
+// over the worktree's datos-locales/ (padded with web/spike/make-groups.mjs).
+{
+  "name": "ekou-elephants-datos",
+  "compatibility_date": "2026-11-01",
+  "assets": { "directory": "../../datos-locales" }
+}

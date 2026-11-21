@@ -1,0 +1,12 @@
+---
+import Place from '../../components/Place.astro';
+import { loadSite } from '../../../../pages-site/src/lib/cut';
+
+export async function getStaticPaths() {
+  const { toGenerate } = await loadSite();
+  return toGenerate.flatMap(({ route }) =>
+    route.view === 'municipality' ? [{ params: { codigo: route.code }, props: { route } }] : [],
+  );
+}
+---
+<Place route={Astro.props.route} />
