@@ -72,7 +72,9 @@ describe('comentario de control', () => {
     expect(cuerpo).toContain('> razón');
     expect(cuerpo).toContain('| App | [https://pr-7.x.dev/](https://pr-7.x.dev/) |');
     expect(cuerpo).toContain('| API | [https://pr-7.x.dev/api](https://pr-7.x.dev/api) |');
-    expect(cuerpo).toContain('(https://pr-7.x.dev/storybook/)');
+    expect(cuerpo).toContain(
+      '| Storybook (sistema de diseño) | [https://pr-7.x.dev/storybook/](https://pr-7.x.dev/storybook/) |',
+    );
   });
 
   it('dice si el preview lee los datos de producción o ninguno', () => {

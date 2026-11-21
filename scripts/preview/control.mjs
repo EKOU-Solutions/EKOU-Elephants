@@ -140,7 +140,7 @@ export function renderizarComentario({
       : [
           `| App | ${enlace(url)} |`,
           `| API | ${enlace(api)} |`,
-          `| Storybook (sistema de diseño) | ${url ? `[${STORYBOOK_PATH}](${new URL(STORYBOOK_PATH, url).href})` : '—'} |`,
+          `| Storybook (sistema de diseño) | ${url ? enlace(new URL(STORYBOOK_PATH, url).href) : '—'} |`,
         ];
   lineas.push(
     '',
