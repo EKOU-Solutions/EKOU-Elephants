@@ -92,6 +92,17 @@ const casilla = (marcada, clave, texto) => `- [${marcada ? 'x' : ' '}] ${texto} 
 /**
  * Cuerpo del comentario. `estado` es 'desplegado', 'desplegando', 'bloqueado' o 'error'.
  */
+/**
+ * Which API the web uses (ADR-0004): the API's own preview, another PR's, or production. Shown in
+ * one row: the web always calls it at its own /api, which forwards to that API.
+ */
+function origenApi(apiUrl, pr, enlace) {
+  if (!apiUrl) return `de producción \`${WORKER_API}\` (service binding)`;
+  const otro = /\/\/pr-(\d+)-/.exec(apiUrl)?.[1];
+  const deQuien = otro && Number(otro) !== Number(pr) ? `del PR #${otro}` : 'de este PR';
+  return `${enlace(apiUrl)} (preview ${deQuien})`;
+}
+
 export function renderizarComentario({
   pr,
   sha,
@@ -135,8 +146,7 @@ export function renderizarComentario({
     arquitectura === 'web-api'
       ? [
           `| Web | ${enlace(url)} |`,
-          `| API que usa la web | ${apiUrl ? `${enlace(apiUrl)} (preview)` : `de producción \`${WORKER_API}\` (service binding)`} |`,
-          `| API desde la web | ${enlace(api)} |`,
+          `| API | ${origenApi(apiUrl, pr, enlace)}${api ? ` · la web la llama en ${enlace(api)}` : ''} |`,
           storybook,
         ]
       : [`| App | ${enlace(url)} |`, `| API | ${enlace(api)} |`, storybook];

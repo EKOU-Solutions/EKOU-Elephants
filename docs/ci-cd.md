@@ -93,6 +93,7 @@ Un Preview que llama a otro Worker por service binding **siempre llega a la prod
 | **«API de este PR»**, o el PR cambia la API | Un Preview `pr-<n>` de `ekou-elephants-api` con el código del PR | Por su URL pública (`API_URL`) |
 | **«API de otro PR: #m»** | El Preview `pr-<m>` de la API de ese PR | Por su URL pública (`API_URL`) |
 
+- **Por qué la web pasa por `/api`:** el mapa en el navegador siempre llama a `/api` de su propio dominio. En `workers.dev` no hay forma de mandar `/api/*` directo al Worker de la API, así que la web recibe la petición y se la pasa a la API elegida. Con el dominio propio, una ruta mandará `/api/*` directo a la API. El comentario lo muestra en una sola fila: cuál API usa y en qué dirección la llama la web.
 - **Qué cuenta como cambio de la API:** `src/server/`, `wrangler.api.jsonc`, `migrations/` o la lógica de un módulo (todo `src/modules/<m>/` menos `ui/`). En ese caso la API del PR se despliega aunque nadie marque la casilla.
 - **Costo de llamar por URL:** una petición más, solo en pruebas. Producción siempre usa el binding.
 - **La API de otro PR:** el PR debe estar abierto, ser de este repositorio y tener su preview de la API desplegado (con «API de este PR»). Si no, el preview no se despliega y el comentario dice por qué.

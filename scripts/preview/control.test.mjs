@@ -116,16 +116,23 @@ describe('comentario de control', () => {
     expect(destino({ apiPr: 57 }, true).bloqueo).toMatch(/cambia la API/);
   });
 
-  it('con la web y la API separadas muestra cuál API usa la web', () => {
+  it('con la web y la API separadas muestra en una fila cuál API usa la web', () => {
     const base = { pr: 7, sha: 'abcdef1', opciones, estado: 'desplegado', arquitectura: 'web-api' };
     const produccion = renderizarComentario({ ...base, url: 'https://pr-7-web.x.dev/' });
     expect(produccion).toContain('| Web | [https://pr-7-web.x.dev/](https://pr-7-web.x.dev/) |');
-    expect(produccion).toContain('de producción `ekou-elephants-api` (service binding)');
+    expect(produccion).toContain(
+      '| API | de producción `ekou-elephants-api` (service binding) · la web la llama en [https://pr-7-web.x.dev/api](https://pr-7-web.x.dev/api) |',
+    );
+    expect(produccion).not.toContain('API desde la web');
     expect(produccion).toContain(
       '| Storybook (sistema de diseño) | [https://pr-7-web.x.dev/storybook/](https://pr-7-web.x.dev/storybook/) |',
     );
-    const preview = renderizarComentario({ ...base, apiUrl: 'https://pr-7-api.x.dev/' });
-    expect(preview).toContain('[https://pr-7-api.x.dev/](https://pr-7-api.x.dev/) (preview)');
+    const propia = renderizarComentario({ ...base, apiUrl: 'https://pr-7-api.x.dev/' });
+    expect(propia).toContain(
+      '| API | [https://pr-7-api.x.dev/](https://pr-7-api.x.dev/) (preview de este PR) |',
+    );
+    const otra = renderizarComentario({ ...base, apiUrl: 'https://pr-57-api.x.dev/' });
+    expect(otra).toContain('(preview del PR #57)');
     expect(renderizarComentario({ ...base, cambiosApi: true })).toContain('Este PR cambia la API');
   });
 });
