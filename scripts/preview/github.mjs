@@ -1,8 +1,8 @@
 // CLI que usa el workflow `app-preview` para leer y actualizar el comentario de control.
 // Uso: node scripts/preview/github.mjs opciones|comentar
 // Variables: GITHUB_TOKEN, GITHUB_REPOSITORY, PR, y para `comentar`: SHA, ESTADO, URL, MOTIVO,
-// COPIA_BD, DATOS_PROPIOS, API_PROPIA, API_PR, API_CAMBIADA, DATOS_CORTE_ENABLED, EJECUCION y, con
-// la arquitectura del ADR-0004, ARQUITECTURA y API_URL.
+// COPIA_BD, DATOS_PROPIOS, API_ELEGIDA, API_MANUAL, API_CAMBIADA, DATOS_CORTE_ENABLED, EJECUCION y,
+// con la arquitectura del ADR-0004, ARQUITECTURA y API_URL.
 import { appendFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -72,10 +72,10 @@ export async function bloqueoPorOtroPr(api, otro) {
   try {
     datos = await api('GET', `/pulls/${otro}`);
   } catch (error) {
-    if (error.status === 404) return `No existe el PR #${otro} de «API de otro PR».`;
+    if (error.status === 404) return `No existe el PR #${otro} que pusiste en «API».`;
     throw error;
   }
-  if (datos.state !== 'open') return `El PR #${otro} de «API de otro PR» no está abierto.`;
+  if (datos.state !== 'open') return `El PR #${otro} que pusiste en «API» no está abierto.`;
   if (datos.head?.repo?.full_name !== datos.base?.repo?.full_name)
     return `El PR #${otro} viene de un fork: su API no tiene preview.`;
   return null;
@@ -99,6 +99,8 @@ export async function calcularOpciones(api, pr) {
     migraciones,
     cambiosApi,
     api: destino.api,
+    apiElegida: destino.elegida,
+    apiManual: destino.manual,
     bloqueo: bloqueo ?? '',
   };
 }
@@ -135,8 +137,8 @@ async function main(comando, env = process.env) {
       comentario_id: r.comentarioId,
       copia_bd: r.opciones.copiaBd,
       datos_propios: r.opciones.datosPropios,
-      api_propia: r.opciones.apiPropia,
-      api_pr: r.opciones.apiPr ?? '',
+      api_elegida: r.apiElegida,
+      api_manual: r.apiManual,
       api_cambiada: r.cambiosApi,
       api: r.api,
       migraciones: r.migraciones,
@@ -154,9 +156,9 @@ async function main(comando, env = process.env) {
       opciones: {
         copiaBd: env.COPIA_BD === 'true',
         datosPropios: env.DATOS_PROPIOS === 'true',
-        apiPropia: env.API_PROPIA === 'true',
-        apiPr: /^[1-9]\d*$/.test(env.API_PR ?? '') ? Number(env.API_PR) : null,
       },
+      apiElegida: env.API_ELEGIDA || undefined,
+      apiManual: env.API_MANUAL === 'true',
       cambiosApi: env.API_CAMBIADA === 'true',
       datosCorte: env.DATOS_CORTE_ENABLED === 'true',
       arquitectura: env.ARQUITECTURA || undefined,

@@ -45,7 +45,7 @@ Cada PR desde una rama de este repositorio (no forks ni Dependabot) despliega un
 
 > GitHub no permite fijar comentarios en PRs: solo en issues (la API responde «issue cannot be a pull request», verificado el 2026-11-15).
 
-El comentario muestra la URL, el commit desplegado, la base de datos y los datos del corte que usa el preview. También tiene dos casillas. Al marcar o desmarcar una, se vuelve a desplegar el último commit del PR con esa configuración:
+El comentario muestra el commit desplegado y, en una tabla, la URL de la web (o la app), de la API y de Storybook, la base de datos y los datos del corte que usa el preview. También tiene dos casillas y, con la web y la API separadas, el valor [«API»](#qué-api-usa-el-preview). Al marcar o desmarcar una, se vuelve a desplegar el último commit del PR con esa configuración:
 
 | Casilla | Sin marcar (por defecto) | Marcada |
 | --- | --- | --- |
@@ -81,23 +81,27 @@ Con el [ADR-0004](adr/0004-paginas-de-contratos.md) (PR #52) la web (Astro) y la
 
 1. **El corte para generar la web:** el script baja los JSON del corte vigente del Release (`npm run datos:descargar`) y corre `npm run build:web`. El build no recibe credenciales.
 2. **Producción** (`app-deploy`): migra, despliega la API (`wrangler deploy`), verifica `/api/salud`, genera la web y la despliega. La URL del sitio sale de `EKOU_SITIO_URL` o, sin dominio propio, de `ekou-elephants-web.<cuenta>.workers.dev`.
-3. **Preview de un PR** (`app-preview`): la web es siempre un Preview `pr-<n>` de `ekou-elephants-web`. La API que usa depende de las opciones del comentario.
+3. **Preview de un PR** (`app-preview`): la web es siempre un Preview `pr-<n>` de `ekou-elephants-web`. La API que usa la decide el valor «API» del comentario (abajo).
 
 ### Qué API usa el preview
 
-Un Preview que llama a otro Worker por service binding **siempre llega a la producción de ese Worker**, nunca a un Preview suyo ([Cloudflare, Previews](https://developers.cloudflare.com/workers/previews/), consultado el 2026-11-21). Por eso:
+El comentario «Preview de este PR» tiene un valor **«API»** que dice a qué API apunta la web del preview. El workflow lo llena solo, según lo que cambia el PR:
 
-| Caso | API del preview | Cómo la llama la web |
+| El PR cambia | Valor de «API» | Qué se despliega |
 | --- | --- | --- |
-| **Por defecto** (el PR no toca la API) | La de producción, `ekou-elephants-api` | Service binding, sin petición extra |
-| **«API de este PR»**, o el PR cambia la API | Un Preview `pr-<n>` de `ekou-elephants-api` con el código del PR | Por su URL pública (`API_URL`) |
-| **«API de otro PR: #m»** | El Preview `pr-<m>` de la API de ese PR | Por su URL pública (`API_URL`) |
+| Solo el front | `ekou-elephants-api` | Solo la web. Usa la API de producción |
+| La API | `ekou-elephants-api-pr-<n>` | Un Preview `pr-<n>` de `ekou-elephants-api` con el código del PR, y la web apuntando a él |
 
-- **Por qué la web pasa por `/api`:** el mapa en el navegador siempre llama a `/api` de su propio dominio. En `workers.dev` no hay forma de mandar `/api/*` directo al Worker de la API, así que la web recibe la petición y se la pasa a la API elegida. Con el dominio propio, una ruta mandará `/api/*` directo a la API. El comentario lo muestra en una sola fila: cuál API usa y en qué dirección la llama la web.
-- **Qué cuenta como cambio de la API:** `src/server/`, `wrangler.api.jsonc`, `migrations/` o la lógica de un módulo (todo `src/modules/<m>/` menos `ui/`). En ese caso la API del PR se despliega aunque nadie marque la casilla.
-- **Costo de llamar por URL:** una petición más, solo en pruebas. Producción siempre usa el binding.
-- **La API de otro PR:** el PR debe estar abierto, ser de este repositorio y tener su preview de la API desplegado (con «API de este PR»). Si no, el preview no se despliega y el comentario dice por qué.
-- **Datos y base de la API del PR:** respetan «Datos propios» y «Copia propia de la base de datos». Una base migrada solo la usa la API del PR: con la copia propia, marca también «API de este PR».
+**Para apuntar a otra API**, cambia el valor en el comentario y el preview se vuelve a desplegar:
+
+- `ekou-elephants-api`: la de producción, aunque el PR cambie la API.
+- `ekou-elephants-api-pr-<m>`: el preview de la API de otro PR. También sirve `#<m>`. Ese PR debe estar abierto, ser de este repositorio y tener su preview de la API desplegado. Si no, el preview no se despliega y el comentario dice por qué.
+
+El valor que escribe una persona se respeta en los siguientes despliegues. Si nadie lo cambió, sigue al PR: cuando un PR que solo tocaba el front empieza a cambiar la API, pasa solo a `ekou-elephants-api-pr-<n>`.
+
+- **Qué cuenta como cambio de la API:** `src/server/`, `wrangler.api.jsonc`, `migrations/` o la lógica de un módulo (todo `src/modules/<m>/` menos `ui/`).
+- **Datos y base de la API del PR:** respetan «Datos propios» y «Copia propia de la base de datos». Una base migrada solo la usa la API del PR: si migras, «API» debe ser `ekou-elephants-api-pr-<n>`.
+- **Cómo llega la web a la API:** por service binding a la de producción, o por la URL pública del preview de una API. Un Preview que usa service binding **siempre llega a la producción del otro Worker**, nunca a un Preview suyo ([Cloudflare, Previews](https://developers.cloudflare.com/workers/previews/), consultado el 2026-11-21). Llamar por URL cuesta una petición más, solo en pruebas. El flujo completo está en [arquitectura](arquitectura.md#cómo-consume-la-app-la-api-adr-0004).
 - **Al cerrar el PR** se borran los Previews de la web y de la API.
 
 ## Storybook en el preview y en producción
