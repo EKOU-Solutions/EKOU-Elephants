@@ -129,6 +129,7 @@ export function renderizarComentario({
   ];
   if (motivo) lineas.push('', `> ${motivo}`);
   const enlace = (href) => (href ? `[${href}](${href})` : '—');
+  const storybook = `| Storybook (sistema de diseño) | ${url ? enlace(new URL(STORYBOOK_PATH, url).href) : '—'} |`;
   // ADR-0004: la web y la API en Workers distintos. La web sigue sirviendo /api por la API elegida.
   const filas =
     arquitectura === 'web-api'
@@ -136,12 +137,9 @@ export function renderizarComentario({
           `| Web | ${enlace(url)} |`,
           `| API que usa la web | ${apiUrl ? `${enlace(apiUrl)} (preview)` : `de producción \`${WORKER_API}\` (service binding)`} |`,
           `| API desde la web | ${enlace(api)} |`,
+          storybook,
         ]
-      : [
-          `| App | ${enlace(url)} |`,
-          `| API | ${enlace(api)} |`,
-          `| Storybook (sistema de diseño) | ${url ? enlace(new URL(STORYBOOK_PATH, url).href) : '—'} |`,
-        ];
+      : [`| App | ${enlace(url)} |`, `| API | ${enlace(api)} |`, storybook];
   lineas.push(
     '',
     '| | |',

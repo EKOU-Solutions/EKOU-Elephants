@@ -72,7 +72,7 @@ Con el [ADR-0004](adr/0004-paginas-de-contratos.md) (PR #52) la web (Astro) y la
 | Pieza | Para qué |
 | --- | --- |
 | `wrangler.api.jsonc` | El Worker de la API. El script le pone el binding `DATOS` que corresponda. |
-| `npm run build:web` | Genera la web con el corte de `EKOU_PUBLICACION`, para la URL `EKOU_SITIO_URL` y con la versión `EKOU_VERSION`. Deja la configuración de Wrangler en `web/dist/server/wrangler.json`. |
+| `npm run build:web` | Genera la web con el corte de `EKOU_PUBLICACION`, para la URL `EKOU_SITIO_URL` y con la versión `EKOU_VERSION`, con Storybook en `/storybook/`. Deja la configuración de Wrangler en `web/dist/server/wrangler.json`. |
 | Bloque `previews` de la web | Trae el binding `API` a `ekou-elephants-api`: los Previews no heredan los bindings de producción. |
 | Variable `API_URL` | Si la web la recibe, llama a la API por esa URL pública; si no, por el binding `API`. |
 | Flag `global_fetch_strictly_public` en la web | Sin él, un `fetch()` de la web a otro `*.workers.dev` de la cuenta llega al origen y Cloudflare responde «Page not found» (comprobado el 2026-11-21). |
@@ -98,11 +98,10 @@ Un Preview que llama a otro Worker por service binding **siempre llega a la prod
 - **La API de otro PR:** el PR debe estar abierto, ser de este repositorio y tener su preview de la API desplegado (con «API de este PR»). Si no, el preview no se despliega y el comentario dice por qué.
 - **Datos y base de la API del PR:** respetan «Datos propios» y «Copia propia de la base de datos». Una base migrada solo la usa la API del PR: con la copia propia, marca también «API de este PR».
 - **Al cerrar el PR** se borran los Previews de la web y de la API.
-- **Lo que falta en esta arquitectura:** Storybook todavía no se publica en `/storybook/` de la web.
 
 ## Storybook en el preview y en producción
 
-`npm run build` genera la app y, después, la versión estática de Storybook en `dist/client/storybook/` (`npm run build:storybook-app`). El mismo Worker la sirve como archivos estáticos, así que no hay workflow, secreto ni proyecto aparte:
+`npm run build` genera la app y, después, la versión estática de Storybook en `dist/client/storybook/` (`npm run build:storybook-app`). Con la web y la API separadas (ADR-0004), `npm run build:web` la deja en `web/dist/client/storybook/`. El Worker de la app, o el de la web, la sirve como archivos estáticos, así que no hay workflow, secreto ni proyecto aparte:
 
 | Entorno | Dónde |
 | --- | --- |

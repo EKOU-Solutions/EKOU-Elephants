@@ -260,9 +260,9 @@ async function desplegarProduccionApp({
 //
 // Contrato con el código del PR:
 // - `wrangler.api.jsonc`: el Worker de la API (`ekou-elephants-api`).
-// - `npm run build:web`: genera la web con el corte de `EKOU_PUBLICACION`, para `EKOU_SITIO_URL`, y
-//   deja la configuración de Wrangler en `web/dist/server/wrangler.json`. Su bloque `previews` trae
-//   el binding API a la API de producción.
+// - `npm run build:web`: genera la web con el corte de `EKOU_PUBLICACION`, para `EKOU_SITIO_URL`, con
+//   Storybook en /storybook/, y deja la configuración de Wrangler en `web/dist/server/wrangler.json`.
+//   Su bloque `previews` trae el binding API a la API de producción.
 // - La web usa `API_URL` (variable) si existe; si no, el binding API.
 
 export const CONFIG_API = 'wrangler.api.jsonc';
@@ -386,7 +386,7 @@ export async function verificarApi(url, request = fetch, esperar = 2_000) {
   );
 }
 
-/** La web sirve el mapa generado (una isla de Astro) y su /api llega a la API. */
+/** La web sirve el mapa generado (una isla de Astro), Storybook, y su /api llega a la API. */
 export async function verificarWeb(url, request = fetch, esperar = 2_000) {
   await reintentar(
     new URL('mapa', url),
@@ -399,6 +399,12 @@ export async function verificarWeb(url, request = fetch, esperar = 2_000) {
     esperar,
     request,
     async (r) => r.ok && (await r.json()).ok === true,
+  );
+  await reintentar(
+    new URL(STORYBOOK_PATH.slice(1), url),
+    esperar,
+    request,
+    async (r) => r.ok && (await r.text()).includes('storybook'),
   );
 }
 
@@ -532,7 +538,7 @@ async function desplegarPreviewWebApi({
   await verifyWeb(url);
   resumen(
     env,
-    `### ${env.PREVIEW_NAME}\n\n- Web: [abrir preview](${url})\n- API: ${apiUrl ? `[preview](${apiUrl}api)` : `producción (\`${WORKER_API}\`)`}`,
+    `### ${env.PREVIEW_NAME}\n\n- Web: [abrir preview](${url})\n- Storybook: [abrir](${new URL(STORYBOOK_PATH, url).href})\n- API: ${apiUrl ? `[preview](${apiUrl}api)` : `producción (\`${WORKER_API}\`)`}`,
   );
   if (env.GITHUB_OUTPUT)
     appendFileSync(

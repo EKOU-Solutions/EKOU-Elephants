@@ -121,7 +121,9 @@ describe('comentario de control', () => {
     const produccion = renderizarComentario({ ...base, url: 'https://pr-7-web.x.dev/' });
     expect(produccion).toContain('| Web | [https://pr-7-web.x.dev/](https://pr-7-web.x.dev/) |');
     expect(produccion).toContain('de producción `ekou-elephants-api` (service binding)');
-    expect(produccion).not.toContain('Storybook');
+    expect(produccion).toContain(
+      '| Storybook (sistema de diseño) | [https://pr-7-web.x.dev/storybook/](https://pr-7-web.x.dev/storybook/) |',
+    );
     const preview = renderizarComentario({ ...base, apiUrl: 'https://pr-7-api.x.dev/' });
     expect(preview).toContain('[https://pr-7-api.x.dev/](https://pr-7-api.x.dev/) (preview)');
     expect(renderizarComentario({ ...base, cambiosApi: true })).toContain('Este PR cambia la API');
