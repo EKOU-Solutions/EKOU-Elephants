@@ -27,7 +27,14 @@ const base = {
   PREVIEW_NAME: 'pr-12',
 };
 // Sin llamadas reales a Cloudflare: el Worker de datos existe y el binding no toca disco.
-const cf = (existe = true) => ({ existe: vi.fn(async () => existe), apuntar: vi.fn() });
+// These tests cover the single-Worker app (ADR 0001): an empty folder, so the deploy does not pick up
+// web/ and wrangler.api.jsonc from this repository (despliegue-web-api.test.mjs covers those).
+const raizApp = mkdtempSync(join(tmpdir(), 'elephants-app-'));
+const cf = (existe = true) => ({
+  existe: vi.fn(async () => existe),
+  apuntar: vi.fn(),
+  raiz: raizApp,
+});
 // Forma real de `wrangler preview --json` (4.158.0), recortada.
 const respuestaPreview = JSON.stringify({
   preview: { name: 'pr-12', urls: ['https://pr-12-ekou.workers.dev'] },

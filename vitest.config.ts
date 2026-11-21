@@ -13,6 +13,7 @@ export default defineConfig({
             'tests/**/*.test.ts',
             'scripts/**/*.test.mjs',
             'pages-site/src/**/*.test.ts',
+            'web/src/**/*.test.ts',
           ],
           environment: 'node',
         },

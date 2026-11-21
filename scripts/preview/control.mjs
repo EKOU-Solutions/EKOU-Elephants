@@ -4,20 +4,91 @@
 export const MARCA = '<!-- ekou-preview-control -->';
 // Worker solo de archivos estáticos con los JSON del corte mensual (lo despliega TASK-15).
 export const WORKER_DATOS = 'ekou-elephants-datos';
+// Arquitectura del ADR-0004: la web (Astro) y la API (Hono), cada una en su Worker.
+export const WORKER_WEB = 'ekou-elephants-web';
+export const WORKER_API = 'ekou-elephants-api';
 
 const CASILLAS = {
   copiaBd: 'copia-bd',
   datosPropios: 'datos-propios',
 };
+// El valor «API» del comentario y, oculto, el que el workflow eligió solo la última vez.
+const CAMPO_API = 'api';
+const CAMPO_API_AUTO = 'api-auto';
 
-/** Lee las casillas marcadas del comentario. Sin comentario, todo queda en su valor por defecto. */
+/** Nombre de una API: `ekou-elephants-api` (producción) o `ekou-elephants-api-pr-<n>` (un preview). */
+export function nombreApi(pr) {
+  return pr ? `${WORKER_API}-pr-${pr}` : WORKER_API;
+}
+
+/**
+ * Lee las opciones del comentario: las casillas marcadas, el valor de «API» y el que el workflow
+ * eligió solo. Sin comentario, todo queda en su valor por defecto.
+ */
 export function leerOpciones(cuerpo) {
+  const texto = cuerpo ?? '';
   const marcada = (clave) =>
-    new RegExp(`^\\s*[-*] \\[[xX]\\] .*<!-- ${clave} -->`, 'm').test(cuerpo ?? '');
+    new RegExp(`^\\s*[-*] \\[[xX]\\] .*<!-- ${clave} -->`, 'm').test(texto);
+  const api = new RegExp(`\\*\\*API:\\*\\*([^\\n]*?)<!-- ${CAMPO_API} -->`).exec(texto)?.[1];
+  const apiAuto = new RegExp(`<!-- ${CAMPO_API_AUTO}: ([\\w-]+) -->`).exec(texto)?.[1];
   return {
     copiaBd: marcada(CASILLAS.copiaBd),
     datosPropios: marcada(CASILLAS.datosPropios),
+    api: api?.replace(/[`\s]/g, '') || null,
+    apiAuto: apiAuto ?? null,
   };
+}
+
+/**
+ * El número de PR de un valor de «API», o null para producción. Acepta `ekou-elephants-api`,
+ * `ekou-elephants-api-pr-57`, `pr-57`, `#57` o `57`; undefined si no es ninguno.
+ */
+export function interpretarApi(valor) {
+  if (valor === WORKER_API || /^producci[oó]n$/i.test(valor)) return null;
+  const pr = new RegExp(`^(?:${WORKER_API}-pr-|pr-|#)?([1-9]\\d*)$`).exec(valor)?.[1];
+  return pr ? Number(pr) : undefined;
+}
+
+/**
+ * Si el PR cambia la API: su servidor, su configuración, la lógica de un módulo (todo menos `ui/`) o
+ * las migraciones. Entonces el preview usa, por defecto, un preview de la API con el código del PR.
+ */
+export function apiCambiada(archivos) {
+  return archivos.some(
+    (ruta) =>
+      ruta === 'wrangler.api.jsonc' ||
+      ruta.startsWith('src/server/') ||
+      ruta.startsWith('migrations/') ||
+      /^src\/modules\/[^/]+\/(?!ui\/)/.test(ruta),
+  );
+}
+
+/** La API que el workflow elige solo: la de este PR si cambia la API; si no, la de producción. */
+export function apiAutomatica(pr, cambiosApi) {
+  return nombreApi(cambiosApi ? pr : null);
+}
+
+/**
+ * A qué API apunta la web del preview. Si la persona cambió el valor de «API», manda lo que escribió;
+ * si no, la automática. `api` es '' (producción, por service binding), 'propia' (un preview con el
+ * código de este PR) o 'pr-<n>' (el preview de la API de otro PR); `elegida`, el valor a mostrar.
+ */
+export function destinoApi({ pr, opciones, cambiosApi }) {
+  const automatica = apiAutomatica(pr, cambiosApi);
+  const manual = Boolean(opciones.api) && opciones.api !== opciones.apiAuto;
+  // Lo que escribió una persona: sin caracteres que rompan el comentario o las salidas del workflow.
+  const valor = manual ? opciones.api.replace(/[^\w#.-]/g, '').slice(0, 60) : automatica;
+  const numero = interpretarApi(valor);
+  if (numero === undefined) {
+    return {
+      api: '',
+      elegida: valor,
+      manual,
+      bloqueo: `«${valor}» no es una API. En «API» escribe \`${WORKER_API}\` (producción) o \`${WORKER_API}-pr-<número>\` (el preview de un PR).`,
+    };
+  }
+  const api = numero === null ? '' : numero === Number(pr) ? 'propia' : `pr-${numero}`;
+  return { api, elegida: nombreApi(numero), manual, bloqueo: null };
 }
 
 export function nombreRamaNeon(pr) {
@@ -42,6 +113,33 @@ export const STORYBOOK_PATH = '/storybook/';
 
 const casilla = (marcada, clave, texto) => `- [${marcada ? 'x' : ' '}] ${texto} <!-- ${clave} -->`;
 
+/** «API»: cuál usa la web y por qué, y cómo cambiarla, como las demás opciones. */
+function lineaApi({ pr, elegida, manual, cambiosApi }) {
+  const automatica = apiAutomatica(pr, cambiosApi);
+  const valor = elegida || automatica;
+  const numero = interpretarApi(valor);
+  const cual =
+    numero === undefined
+      ? `La web no tiene API: «${valor}» no es un valor válido.`
+      : numero === null
+        ? 'La web usa la API de producción'
+        : numero === Number(pr)
+          ? 'La web usa el preview de la API de este PR'
+          : `La web usa el preview de la API del PR #${numero}`;
+  const porque =
+    numero === undefined
+      ? ''
+      : manual
+        ? `, elegida a mano. Para volver a la automática, escribe \`${automatica}\`.`
+        : cambiosApi
+          ? ', porque este PR cambia la API.'
+          : ', porque este PR no cambia la API.';
+  return [
+    `- **API:** \`${valor}\` <!-- ${CAMPO_API} --> ${cual}${porque}`,
+    `  Para usar otra, edita este comentario (\`⋯\` → *Edit*) y cambia ese valor por \`${WORKER_API}\` (producción) o \`${WORKER_API}-pr-<número>\` (el preview de la API de ese PR, que debe estar abierto y tener su preview desplegado). <!-- ${CAMPO_API_AUTO}: ${automatica} -->`,
+  ].join('\n');
+}
+
 /**
  * Cuerpo del comentario. `estado` es 'desplegado', 'desplegando', 'bloqueado' o 'error'.
  */
@@ -54,6 +152,11 @@ export function renderizarComentario({
   motivo,
   ejecucion,
   datosCorte,
+  arquitectura,
+  apiUrl,
+  apiElegida,
+  apiManual = false,
+  cambiosApi = false,
 }) {
   const bd = opciones.copiaBd
     ? `copia propia \`${nombreRamaNeon(pr)}\` (rama de Neon desde \`dev\`, con las migraciones de este PR)`
@@ -78,19 +181,29 @@ export function renderizarComentario({
     `**Estado:** ${estados[estado]}${ejecucion ? ` · [ver ejecución](${ejecucion})` : ''}`,
   ];
   if (motivo) lineas.push('', `> ${motivo}`);
+  const enlace = (href) => (href ? `[${href}](${href})` : '—');
+  const storybook = `| Storybook (sistema de diseño) | ${url ? enlace(new URL(STORYBOOK_PATH, url).href) : '—'} |`;
+  // ADR-0004: la web y la API en Workers distintos. Cómo llega la web a la API: docs/arquitectura.md.
+  const filas =
+    arquitectura === 'web-api'
+      ? [
+          `| Web | ${enlace(url)} |`,
+          // apiUrl is the Worker's base (what the web uses as API_URL); its routes live under /api.
+          `| API | ${enlace(apiUrl ? new URL('api', apiUrl).href : undefined)} |`,
+          storybook,
+        ]
+      : [`| App | ${enlace(url)} |`, `| API | ${enlace(api)} |`, storybook];
   lineas.push(
     '',
     '| | |',
     '| --- | --- |',
-    `| App | ${url ? `[${url}](${url})` : '—'} |`,
-    `| API | ${api ? `[${api}](${api})` : '—'} |`,
-    `| Storybook (sistema de diseño) | ${url ? `[${STORYBOOK_PATH}](${new URL(STORYBOOK_PATH, url).href})` : '—'} |`,
+    ...filas,
     `| Base de datos | ${bd} |`,
     `| Datos del corte | ${datos} |`,
     '',
     '### Opciones',
     '',
-    'Marca o desmarca una casilla y el preview se vuelve a desplegar con esa configuración.',
+    'Marca o desmarca una casilla, o cambia el valor de «API», y el preview se vuelve a desplegar con esa configuración.',
     '',
     casilla(
       opciones.copiaBd,
@@ -104,8 +217,9 @@ export function renderizarComentario({
       CASILLAS.datosPropios,
       `**Datos propios.** El preview lee \`${WORKER_DATOS}-pr-${pr}\` en lugar de los datos de producción. Antes, súbelos desde tu máquina: \`npm run datos:descargar\`, edita los JSON y \`npm run datos:preview -- ${pr}\`.`,
     ),
+    lineaApi({ pr, elegida: apiElegida, manual: apiManual, cambiosApi }),
     '',
-    '<sub>Comentario gestionado por el workflow `app-preview`. Al cerrar el PR se borran el preview y la rama de Neon. No edites el texto, solo las casillas.</sub>',
+    '<sub>Comentario gestionado por el workflow `app-preview`. Al cerrar el PR se borran los previews y la rama de Neon. No edites el resto del texto: solo las casillas y el valor de «API». «API» aplica a la web y la API en Workers distintos (ADR-0004).</sub>',
   );
   return lineas.join('\n');
 }

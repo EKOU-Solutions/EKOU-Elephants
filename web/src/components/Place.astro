@@ -1,0 +1,42 @@
+---
+// A place's page (ADR-0004): Astro renders the map screen with the place chosen, and the island
+// hydrates it. Only this page's outlines travel in the page; the country's topology stays out.
+import '../../../src/styles/global.css';
+import type { MapRoute } from '../../../src/modules/mapa/ui/mapModel';
+import { loadSite } from '../../../pages-site/src/lib/cut';
+import { pageOutlines } from '../../../pages-site/src/lib/outlines';
+import { jsonInHtml, metadata } from '../../../pages-site/src/lib/site';
+import { MapIsland } from '../islands/MapIsland';
+import { toPageMap } from '../lib/pageMap';
+
+interface Props {
+  route: MapRoute;
+}
+
+const { route } = Astro.props;
+const { map, site } = await loadSite();
+const meta = metadata(map, route, site);
+// Only this page's outlines, compact: the island never draws from the raw topology. As one JSON
+// string: Astro's own prop format tags every value and doubles the weight.
+const pageMap = toPageMap(pageOutlines(map, route), route);
+---
+<!doctype html>
+<html lang="es-CO">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{meta.title}</title>
+    <meta name="description" content={meta.description} />
+    <link rel="canonical" href={meta.canonical} />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="EKOU Elephants" />
+    <meta property="og:locale" content="es_CO" />
+    <meta property="og:title" content={meta.title} />
+    <meta property="og:description" content={meta.description} />
+    <meta property="og:url" content={meta.canonical} />
+    <script type="application/ld+json" is:inline set:html={jsonInHtml(meta.jsonLd)} />
+  </head>
+  <body>
+    <div id="root"><MapIsland client:load route={route} map={JSON.stringify(pageMap)} /></div>
+  </body>
+</html>
