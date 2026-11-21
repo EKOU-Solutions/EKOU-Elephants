@@ -157,7 +157,7 @@ describe('desplegarPreview con la web y la API separadas', () => {
     });
   });
 
-  it('con «API de este PR» despliega primero la API y la web la usa por su URL', async () => {
+  it('con la API de este PR despliega primero la API y la web la usa por su URL', async () => {
     const d = dobles();
     const raiz = repoWebApi();
     const env = { ...base, API_DESTINO: 'propia', DATOS_CORTE_ENABLED: 'true' };
@@ -179,7 +179,7 @@ describe('desplegarPreview con la web y la API separadas', () => {
     expect(r.apiUrl).toBe('https://pr-12-ekou-elephants-api.ekou.workers.dev/');
   });
 
-  it('con «API de otro PR» no despliega API: usa el preview de ese PR si responde', async () => {
+  it('con la API de otro PR no despliega API: usa el preview de ese PR si responde', async () => {
     const d = dobles();
     await desplegarPreview({ ...d, env: { ...base, API_DESTINO: 'pr-57' }, raiz: repoWebApi() });
     expect(d.verifyApi).toHaveBeenCalledWith('https://pr-57-ekou-elephants-api.ekou.workers.dev/');
@@ -201,7 +201,7 @@ describe('desplegarPreview con la web y la API separadas', () => {
     const d = dobles();
     await expect(
       desplegarPreview({ ...d, env: { ...base, MIGRAR: 'true' }, raiz: repoWebApi() }),
-    ).rejects.toThrow('API de este PR');
+    ).rejects.toThrow('`ekou-elephants-api-pr-12` en «API»');
     expect(d.run).not.toHaveBeenCalled();
     await expect(
       desplegarPreview({ ...d, env: { ...base, API_DESTINO: 'otra' }, raiz: repoWebApi() }),

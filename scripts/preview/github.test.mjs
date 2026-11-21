@@ -3,7 +3,7 @@ import { renderizarComentario } from './control.mjs';
 import { calcularOpciones, publicarComentario } from './github.mjs';
 
 const bot = (id, body) => ({ id, body, user: { login: 'github-actions[bot]' } });
-const opciones = { copiaBd: true, datosPropios: false, apiPropia: false, apiPr: null };
+const opciones = { copiaBd: true, datosPropios: false, api: null, apiAuto: null };
 
 function apiFalsa({ comentarios = [], archivos = [], otros = {} } = {}) {
   return vi.fn(async (metodo, ruta) => {
@@ -43,29 +43,42 @@ describe('calcularOpciones', () => {
       archivos: [{ filename: 'migrations/2_x.sql' }],
     });
     const r = await calcularOpciones(api, 7);
-    expect(r).toMatchObject({ comentarioId: 5, bloqueo: '', opciones });
+    expect(r).toMatchObject({
+      comentarioId: 5,
+      bloqueo: '',
+      opciones: { copiaBd: true, datosPropios: false },
+    });
   });
 });
 
 describe('calcularOpciones con la API', () => {
+  // Un comentario en el que alguien escribió el PR `n` en «API».
   const conApiPr = (n) =>
     bot(
       5,
       renderizarComentario({
         pr: 7,
         sha: 'a',
-        opciones: { ...opciones, copiaBd: false, apiPr: n },
+        opciones: { ...opciones, copiaBd: false },
         estado: 'desplegado',
-      }),
+      }).replace('`ekou-elephants-api` <!-- api -->', `#${n} <!-- api -->`),
     );
   const repo = { repo: { full_name: 'ekou/elephants' } };
 
-  it('un PR que cambia la API despliega su propia API', async () => {
+  it('un PR que cambia la API despliega su propia API; uno que no, usa la de producción', async () => {
     const api = apiFalsa({ archivos: [{ filename: 'src/server/api.ts' }] });
     expect(await calcularOpciones(api, 7)).toMatchObject({
       cambiosApi: true,
       api: 'propia',
+      apiElegida: 'ekou-elephants-api-pr-7',
+      apiManual: false,
       bloqueo: '',
+    });
+    const front = apiFalsa({ archivos: [{ filename: 'web/src/pages/mapa.astro' }] });
+    expect(await calcularOpciones(front, 7)).toMatchObject({
+      cambiosApi: false,
+      api: '',
+      apiElegida: 'ekou-elephants-api',
     });
   });
 
@@ -75,7 +88,12 @@ describe('calcularOpciones con la API', () => {
       apiFalsa({ comentarios: [conApiPr(57)], otros: { 57: abierto } }),
       7,
     );
-    expect(r).toMatchObject({ api: 'pr-57', bloqueo: '' });
+    expect(r).toMatchObject({
+      api: 'pr-57',
+      apiElegida: 'ekou-elephants-api-pr-57',
+      apiManual: true,
+      bloqueo: '',
+    });
     r = await calcularOpciones(
       apiFalsa({ comentarios: [conApiPr(57)], otros: { 57: { ...abierto, state: 'closed' } } }),
       7,
