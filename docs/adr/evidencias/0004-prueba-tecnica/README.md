@@ -71,7 +71,7 @@ En local respondieron bien `/mapa`, `/mapa/05001`, `/api/salud`, `/api/mapa/*`, 
 
 ```bash
 npm run datos:local                  # un corte exportado en este computador (o copia datos-locales/)
-node web/spike/build.mjs             # genera la web con las 1.155 páginas
+npm run build:web                    # genera la web con las 1.155 páginas
 npx wrangler dev -c web/dist/server/wrangler.json -c wrangler.api.jsonc \
   -c web/spike/datos.wrangler.jsonc --port 8790
 ```

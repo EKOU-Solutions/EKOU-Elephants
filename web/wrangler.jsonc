@@ -4,8 +4,15 @@
   "name": "ekou-elephants-web",
   "main": "@astrojs/cloudflare/entrypoints/server",
   "compatibility_date": "2026-11-01",
-  "compatibility_flags": ["nodejs_compat"],
+  // global_fetch_strictly_public: with API_URL, fetch() to another workers.dev Worker of this account
+  // must reach that Worker, not the zone's origin (Cloudflare returns "Page not found" otherwise).
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
   "assets": { "directory": "./dist", "binding": "ASSETS" },
   "observability": { "enabled": true },
-  "services": [{ "binding": "API", "service": "ekou-elephants-api" }]
+  "services": [{ "binding": "API", "service": "ekou-elephants-api" }],
+  // Previews do not inherit bindings. A Preview's binding reaches the API's PRODUCTION; to use an API
+  // preview, the deploy sets API_URL instead (scripts/despliegue.mjs, docs/ci-cd.md).
+  "previews": {
+    "services": [{ "binding": "API", "service": "ekou-elephants-api" }]
+  }
 }

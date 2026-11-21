@@ -10,6 +10,7 @@
     "dev": "vite",
     "build": "vite build && npm run build:storybook-app",
     "build:storybook-app": "storybook build --quiet --output-dir dist/client/storybook",
+    "build:web": "node scripts/build-web.mjs",
     "preview": "vite preview",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build --output-dir storybook-static",

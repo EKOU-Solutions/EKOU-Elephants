@@ -1,12 +1,13 @@
 import type { APIRoute } from 'astro';
 import { env } from 'cloudflare:workers';
+import { apiGateway } from '../../lib/apiGateway';
 
 // Rendered on demand: this is the only route that runs the web Worker until contracts arrive.
 export const prerender = false;
 
 /**
- * /api/* on workers.dev previews, which do not route by path: the API Worker answers through the
- * service binding (no extra billed request). On the custom domain a route sends /api/* to the API
- * Worker first, so this never runs there (ADR-0004).
+ * /api/* on workers.dev, which does not route by path: the API answers through the gateway (the
+ * service binding, or the API preview's URL when the deploy sets API_URL). On the custom domain a
+ * route sends /api/* to the API Worker first, so this never runs there (ADR-0004).
  */
-export const ALL: APIRoute = ({ request }) => env.API.fetch(request);
+export const ALL: APIRoute = ({ request }) => apiGateway(env).fetch(request);
