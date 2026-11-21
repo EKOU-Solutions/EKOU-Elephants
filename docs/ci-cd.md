@@ -60,6 +60,46 @@ Casos de uso:
 
 Solo cuenta la edición de alguien con permiso de escritura en el repositorio. La lectura de opciones y la gestión del comentario usan el código de `main`, no el del PR. Al cerrar el PR se borran el preview de Cloudflare, la rama de Neon y el Worker de datos del PR.
 
+## Web y API en Workers distintos (ADR-0004)
+
+Con el [ADR-0004](adr/0004-paginas-de-contratos.md) (PR #52) la web (Astro) y la API (Hono) tienen cada una su Worker: `ekou-elephants-web` y `ekou-elephants-api`. El script de despliegue (`scripts/despliegue.mjs`, que corre siempre desde `main`) mira el código del commit que despliega:
+
+- **Si trae `web/wrangler.jsonc` y `wrangler.api.jsonc`:** despliega la web y la API por separado, como se explica abajo.
+- **Si no:** despliega la app como siempre, en un solo Worker. Así los PR abiertos antes de la migración no cambian.
+
+**Lo que el código del PR debe traer** (es el contrato con el script):
+
+| Pieza | Para qué |
+| --- | --- |
+| `wrangler.api.jsonc` | El Worker de la API. El script le pone el binding `DATOS` que corresponda. |
+| `npm run build:web` | Genera la web con el corte de `EKOU_PUBLICACION`, para la URL `EKOU_SITIO_URL` y con la versión `EKOU_VERSION`. Deja la configuración de Wrangler en `web/dist/server/wrangler.json`. |
+| Bloque `previews` de la web | Trae el binding `API` a `ekou-elephants-api`: los Previews no heredan los bindings de producción. |
+| Variable `API_URL` | Si la web la recibe, llama a la API por esa URL pública; si no, por el binding `API`. |
+| Flag `global_fetch_strictly_public` en la web | Sin él, un `fetch()` de la web a otro `*.workers.dev` de la cuenta llega al origen y Cloudflare responde «Page not found» (comprobado el 2026-11-21). |
+
+**Cómo se despliega:**
+
+1. **El corte para generar la web:** el script baja los JSON del corte vigente del Release (`npm run datos:descargar`) y corre `npm run build:web`. El build no recibe credenciales.
+2. **Producción** (`app-deploy`): migra, despliega la API (`wrangler deploy`), verifica `/api/salud`, genera la web y la despliega. La URL del sitio sale de `EKOU_SITIO_URL` o, sin dominio propio, de `ekou-elephants-web.<cuenta>.workers.dev`.
+3. **Preview de un PR** (`app-preview`): la web es siempre un Preview `pr-<n>` de `ekou-elephants-web`. La API que usa depende de las opciones del comentario.
+
+### Qué API usa el preview
+
+Un Preview que llama a otro Worker por service binding **siempre llega a la producción de ese Worker**, nunca a un Preview suyo ([Cloudflare, Previews](https://developers.cloudflare.com/workers/previews/), consultado el 2026-11-21). Por eso:
+
+| Caso | API del preview | Cómo la llama la web |
+| --- | --- | --- |
+| **Por defecto** (el PR no toca la API) | La de producción, `ekou-elephants-api` | Service binding, sin petición extra |
+| **«API de este PR»**, o el PR cambia la API | Un Preview `pr-<n>` de `ekou-elephants-api` con el código del PR | Por su URL pública (`API_URL`) |
+| **«API de otro PR: #m»** | El Preview `pr-<m>` de la API de ese PR | Por su URL pública (`API_URL`) |
+
+- **Qué cuenta como cambio de la API:** `src/server/`, `wrangler.api.jsonc`, `migrations/` o la lógica de un módulo (todo `src/modules/<m>/` menos `ui/`). En ese caso la API del PR se despliega aunque nadie marque la casilla.
+- **Costo de llamar por URL:** una petición más, solo en pruebas. Producción siempre usa el binding.
+- **La API de otro PR:** el PR debe estar abierto, ser de este repositorio y tener su preview de la API desplegado (con «API de este PR»). Si no, el preview no se despliega y el comentario dice por qué.
+- **Datos y base de la API del PR:** respetan «Datos propios» y «Copia propia de la base de datos». Una base migrada solo la usa la API del PR: con la copia propia, marca también «API de este PR».
+- **Al cerrar el PR** se borran los Previews de la web y de la API.
+- **Lo que falta en esta arquitectura:** Storybook todavía no se publica en `/storybook/` de la web.
+
 ## Storybook en el preview y en producción
 
 `npm run build` genera la app y, después, la versión estática de Storybook en `dist/client/storybook/` (`npm run build:storybook-app`). El mismo Worker la sirve como archivos estáticos, así que no hay workflow, secreto ni proyecto aparte:

@@ -1,11 +1,19 @@
 // CLI que usa el workflow `app-preview` para leer y actualizar el comentario de control.
 // Uso: node scripts/preview/github.mjs opciones|comentar
 // Variables: GITHUB_TOKEN, GITHUB_REPOSITORY, PR, y para `comentar`: SHA, ESTADO, URL, MOTIVO,
-// COPIA_BD, DATOS_PROPIOS, DATOS_CORTE_ENABLED, EJECUCION.
+// COPIA_BD, DATOS_PROPIOS, API_PROPIA, API_PR, API_CAMBIADA, DATOS_CORTE_ENABLED, EJECUCION y, con
+// la arquitectura del ADR-0004, ARQUITECTURA y API_URL.
 import { appendFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { bloqueoPorMigraciones, leerOpciones, MARCA, renderizarComentario } from './control.mjs';
+import {
+  apiCambiada,
+  bloqueoPorMigraciones,
+  destinoApi,
+  leerOpciones,
+  MARCA,
+  renderizarComentario,
+} from './control.mjs';
 
 const AUTOR_BOT = 'github-actions[bot]';
 
@@ -45,22 +53,53 @@ export async function buscarComentario(api, pr) {
   return comentarios.find((c) => c.user?.login === AUTOR_BOT && c.body?.startsWith(MARCA)) ?? null;
 }
 
-export async function migracionesCambiadas(api, pr) {
+/** Las rutas que cambia el PR, también las de antes de un renombre. */
+export async function archivosCambiados(api, pr) {
   const archivos = await paginar(api, `/pulls/${pr}/files`);
-  return archivos.some(
-    (a) => a.filename.startsWith('migrations/') || a.previous_filename?.startsWith('migrations/'),
-  );
+  return archivos.flatMap((a) => [
+    a.filename,
+    ...(a.previous_filename ? [a.previous_filename] : []),
+  ]);
+}
+
+export async function migracionesCambiadas(api, pr) {
+  return (await archivosCambiados(api, pr)).some((ruta) => ruta.startsWith('migrations/'));
+}
+
+/** Un PR de otro número sirve de API solo si está abierto y es de este repositorio (no de un fork). */
+export async function bloqueoPorOtroPr(api, otro) {
+  let datos;
+  try {
+    datos = await api('GET', `/pulls/${otro}`);
+  } catch (error) {
+    if (error.status === 404) return `No existe el PR #${otro} de «API de otro PR».`;
+    throw error;
+  }
+  if (datos.state !== 'open') return `El PR #${otro} de «API de otro PR» no está abierto.`;
+  if (datos.head?.repo?.full_name !== datos.base?.repo?.full_name)
+    return `El PR #${otro} viene de un fork: su API no tiene preview.`;
+  return null;
 }
 
 export async function calcularOpciones(api, pr) {
   const comentario = await buscarComentario(api, pr);
   const opciones = leerOpciones(comentario?.body);
-  const migraciones = await migracionesCambiadas(api, pr);
+  const archivos = await archivosCambiados(api, pr);
+  const migraciones = archivos.some((ruta) => ruta.startsWith('migrations/'));
+  const cambiosApi = apiCambiada(archivos);
+  const destino = destinoApi({ pr, opciones, cambiosApi });
+  const otro = destino.api.startsWith('pr-') ? Number(destino.api.slice(3)) : null;
+  const bloqueo =
+    bloqueoPorMigraciones({ opciones, migracionesCambiadas: migraciones }) ??
+    destino.bloqueo ??
+    (otro ? await bloqueoPorOtroPr(api, otro) : null);
   return {
     comentarioId: comentario?.id ?? '',
     opciones,
     migraciones,
-    bloqueo: bloqueoPorMigraciones({ opciones, migracionesCambiadas: migraciones }) ?? '',
+    cambiosApi,
+    api: destino.api,
+    bloqueo: bloqueo ?? '',
   };
 }
 
@@ -96,6 +135,10 @@ async function main(comando, env = process.env) {
       comentario_id: r.comentarioId,
       copia_bd: r.opciones.copiaBd,
       datos_propios: r.opciones.datosPropios,
+      api_propia: r.opciones.apiPropia,
+      api_pr: r.opciones.apiPr ?? '',
+      api_cambiada: r.cambiosApi,
+      api: r.api,
       migraciones: r.migraciones,
       bloqueo: r.bloqueo,
     });
@@ -111,8 +154,13 @@ async function main(comando, env = process.env) {
       opciones: {
         copiaBd: env.COPIA_BD === 'true',
         datosPropios: env.DATOS_PROPIOS === 'true',
+        apiPropia: env.API_PROPIA === 'true',
+        apiPr: /^[1-9]\d*$/.test(env.API_PR ?? '') ? Number(env.API_PR) : null,
       },
+      cambiosApi: env.API_CAMBIADA === 'true',
       datosCorte: env.DATOS_CORTE_ENABLED === 'true',
+      arquitectura: env.ARQUITECTURA || undefined,
+      apiUrl: env.API_URL || undefined,
     });
     return;
   }
