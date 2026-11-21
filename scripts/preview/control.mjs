@@ -186,7 +186,12 @@ export function renderizarComentario({
   // ADR-0004: la web y la API en Workers distintos. Cómo llega la web a la API: docs/arquitectura.md.
   const filas =
     arquitectura === 'web-api'
-      ? [`| Web | ${enlace(url)} |`, `| API | ${enlace(apiUrl)} |`, storybook]
+      ? [
+          `| Web | ${enlace(url)} |`,
+          // apiUrl is the Worker's base (what the web uses as API_URL); its routes live under /api.
+          `| API | ${enlace(apiUrl ? new URL('api', apiUrl).href : undefined)} |`,
+          storybook,
+        ]
       : [`| App | ${enlace(url)} |`, `| API | ${enlace(api)} |`, storybook];
   lineas.push(
     '',
