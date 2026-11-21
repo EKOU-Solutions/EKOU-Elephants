@@ -201,7 +201,7 @@ describe('comentario de control', () => {
     });
     expect(cuerpo).toContain('| Web | [https://pr-7-web.x.dev/](https://pr-7-web.x.dev/) |');
     expect(cuerpo).toContain(
-      '| API | [https://ekou-elephants-api.x.dev/](https://ekou-elephants-api.x.dev/) |',
+      '| API | [https://ekou-elephants-api.x.dev/api](https://ekou-elephants-api.x.dev/api) |',
     );
     expect(cuerpo).toContain(
       '| Storybook (sistema de diseño) | [https://pr-7-web.x.dev/storybook/](https://pr-7-web.x.dev/storybook/) |',
