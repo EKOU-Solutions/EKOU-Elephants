@@ -41,4 +41,5 @@ storybook-static/
 .design-check/
 # Páginas de cada lugar (npm run paginas): caché de Astro
 pages-site/.astro/
+web/.astro/
 pages-site/node_modules/

@@ -148,8 +148,8 @@ export interface PreparedMap {
   search: SearchEntry[];
 }
 
-/** Projects the geometry once and indexes the data. */
-export function prepareMap(data: MapData): PreparedMap {
+/** What a map needs from the cut's lists alone, without geometry: indexes and the search entries. */
+export function indexData(data: Pick<MapData, 'departments' | 'municipalities'>) {
   const departments = new Map(data.departments.departamentos.map((d) => [d.codigo, d]));
   const municipalities = new Map(data.municipalities.municipios.map((m) => [m.codigo, m]));
   const byDepartment = new Map<string, MunicipioDelMapa[]>();
@@ -158,11 +158,6 @@ export function prepareMap(data: MapData): PreparedMap {
     list.push(m);
     byDepartment.set(m.departamento.codigo, list);
   }
-  const departmentShapes = shapesOf(data.topology, 'departamentos');
-  const municipalityShapes = shapesOf(data.topology, 'municipios');
-  const mainland = unionBox(
-    [...departmentShapes.values()].filter((s) => s.code !== ARCHIPELAGO).map((s) => s.box),
-  );
   const search: SearchEntry[] = [
     ...data.departments.departamentos
       .filter((d) => d.codigo !== '11')
@@ -179,6 +174,17 @@ export function prepareMap(data: MapData): PreparedMap {
       route: { view: 'municipality', code: m.codigo } as const,
     })),
   ];
+  return { departments, municipalities, byDepartment, search };
+}
+
+/** Projects the geometry once and indexes the data. */
+export function prepareMap(data: MapData): PreparedMap {
+  const { departments, municipalities, byDepartment, search } = indexData(data);
+  const departmentShapes = shapesOf(data.topology, 'departamentos');
+  const municipalityShapes = shapesOf(data.topology, 'municipios');
+  const mainland = unionBox(
+    [...departmentShapes.values()].filter((s) => s.code !== ARCHIPELAGO).map((s) => s.box),
+  );
   const archipelago = archipelagoPanel(data.topology);
   const inset = archipelagoInset(archipelago, mainland);
   return {

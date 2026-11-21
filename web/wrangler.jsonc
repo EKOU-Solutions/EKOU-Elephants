@@ -1,0 +1,11 @@
+// The web Worker (ADR-0004). Prerendered pages and the JS/CSS are static assets: free and they never
+// run the Worker. The Worker runs for contract pages and, on workers.dev previews, for /api/*.
+{
+  "name": "ekou-elephants-web",
+  "main": "@astrojs/cloudflare/entrypoints/server",
+  "compatibility_date": "2026-11-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": { "directory": "./dist", "binding": "ASSETS" },
+  "observability": { "enabled": true },
+  "services": [{ "binding": "API", "service": "ekou-elephants-api" }]
+}

@@ -47,6 +47,8 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@astrojs/cloudflare": "14.4.9",
+    "@astrojs/preact": "6.1.6",
     "@astrojs/react": "7.1.9",
     "@biomejs/biome": "2.6.8",
     "@cloudflare/vite-plugin": "^1.69.1",
@@ -66,6 +68,7 @@
     "neon": "^9.2.0",
     "node-pg-migrate": "^9.0.0",
     "playwright": "1.65.1",
+    "preact": "11.2.0",
     "remark-gfm": "4.0.1",
     "storybook": "10.6.5",
     "typescript": "^7.0.2",
