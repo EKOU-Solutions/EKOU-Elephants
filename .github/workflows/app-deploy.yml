@@ -72,5 +72,9 @@ jobs:
           DATABASE_URL_UNPOOLED: ${{ secrets.DATABASE_URL_UNPOOLED }}
           # Mientras no haya un corte publicado, sin binding DATOS ni verificación (docs/ci-cd.md).
           DATOS_CORTE_ENABLED: ${{ vars.DATOS_CORTE_ENABLED }}
+          # Web y API separadas (ADR-0004): la web se genera con el corte del Release y la URL del sitio.
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          EKOU_SITIO_URL: ${{ vars.EKOU_SITIO_URL }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
