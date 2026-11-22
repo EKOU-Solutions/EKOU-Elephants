@@ -12,9 +12,12 @@ import {
   escalaComun,
   formatDinero,
   formatFecha,
+  formatPeriodo,
   formatPorcentaje,
   type GastoPublico,
   LLAVE_RUBRO,
+  type Nivel,
+  NIVEL,
   motivoSinGasto,
   NOMBRE_RUBRO,
   ORDEN_BARRA,
@@ -30,8 +33,13 @@ export type ResumenMunicipalProps = {
   status: 'loading' | 'error' | 'ready';
   /** The summary of the chosen year; required when `status` is `ready`. */
   datos?: ResumenMunicipalDatos;
-  /** Year being loaded or shown. */
-  anio: number;
+  /** Municipality or department: the noun of the texts (alcaldía / gobernación). */
+  nivel: Nivel;
+  /** Name of the place, for the title while the first answer has not arrived. */
+  nombre?: string;
+  /** Year being loaded or shown; missing while the first answer, which says it, has not arrived. */
+  anio?: number;
+  /** The years of the window; empty until the first answer, so the selector waits for it. */
   anios: number[];
   onAnioChange: (anio: number) => void;
   onReintentar?: () => void;
@@ -43,6 +51,8 @@ export type ResumenMunicipalProps = {
 export function ResumenMunicipal({
   status,
   datos,
+  nivel,
+  nombre: nombreDelLugar,
   anio,
   anios,
   onAnioChange,
@@ -50,21 +60,23 @@ export function ResumenMunicipal({
   detalleAbierto = false,
 }: ResumenMunicipalProps) {
   const titleId = useId();
-  const nombre = datos?.nombre;
+  const nombre = datos?.nombre ?? nombreDelLugar;
   return (
     <section className={styles.resumen} aria-labelledby={titleId}>
       <h2 id={titleId}>Gasto público{nombre ? ` de ${nombre}` : ''}</h2>
-      <Select
-        label="Año"
-        value={String(anio)}
-        onChange={(e) => onAnioChange(Number(e.target.value))}
-        options={anios.map((a) => ({
-          value: String(a),
-          label: a < PRIMER_ANIO_CUIPO ? `${a} · sin detalle de gasto` : String(a),
-        }))}
-      />
+      {anio !== undefined && anios.length > 0 ? (
+        <Select
+          label="Año"
+          value={String(anio)}
+          onChange={(e) => onAnioChange(Number(e.target.value))}
+          options={anios.map((a) => ({
+            value: String(a),
+            label: a < PRIMER_ANIO_CUIPO ? `${a} · sin detalle de gasto` : String(a),
+          }))}
+        />
+      ) : null}
       <p className={styles.srOnly} aria-live="polite">
-        {anunciar(status, datos, anio)}
+        {anunciar(status, datos)}
       </p>
       {status === 'loading' ? <Cargando anio={anio} /> : null}
       {status === 'error' ? (
@@ -80,6 +92,7 @@ export function ResumenMunicipal({
       {status === 'ready' && datos ? (
         <Listo
           datos={datos}
+          nivel={nivel}
           detalleAbierto={detalleAbierto}
           anios={anios}
           onAnioChange={onAnioChange}
@@ -93,23 +106,54 @@ export function ResumenMunicipal({
 function anunciar(
   status: ResumenMunicipalProps['status'],
   datos: ResumenMunicipalDatos | undefined,
-  anio: number,
 ) {
   if (status === 'error') return 'No pudimos cargar el resumen';
   if (status !== 'ready' || !datos) return '';
   if (!datos.gastoPublico && !datos.contratado)
-    return `Sin información de ${datos.nombre} en ${anio}`;
-  return `Mostrando ${anio}`;
+    return `Sin información de ${datos.nombre} en ${datos.anio}`;
+  return `Mostrando ${datos.anio}`;
 }
 
-function Cargando({ anio }: { anio: number }) {
+function Cargando({ anio }: { anio?: number }) {
   return (
     <div className={styles.cargando} aria-busy="true">
-      <p className={styles.suave}>Cargando el resumen de {anio}</p>
+      <p className={styles.suave}>Cargando el resumen{anio === undefined ? '' : ` de ${anio}`}</p>
       <ProgressBar size="thick" segments={[{ value: 1, tone: 'unknown' }]} />
       <ProgressBar segments={[{ value: 1, tone: 'unknown' }]} />
       <ProgressBar segments={[{ value: 1, tone: 'unknown' }]} />
     </div>
+  );
+}
+
+/** «En 2025 la alcaldía recibió» and the figure: also the key figure of the half-height sheet. */
+export function Recibido({ datos, nivel }: { datos: ResumenMunicipalDatos; nivel: Nivel }) {
+  const recibido = datos.gastoPublico?.recibido ?? null;
+  const cuipo = datos.fuentes.find((f) => f.usadoPara === 'gastoPublico');
+  return (
+    <>
+      <p>
+        En {datos.anio} {NIVEL[nivel].entidad} recibió
+      </p>
+      {recibido === null ? (
+        <SinInformacion>Sin información</SinInformacion>
+      ) : (
+        <p className={styles.cifra}>{formatDinero(recibido)}</p>
+      )}
+      <p className={styles.pequeno}>
+        Lo que ingresó a la caja de {NIVEL[nivel].entidad} en el año.
+      </p>
+      {datos.gastoPublico && !datos.gastoPublico.completo ? (
+        // A year still open (or closed with less than 4 quarters) is not a full year: say it next to the figure.
+        <p className={styles.pequeno}>
+          Acumulado hasta {formatPeriodo(datos.gastoPublico.periodo)}
+        </p>
+      ) : null}
+      {cuipo ? (
+        <p className={`${styles.pequeno} ${styles.suave}`}>
+          CUIPO, corte {formatFecha(cuipo.fechaCorte)}
+        </p>
+      ) : null}
+    </>
   );
 }
 
@@ -124,11 +168,13 @@ function SinInformacion({ children }: { children: string }) {
 
 function Listo({
   datos,
+  nivel,
   detalleAbierto,
   anios,
   onAnioChange,
 }: {
   datos: ResumenMunicipalDatos;
+  nivel: Nivel;
   detalleAbierto: boolean;
   anios: number[];
   onAnioChange: (anio: number) => void;
@@ -146,7 +192,7 @@ function Listo({
         <p>
           {datos.anio < PRIMER_ANIO_CUIPO
             ? 'La Contaduría publica este detalle desde 2023.'
-            : 'Puede que el año aún no tenga reporte o que el municipio no lo haya enviado.'}
+            : `Puede que el año aún no tenga reporte o que ${NIVEL[nivel].entidad} no lo haya enviado.`}
         </p>
         {otro ? (
           <Button variant="secondary" label={`Ver ${otro}`} onClick={() => onAnioChange(otro)} />
@@ -159,6 +205,7 @@ function Listo({
       {g ? (
         <Gasto
           datos={datos}
+          nivel={nivel}
           g={g}
           tabla={tabla}
           enfocar={enfocar}
@@ -178,26 +225,27 @@ function Listo({
           </SinInformacion>
         </div>
       ) : null}
-      <Contratos datos={datos} />
-      <Fuentes datos={datos} g={g} />
+      <Contratos datos={datos} nivel={nivel} />
+      <Fuentes datos={datos} g={g} anios={anios} />
     </>
   );
 }
 
 function Gasto({
   datos,
+  nivel,
   g,
   tabla,
   enfocar,
   onTabla,
 }: {
   datos: ResumenMunicipalDatos;
+  nivel: Nivel;
   g: GastoPublico;
   tabla: boolean;
   enfocar: boolean;
   onTabla: () => void;
 }) {
-  const cuipo = datos.fuentes.find((f) => f.usadoPara === 'gastoPublico');
   const reparto = repartoPorRubro(g.rubros);
   const escala = escalaComun(g.total);
   const etapas = [
@@ -226,18 +274,7 @@ function Gasto({
         />
       ) : null}
       <div className={styles.bloque}>
-        <p>En {datos.anio} la alcaldía recibió</p>
-        {g.recibido === null ? (
-          <SinInformacion>Sin información</SinInformacion>
-        ) : (
-          <p className={styles.cifra}>{formatDinero(g.recibido)}</p>
-        )}
-        <p className={styles.pequeno}>Lo que ingresó a la caja de la alcaldía en el año.</p>
-        {cuipo ? (
-          <p className={`${styles.pequeno} ${styles.suave}`}>
-            CUIPO, corte {formatFecha(cuipo.fechaCorte)}
-          </p>
-        ) : null}
+        <Recibido datos={datos} nivel={nivel} />
       </div>
       <div className={styles.bloque}>
         <h3>Y se comprometió a gastar</h3>
@@ -418,7 +455,7 @@ function Detalle({ g, anio, enfocar }: { g: GastoPublico; anio: number; enfocar:
   );
 }
 
-function Contratos({ datos }: { datos: ResumenMunicipalDatos }) {
+function Contratos({ datos, nivel }: { datos: ResumenMunicipalDatos; nivel: Nivel }) {
   const c = datos.contratado;
   const sinUbicar = c !== null && c.valor === null && c.contratos === 0;
   return (
@@ -431,7 +468,10 @@ function Contratos({ datos }: { datos: ResumenMunicipalDatos }) {
         </p>
       ) : null}
       {sinUbicar ? (
-        <p>No encontramos contratos ubicados con certeza en este municipio en {datos.anio}.</p>
+        <p>
+          No encontramos contratos ubicados con certeza en este {NIVEL[nivel].lugar} en {datos.anio}
+          .
+        </p>
       ) : null}
       {c !== null && !sinUbicar ? (
         <Counter
@@ -453,7 +493,15 @@ function Contratos({ datos }: { datos: ResumenMunicipalDatos }) {
   );
 }
 
-function Fuentes({ datos, g }: { datos: ResumenMunicipalDatos; g: GastoPublico | null }) {
+function Fuentes({
+  datos,
+  g,
+  anios,
+}: {
+  datos: ResumenMunicipalDatos;
+  g: GastoPublico | null;
+  anios: number[];
+}) {
   const cuipo = datos.fuentes.find((f) => f.usadoPara === 'gastoPublico');
   const secop = datos.fuentes.find((f) => f.usadoPara === 'contratado');
   return (
@@ -466,7 +514,12 @@ function Fuentes({ datos, g }: { datos: ResumenMunicipalDatos; g: GastoPublico |
       ) : null}
       {secop ? <p>Contratos: SECOP II, corte {formatFecha(secop.fechaCorte)}</p> : null}
       {g && !g.completo && cuipo ? (
-        <p>Año en curso: cifras acumuladas hasta {formatFecha(cuipo.fechaCorte)}</p>
+        // «Año en curso» only for the window's last year; a closed year with less than 4 quarters says so.
+        datos.anio === anios.at(-1) ? (
+          <p>Año en curso: cifras acumuladas hasta {formatFecha(cuipo.fechaCorte)}</p>
+        ) : (
+          <p>Cifras acumuladas hasta {formatPeriodo(g.periodo)}</p>
+        )
       ) : null}
     </div>
   );

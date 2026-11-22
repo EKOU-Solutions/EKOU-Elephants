@@ -61,6 +61,23 @@ export async function loadResumen(
 }
 
 /**
+ * The first render after a change of place or year still holds the previous answer (the effect
+ * marks «loading» later): an answer of another place, or of a year that was not asked for, is not shown.
+ */
+export function vigente(
+  state: ResumenState,
+  code: string | undefined,
+  anio: string | undefined,
+): ResumenState {
+  if (code === undefined) return { status: 'idle' };
+  if (state.status !== 'ready') return state;
+  const otroLugar = state.datos.codigo !== code;
+  const otroAnio =
+    anio !== undefined && state.anioInvalido !== anio && String(state.datos.anio) !== anio;
+  return otroLugar || otroAnio ? { status: 'loading' } : state;
+}
+
+/**
  * The summary of `route` for `anio` (the latest year with data when `anio` is missing). Changing
  * place or year starts a new read and cancels the one in flight; `attempt` re-runs it («Reintentar»).
  */
@@ -72,6 +89,8 @@ export function useResumen(
 ): ResumenState {
   const url = resumenUrl(route, anio);
   const [state, setState] = useState<ResumenState>({ status: 'idle' });
+  const code =
+    route.view === 'municipality' || route.view === 'department' ? route.code : undefined;
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: `attempt` only forces a new read
   useEffect(() => {
@@ -90,5 +109,5 @@ export function useResumen(
     return () => control.abort();
   }, [url, attempt, fetcher]);
 
-  return state;
+  return vigente(state, url ? code : undefined, anio);
 }

@@ -245,3 +245,8 @@
     display: none;
   }
 }
+
+.resumen,
+.resumenAviso {
+  margin-top: var(--el-space-16);
+}

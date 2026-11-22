@@ -110,6 +110,17 @@ export const anioEnCurso: ResumenMunicipalDatos = {
   contratado: { valor: 9_100_000_000, contratos: 58 },
 };
 
+/** A closed year whose last report stops at September: accumulated, but not the running year. */
+export const anioCerradoParcial: ResumenMunicipalDatos = {
+  ...sanBenito,
+  anio: 2024,
+  gastoPublico: {
+    ...(sanBenito.gastoPublico as NonNullable<ResumenMunicipalDatos['gastoPublico']>),
+    periodo: '2024-09',
+    completo: false,
+  },
+};
+
 /** The source's own inconsistency: paid above owed (1 municipality in 2025). Shown as is. */
 export const pagadoMayorQueObligado: ResumenMunicipalDatos = {
   ...sanBenito,

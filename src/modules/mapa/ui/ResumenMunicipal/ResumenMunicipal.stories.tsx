@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
 import {
+  anioCerradoParcial,
   anioEnCurso,
   anioSinCuipo,
   medellin,
@@ -25,6 +26,7 @@ function Interactivo(
 
 const listo = (datos: ResumenMunicipalDatos) => ({
   status: 'ready' as const,
+  nivel: 'municipio' as const,
   datos,
   anio: datos.anio,
   anios: ANIOS,
@@ -62,7 +64,7 @@ export const TablaAbierta: Story = {
 
 export const Cargando: Story = {
   name: 'Cargando',
-  args: { status: 'loading', datos: undefined, anio: 2024 },
+  args: { status: 'loading', datos: undefined, anio: 2024, nivel: 'municipio' },
 };
 
 export const AnioSinCuipo: Story = {
@@ -73,6 +75,32 @@ export const AnioSinCuipo: Story = {
 export const AnioEnCurso: Story = {
   name: 'Año en curso (2026)',
   args: listo(anioEnCurso),
+};
+
+export const AnioCerradoParcial: Story = {
+  name: 'Año cerrado con datos parciales (hasta sep 2024)',
+  args: listo(anioCerradoParcial),
+};
+
+export const Gobernacion: Story = {
+  name: 'Gobernación (departamento)',
+  args: {
+    ...listo({ ...sanBenito, codigo: '70', nombre: 'Sucre' }),
+    nivel: 'departamento',
+  },
+};
+
+export const GobernacionSinContratos: Story = {
+  name: 'Gobernación: ningún contrato ubicado con certeza',
+  args: {
+    ...listo({
+      ...sanBenito,
+      codigo: '70',
+      nombre: 'Sucre',
+      contratado: { valor: null, contratos: 0 },
+    }),
+    nivel: 'departamento',
+  },
 };
 
 export const GastoMayorQueLoRecibido: Story = {
@@ -136,5 +164,5 @@ export const ContratosSinUbicar: Story = {
 
 export const ErrorDeRed: Story = {
   name: 'Error de red',
-  args: { status: 'error', datos: undefined, anio: 2025, onReintentar: noop },
+  args: { status: 'error', datos: undefined, anio: 2025, nivel: 'municipio', onReintentar: noop },
 };

@@ -1,6 +1,8 @@
 import {
   type MouseEvent,
+  createContext,
   type ReactNode,
+  useContext,
   useEffect,
   useLayoutEffect,
   useRef,
@@ -42,7 +44,10 @@ import {
   PANEL_WIDTH_KEY,
 } from '../MapWithLegend/camera';
 import { MapWithLegend } from '../MapWithLegend/MapWithLegend';
+import { Recibido, ResumenMunicipal } from '../ResumenMunicipal/ResumenMunicipal';
+import { type Nivel, NIVEL } from '../ResumenMunicipal/resumenModel';
 import { SearchResults } from '../SearchResults/SearchResults';
+import type { ResumenState } from '../useResumen';
 import styles from './MapPage.module.css';
 import {
   arrivalState,
@@ -96,6 +101,14 @@ export interface MapPageProps {
   onNavigate: (route: MapRoute, how: NavigationKind) => void;
   /** «Reintentar» cuando los datos no están disponibles. */
   onRetry?: () => void;
+  /** El resumen de gasto del municipio o departamento que se ve (`useResumen`); sin él, la ficha no lo muestra. */
+  resumen?: ResumenState;
+  /** El año que pide la dirección (`?anio=`), tal cual; sin él, el que la API trae por defecto. */
+  anio?: string;
+  /** La persona eligió otro año en el selector del resumen. */
+  onAnioChange?: (anio: number) => void;
+  /** «Intentar de nuevo» cuando el resumen no cargó. */
+  onRetryResumen?: () => void;
   /** Texto con el que empieza el buscador (historias de búsqueda). */
   defaultQuery?: string;
   /**
@@ -153,6 +166,10 @@ export function MapPage({
   route,
   onNavigate,
   onRetry,
+  resumen,
+  anio,
+  onAnioChange,
+  onRetryResumen,
   defaultQuery = '',
   defaultDetent,
   prerendered = false,
@@ -186,6 +203,10 @@ export function MapPage({
   });
   const detent = sheetState.key === routeKey ? sheetState.detent : 'half';
   const setDetent = (next: Detent) => setSheetState({ key: routeKey, detent: next, auto: false });
+  // The years are the same for every place: the selector keeps them while a new year is loading.
+  const [knownYears, setKnownYears] = useState<number[]>([]);
+  if (resumen?.status === 'ready' && resumen.datos.anios !== knownYears)
+    setKnownYears(resumen.datos.anios);
   const map = state.status === 'ready' ? state.map : undefined;
   const crumbs = map ? crumbsFor(map, route) : [];
   const known = map ? isKnownRoute(map, route) : false;
@@ -301,7 +322,18 @@ export function MapPage({
     },
   });
   const text: SheetText = known
-    ? sheetText(map, route, link)
+    ? sheetText(
+        map,
+        route,
+        link,
+        resumen && {
+          state: resumen,
+          anio,
+          anios: knownYears,
+          onAnioChange: onAnioChange ?? (() => {}),
+          onRetry: onRetryResumen ?? (() => {}),
+        },
+      )
     : {
         kicker: KICKER,
         title: 'No encontramos ese lugar',
@@ -405,7 +437,7 @@ export function MapPage({
           onLayoutChange={setSheet}
           title={titleBlock(text.kicker, text.title)}
           header={({ shown, isPanel }) => (
-            <>
+            <Mostrando.Provider value={shown}>
               {text.summary}
               {text.copy || (text.more && !isPanel) ? (
                 <div className={styles.actions}>
@@ -424,7 +456,7 @@ export function MapPage({
                   ) : null}
                 </div>
               ) : null}
-            </>
+            </Mostrando.Provider>
           )}
         >
           <div className={styles.body}>{text.body}</div>
@@ -472,8 +504,80 @@ type Link = (next: MapRoute) => {
 /** «del Archipiélago de San Andrés…», «de Antioquia»: the archipelago's name takes an article. */
 const of = (name: string, code: string) => (code === ARCHIPELAGO ? `del ${name}` : `de ${name}`);
 
+/** What the sheet shows now: the key figure of the summary is for the half-height sheet only. */
+const Mostrando = createContext<'peek' | 'half' | 'full'>('half');
+
+/** In the full sheet the section below says the figure itself: it is not said twice. */
+function EnFichaMedia({ children }: { children: ReactNode }) {
+  return useContext(Mostrando) === 'full' ? null : children;
+}
+
+interface ResumenProps {
+  state: ResumenState;
+  anio?: string;
+  anios: number[];
+  onAnioChange: (anio: number) => void;
+  onRetry: () => void;
+}
+
+/**
+ * The spending summary in the sheet (resumen-municipal spec): the key figure goes in the half-height
+ * header, the whole section in the full body. A link with a year that does not exist says so once.
+ */
+function resumenSheet(
+  nivel: Nivel,
+  lugar: string,
+  r: ResumenProps,
+): { summary: ReactNode; body: ReactNode } {
+  const { state } = r;
+  const datos = state.status === 'ready' ? state.datos : undefined;
+  const asked = Number(r.anio);
+  const anio = datos?.anio ?? (Number.isInteger(asked) && asked > 0 ? asked : undefined);
+  let figure: ReactNode;
+  if (datos) figure = <Recibido datos={datos} nivel={nivel} />;
+  else if (state.status === 'error')
+    // The alert with «Intentar de nuevo» is in the full sheet; here, one line that says so.
+    figure = <p role="status">El gasto de {NIVEL[nivel].entidad} no cargó por ahora.</p>;
+  else figure = <p>Buscando lo que recibió {NIVEL[nivel].entidad}…</p>;
+  return {
+    summary: (
+      <>
+        {state.status === 'ready' && state.anioInvalido ? (
+          <div className={styles.resumenAviso}>
+            <Alert
+              variant="inline"
+              tone="warning"
+              title={`El enlace pedía ${state.anioInvalido}, que no existe; mostramos ${state.datos.anio}.`}
+            />
+          </div>
+        ) : null}
+        <div className={styles.resumen}>
+          <EnFichaMedia>{figure}</EnFichaMedia>
+        </div>
+      </>
+    ),
+    body: (
+      <ResumenMunicipal
+        status={state.status === 'ready' || state.status === 'error' ? state.status : 'loading'}
+        datos={datos}
+        nivel={nivel}
+        nombre={lugar}
+        anio={anio}
+        anios={r.anios}
+        onAnioChange={r.onAnioChange}
+        onReintentar={r.onRetry}
+      />
+    ),
+  };
+}
+
 /** The sheet of a known place: Colombia, a department or a municipality (spec §2 and §6). */
-function sheetText(map: PreparedMap, route: MapRoute, link: Link): SheetText {
+function sheetText(
+  map: PreparedMap,
+  route: MapRoute,
+  link: Link,
+  resumen?: ResumenProps,
+): SheetText {
   const { cut, departments } = map.data;
   const { sentence, caption, cutDate } = period(cut, departments.ventana.desde);
   const shortSource = `Fuentes: SECOP II y SECOP I, DANE. Datos al ${cutDate}.`;
@@ -627,6 +731,13 @@ function sheetText(map: PreparedMap, route: MapRoute, link: Link): SheetText {
     </>
   );
 
+  const gasto =
+    resumen &&
+    resumenSheet(
+      municipality ? 'municipio' : 'departamento',
+      municipality ? municipality.nombre : name,
+      resumen,
+    );
   if (municipality) {
     const value = municipality.contratosUbicados;
     return {
@@ -646,6 +757,7 @@ function sheetText(map: PreparedMap, route: MapRoute, link: Link): SheetText {
             source={placeSource}
           />
           {islands}
+          {gasto?.summary}
         </>
       ),
       // Decision 31: Bogotá has no table (one row would repeat the key figure).
@@ -653,6 +765,7 @@ function sheetText(map: PreparedMap, route: MapRoute, link: Link): SheetText {
       copy: true,
       body: (
         <>
+          {gasto?.body}
           <h2>{bogota ? 'Dónde quedó cada contrato' : name}</h2>
           {counts}
           {bogota ? null : table}
@@ -683,6 +796,7 @@ function sheetText(map: PreparedMap, route: MapRoute, link: Link): SheetText {
             {NO_DATA_LEGEND}
           </p>
         ) : null}
+        {gasto?.summary}
         <p className={styles.note}>{placeSource}</p>
       </>
     ),
@@ -690,6 +804,7 @@ function sheetText(map: PreparedMap, route: MapRoute, link: Link): SheetText {
     copy: false,
     body: (
       <>
+        {gasto?.body}
         <h2>Dónde quedó cada contrato</h2>
         {counts}
         {table}

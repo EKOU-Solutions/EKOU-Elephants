@@ -1,7 +1,9 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { type MapRoute, parseRoute } from '../mapModel';
+import { anioCerradoParcial, sanBenito } from '../ResumenMunicipal/muestra';
 import { sampleMap } from '../sample';
+import type { ResumenState } from '../useResumen';
 import { readFileSync } from 'node:fs';
 import { PANEL_WIDTH } from '../MapWithLegend/camera';
 import { MapPage, type MapPageProps, type MapPageState } from './MapPage';
@@ -210,5 +212,56 @@ describe('MapPage in a generated page (prerendered, ADR 0003)', () => {
     expect(html).not.toContain('staticScreen');
     expect(html).not.toContain('--static-map-min');
     expect(html).toContain('translateY');
+  });
+});
+
+describe('MapPage summary of spending', () => {
+  const medellin: MapRoute = { view: 'municipality', code: '05001' };
+  const withResumen = (route: MapRoute, resumen: ResumenState, anio?: string) =>
+    text(page(route, undefined, { resumen, anio, defaultDetent: 'full' }));
+  const ready: ResumenState = { status: 'ready', datos: sanBenito };
+
+  it('the key figure says «la alcaldía» and the year; a department says «la gobernación»', () => {
+    expect(withResumen(medellin, ready)).toContain('En 2025 la alcaldía recibió $70.684 millones');
+    expect(withResumen({ view: 'department', code: '05' }, ready)).toContain(
+      'En 2025 la gobernación recibió $70.684 millones',
+    );
+    expect(withResumen(medellin, ready)).toContain('Gasto público de San Benito Abad');
+  });
+
+  it('without «recibido» it says «Sin información», never $0', () => {
+    const gasto = sanBenito.gastoPublico as NonNullable<typeof sanBenito.gastoPublico>;
+    const datos = { ...sanBenito, gastoPublico: { ...gasto, recibido: null } };
+    const html = withResumen(medellin, { status: 'ready', datos });
+    expect(html).toContain('la alcaldía recibió Sin información');
+    expect(html).not.toContain('recibió $0');
+  });
+
+  it('a year that does not exist: warns in one line and shows the real one', () => {
+    const invalid: ResumenState = { status: 'ready', datos: sanBenito, anioInvalido: '1999' };
+    expect(withResumen(medellin, invalid, '1999')).toContain(
+      'El enlace pedía 1999, que no existe; mostramos 2025.',
+    );
+    expect(withResumen(medellin, ready)).not.toContain('El enlace pedía');
+  });
+
+  it('a closed year with partial data says until when, without «Año en curso»', () => {
+    const html = withResumen(medellin, { status: 'ready', datos: anioCerradoParcial });
+    expect(html).toContain('Cifras acumuladas hasta sep 2024');
+    expect(html).not.toContain('Año en curso');
+  });
+
+  it('loading says the year; the error offers to try again; the country has no summary', () => {
+    expect(withResumen(medellin, { status: 'loading' }, '2024')).toContain(
+      'Cargando el resumen de 2024',
+    );
+    const error = withResumen(medellin, { status: 'error' });
+    expect(error).toContain('No pudimos cargar el resumen');
+    expect(error).toContain('Intentar de nuevo');
+    expect(withResumen({ view: 'country' }, { status: 'idle' })).not.toContain('Gasto público');
+  });
+
+  it('a generated page (no summary given) shows none', () => {
+    expect(text(page(medellin))).not.toContain('recibió');
   });
 });

@@ -4,6 +4,7 @@ import {
   escalaComun,
   formatDinero,
   formatFecha,
+  formatPeriodo,
   formatPorcentaje,
   motivoSinGasto,
   repartoPorRubro,
@@ -39,6 +40,12 @@ describe('formatPorcentaje', () => {
 describe('formatFecha', () => {
   it('escribe día, mes corto y año', () => {
     expect(formatFecha('2026-06-30')).toBe('30 jun 2026');
+  });
+});
+
+describe('formatPeriodo', () => {
+  it('escribe mes corto y año del trimestre', () => {
+    expect(formatPeriodo('2025-09')).toBe('sep 2025');
   });
 });
 

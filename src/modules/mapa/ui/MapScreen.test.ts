@@ -2,7 +2,8 @@ import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { MapPageState } from './MapPage/MapPage';
-import { initialState, loadMap, MapScreen } from './MapScreen';
+import { initialState, loadMap, MapScreen, placeAddress } from './MapScreen';
+import { parseRoute } from './mapModel';
 import { sampleData, sampleMap } from './sample';
 
 /** A fetch that answers from the real sample (cut 2026-11), or with `status` for the listed URLs. */
@@ -95,7 +96,7 @@ describe('MapScreen first render', () => {
   afterEach(() => vi.unstubAllGlobals());
   const screen = (initial?: MapPageState) => {
     vi.stubGlobal('window', {
-      location: { pathname: '/mapa/05001' },
+      location: { pathname: '/mapa/05001', search: '' },
       history: { replaceState: () => {} },
     });
     return renderToStaticMarkup(createElement(MapScreen, { initial }));
@@ -110,5 +111,19 @@ describe('MapScreen first render', () => {
 
   it('without them (the SPA): the loading state, as always', () => {
     expect(screen()).toContain('Cargando el mapa…');
+  });
+});
+
+describe('placeAddress (the place and its year, each its own part of the address)', () => {
+  it('a municipality or a department keeps the year; the country and an invalid link drop it', () => {
+    expect(placeAddress({ view: 'municipality', code: '70678' }, 2024)).toBe(
+      '/mapa/70678?anio=2024',
+    );
+    expect(placeAddress({ view: 'department', code: '70' }, '2024')).toBe(
+      '/mapa/departamento/70?anio=2024',
+    );
+    expect(placeAddress({ view: 'municipality', code: '70678' }, undefined)).toBe('/mapa/70678');
+    expect(placeAddress({ view: 'country' }, 2024)).toBe('/mapa');
+    expect(placeAddress(parseRoute('/hola'), 2024)).toBe('/mapa');
   });
 });

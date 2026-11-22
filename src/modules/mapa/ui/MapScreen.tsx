@@ -11,6 +11,7 @@ import {
   prepareMap,
   routePath,
 } from './mapModel';
+import { parseAnio, useResumen, withAnio } from './useResumen';
 
 type Fetch = (
   url: string,
@@ -73,6 +74,12 @@ export async function initialState(
   );
 }
 
+/** The address of a place with its year; the country has no summary, so no year. */
+export function placeAddress(route: MapRoute, anio: string | number | undefined): string {
+  const hasSummary = route.view === 'municipality' || route.view === 'department';
+  return withAnio(routePath(route), hasSummary ? anio : undefined);
+}
+
 export interface MapScreenProps {
   /** Data already read (`initialState`): the first load is skipped; «Reintentar» still loads. */
   initial?: MapPageState;
@@ -88,11 +95,20 @@ export function MapScreen({ initial, initialQuery }: MapScreenProps) {
   const [route, setRoute] = useState<MapRoute>(() => {
     // One address per place: «/mapa/departamento/11» or a trailing slash become the canonical link.
     const canonical = canonicalPath(window.location.pathname);
-    if (canonical) window.history.replaceState(null, '', canonical);
+    if (canonical)
+      window.history.replaceState(
+        null,
+        '',
+        placeAddress(parseRoute(canonical), parseAnio(window.location.search)),
+      );
     return parseRoute(window.location.pathname);
   });
   const [state, setState] = useState<MapPageState>(initial ?? { status: 'loading' });
   const [attempt, setAttempt] = useState(0);
+  // The year is its own part of the address (`?anio=`), apart from the place; the country has none.
+  const [anio, setAnio] = useState(() => parseAnio(window.location.search));
+  const [resumenAttempt, setResumenAttempt] = useState(0);
+  const resumen = useResumen(route, anio, resumenAttempt);
 
   // `attempt` re-runs the load on «Reintentar»; with data already read, the first load is skipped.
   useEffect(() => {
@@ -110,14 +126,33 @@ export function MapScreen({ initial, initialQuery }: MapScreenProps) {
   }, [attempt, initial]);
 
   // Each place adds a history entry; the map flies to it (FullscreenMap), and Back flies back.
+  // Another place keeps the year; the country drops it.
   const navigate = (next: MapRoute) => {
-    const path = routePath(next);
-    if (path !== window.location.pathname) window.history.pushState(null, '', path);
+    const path = placeAddress(next, anio);
+    if (path !== window.location.pathname + window.location.search)
+      window.history.pushState(null, '', path);
     setRoute(next);
+    if (next.view !== 'municipality' && next.view !== 'department') setAnio(undefined);
   };
 
+  // Another year is one more history entry: Back returns to the year before.
+  const changeAnio = (next: number) => {
+    window.history.pushState(null, '', placeAddress(route, next));
+    setAnio(String(next));
+  };
+
+  // The link asked for a year that does not exist: the address shows the real one, while the year
+  // used to read stays (so nothing is read again and the warning stays until the person picks one).
   useEffect(() => {
-    const onPop = () => setRoute(parseRoute(window.location.pathname));
+    if (resumen.status === 'ready' && resumen.anioInvalido !== undefined)
+      window.history.replaceState(null, '', withAnio(window.location.pathname, resumen.datos.anio));
+  }, [resumen]);
+
+  useEffect(() => {
+    const onPop = () => {
+      setRoute(parseRoute(window.location.pathname));
+      setAnio(parseAnio(window.location.search));
+    };
     window.addEventListener('popstate', onPop);
     return () => window.removeEventListener('popstate', onPop);
   }, []);
@@ -138,6 +173,10 @@ export function MapScreen({ initial, initialQuery }: MapScreenProps) {
       defaultQuery={initialQuery}
       onNavigate={navigate}
       onRetry={() => setAttempt((n) => n + 1)}
+      resumen={resumen}
+      anio={anio}
+      onAnioChange={changeAnio}
+      onRetryResumen={() => setResumenAttempt((n) => n + 1)}
     />
   );
 }

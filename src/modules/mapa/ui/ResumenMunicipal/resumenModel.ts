@@ -58,6 +58,19 @@ export function formatPorcentaje(p: number): string {
 
 const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
 
+/** Who the summary is about: the noun of its texts. */
+export type Nivel = 'municipio' | 'departamento';
+export const NIVEL: Record<Nivel, { entidad: string; lugar: string }> = {
+  municipio: { entidad: 'la alcaldía', lugar: 'municipio' },
+  departamento: { entidad: 'la gobernación', lugar: 'departamento' },
+};
+
+/** «2025-09» → «sep 2025». */
+export function formatPeriodo(periodo: string): string {
+  const [y, m] = periodo.split('-').map(Number);
+  return `${MESES[(m ?? 1) - 1]} ${y}`;
+}
+
 /** «2026-06-30» → «30 jun 2026». */
 export function formatFecha(iso: string): string {
   const [y, m, d] = iso.split('-').map(Number);

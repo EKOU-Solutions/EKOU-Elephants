@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { loadResumen, parseAnio, resumenUrl, withAnio } from './useResumen';
+import type { ResumenMunicipalDatos } from '../domain/resumen-municipal';
+import { loadResumen, parseAnio, resumenUrl, vigente, withAnio } from './useResumen';
 
 const datos = { corte: '2026-11', codigo: '70678', nombre: 'San Benito Abad', anio: 2025 };
 const json = (body: unknown, status = 200) =>
@@ -66,5 +67,22 @@ describe('loadResumen', () => {
     await expect(
       loadResumen('/x?anio=2025', signal(), async () => json({ error: 'codigo_invalido' }, 400)),
     ).rejects.toThrow('400');
+  });
+});
+
+describe('vigente', () => {
+  const listo = { status: 'ready', datos: datos as unknown as ResumenMunicipalDatos } as const;
+  it('shows the answer of the place and year on screen', () => {
+    expect(vigente(listo, '70678', '2025')).toBe(listo);
+    expect(vigente(listo, '70678', undefined)).toBe(listo);
+  });
+  it('does not show the answer of another place or of another year', () => {
+    expect(vigente(listo, '05001', undefined)).toEqual({ status: 'loading' });
+    expect(vigente(listo, '70678', '2024')).toEqual({ status: 'loading' });
+  });
+  it('keeps the answer to a refused year, and has nothing for the country', () => {
+    const aviso = { ...listo, anioInvalido: '1999' } as const;
+    expect(vigente(aviso, '70678', '1999')).toBe(aviso);
+    expect(vigente(listo, undefined, undefined)).toEqual({ status: 'idle' });
   });
 });
