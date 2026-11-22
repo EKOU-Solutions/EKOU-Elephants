@@ -6,16 +6,24 @@ de publicación del corte (``<data_dir>/publicacion/<corte>/``)::
     corte.json          CorteVigente
     municipios.json     MunicipiosDelCorte
     departamentos.json  DepartamentosDelCorte (con el total nacional)
+    resumen.tar.gz      un JSON por municipio (resumen/<codigo>.json) y por departamento
+                        (resumen-departamento/<codigo>.json), con todos los años
 
-Esos archivos van en el Release ``corte-AAAA-MM`` con el mismo nombre, y el corte mensual los
+Esos archivos van en el Release ``corte-AAAA-MM`` con el mismo nombre (los ~1.150 resúmenes
+van en un solo ``resumen.tar.gz``: un Release admite 1.000 archivos), y el corte mensual los
 despliega en el Worker de datos como ``datos/<corte>/<archivo>``, junto al puntero
 ``datos/latest.json`` (docs/ci-cd.md). La geometría no es parte del corte: es un archivo estático
 de la app (``public/geometria/``, scripts/geometria-mgn.mjs).
 """
 
+import gzip
+import io
 import json
 import re
+import tarfile
+from calendar import monthrange
 from datetime import UTC, date, datetime, timedelta, timezone
+from decimal import Decimal
 from pathlib import Path
 from typing import Any
 
@@ -48,6 +56,20 @@ FUENTES: tuple[dict[str, str], ...] = (
         "nombre": "DIVIPOLA – Municipios",
         "entidad": "DANE",
         "url": "https://www.datos.gov.co/d/gdxc-w37w",
+        "licencia": "CC BY-SA 4.0",
+    },
+    {
+        "id": "4f7r-epif",
+        "nombre": "CUIPO – Ejecución de gastos",
+        "entidad": "Contaduría General de la Nación (CUIPO)",
+        "url": "https://www.datos.gov.co/d/4f7r-epif",
+        "licencia": "CC BY-SA 4.0",
+    },
+    {
+        "id": "9axr-9gnb",
+        "nombre": "CUIPO – Ejecución de ingresos",
+        "entidad": "Contaduría General de la Nación (CUIPO)",
+        "url": "https://www.datos.gov.co/d/9axr-9gnb",
         "licencia": "CC BY-SA 4.0",
     },
     {
@@ -200,6 +222,173 @@ def departamentos_del_corte(conn: duckdb.DuckDBPyConnection, corte: str) -> dict
     }
 
 
+RUBROS = ("funcionamiento", "deuda", "inversion")
+_CARPETAS = {"municipio": "resumen", "departamento": "resumen-departamento"}
+
+# ``(nivel, código)`` → año → bloque del contrato.
+_PorTerritorio = dict[tuple[str, str], dict[int, dict[str, Any]]]
+
+
+def _fuentes_del_resumen(fecha_secop: date, fecha_cuipo: date | None) -> list[dict[str, str]]:
+    """Una fuente por uso, cada una con su fecha de corte (la interfaz toma una por uso)."""
+    por_id = {f["id"]: f for f in FUENTES}
+    fuentes: list[dict[str, str]] = []
+    if fecha_cuipo is not None:
+        gasto = {"fechaCorte": fecha_cuipo.isoformat(), "usadoPara": "gastoPublico"}
+        fuentes.append({**por_id["4f7r-epif"], **gasto})
+    contratos = {"fechaCorte": fecha_secop.isoformat(), "usadoPara": "contratado"}
+    # Los contratos de SECOP I también cuentan: el corte los suma a los de SECOP II.
+    fuentes.append({**por_id["jbjy-vk9h"], "nombre": "SECOP I y II – Contratos", **contratos})
+    return fuentes
+
+
+def _pesos(valor: Decimal | None) -> int:
+    return 0 if valor is None else int(valor.to_integral_value())
+
+
+def _etapas(valores: list[int]) -> dict[str, int]:
+    comprometido, obligado, pagado = valores
+    return {"comprometido": comprometido, "obligado": obligado, "pagado": pagado}
+
+
+def _desglose(filas: dict[str, tuple[Decimal | None, ...]]) -> dict[str, Any]:
+    """Los tres rubros en orden fijo; el que la entidad no reportó va en 0/0/0 dentro del bloque."""
+    rubros = []
+    total = [0, 0, 0]
+    for clave in RUBROS:
+        etapas = [_pesos(v) for v in filas.get(clave, (None, None, None))]
+        total = [a + b for a, b in zip(total, etapas, strict=True)]
+        rubros.append({"clave": clave, "etapas": _etapas(etapas)})
+    return {"rubros": rubros, "total": _etapas(total)}
+
+
+def _gasto_por_territorio(conn: duckdb.DuckDBPyConnection) -> _PorTerritorio:
+    """El ``gastoPublico`` del contrato por territorio y año, desde el gold de CUIPO."""
+    filas = conn.execute(
+        """
+        select nivel, coalesce(cod_mpio, cod_dpto), alcance, anio, periodo, vigencia, rubro,
+               comprometido, obligado, pagado, recibido
+        from resumen_gasto_cuipo
+        """
+    ).fetchall()
+    crudo: dict[tuple[str, str, int], dict[str, Any]] = {}
+    for nivel, codigo, alcance, anio, periodo, vigencia, rubro, c, o, p, recibido in filas:
+        entrada = crudo.setdefault(
+            (nivel, codigo, int(anio)),
+            {"periodo": periodo, "alcance": alcance, "recibido": recibido, "vigencias": {}},
+        )
+        entrada["vigencias"].setdefault(vigencia, {})[rubro] = (c, o, p)
+    resultado: _PorTerritorio = {}
+    for (nivel, codigo, anio), e in crudo.items():
+        vigencias = e["vigencias"]
+        actual = _desglose(vigencias.get(1, {}))
+        corte_gasto: date = e["periodo"]
+        es_isla = nivel == "municipio" and e["alcance"] == "departamento-isla"
+        resultado.setdefault((nivel, codigo), {})[anio] = {
+            "periodo": f"{corte_gasto.year}-{corte_gasto.month:02d}",
+            "alcance": "departamento-isla" if es_isla else "municipio",
+            "completo": corte_gasto.month == 12,
+            "recibido": None if e["recibido"] is None else _pesos(e["recibido"]),
+            "rubros": actual["rubros"],
+            "total": actual["total"],
+            "reservas": _desglose(vigencias[2]) if 2 in vigencias else None,
+            "cuentasPorPagar": _desglose(vigencias[3]) if 3 in vigencias else None,
+        }
+    return resultado
+
+
+def _contratado_por_territorio(conn: duckdb.DuckDBPyConnection) -> _PorTerritorio:
+    consultas = {
+        "municipio": "select cod_mpio, anio, contratos, valor_contratado from resumen_municipal",
+        "departamento": (
+            "select cod_dpto, anio, contratos, valor_contratado from resumen_departamento"
+        ),
+    }
+    resultado: _PorTerritorio = {}
+    for nivel, sql in consultas.items():
+        for codigo, anio, contratos, valor in conn.execute(sql).fetchall():
+            resultado.setdefault((nivel, codigo), {})[int(anio)] = {
+                "valor": None if valor is None else _pesos(valor),
+                "contratos": int(contratos),
+            }
+    return resultado
+
+
+def resumenes_del_corte(
+    conn: duckdb.DuckDBPyConnection, corte: str, fecha_datos: date
+) -> dict[str, dict[str, Any]]:
+    """``ruta dentro del paquete → contenido``: un archivo por municipio y departamento con datos.
+
+    Cada archivo trae todos los años (``porAnio``); la API elige el año con ``?anio=``. Un año sin
+    gasto ni contratos no aparece: «sin información» es la ausencia, nunca un cero.
+    """
+    ventana = conn.execute(
+        "select any_value(ventana_desde), any_value(ventana_hasta), any_value(corte) "
+        "from mapa_niveles_corte"
+    ).fetchone()
+    if ventana is None or ventana[2] != corte:
+        raise ValueError(f"mapa_niveles_corte no es del corte {corte}")
+    anios = list(range(int(ventana[0]), int(ventana[1]) + 1))
+    fila = conn.execute("select max(periodo) from resumen_gasto_cuipo").fetchone()
+    ultimo: date | None = fila[0] if fila else None
+    fecha_cuipo = ultimo and ultimo.replace(day=monthrange(ultimo.year, ultimo.month)[1])
+    fuentes = _fuentes_del_resumen(fecha_datos, fecha_cuipo)
+
+    gasto = _gasto_por_territorio(conn)
+    contratado = _contratado_por_territorio(conn)
+    nombres = {
+        ("municipio", cod): nombre_visible(nombre)
+        for cod, nombre in conn.execute(
+            "select cod_mpio, nom_mpio from mapa_municipios_corte"
+        ).fetchall()
+    } | {
+        ("departamento", cod): nombre_visible(nombre)
+        for cod, nombre in conn.execute(
+            "select distinct cod_dpto, nom_dpto from mapa_municipios_corte"
+        ).fetchall()
+    }
+    archivos: dict[str, dict[str, Any]] = {}
+    for clave in sorted(set(gasto) | set(contratado)):
+        if clave not in nombres:
+            continue
+        nivel, codigo = clave
+        por_anio = {}
+        for anio in anios:
+            g = gasto.get(clave, {}).get(anio)
+            c = contratado.get(clave, {}).get(anio)
+            if g is not None or c is not None:
+                por_anio[str(anio)] = {"gastoPublico": g, "contratado": c}
+        if por_anio:
+            archivos[f"{_CARPETAS[nivel]}/{codigo}.json"] = {
+                "corte": corte,
+                "codigo": codigo,
+                "nombre": nombres[clave],
+                "nivel": nivel,
+                "anios": anios,
+                "porAnio": por_anio,
+                "fuentes": fuentes,
+            }
+    return archivos
+
+
+def escribir_paquete(archivos: dict[str, dict[str, Any]], destino: Path) -> None:
+    """Empaqueta los JSON en un ``.tar.gz`` reproducible: mismo contenido, mismos bytes."""
+    destino.parent.mkdir(parents=True, exist_ok=True)
+    with (
+        destino.open("wb") as salida,
+        gzip.GzipFile(fileobj=salida, mode="wb", mtime=0) as comprimido,
+        tarfile.open(fileobj=comprimido, mode="w") as paquete,
+    ):
+        for ruta in sorted(archivos):
+            datos = json.dumps(archivos[ruta], ensure_ascii=False, separators=(",", ":"))
+            contenido = datos.encode("utf-8")
+            info = tarfile.TarInfo(ruta)
+            info.size = len(contenido)
+            info.mtime = 0
+            info.mode = 0o644
+            paquete.addfile(info, io.BytesIO(contenido))
+
+
 def export_mapa(
     conn: duckdb.DuckDBPyConnection,
     *,
@@ -215,10 +404,16 @@ def export_mapa(
         out_dir / "departamentos.json": departamentos_del_corte(conn, corte),
         out_dir / "corte.json": corte_vigente(corte, fecha_datos, publicado_en),
     }
+    resumenes = resumenes_del_corte(conn, corte, fecha_datos)
     for path, contenido in archivos.items():
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(
             json.dumps(contenido, ensure_ascii=False, separators=(",", ":")), encoding="utf-8"
         )
-    log.info("mapa.export", corte=corte, archivos=[p.as_posix() for p in archivos])
-    return list(archivos)
+    paquete = out_dir / "resumen.tar.gz"
+    escribir_paquete(resumenes, paquete)
+    rutas = [*archivos, paquete]
+    log.info(
+        "mapa.export", corte=corte, archivos=[p.as_posix() for p in rutas], resumenes=len(resumenes)
+    )
+    return rutas
