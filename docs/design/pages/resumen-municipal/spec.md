@@ -75,8 +75,8 @@ Tono directo, español de Colombia, sin jerga:
 
 ## 7. Preguntas abiertas
 
-1. **Componentes:** la barra segmentada y las tres barras usan **Progress bar** (confirmado como núcleo en v1.7.0, tres tonos de tinta). El selector de año usa **Select** del catálogo; ¿preferimos botones de año (más rápido en celular, pero componente nuevo)? Recomendado: Select.
-2. **Presupuesto definitivo** (`d9mu-h6ar`): ¿lo añadimos al contrato para explicar «gastó más de lo que recibió», o basta el aviso del punto 5? Recomendado: aviso por ahora.
-3. **Copiar enlace** con el año: ¿se reutiliza el botón de la ficha del mapa? Recomendado: sí.
-4. **Licencia** de los datos de CUIPO: confirmarla antes del pie.
-5. **Departamento:** ¿misma sección, mismo lugar de la ficha? Recomendado: sí.
+1. **Componentes:** la barra segmentada y las tres barras usan **Progress bar** (confirmado como núcleo en v1.7.0, tres tonos de tinta). El selector de año usa **Select** del catálogo. Abierto: ¿botones de año (más rápido en celular, pero componente nuevo)? Se dejó Select.
+2. **Presupuesto definitivo** (`d9mu-h6ar`): abierto. Por ahora basta el aviso del punto 5.
+3. ~~**Copiar enlace** con el año~~ — **resuelto 2026-11-22:** se reutiliza el botón de la ficha; el enlace lleva `?anio=`.
+4. ~~**Licencia** de los datos de CUIPO~~ — **resuelto 2026-11-22:** CC BY-SA 4.0 (metadatos de `4f7r-epif` y `9axr-9gnb`).
+5. ~~**Departamento**~~ — **resuelto 2026-11-22:** misma sección y mismo lugar de la ficha, con «gobernación».

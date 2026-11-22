@@ -18,7 +18,7 @@ Two different concepts, never added together and never in one bar:
 ```
 datos.gov.co CUIPO 9axr-9gnb + 4f7r-epif, SECOP II jbjy-vk9h → bronze/silver (dbt + DuckDB)
   → gold `resumen_municipal` → `ekou-pipeline export-mapa`
-  → R2 `datos/<corte>/mapa/resumen/<codigo>.json` (one file per municipality, all years, ~2.5 KB)
+  → `resumen.tar.gz` (Release); the cut extracts it to the Worker de datos: `datos/<corte>/resumen/<codigo>.json` (one file per municipality, all years, ~2.5 KB)
   → Worker de datos → Hono API (`?anio=` picks the year) → page
 ```
 
@@ -107,16 +107,16 @@ Same response (`ResumenMunicipal`), same rules and cache. Differences:
 - `contratado` comes from gold `mapa_niveles_corte` (every contract of the window in that department, not the sum of its municipalities).
 - `alcance` is always `'municipio'` here (the `departamento-isla` value only exists for `88001`).
 - A department with no CUIPO report (1 of 32 gobernaciones) → `gastoPublico: null` → «Sin información».
-- R2 key: `datos/<corte>/mapa/resumen-departamento/<codigo>.json` (33 files).
+- Worker de datos key: `datos/<corte>/resumen-departamento/<codigo>.json` (33 files). `contratado` is per signing year (`anio_firma`), computed with the same filters as `mapa_niveles_corte`.
 
 ### Errors
 
 | Case | Response |
 | --- | --- |
-| Unknown or malformed `codigo` | 404 `{ "error": "municipio_no_encontrado" }` |
+| Unknown or malformed `codigo` | 404 `{ "error": "municipio_no_encontrado" }` (`departamento_no_encontrado` on the department endpoint) |
 | `anio` not in `anios` | 400 `{ "error": "anio_invalido", "anios": [...] }` |
 | Municipality with no data at all in the year | 200 with `gastoPublico: null` and `contratado: null` (never an error, never zeros) |
-| File missing in R2 for a valid code | 200 with both `null` (municipality has no data in any year) |
+| File missing in the Worker de datos for a valid code | 200 with both `null` (municipality has no data in any year) |
 
 ## Field origin and phase
 
@@ -174,7 +174,7 @@ CUIPO query run 2026-11-22 against `4f7r-epif` / `9axr-9gnb`, `periodo = 2025120
   },
   "contratado": { "valor": null, "contratos": 0 },
   "fuentes": [
-    { "id": "4f7r-epif", "nombre": "CUIPO – Ejecución de gastos", "entidad": "Contaduría General de la Nación", "url": "https://www.datos.gov.co/d/4f7r-epif", "licencia": "pendiente", "fechaCorte": "2026-06-30", "usadoPara": "gastoPublico" }
+    { "id": "4f7r-epif", "nombre": "CUIPO – Ejecución de gastos", "entidad": "Contaduría General de la Nación", "url": "https://www.datos.gov.co/d/4f7r-epif", "licencia": "CC BY-SA 4.0", "fechaCorte": "2026-06-30", "usadoPara": "gastoPublico" }
   ]
 }
 ```
@@ -185,9 +185,11 @@ Check: 4,422,148,516 + 5,688,142,543 + 60,909,800,534 = 71,020,091,593 = `total.
 
 1. ~~Reservas y cuentas por pagar~~ — **resuelto 2026-11-22:** se muestran todas (vigencias 1, 2 y 3), cada una por separado.
 2. ~~Bogotá y San Andrés~~ — **resuelto 2026-11-22:** Bogotá `11001` usa su CUIPO municipal (A440). El CUIPO del departamento de San Andrés (A441, `88`) se muestra en `88001`; Providencia `88564` queda `null` → «Sin información». Como la cifra de `88001` es del departamento y no solo del municipio, el contrato añade `gastoPublico.alcance`.
-3. **Seven municipalities** with an unmappable CUIPO code (Coveñas and six with prefix `9232`): manual table in the pipeline (not an API question; lands as "Sin información" until the table exists).
-4. **License** of CUIPO datasets: confirm from the dataset metadata before the footer shows it.
-5. **`contratado` for 2021–2026** window and its cut date come from the map's corte; confirm `valor` excludes `contratos_valor_excluido` as the map does.
+3. ~~Seven municipalities~~ — **resuelto:** seed `cuipo_entidades_manual` (Coveñas and six with prefix `9232`).
+4. ~~License~~ — **resuelto 2026-11-22:** CC BY-SA 4.0 (metadata of `4f7r-epif` and `9axr-9gnb`).
+5. **`contratado`** uses the map's window and cut date. It includes SECOP I (source «SECOP I y II – Contratos»). Confirm that `valor` excludes `contratos_valor_excluido` as the map does.
+6. **Partial year:** a closed year without December uses the last reported quarter with `completo: false`; the page says «Acumulado hasta sep 2024».
+7. **Providencia `88564`** turned out to have its own CUIPO data (not `null` as item 2 assumed).
 
 ## Contract location and review
 

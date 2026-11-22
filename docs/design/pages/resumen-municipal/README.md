@@ -15,8 +15,8 @@ Estado: **Aprobada** 2026-11-22 (Aprobación 1 de la spec y Aprobación 2 de la 
 
 - Contrato de la interfaz: `ResumenMunicipal` en [contract.md](contract.md). Los datos de muestra reales están en `muestra.ts`.
 - «Recibido» es el campo `obligado`; «sin información» nunca es cero; 2021 y 2022 no tienen CUIPO.
-- Pendiente de la integración: sustantivo por nivel (alcaldía/gobernación), aviso de año inválido en la URL, prueba del foco.
+- Integrado en la ficha del mapa (commit 704dee1): sustantivo por nivel, `?anio=` con aviso de año inválido, año parcial. Pendiente: prueba automática del foco (falta jsdom o happy-dom; hoy lo cubre la historia `FocusAfterYear`, que `design:check` no ejecuta).
 
 ## Preguntas abiertas
 
-Select o botones de año, presupuesto definitivo, licencia de CUIPO, copiar enlace con año, departamento en la misma sección. Ver [spec.md](spec.md) §7.
+Select o botones de año y presupuesto definitivo. Licencia (CC BY-SA 4.0), copiar enlace con año y departamento en la misma sección quedaron resueltos. Ver [spec.md](spec.md) §7.
