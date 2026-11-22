@@ -1,0 +1,110 @@
+import { formatNumber } from '../../../../components/ui/format';
+
+/** Shapes of the municipal summary, as in docs/design/pages/resumen-municipal/contract.md (cut 2026-11). */
+export type RubroClave = 'funcionamiento' | 'deuda' | 'inversion';
+export type Etapas = { comprometido: number; obligado: number; pagado: number };
+export type Rubro = { clave: RubroClave; etapas: Etapas };
+export type Desglose = { rubros: Rubro[]; total: Etapas };
+export type GastoPublico = {
+  periodo: string;
+  alcance: 'municipio' | 'departamento-isla';
+  completo: boolean;
+  recibido: number | null;
+  rubros: Rubro[];
+  total: Etapas;
+  reservas: Desglose | null;
+  cuentasPorPagar: Desglose | null;
+};
+export type Contratado = { valor: number | null; contratos: number };
+export type FuenteResumen = {
+  id: string;
+  nombre: string;
+  entidad: string;
+  url: string;
+  licencia: string;
+  fechaCorte: string;
+  usadoPara: 'gastoPublico' | 'contratado';
+};
+export type ResumenMunicipalDatos = {
+  corte: string;
+  codigo: string;
+  nombre: string;
+  anio: number;
+  anios: number[];
+  gastoPublico: GastoPublico | null;
+  contratado: Contratado | null;
+  fuentes: FuenteResumen[];
+};
+
+/** First year the Contaduría (CUIPO) publishes this detail. */
+export const PRIMER_ANIO_CUIPO = 2023;
+
+export const NOMBRE_RUBRO: Record<RubroClave, { nombre: string; glosa: string }> = {
+  inversion: { nombre: 'Inversión', glosa: 'obras, salud, educación y otros servicios' },
+  deuda: { nombre: 'Pago de deuda', glosa: 'lo que se debe a bancos y otros prestamistas' },
+  funcionamiento: { nombre: 'Funcionamiento', glosa: 'nómina y gastos de oficina' },
+};
+
+/** Fixed order of the bar and the legend (usually largest-first, but not sorted); the contract delivers funcionamiento, deuda, inversión. */
+export const ORDEN_BARRA: RubroClave[] = ['inversion', 'deuda', 'funcionamiento'];
+export const TONO_RUBRO = { inversion: 'ink', deuda: 'mid', funcionamiento: 'light' } as const;
+export const LLAVE_RUBRO = {
+  inversion: 'ink',
+  deuda: 'inkMid',
+  funcionamiento: 'inkLight',
+} as const;
+
+/** Whole pesos → «$70.684 millones», «$11,0 billones»; never rounds a small amount to «0 millones». */
+export function formatDinero(cop: number): string {
+  if (cop >= 1e12) {
+    const n = (cop / 1e12).toLocaleString('es-CO', {
+      minimumFractionDigits: 1,
+      maximumFractionDigits: 1,
+    });
+    return `$${n} ${n === '1,0' ? 'billón' : 'billones'}`;
+  }
+  if (cop >= 1e6) return `$${formatNumber(cop / 1e6, 0)} millones`;
+  return `$${formatNumber(cop, 0)}`;
+}
+
+/** «86 %»; a rubro with money but under 1 % reads «<1 %», never «0 %». */
+export function formatPorcentaje(p: number): string {
+  return p > 0 && p < 1 ? '<1 %' : `${formatNumber(p, 0)} %`;
+}
+
+const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+
+/** «2026-06-30» → «30 jun 2026». */
+export function formatFecha(iso: string): string {
+  const [y, m, d] = iso.split('-').map(Number);
+  return `${d} ${MESES[(m ?? 1) - 1]} ${y}`;
+}
+
+/** Spending can exceed what was collected (the budget also uses earlier balances and credit): a note, not an error. */
+export function superaLoRecibido(g: GastoPublico): boolean {
+  return g.recibido !== null && g.total.comprometido > g.recibido;
+}
+
+/** Share of the total of each rubro, in the bar order. A rubro at 0 stays in the list at «0 %». */
+export function repartoPorRubro(
+  rubros: Rubro[],
+): { clave: RubroClave; valor: number; porcentaje: number }[] {
+  const total = rubros.reduce((s, r) => s + r.etapas.comprometido, 0);
+  return ORDEN_BARRA.map((clave) => {
+    const valor = rubros.find((r) => r.clave === clave)?.etapas.comprometido ?? 0;
+    return { clave, valor, porcentaje: total > 0 ? (100 * valor) / total : 0 };
+  });
+}
+
+/** The common scale of the three progress bars: the largest value, so none is clipped. */
+export function escalaComun(e: Etapas): number {
+  return Math.max(e.comprometido, e.obligado, e.pagado);
+}
+
+export type SinInformacion = 'anio-sin-cuipo' | 'sin-gasto' | null;
+
+/** Why the balance is missing, if it is. A year before CUIPO is explained apart from «did not report». */
+export function motivoSinGasto(d: ResumenMunicipalDatos): SinInformacion {
+  if (d.gastoPublico) return null;
+  return d.anio < PRIMER_ANIO_CUIPO ? 'anio-sin-cuipo' : 'sin-gasto';
+}
