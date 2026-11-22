@@ -33,6 +33,70 @@ export const Segments: Story = {
     label: 'De 150 contratos: 36 con señales, 84 sin señales, 30 sin analizar',
   },
 };
+export const Split: Story = {
+  name: 'Reparto en tres partes (rubros)',
+  args: {
+    size: 'thick',
+    separated: true,
+    max: undefined,
+    segments: [
+      { value: 60910, tone: 'ink' },
+      { value: 5688, tone: 'mid' },
+      { value: 4422, tone: 'light' },
+    ],
+    label: 'Comprometido por rubro: inversión 86 %, deuda 8 %, funcionamiento 6 %',
+  },
+};
+export const SplitWithLegend: Story = {
+  name: 'Reparto con leyenda',
+  render: () => (
+    <div style={{ display: 'grid', gap: 8, maxWidth: 360 }}>
+      <ProgressBar
+        size="thick"
+        separated
+        segments={[
+          { value: 60910, tone: 'ink' },
+          { value: 5688, tone: 'mid' },
+          { value: 4422, tone: 'light' },
+        ]}
+        label="Comprometido por rubro: inversión 86 %, deuda 8 %, funcionamiento 6 %"
+      />
+      <p style={{ display: 'flex', flexWrap: 'wrap', gap: '4px 14px', margin: 0, fontSize: 14 }}>
+        <span>
+          <LegendKey kind="ink" /> Inversión · 86 %
+        </span>
+        <span>
+          <LegendKey kind="inkMid" /> Pago de deuda · 8 %
+        </span>
+        <span>
+          <LegendKey kind="inkLight" /> Funcionamiento · 6 %
+        </span>
+      </p>
+    </div>
+  ),
+};
+export const CommonScale: Story = {
+  name: 'Escala común (pagado mayor que por pagar)',
+  render: () => (
+    <div style={{ display: 'grid', gap: 8, maxWidth: 360 }}>
+      <ProgressBar
+        max={71020}
+        segments={[{ value: 71020, tone: 'ink' }]}
+        label="Comprometido: 71.020 millones"
+      />
+      <ProgressBar
+        max={71020}
+        segments={[{ value: 60000, tone: 'ink' }]}
+        label="Por pagar: 60.000 millones"
+      />
+      <ProgressBar
+        max={71020}
+        segments={[{ value: 62801, tone: 'ink' }]}
+        label="Pagado: 62.801 millones, más que por pagar; se muestra tal cual"
+      />
+    </div>
+  ),
+};
 export const Empty: Story = {
   name: 'Vacía',
   args: { segments: [{ value: 0, tone: 'ink' }], max: 0 },

@@ -34,6 +34,18 @@
   background: var(--el-color-line);
 }
 
+.ink {
+  background: var(--el-color-text);
+}
+
+.inkMid {
+  background: var(--el-color-ink-mid);
+}
+
+.inkLight {
+  background: var(--el-color-ink-light);
+}
+
 .unknown {
   background: repeating-linear-gradient(
     135deg,

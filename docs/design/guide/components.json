@@ -1,5 +1,5 @@
 {
-  "version": "1.6.1",
+  "version": "1.7.0",
   "about": "Catálogo legible por máquina de los componentes de Elephants. 'core' = revisado y aceptado (Ronda 05); 'candidate' = se puede usar, pero lo debe confirmar la primera página que lo necesite (ver .claude/skills/elephant-designer/references/build-page.md). Los componentes con 'component' ya son React en src/components/ui/ y traen sus propios estilos ('styles', CSS Modules); los demás son especificación con clases de components.css. build.py comprueba que los archivos, las clases y los tokens existan.",
   "components": [
     {
@@ -345,7 +345,8 @@
         "unknown (sin datos, con trama)",
         "flagged (con señales, en tinta)",
         "clean (sin señales)",
-        "neutral (territorio con contratos ubicados; mapa neutro, v1.3.0)"
+        "neutral (territorio con contratos ubicados; mapa neutro, v1.3.0)",
+        "ink, inkMid, inkLight (reparto en tres partes, v1.7.0)"
       ],
       "tokens": [
         "--el-color-risk-low",
@@ -355,7 +356,9 @@
         "--el-color-unknown-surface",
         "--el-color-text",
         "--el-color-line",
-        "--el-mark-radius"
+        "--el-mark-radius",
+        "--el-color-ink-mid",
+        "--el-color-ink-light"
       ],
       "a11y": [
         "Decorativo (aria-hidden); el texto que lo acompaña lleva el significado"
@@ -461,12 +464,13 @@
     {
       "name": "Progress bar",
       "label_es": "Barra de progreso",
-      "status": "candidate",
+      "status": "core",
       "reference": "examples.html#mapa",
-      "use": "Barra horizontal que se llena por tramos (valor y color de cada uno). Sirve para el desglose en barras (un tramo) y para la cobertura (con señales / sin señales / sin analizar). No trae leyenda: los números van en texto al lado.",
+      "use": "Barra horizontal que se llena por tramos (valor y tono de cada uno). Sirve para el desglose en barras (un tramo), la cobertura (con señales / sin señales / sin analizar) y el reparto de un total en tres partes (por ejemplo, el gasto por rubro). No trae leyenda: los números van en texto al lado.",
       "variants": [
         "un tramo, delgada (desglose)",
         "varios tramos, gruesa (cobertura)",
+        "tres tonos de tinta separados (reparto en rubros, v1.7.0)",
         "vacía"
       ],
       "tokens": [
@@ -474,11 +478,15 @@
         "--el-color-line",
         "--el-color-unknown",
         "--el-color-unknown-surface",
-        "--el-mark-radius"
+        "--el-mark-radius",
+        "--el-color-surface",
+        "--el-color-ink-mid",
+        "--el-color-ink-light"
       ],
       "a11y": [
         "Con label: role=img y aria-label con el reparto completo",
-        "Sin label: decorativa (aria-hidden); los números deben estar en texto al lado"
+        "Sin label: decorativa (aria-hidden); los números deben estar en texto al lado",
+        "Los tonos de tinta no se distinguen solos: cada tramo lleva su nombre y su cifra en texto al lado"
       ],
       "component": "src/components/ui/ProgressBar/ProgressBar.tsx",
       "styles": "src/components/ui/ProgressBar/ProgressBar.module.css"

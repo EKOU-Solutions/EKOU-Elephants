@@ -19,6 +19,18 @@
   background: var(--el-color-text);
 }
 
+.mid {
+  background: var(--el-color-ink-mid);
+}
+
+.light {
+  background: var(--el-color-ink-light);
+}
+
+.separated {
+  gap: 2px;
+}
+
 .line {
   background: var(--el-color-line);
 }
