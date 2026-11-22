@@ -26,6 +26,114 @@ FILAS: dict[str, list[dict[str, str]]] = {
         },
         {"cod_dpto": "81", "dpto": "ARAUCA", "cod_mpio": "81001", "nom_mpio": "ARAUCA"},
     ],
+    "cuipo_gastos": [
+        {
+            "codigo_entidad": "210005001",
+            "ambito_codigo": "A439",
+            "periodo": "20251231",
+            "cuenta": "2.1",
+            "cod_vigencia_del_gasto": "1",
+            "compromisos": "100.0",
+            "obligaciones": "80.0",
+            "pagos": "70.0",
+        },
+        {
+            "codigo_entidad": "210005001",
+            "ambito_codigo": "A439",
+            "periodo": "20251231",
+            "cuenta": "2.3",
+            "cod_vigencia_del_gasto": "1",
+            "compromisos": "300.0",
+            "obligaciones": "250.0",
+            "pagos": "200.0",
+        },
+        {
+            "codigo_entidad": "210005001",
+            "ambito_codigo": "A439",
+            "periodo": "20250930",
+            "cuenta": "2.1",
+            "cod_vigencia_del_gasto": "1",
+            "compromisos": "50.0",
+            "obligaciones": "40.0",
+            "pagos": "35.0",
+        },
+        {
+            "codigo_entidad": "210005001",
+            "ambito_codigo": "A439",
+            "periodo": "20250930",
+            "cuenta": "2.3",
+            "cod_vigencia_del_gasto": "1",
+            "compromisos": "150.0",
+            "obligaciones": "125.0",
+            "pagos": "100.0",
+        },
+        {
+            "codigo_entidad": "210005000",
+            "ambito_codigo": "A438",
+            "periodo": "20251231",
+            "cuenta": "2.1",
+            "cod_vigencia_del_gasto": "1",
+            "compromisos": "100.0",
+            "obligaciones": "80.0",
+            "pagos": "70.0",
+        },
+        {
+            "codigo_entidad": "210005000",
+            "ambito_codigo": "A438",
+            "periodo": "20251231",
+            "cuenta": "2.3",
+            "cod_vigencia_del_gasto": "1",
+            "compromisos": "300.0",
+            "obligaciones": "250.0",
+            "pagos": "200.0",
+        },
+        {
+            "codigo_entidad": "210005000",
+            "ambito_codigo": "A438",
+            "periodo": "20250930",
+            "cuenta": "2.1",
+            "cod_vigencia_del_gasto": "1",
+            "compromisos": "50.0",
+            "obligaciones": "40.0",
+            "pagos": "35.0",
+        },
+        {
+            "codigo_entidad": "210005000",
+            "ambito_codigo": "A438",
+            "periodo": "20250930",
+            "cuenta": "2.3",
+            "cod_vigencia_del_gasto": "1",
+            "compromisos": "150.0",
+            "obligaciones": "125.0",
+            "pagos": "100.0",
+        },
+        {
+            "codigo_entidad": "210005001",
+            "ambito_codigo": "A439",
+            "periodo": "20251231",
+            "cuenta": "2.3",
+            "cod_vigencia_del_gasto": "2",
+            "compromisos": "40",
+            "obligaciones": "30",
+            "pagos": "30",
+        },
+    ],
+    "cuipo_ingresos": [
+        {
+            "codigo_entidad": "210005001",
+            "ambito_codigo": "A439",
+            "periodo": "20251231",
+            "cuenta": "1",
+            "total_recaudo": "900",
+        },
+        {
+            "codigo_entidad": "210005001",
+            "ambito_codigo": "A439",
+            "periodo": "20250930",
+            "cuenta": "1",
+            "total_recaudo": "450",
+        },
+    ],
     "secop_contratos": [
         {  # obra de la gobernación que se ejecuta en otro municipio
             "id_contrato": "CO1.PCCNTR.1",
@@ -217,6 +325,18 @@ def _divipola_de_los_alias() -> list[dict[str, str]]:
 def _write_bronze(data_dir: Path) -> None:
     existentes = {r["cod_mpio"] for r in FILAS["divipola"]}
     extra = {r["cod_mpio"]: r for r in _divipola_de_los_alias() if r["cod_mpio"] not in existentes}
+    with (TRANSFORM_DIR / "seeds" / "cuipo_entidades_manual.csv").open(encoding="utf-8") as f:
+        for fila in csv.DictReader(f):
+            if fila["cod_mpio"] not in existentes:
+                extra.setdefault(
+                    fila["cod_mpio"],
+                    {
+                        "cod_dpto": fila["cod_mpio"][:2],
+                        "dpto": f"D{fila['cod_mpio'][:2]}",
+                        "cod_mpio": fila["cod_mpio"],
+                        "nom_mpio": fila["nombre"],
+                    },
+                )
     divipola = [
         {"tipo_municipio": "Municipio", **r} for r in FILAS["divipola"] + list(extra.values())
     ]
@@ -242,6 +362,9 @@ def warehouse(tmp_path_factory: pytest.TempPathFactory) -> duckdb.DuckDBPyConnec
     _write_bronze(data_dir)
     with pytest.MonkeyPatch.context() as mp:
         mp.setenv("EKOU_PSEUDONYM_KEY", "k" * 32)
+        # La fixture es diminuta: la cobertura nacional de CUIPO no aplica.
+        mp.setenv("EKOU_CUIPO_MIN_MUNICIPIOS", "1")
+        mp.setenv("EKOU_CUIPO_MIN_DEPARTAMENTOS", "1")
         assert run_transform(Settings(data_dir=data_dir), corte=CORTE)
     # dbt-duckdb deja su conexión abierta en este proceso: se abre con la misma configuración.
     return duckdb.connect(str(data_dir / "ekou.duckdb"))

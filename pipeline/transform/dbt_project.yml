@@ -32,3 +32,5 @@ seeds:
       +column_types: {cod_dpto: varchar}
     departamentos_iso:
       +column_types: {cod_dpto: varchar}
+    cuipo_entidades_manual:
+      +column_types: {codigo_entidad: varchar, cod_mpio: varchar}

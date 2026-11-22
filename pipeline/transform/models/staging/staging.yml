@@ -17,3 +17,20 @@ models:
     columns:
       - name: uid
         data_tests: [unique, not_null]
+  - name: stg_cuipo_gastos
+    description: Gasto CUIPO sumado por entidad, periodo, cuenta y vigencia (1, 2 y 3).
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [codigo_entidad, periodo, cuenta, vigencia]
+    columns:
+      - name: periodo
+        description: Antes de 2023 CUIPO no publica; ningún periodo puede ser anterior.
+        data_tests:
+          - not_null
+  - name: stg_cuipo_ingresos
+    description: Recaudo CUIPO (cuenta 1) por entidad y periodo.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [codigo_entidad, periodo]
