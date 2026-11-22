@@ -42,3 +42,6 @@ storybook-static/
 # Páginas de cada lugar (npm run paginas): caché de Astro
 pages-site/.astro/
 pages-site/node_modules/
+
+# Caché local del catálogo de datos.gov.co
+.cache/
