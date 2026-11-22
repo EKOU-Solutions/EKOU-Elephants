@@ -134,3 +134,12 @@ La suma de `2.1 + 2.2 + 2.3` da exactamente el total `2`, y el recaudo total (`1
 **Vigencia (`cod_vigencia_del_gasto`):** `1` es la vigencia actual; `2` son reservas presupuestales y `3` cuentas por pagar, que vienen de años anteriores y aparecen como filas aparte (en la tabla de arriba, solo la vigencia `1`). El balance del año usa `1`; las otras se pueden mostrar como «arrastre de años anteriores».
 
 **No hay que esperar que ingresos y gastos cuadren:** el gasto comprometido puede pasar de lo recaudado porque se financia también con recursos del balance (ahorros de años anteriores), crédito y transferencias aún no recaudadas.
+
+### Balance por año (vigencia)
+
+El presupuesto se ejecuta por año, así que el resumen debe poder verse año por año.
+
+- **CUIPO solo empieza en 2023.** Ingresos (`9axr-9gnb`) y gastos (`4f7r-epif`) tienen periodos desde 2023-03; **2021 y 2022 no existen**. SECOP sí cubre 2021 en adelante. Para 2021 y 2022 el valor contratado se muestra y el balance de gasto es «sin información», nunca cero.
+- **Un balance por año = un solo periodo.** Los valores son acumulados del año. Año cerrado: se usa el **último periodo del año** (`AAAA1201`). Año en curso: el último disponible (hoy `20260601`). No se suman periodos.
+- **Hay huecos.** En la muestra de San Benito Abad, 2023 trae los periodos 03, 06 y 12 (falta 09). Si el periodo de diciembre falta para una entidad, el año queda «sin información» y no se rellena con el trimestre anterior sin decirlo.
+- **Qué año es cada dato:** en SECOP es el año de firma del contrato (`anio_firma`); en CUIPO es el año del periodo y la vigencia `1` (actual). Se parecen pero no son lo mismo: un contrato firmado en un año puede gastarse en el siguiente. La interfaz debe mostrar ambos bajo el mismo selector de año sin sugerir que se compensan.
