@@ -88,6 +88,23 @@ Alcance: entidades del ámbito «Municipios» (`ambito_codigo = 'A439'`), vigenc
 
 - **Cruce CHIP → DANE:** `codigo_entidad` es de 9 dígitos y **los últimos 5 son el DIVIPOLA del municipio** (`217870678` → `70678`). Comprobado contra DIVIPOLA (`gdxc-w37w`): los nombres coinciden en 1.091 de 1.093 (los 2 restantes solo difieren en el artículo: «Alto del Rosario», «Paz del Río»). Ningún municipio tiene dos entidades.
 - **Excepciones de código** (7 municipios, ya presentes en CUIPO): Coveñas (`89970221`, 8 dígitos) y seis creados recientemente con prefijo `9232` (Guachené, San José de Uré, Norosí, Tuchín, Barrancominas, Nuevo Belén de Bajirá). No salen por la regla de los últimos 5 dígitos: hace falta una tabla manual de 7 filas.
-- **Sin dato en CUIPO (29 de 1.122):** 18 áreas no municipalizadas y la isla (no tienen alcaldía), Bogotá D.C. (probablemente en otro ámbito, por revisar), San Juan de Riosecio y Lloró (sin reporte en estos periodos) y los 7 anteriores si no se corrige el cruce. Con la tabla manual quedarían **3 municipios** realmente sin información (Bogotá a revisar, Riosecio y Lloró).
+- **Sin dato en CUIPO (29 de 1.122):** 18 áreas no municipalizadas y la isla (no tienen alcaldía), Bogotá D.C. (está en otro ámbito, ver abajo), San Juan de Riosecio y Lloró (sin reporte en estos periodos) y los 7 anteriores si no se corrige el cruce. Con la tabla manual y Bogotá desde su propio ámbito, quedan **2 municipios** realmente sin información (San Juan de Riosecio y Lloró).
 - **Consulta pesada:** agrupar todas las entidades de un periodo tarda cerca de 4 minutos; lanza una consulta por periodo, con un tiempo de espera de 10 minutos.
 - **Sin duplicar:** los valores son acumulados del año hasta el periodo, así que se toma **un solo periodo** (el último completo), nunca la suma de varios.
+
+### CUIPO por ámbito: departamentos, Bogotá, San Andrés y descentralizados (2026-06)
+
+CUIPO separa a quien reporta en `ambito_codigo`. Para armar el gasto de un territorio hay que mirar varios:
+
+| Ámbito | Entidades | Cruce con DIVIPOLA | Cobertura |
+|---|---|---|---|
+| `A439` Municipios | 1.100 | últimos 5 dígitos = código del municipio | 1.093 de 1.122, más 7 con tabla manual |
+| `A438` Departamentos | 31 | los dígitos −5 a −3 son el departamento (`112323000` → `23`) | 31 de 32 gobernaciones |
+| `A441` San Andrés | 1 | `118888000` → `88` | completa el departamento 88 |
+| `A440` Bogotá | 1 | `210111001` → municipio `11001` y departamento `11` | Bogotá D.C. completa |
+| `A442` Establecimientos públicos territoriales | 481 | **sin regla**: códigos `9232…` que no llevan el municipio | no cruzable por código |
+
+- **Departamentos:** con `A438` + `A441` + Bogotá se cubren los 33 códigos de departamento de DIVIPOLA, ninguno falta. Las gobernaciones suman entre $0,5 y $17,8 billones en obligaciones (Antioquia la mayor, Vaupés la menor).
+- **Gasto de un departamento ≠ suma de sus alcaldías:** la gobernación es una entidad aparte. Mostrar «gasto de la gobernación» y «gasto de las alcaldías del departamento» como cifras distintas; no sumarlas sin explicarlo.
+- **Descentralizados (`A442`):** institutos de cultura y deporte, empresas de vivienda, asociaciones de municipios. No se pueden asignar a un municipio con la regla de los dígitos; necesitarían un cruce por nombre o NIT. Por ahora el gasto que mostramos es **solo el de la administración central** de cada alcaldía o gobernación, y así debe decirlo la interfaz.
+- **Mismas reglas que en municipios:** un solo periodo (acumulado del año), vigencia actual y sin dato = «sin información».
