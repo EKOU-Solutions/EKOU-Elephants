@@ -12,18 +12,16 @@
 // Opción común: --referencia <ruta> (por defecto pipeline/worker-datos/corte-vigente.json).
 // `armar` requiere `gh` autenticado (GH_TOKEN en Actions).
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { punteroLatest, validarCorte } from './datos.mjs';
+import { descargarCorte, punteroLatest, validarCorte } from './datos.mjs';
 
 const RAIZ_REPO = fileURLToPath(new URL('..', import.meta.url));
 export const REFERENCE = 'pipeline/worker-datos/corte-vigente.json';
 export const PUBLICATION = 'pipeline/worker-datos/publicacion';
 // El vigente y el anterior: una petición que leyó el latest.json previo encuentra aún sus archivos.
 export const PUBLISHED_CUTS = 2;
-// Diagnóstico de la extracción: está en el Release, pero el Worker de datos no lo publica.
-const NO_PUBLICABLES = ['reporte-extraccion.json'];
 // Los que lee la API del mapa (`ekou-pipeline export-mapa`).
 const DEL_MAPA = ['corte.json', 'departamentos.json', 'municipios.json'];
 
@@ -75,8 +73,9 @@ const ejecutar = (comando, args, opciones = {}) =>
   execFileSync(comando, args, { stdio: 'inherit', ...opciones });
 
 /**
- * Arma la carpeta del Worker de datos desde los Releases: `datos/<corte>/*.json` de cada corte de la
- * referencia y `datos/latest.json` del vigente. Borra la carpeta antes (también sus páginas).
+ * Arma la carpeta del Worker de datos desde los Releases: los JSON de cada corte de la referencia en
+ * `datos/<corte>/` (con los resúmenes extraídos en `resumen/` y `resumen-departamento/`) y
+ * `datos/latest.json` del vigente. Borra la carpeta antes (también sus páginas).
  */
 export function assemblePublication({ referencia, carpeta }, run = ejecutar) {
   const ref = validateReference(referencia);
@@ -84,9 +83,7 @@ export function assemblePublication({ referencia, carpeta }, run = ejecutar) {
   rmSync(raiz, { recursive: true, force: true });
   for (const corte of ref.cortes) {
     const destino = join(raiz, 'datos', corte);
-    mkdirSync(destino, { recursive: true });
-    run('gh', ['release', 'download', `corte-${corte}`, '--dir', destino, '--pattern', '*.json']);
-    for (const archivo of NO_PUBLICABLES) rmSync(join(destino, archivo), { force: true });
+    descargarCorte(corte, destino, run);
   }
   const vigente = join(raiz, 'datos', ref.corte);
   // Sin los JSON del mapa (`export-mapa`), la API y las páginas no tendrían de dónde leer.
