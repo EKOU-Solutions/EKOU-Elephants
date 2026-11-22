@@ -4,6 +4,7 @@ import {
   almacenDesdeWorker,
   claves,
 } from '../modules/mapa/adapters/worker-datos/mapa.worker-datos';
+import type { ResumenMunicipalDatos } from '../modules/mapa/domain/resumen-municipal';
 import { crearApp } from './app';
 import type { Queryable } from './db';
 
@@ -214,6 +215,181 @@ describe('GET /api/mapa/municipios/:codigo', () => {
       expect(leidas).toHaveLength(0);
     },
   );
+});
+
+const etapas = (c: number, o: number, p: number) => ({ comprometido: c, obligado: o, pagado: p });
+const rubrosDe = (i: number) => [
+  { clave: 'funcionamiento', etapas: etapas(10 * i, 9 * i, 8 * i) },
+  { clave: 'deuda', etapas: etapas(0, 0, 0) },
+  { clave: 'inversion', etapas: etapas(100 * i, 90 * i, 80 * i) },
+];
+const gasto = (periodo: string, completo: boolean) => ({
+  periodo,
+  alcance: 'municipio',
+  completo,
+  recibido: 5000,
+  rubros: rubrosDe(1),
+  total: etapas(110, 99, 88),
+  reservas: null,
+  cuentasPorPagar: null,
+});
+const fuentesResumen = [
+  {
+    id: '4f7r-epif',
+    nombre: 'CUIPO – Ejecución de gastos',
+    entidad: 'Contaduría General de la Nación',
+    url: 'https://www.datos.gov.co/d/4f7r-epif',
+    licencia: 'CC BY-SA 4.0',
+    fechaCorte: '2026-09-30',
+    usadoPara: 'gastoPublico',
+  },
+];
+const resumenMedellin = {
+  corte: '2026-11',
+  codigo: '05001',
+  nombre: 'Medellín',
+  nivel: 'municipio',
+  anios: [2021, 2022, 2023, 2024, 2025, 2026],
+  porAnio: {
+    '2023': { gastoPublico: gasto('2023-12', true), contratado: { valor: 900, contratos: 3 } },
+    '2024': { gastoPublico: gasto('2024-12', true), contratado: null },
+    '2025': { gastoPublico: gasto('2025-09', false), contratado: { valor: null, contratos: 2 } },
+    '2022': { gastoPublico: null, contratado: { valor: 700, contratos: 1 } },
+  },
+  fuentes: fuentesResumen,
+};
+const resumenArauca = { ...resumenMedellin, codigo: '81', nombre: 'Arauca', nivel: 'departamento' };
+
+function conResumenes() {
+  return app({
+    ...publicado(),
+    [claves.resumenMunicipio('2026-11', '05001')]: JSON.stringify(resumenMedellin),
+    [claves.resumenDepartamento('2026-11', '81')]: JSON.stringify(resumenArauca),
+  });
+}
+
+describe('GET /api/mapa/municipios/:codigo/resumen', () => {
+  it('sin anio devuelve el último año con gasto público', async () => {
+    const res = await conResumenes().app.request('/api/mapa/municipios/05001/resumen');
+    expect(res.status).toBe(200);
+    const cuerpo = (await res.json()) as ResumenMunicipalDatos;
+    expect(cuerpo).toMatchObject({
+      corte: '2026-11',
+      codigo: '05001',
+      nombre: 'Medellín',
+      anio: 2025,
+    });
+    expect(cuerpo.anios).toEqual([2021, 2022, 2023, 2024, 2025, 2026]);
+    expect(cuerpo.gastoPublico?.periodo).toBe('2025-09');
+    expect(cuerpo.gastoPublico?.completo).toBe(false);
+    expect(cuerpo.fuentes).toEqual(fuentesResumen);
+    expect(res.headers.get('cache-control')).toBe(
+      'public, max-age=300, stale-while-revalidate=86400',
+    );
+  });
+
+  it('con anio devuelve ese año; contratado ausente es null y valor sin confiar es null', async () => {
+    const a = conResumenes().app;
+    const dosMilVeinticuatro = (await (
+      await a.request('/api/mapa/municipios/05001/resumen?anio=2024')
+    ).json()) as ResumenMunicipalDatos;
+    expect(dosMilVeinticuatro.anio).toBe(2024);
+    expect(dosMilVeinticuatro.contratado).toBeNull();
+    const dosMilVeinticinco = (await (
+      await a.request('/api/mapa/municipios/05001/resumen?anio=2025')
+    ).json()) as ResumenMunicipalDatos;
+    expect(dosMilVeinticinco.contratado).toEqual({ valor: null, contratos: 2 });
+  });
+
+  it('2022 no tiene CUIPO: gastoPublico null y contratado presente', async () => {
+    const cuerpo = (await (
+      await conResumenes().app.request('/api/mapa/municipios/05001/resumen?anio=2022')
+    ).json()) as ResumenMunicipalDatos;
+    expect(cuerpo.gastoPublico).toBeNull();
+    expect(cuerpo.contratado).toEqual({ valor: 700, contratos: 1 });
+  });
+
+  it('un año sin datos responde 200 con ambos null, nunca ceros', async () => {
+    const cuerpo = (await (
+      await conResumenes().app.request('/api/mapa/municipios/05001/resumen?anio=2021')
+    ).json()) as ResumenMunicipalDatos;
+    expect(cuerpo.gastoPublico).toBeNull();
+    expect(cuerpo.contratado).toBeNull();
+  });
+
+  it('sin archivo del municipio responde 200 con ambos null y el último año de la ventana', async () => {
+    const res = await app().app.request('/api/mapa/municipios/94886/resumen');
+    expect(res.status).toBe(200);
+    expect(await res.json()).toMatchObject({
+      codigo: '94886',
+      anio: 2026,
+      gastoPublico: null,
+      contratado: null,
+      fuentes: [],
+    });
+  });
+
+  it.each(['1999', '2027', 'abc', '20x5', ''])(
+    'anio=%s responde 400 con los años válidos',
+    async (anio) => {
+      const res = await conResumenes().app.request(
+        `/api/mapa/municipios/05001/resumen?anio=${anio}`,
+      );
+      expect(res.status).toBe(400);
+      expect(await res.json()).toEqual({
+        error: 'anio_invalido',
+        anios: [2021, 2022, 2023, 2024, 2025, 2026],
+      });
+    },
+  );
+
+  it.each(['99999', 'abc', '5001'])('código %s responde 404', async (codigo) => {
+    const res = await conResumenes().app.request(`/api/mapa/municipios/${codigo}/resumen`);
+    expect(res.status).toBe(404);
+    expect(await res.json()).toEqual({ error: 'municipio_no_encontrado' });
+  });
+
+  it('un archivo que no cumple el contrato responde 503', async () => {
+    const roto = {
+      ...resumenMedellin,
+      porAnio: { '2025': { gastoPublico: { periodo: '2025-12' }, contratado: null } },
+    };
+    const a = app({
+      ...publicado(),
+      [claves.resumenMunicipio('2026-11', '05001')]: JSON.stringify(roto),
+    }).app;
+    expect((await a.request('/api/mapa/municipios/05001/resumen')).status).toBe(503);
+  });
+
+  it('un archivo de otro municipio responde 503', async () => {
+    const a = app({
+      ...publicado(),
+      [claves.resumenMunicipio('2026-11', '05001')]: JSON.stringify({
+        ...resumenMedellin,
+        codigo: '94886',
+      }),
+    }).app;
+    expect((await a.request('/api/mapa/municipios/05001/resumen')).status).toBe(503);
+  });
+});
+
+describe('GET /api/mapa/departamentos/:codigo/resumen', () => {
+  it('devuelve el resumen del departamento', async () => {
+    const res = await conResumenes().app.request('/api/mapa/departamentos/81/resumen?anio=2024');
+    expect(res.status).toBe(200);
+    expect(await res.json()).toMatchObject({ codigo: '81', nombre: 'Arauca', anio: 2024 });
+  });
+
+  it('un departamento desconocido responde 404', async () => {
+    const res = await conResumenes().app.request('/api/mapa/departamentos/99/resumen');
+    expect(res.status).toBe(404);
+    expect(await res.json()).toEqual({ error: 'departamento_no_encontrado' });
+  });
+
+  it('anio inválido responde 400', async () => {
+    const res = await conResumenes().app.request('/api/mapa/departamentos/81/resumen?anio=1999');
+    expect(res.status).toBe(400);
+  });
 });
 
 describe('almacenDesdeWorker', () => {

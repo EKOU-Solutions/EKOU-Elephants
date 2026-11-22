@@ -1,11 +1,13 @@
 import { z } from 'zod';
 import type { ConsultarMapa } from '../../application/ports/consultar-mapa';
+import type { ConsultarResumen } from '../../application/ports/consultar-resumen';
 import {
   CorteNoDisponible,
   type CorteVigente,
   type DepartamentosDelCorte,
   type MunicipiosDelCorte,
 } from '../../domain/mapa';
+import type { ResumenDelTerritorio } from '../../domain/resumen-municipal';
 
 /** Read files by key, so tests can use an in-memory fake instead of the data Worker. */
 export interface AlmacenObjetos {
@@ -37,6 +39,10 @@ export const claves = {
   corte: (corte: string) => `${PREFIJO}/${corte}/corte.json`,
   municipios: (corte: string) => `${PREFIJO}/${corte}/municipios.json`,
   departamentos: (corte: string) => `${PREFIJO}/${corte}/departamentos.json`,
+  // Extracted from resumen.tar.gz by the monthly cut (scripts/datos.mjs).
+  resumenMunicipio: (corte: string, codigo: string) => `${PREFIJO}/${corte}/resumen/${codigo}.json`,
+  resumenDepartamento: (corte: string, codigo: string) =>
+    `${PREFIJO}/${corte}/resumen-departamento/${codigo}.json`,
 };
 
 const corteId = z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/);
@@ -123,8 +129,59 @@ const esquemaDepartamentos = z
   })
   .strict();
 
-export function mapaDesdeDatos(almacen: AlmacenObjetos): ConsultarMapa {
-  async function leerJson<T>(clave: string, esquema: z.ZodType<T>): Promise<T | null> {
+// Summary files (contract.md). Money is whole COP and can be negative (reversals); a block that was
+// not reported is null, never zeros. The three rubros always come in this order.
+const pesos = z.number().int();
+const etapas = z.object({ comprometido: pesos, obligado: pesos, pagado: pesos }).strict();
+const rubro = <C extends string>(clave: C) =>
+  z.object({ clave: z.literal(clave), etapas }).strict();
+const rubros = z.tuple([rubro('funcionamiento'), rubro('deuda'), rubro('inversion')]);
+const desglose = z.object({ rubros, total: etapas }).strict();
+const gastoPublico = z
+  .object({
+    periodo: corteId,
+    alcance: z.enum(['municipio', 'departamento-isla']),
+    completo: z.boolean(),
+    recibido: pesos.nullable(),
+    rubros,
+    total: etapas,
+    reservas: desglose.nullable(),
+    cuentasPorPagar: desglose.nullable(),
+  })
+  .strict();
+const contratado = z.object({ valor: pesos.nullable(), contratos: conteo }).strict();
+
+const esquemaResumen = z
+  .object({
+    corte: corteId,
+    codigo: z.string().regex(/^(\d{2}|\d{5})$/),
+    nombre: z.string().min(1),
+    nivel: z.enum(['municipio', 'departamento']),
+    anios: z.array(z.number().int()),
+    porAnio: z.record(
+      z.string().regex(/^\d{4}$/),
+      z
+        .object({ gastoPublico: gastoPublico.nullable(), contratado: contratado.nullable() })
+        .strict(),
+    ),
+    fuentes: z.array(
+      z
+        .object({
+          id: z.string().min(1),
+          nombre: z.string().min(1),
+          entidad: z.string().min(1),
+          url: z.url(),
+          licencia: z.string().min(1),
+          fechaCorte: z.iso.date(),
+          usadoPara: z.enum(['gastoPublico', 'contratado']),
+        })
+        .strict(),
+    ),
+  })
+  .strict();
+
+function lector(almacen: AlmacenObjetos) {
+  return async function leerJson<T>(clave: string, esquema: z.ZodType<T>): Promise<T | null> {
     const objeto = await almacen.get(clave);
     if (!objeto) return null;
     let crudo: unknown;
@@ -136,7 +193,33 @@ export function mapaDesdeDatos(almacen: AlmacenObjetos): ConsultarMapa {
     const resultado = esquema.safeParse(crudo);
     if (!resultado.success) throw new CorteNoDisponible(`${clave} no cumple el contrato`);
     return resultado.data;
+  };
+}
+
+/** A territory without a file has no data in any year: the port answers null. */
+export function resumenDesdeDatos(almacen: AlmacenObjetos): ConsultarResumen {
+  const leerJson = lector(almacen);
+  async function leer(
+    clave: string,
+    corte: string,
+    codigo: string,
+    nivel: ResumenDelTerritorio['nivel'],
+  ): Promise<ResumenDelTerritorio | null> {
+    const datos = await leerJson(clave, esquemaResumen);
+    if (datos && (datos.corte !== corte || datos.codigo !== codigo || datos.nivel !== nivel))
+      throw new CorteNoDisponible(`${clave} es de otro corte o territorio`);
+    return datos;
   }
+  return {
+    resumenMunicipio: (corte, codigo) =>
+      leer(claves.resumenMunicipio(corte, codigo), corte, codigo, 'municipio'),
+    resumenDepartamento: (corte, codigo) =>
+      leer(claves.resumenDepartamento(corte, codigo), corte, codigo, 'departamento'),
+  };
+}
+
+export function mapaDesdeDatos(almacen: AlmacenObjetos): ConsultarMapa {
+  const leerJson = lector(almacen);
 
   return {
     async corteVigente(): Promise<CorteVigente | null> {

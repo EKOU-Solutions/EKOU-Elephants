@@ -1,40 +1,24 @@
 import { formatNumber } from '../../../../components/ui/format';
 
-/** Shapes of the municipal summary, as in docs/design/pages/resumen-municipal/contract.md (cut 2026-11). */
-export type RubroClave = 'funcionamiento' | 'deuda' | 'inversion';
-export type Etapas = { comprometido: number; obligado: number; pagado: number };
-export type Rubro = { clave: RubroClave; etapas: Etapas };
-export type Desglose = { rubros: Rubro[]; total: Etapas };
-export type GastoPublico = {
-  periodo: string;
-  alcance: 'municipio' | 'departamento-isla';
-  completo: boolean;
-  recibido: number | null;
-  rubros: Rubro[];
-  total: Etapas;
-  reservas: Desglose | null;
-  cuentasPorPagar: Desglose | null;
-};
-export type Contratado = { valor: number | null; contratos: number };
-export type FuenteResumen = {
-  id: string;
-  nombre: string;
-  entidad: string;
-  url: string;
-  licencia: string;
-  fechaCorte: string;
-  usadoPara: 'gastoPublico' | 'contratado';
-};
-export type ResumenMunicipalDatos = {
-  corte: string;
-  codigo: string;
-  nombre: string;
-  anio: number;
-  anios: number[];
-  gastoPublico: GastoPublico | null;
-  contratado: Contratado | null;
-  fuentes: FuenteResumen[];
-};
+// Shapes live in the domain (the API contract); the screen imports them from here.
+import type {
+  Etapas,
+  GastoPublico,
+  ResumenMunicipalDatos,
+  Rubro,
+  RubroClave,
+} from '../../domain/resumen-municipal';
+
+export type {
+  Contratado,
+  Desglose,
+  Etapas,
+  FuenteResumen,
+  GastoPublico,
+  ResumenMunicipalDatos,
+  Rubro,
+  RubroClave,
+} from '../../domain/resumen-municipal';
 
 /** First year the Contaduría (CUIPO) publishes this detail. */
 export const PRIMER_ANIO_CUIPO = 2023;
