@@ -8,7 +8,8 @@ select
     cod_mpio,
     anio_firma as anio,
     contratos,
-    valor_contratado,
+    -- Sin valores confiables que sumen más de cero = sin información: null, nunca 0.
+    case when valor_contratado > 0 then valor_contratado end as valor_contratado,
     corte
 from {{ ref('mapa_municipios') }}
 where anio_firma between {{ anio_corte }} - {{ var('anios_ventana', 5) }} and {{ anio_corte }}

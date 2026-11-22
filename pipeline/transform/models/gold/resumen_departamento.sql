@@ -11,7 +11,8 @@ select
     end as cod_dpto,
     anio_firma as anio,
     count(*) as contratos,
-    sum(valor_actual) filter (where valor_confiable) as valor_contratado,
+    -- Sin valores confiables que sumen más de cero = sin información: null, nunca 0.
+    nullif(greatest(sum(valor_actual) filter (where valor_confiable), 0), 0) as valor_contratado,
     '{{ var("corte") }}' as corte
 from {{ ref('contratos') }}
 where estado_ejecucion not in ('antes_de_firma', 'cancelado')
