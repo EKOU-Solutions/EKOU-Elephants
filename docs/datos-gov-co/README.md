@@ -74,3 +74,20 @@ node scripts/catalogo-datos-gov-co.mjs --cache          # reusa la última desca
 ```
 
 El script `scripts/catalogo-datos-gov-co.mjs` lee la API pública de descubrimiento de Socrata (`api.us.socrata.com/api/catalog/v1`), solo datasets de `www.datos.gov.co`, y reescribe `indice.md`, `catalogo.tsv` y `categorias/`. **No edites esos archivos a mano**: se sobrescriben. Lo que se escriba a mano va en este README.
+
+## Hallazgos medidos
+
+### CUIPO – Ejecución de Gastos (`4f7r-epif`), medido el 2026-11-22
+
+Alcance: entidades del ámbito «Municipios» (`ambito_codigo = 'A439'`), vigencia actual (`cod_vigencia_del_gasto = '1'`).
+
+| Periodo | Entidades | Municipios DIVIPOLA cruzados | De 1.122 |
+|---|---|---|---|
+| 2026-06 | 1.100 | 1.093 (con pagos > 0) | 97,4 % |
+| 2025-12 | 1.102 | 1.095 | 97,6 % |
+
+- **Cruce CHIP → DANE:** `codigo_entidad` es de 9 dígitos y **los últimos 5 son el DIVIPOLA del municipio** (`217870678` → `70678`). Comprobado contra DIVIPOLA (`gdxc-w37w`): los nombres coinciden en 1.091 de 1.093 (los 2 restantes solo difieren en el artículo: «Alto del Rosario», «Paz del Río»). Ningún municipio tiene dos entidades.
+- **Excepciones de código** (7 municipios, ya presentes en CUIPO): Coveñas (`89970221`, 8 dígitos) y seis creados recientemente con prefijo `9232` (Guachené, San José de Uré, Norosí, Tuchín, Barrancominas, Nuevo Belén de Bajirá). No salen por la regla de los últimos 5 dígitos: hace falta una tabla manual de 7 filas.
+- **Sin dato en CUIPO (29 de 1.122):** 18 áreas no municipalizadas y la isla (no tienen alcaldía), Bogotá D.C. (probablemente en otro ámbito, por revisar), San Juan de Riosecio y Lloró (sin reporte en estos periodos) y los 7 anteriores si no se corrige el cruce. Con la tabla manual quedarían **3 municipios** realmente sin información (Bogotá a revisar, Riosecio y Lloró).
+- **Consulta pesada:** agrupar todas las entidades de un periodo tarda cerca de 4 minutos; lanza una consulta por periodo, con un tiempo de espera de 10 minutos.
+- **Sin duplicar:** los valores son acumulados del año hasta el periodo, así que se toma **un solo periodo** (el último completo), nunca la suma de varios.
