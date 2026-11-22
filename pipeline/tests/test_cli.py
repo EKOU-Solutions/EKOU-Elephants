@@ -43,7 +43,9 @@ def test_catalog_partitions_and_privacy() -> None:
 
     forbidden = ("cuenta", "banco", "representante", "represen", "domicilio", "supervisor")
     for spec in CATALOG.values():
-        assert not [c for c in spec.columns if any(f in c for f in forbidden)], spec.key
+        # `cuenta` de CUIPO es el código contable del presupuesto (2.1, 2.3…), no bancaria.
+        columns = [c for c in spec.columns if not (spec.key.startswith("cuipo_") and c == "cuenta")]
+        assert not [c for c in columns if any(f in c for f in forbidden)], spec.key
         assert len(spec.schema_fingerprint) == 16
     assert len(CATALOG["secop_ubicaciones"].explicit_partitions) == 9
 

@@ -252,3 +252,43 @@ def test_explicit_partitions_must_cover_the_dataset(client: SocrataClient, tmp_p
     total["value"] = "4"  # una fila que ninguna partición cubre
     with pytest.raises(SocrataError, match="cubren 3 filas de 4"):
         extract_dataset(client, spec, data_dir=tmp_path / "otra", corte="2026-11", max_workers=1)
+
+
+@respx.mock
+def test_period_partitions_apply_min_period_and_row_filter(
+    client: SocrataClient, tmp_path: Path
+) -> None:
+    spec = DatasetSpec(
+        key="trimestral",
+        socrata_id="abcd-1234",
+        columns=("periodo", "cuenta"),
+        period_partition_column="periodo",
+        min_period="20230101",
+        row_filter="cuenta = '1'",
+    )
+    wheres: list[str] = []
+
+    def api(request: httpx.Request) -> httpx.Response:
+        params = request.url.params
+        wheres.append(params.get("$where", ""))
+        if "$group" in params:
+            return httpx.Response(
+                200,
+                json=[{"periodo": "20230301", "filas": "2"}, {"periodo": "20230601", "filas": "1"}],
+            )
+        return httpx.Response(200, json=[{":id": "row-1", "periodo": "20230301", "cuenta": "1"}])
+
+    respx.get(RESOURCE).mock(side_effect=api)
+    report = extract_dataset(client, spec, data_dir=tmp_path, corte="2026-11", max_workers=1)
+
+    assert {p.name: p.expected_rows for p in report.partitions} == {"20230301": 2, "20230601": 1}
+    # La planificación pide solo desde el periodo mínimo y solo las filas del filtro.
+    assert "(periodo >= '20230101') AND (cuenta = '1')" in wheres[0]
+    # Cada página lleva su periodo y el filtro.
+    assert any("periodo = '20230301'" in w and "cuenta = '1'" in w for w in wheres[1:])
+
+
+def test_row_filter_changes_the_schema_fingerprint() -> None:
+    plain = DatasetSpec(key="a", socrata_id="abcd-1234", columns=("x",))
+    filtered = DatasetSpec(key="a", socrata_id="abcd-1234", columns=("x",), row_filter="x = '1'")
+    assert plain.schema_fingerprint != filtered.schema_fingerprint

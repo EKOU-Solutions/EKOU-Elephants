@@ -87,16 +87,54 @@ def plan_partitions(client: SocrataClient, spec: DatasetSpec, corte: str) -> lis
     """Divide el dataset en particiones independientes, con el conteo esperado de cada una."""
     if spec.explicit_partitions:
         return _plan_explicit(client, spec)
+    if spec.period_partition_column is not None:
+        return _plan_by_period(client, spec, spec.period_partition_column)
     if spec.year_partition_column is None:
-        return [Partition(SINGLE_PARTITION, None, None)]
+        return [Partition(SINGLE_PARTITION, spec.row_filter, None)]
     return _plan_by_year(client, spec, spec.year_partition_column, corte)
+
+
+def _and(*conditions: str | None) -> str | None:
+    """Une condiciones SoQL con AND, ignorando las vacías."""
+    present = [c for c in conditions if c]
+    if not present:
+        return None
+    return present[0] if len(present) == 1 else " AND ".join(f"({c})" for c in present)
 
 
 def _count(client: SocrataClient, spec: DatasetSpec, where: str | None = None) -> int:
     params = {"$select": "count(*) AS filas"}
-    if where:
-        params["$where"] = where
+    if condition := _and(where, spec.row_filter):
+        params["$where"] = condition
     return int(client.query(spec.socrata_id, params)[0]["filas"])
+
+
+def _plan_by_period(client: SocrataClient, spec: DatasetSpec, column: str) -> list[Partition]:
+    """Una partición por cada valor de ``column`` (``AAAAMMDD``) desde ``spec.min_period``.
+
+    Los valores de CUIPO son acumulados del año hasta ese periodo: se extraen todos y la
+    capa silver elige uno, nunca los suma."""
+    since = f"{column} >= '{spec.min_period}'" if spec.min_period else None
+    params = {
+        "$select": f"{column} AS periodo, count(*) AS filas",
+        "$group": column,
+        "$order": column,
+    }
+    if condition := _and(since, spec.row_filter):
+        params["$where"] = condition
+    partitions = []
+    for row in client.query(spec.socrata_id, params):
+        periodo = row.get("periodo")
+        if periodo is None:
+            continue
+        partitions.append(
+            Partition(
+                str(periodo),
+                _and(f"{column} = '{periodo}'", spec.row_filter),
+                int(row["filas"]),
+            )
+        )
+    return partitions
 
 
 def _plan_explicit(client: SocrataClient, spec: DatasetSpec) -> list[Partition]:
@@ -109,7 +147,7 @@ def _plan_explicit(client: SocrataClient, spec: DatasetSpec) -> list[Partition]:
             "revisar las condiciones de partición del catálogo"
         )
     return [
-        Partition(name, where, expected)
+        Partition(name, _and(where, spec.row_filter), expected)
         for (name, where), expected in zip(spec.explicit_partitions, counts, strict=True)
     ]
 
@@ -117,14 +155,14 @@ def _plan_explicit(client: SocrataClient, spec: DatasetSpec) -> list[Partition]:
 def _plan_by_year(
     client: SocrataClient, spec: DatasetSpec, column: str, corte: str
 ) -> list[Partition]:
-    counts = client.query(
-        spec.socrata_id,
-        {
-            "$select": f"date_extract_y({column}) AS anio, count(*) AS filas",
-            "$group": "anio",
-            "$order": "anio",
-        },
-    )
+    params = {
+        "$select": f"date_extract_y({column}) AS anio, count(*) AS filas",
+        "$group": "anio",
+        "$order": "anio",
+    }
+    if spec.row_filter:
+        params["$where"] = spec.row_filter
+    counts = client.query(spec.socrata_id, params)
     min_year = spec.min_year
     max_year = int(corte[:4]) + 1
     partitions = []
@@ -132,18 +170,26 @@ def _plan_by_year(
     for row in counts:
         expected = int(row["filas"])
         if row.get("anio") is None:
-            partitions.append(Partition(NO_DATE_PARTITION, f"{column} IS NULL", expected))
+            partitions.append(
+                Partition(NO_DATE_PARTITION, _and(f"{column} IS NULL", spec.row_filter), expected)
+            )
             continue
         year = int(row["anio"])
         if min_year is not None and not min_year <= year <= max_year:
             out_of_range += expected
             continue
-        partitions.append(Partition(str(year), _year_range(column, year, year + 1), expected))
+        partitions.append(
+            Partition(
+                str(year), _and(_year_range(column, year, year + 1), spec.row_filter), expected
+            )
+        )
     if out_of_range:
         where = (
             f"{column} < '{min_year}-01-01T00:00:00' OR {column} >= '{max_year + 1}-01-01T00:00:00'"
         )
-        partitions.append(Partition(OUT_OF_RANGE_PARTITION, where, out_of_range))
+        partitions.append(
+            Partition(OUT_OF_RANGE_PARTITION, _and(where, spec.row_filter), out_of_range)
+        )
     return partitions
 
 
