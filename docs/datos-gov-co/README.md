@@ -108,3 +108,29 @@ CUIPO separa a quien reporta en `ambito_codigo`. Para armar el gasto de un terri
 - **Gasto de un departamento ≠ suma de sus alcaldías:** la gobernación es una entidad aparte. Mostrar «gasto de la gobernación» y «gasto de las alcaldías del departamento» como cifras distintas; no sumarlas sin explicarlo.
 - **Descentralizados (`A442`):** institutos de cultura y deporte, empresas de vivienda, asociaciones de municipios. No se pueden asignar a un municipio con la regla de los dígitos; necesitarían un cruce por nombre o NIT. Por ahora el gasto que mostramos es **solo el de la administración central** de cada alcaldía o gobernación, y así debe decirlo la interfaz.
 - **Mismas reglas que en municipios:** un solo periodo (acumulado del año), vigencia actual y sin dato = «sin información».
+
+### Balance de una alcaldía con CUIPO: cómo sumar sin duplicar
+
+Para mostrar «cuánto recibió y en qué lo gastó» se usan dos datasets del mismo informe:
+
+| Pregunta | Dataset | Columna | Cuentas a tomar |
+|---|---|---|---|
+| ¿Cuánto recibió? | Ejecución de Ingresos `9axr-9gnb` | `total_recaudo` | `1` (total), con `1.1` ingresos corrientes y `1.2` recursos de capital |
+| ¿En qué gastó? | Ejecución de Gastos `4f7r-epif` | `compromisos`, `obligaciones`, `pagos` | `2.1` funcionamiento, `2.2` deuda, `2.3` inversión (y `2` como total) |
+
+**Las cuentas son jerárquicas y cada nivel ya incluye a sus hijos.** `2.3` es la suma de `2.3.1` y `2.3.2`, y estas de sus subcuentas. **Si se suman todas las filas de una entidad, se cuenta lo mismo seis o siete veces.** Esto nos pasó: la primera cifra de San Benito Abad que se dio en la conversación ($186.000 M de compromisos) sumaba todos los niveles y estaba inflada unas 6 veces. Regla: filtrar siempre por un solo nivel, por ejemplo `cuenta in ('2.1','2.2','2.3')`.
+
+Comprobación con San Benito Abad, 2026-06 (millones de COP):
+
+| | Compromisos | Obligaciones | Pagos |
+|---|---|---|---|
+| Funcionamiento `2.1` | 3.034 | 2.600 | 2.549 |
+| Deuda `2.2` | 681 | 681 | 681 |
+| Inversión `2.3` | 26.948 | 24.199 | 15.838 |
+| **Total `2`** | **30.663** | **27.479** | **19.068** |
+
+La suma de `2.1 + 2.2 + 2.3` da exactamente el total `2`, y el recaudo total (`1`) fue de **29.536**.
+
+**Vigencia (`cod_vigencia_del_gasto`):** `1` es la vigencia actual; `2` son reservas presupuestales y `3` cuentas por pagar, que vienen de años anteriores y aparecen como filas aparte (en la tabla de arriba, solo la vigencia `1`). El balance del año usa `1`; las otras se pueden mostrar como «arrastre de años anteriores».
+
+**No hay que esperar que ingresos y gastos cuadren:** el gasto comprometido puede pasar de lo recaudado porque se financia también con recursos del balance (ahorros de años anteriores), crédito y transferencias aún no recaudadas.
