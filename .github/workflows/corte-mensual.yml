@@ -54,7 +54,7 @@ jobs:
       # Runner estándar: 4 CPU, 16 GB de RAM. Lo que no cabe en memoria va a disco temporal.
       EKOU_DUCKDB_MEMORY: 10GB
       EKOU_DUCKDB_TEMP: 20GiB
-      FUENTES: secop_contratos secop_procesos secop_ubicaciones secop_i divipola
+      FUENTES: secop_contratos secop_procesos secop_ubicaciones secop_i divipola cuipo_gastos cuipo_ingresos
       GH_TOKEN: ${{ github.token }}
     steps:
       - name: corte a procesar
