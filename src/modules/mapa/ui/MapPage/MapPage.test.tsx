@@ -247,7 +247,7 @@ describe('MapPage summary of spending', () => {
 
   it('a closed year with partial data says until when, without «Año en curso»', () => {
     const html = withResumen(medellin, { status: 'ready', datos: anioCerradoParcial });
-    expect(html).toContain('Cifras acumuladas hasta sep 2024');
+    expect(html).toContain('hasta sep 2024');
     expect(html).not.toContain('Año en curso');
   });
 

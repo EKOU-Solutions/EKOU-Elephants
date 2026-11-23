@@ -174,7 +174,8 @@ export function Recibido({ datos, nivel }: { datos: ResumenMunicipalDatos; nivel
       </p>
       {cuipo ? (
         <p className={`${styles.pequeno} ${styles.suave}`}>
-          CUIPO, corte {formatFecha(cuipo.fechaCorte)}
+          Gasto: CUIPO, {cuipo.entidad.replace(/ \(CUIPO\)$/, '')}, corte{' '}
+          {formatFecha(cuipo.fechaCorte)}
         </p>
       ) : null}
     </>
@@ -250,7 +251,7 @@ function Listo({
         </div>
       ) : null}
       <Contratos datos={datos} nivel={nivel} />
-      <Fuentes datos={datos} g={g} anios={anios} />
+      <Fuentes datos={datos} />
     </>
   );
 }
@@ -483,6 +484,8 @@ function Detalle({ g, anio, enfocar }: { g: GastoPublico; anio: number; enfocar:
 }
 
 function Contratos({ datos, nivel }: { datos: ResumenMunicipalDatos; nivel: Nivel }) {
+  // In the panel a municipality's count is already the key figure under the title: not said twice.
+  const cifraArriba = useContext(EnPanel) && nivel === 'municipio';
   const c = datos.contratado;
   const sinUbicar = c !== null && c.valor === null && c.contratos === 0;
   return (
@@ -500,7 +503,7 @@ function Contratos({ datos, nivel }: { datos: ResumenMunicipalDatos; nivel: Nive
           .
         </p>
       ) : null}
-      {c !== null && !sinUbicar ? (
+      {c !== null && !sinUbicar && !cifraArriba ? (
         <Counter
           layout="adaptive"
           counts={[{ value: c.contratos, label: `contratos firmados en ${datos.anio}` }]}
@@ -520,34 +523,13 @@ function Contratos({ datos, nivel }: { datos: ResumenMunicipalDatos; nivel: Nive
   );
 }
 
-function Fuentes({
-  datos,
-  g,
-  anios,
-}: {
-  datos: ResumenMunicipalDatos;
-  g: GastoPublico | null;
-  anios: number[];
-}) {
-  const cuipo = datos.fuentes.find((f) => f.usadoPara === 'gastoPublico');
+/** The spending source and its cut are said once, under the figure «recibió»; here, the contracts'. */
+function Fuentes({ datos }: { datos: ResumenMunicipalDatos }) {
   const secop = datos.fuentes.find((f) => f.usadoPara === 'contratado');
+  if (!secop) return null;
   return (
     <div className={styles.pie}>
-      {cuipo ? (
-        <p>
-          Gasto: CUIPO, {cuipo.entidad.replace(/ \(CUIPO\)$/, '')}, corte{' '}
-          {formatFecha(cuipo.fechaCorte)}
-        </p>
-      ) : null}
-      {secop ? <p>Contratos: SECOP II, corte {formatFecha(secop.fechaCorte)}</p> : null}
-      {g && !g.completo && cuipo ? (
-        // «Año en curso» only for the window's last year; a closed year with less than 4 quarters says so.
-        datos.anio === anios.at(-1) ? (
-          <p>Año en curso: cifras acumuladas hasta {formatFecha(cuipo.fechaCorte)}</p>
-        ) : (
-          <p>Cifras acumuladas hasta {formatPeriodo(g.periodo)}</p>
-        )
-      ) : null}
+      <p>Contratos: SECOP II, corte {formatFecha(secop.fechaCorte)}</p>
     </div>
   );
 }
