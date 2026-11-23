@@ -44,7 +44,12 @@ import {
   PANEL_WIDTH_KEY,
 } from '../MapWithLegend/camera';
 import { MapWithLegend } from '../MapWithLegend/MapWithLegend';
-import { Recibido, ResumenMunicipal } from '../ResumenMunicipal/ResumenMunicipal';
+import {
+  EnPanel,
+  Recibido,
+  ResumenMunicipal,
+  SelectorAnio,
+} from '../ResumenMunicipal/ResumenMunicipal';
 import { type Nivel, NIVEL } from '../ResumenMunicipal/resumenModel';
 import { SearchResults } from '../SearchResults/SearchResults';
 import type { ResumenState } from '../useResumen';
@@ -459,7 +464,9 @@ export function MapPage({
             </Mostrando.Provider>
           )}
         >
-          <div className={styles.body}>{text.body}</div>
+          <EnPanel.Provider value={sheet?.isPanel === true}>
+            <div className={styles.body}>{text.body}</div>
+          </EnPanel.Provider>
         </BottomSheet>
       </div>
       {prerendered ? null : (
@@ -528,7 +535,15 @@ function resumenSheet(
   nivel: Nivel,
   lugar: string,
   r: ResumenProps,
-): { summary: ReactNode; body: ReactNode } {
+): {
+  /** The year selector: first thing under the place's title. */
+  selector: ReactNode;
+  /** Contracts signed in the chosen year; `null` when the year has none located, `undefined` while unknown. */
+  contratos: number | null | undefined;
+  anio: number | undefined;
+  summary: ReactNode;
+  body: ReactNode;
+} {
   const { state } = r;
   const datos = state.status === 'ready' ? state.datos : undefined;
   const asked = Number(r.anio);
@@ -539,7 +554,20 @@ function resumenSheet(
     // The alert with «Intentar de nuevo» is in the full sheet; here, one line that says so.
     figure = <p role="status">El gasto de {NIVEL[nivel].entidad} no cargó por ahora.</p>;
   else figure = <p>Buscando lo que recibió {NIVEL[nivel].entidad}…</p>;
+  const c = datos?.contratado;
+  const contratos =
+    c === undefined || c === null ? undefined : c.contratos > 0 ? c.contratos : null;
   return {
+    anio,
+    contratos,
+    selector:
+      anio !== undefined && r.anios.length > 0 ? (
+        <EnFichaMedia>
+          <div className={styles.selectorAnio}>
+            <SelectorAnio anio={anio} anios={r.anios} onAnioChange={r.onAnioChange} />
+          </div>
+        </EnFichaMedia>
+      ) : null,
     summary: (
       <>
         {state.status === 'ready' && state.anioInvalido ? (
@@ -739,7 +767,10 @@ function sheetText(
       resumen,
     );
   if (municipality) {
-    const value = municipality.contratosUbicados;
+    // With the summary loaded, the figure is the chosen year's; until then, the whole period's.
+    const delAnio = gasto?.contratos !== undefined;
+    const value = delAnio ? (gasto?.contratos ?? null) : municipality.contratosUbicados;
+    const periodo = delAnio ? `en ${gasto?.anio}` : sentence;
     return {
       kicker: `${bogota ? 'Distrito Capital' : name} · DANE ${municipality.codigo}${
         AREA_TYPE[municipality.tipo] ?? ''
@@ -747,12 +778,13 @@ function sheetText(
       title: municipality.nombre,
       summary: (
         <>
+          {gasto?.selector}
           <KeyFigure
             value={value}
             context={
               value === null
-                ? `No encontramos contratos ubicados con certeza en este lugar ${sentence}.`
-                : `contratos firmados ${sentence} y ubicados en ${municipality.nombre}`
+                ? `No encontramos contratos ubicados con certeza en este lugar ${periodo}.`
+                : `contratos firmados ${periodo} y ubicados en ${municipality.nombre}`
             }
             source={placeSource}
           />
@@ -781,8 +813,15 @@ function sheetText(
     title: name,
     summary: (
       <>
+        {gasto?.selector}
         {dep ? (
-          <p className={styles.lead}>Contratos firmados {sentence}. Elige un municipio.</p>
+          <p className={styles.lead}>
+            Contratos firmados{' '}
+            {gasto?.anio !== undefined && gasto.contratos !== undefined
+              ? `en ${gasto.anio}`
+              : sentence}
+            . Elige un municipio.
+          </p>
         ) : (
           <p className={styles.legend}>
             <LegendKey kind="unknown" />

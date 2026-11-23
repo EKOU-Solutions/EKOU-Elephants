@@ -2,8 +2,6 @@
 .resumen {
   display: grid;
   gap: var(--el-space-24);
-  max-width: 420px; /* reading column of the map card; no width token yet */
-  padding: var(--el-space-16);
   color: var(--el-color-text);
   font-family: var(--el-font-ui);
 }

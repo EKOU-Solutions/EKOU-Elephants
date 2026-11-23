@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState } from 'react';
+import { createContext, useContext, useEffect, useId, useRef, useState } from 'react';
 import { Alert } from '../../../../components/ui/Alert/Alert';
 import { Button } from '../../../../components/ui/Button/Button';
 import { Counter } from '../../../../components/ui/Counter/Counter';
@@ -47,6 +47,35 @@ export type ResumenMunicipalProps = {
   detalleAbierto?: boolean;
 };
 
+/**
+ * True when the summary lives in the side panel (desktop): the header above already shows the year
+ * selector and the figure «recibió», so the section does not say them twice.
+ */
+export const EnPanel = createContext(false);
+
+/** The year selector: in the panel it is in the header, under the title; in the sheet, in the section. */
+export function SelectorAnio({
+  anio,
+  anios,
+  onAnioChange,
+}: {
+  anio: number;
+  anios: number[];
+  onAnioChange: (anio: number) => void;
+}) {
+  return (
+    <Select
+      label="Año"
+      value={String(anio)}
+      onChange={(e) => onAnioChange(Number(e.target.value))}
+      options={anios.map((a) => ({
+        value: String(a),
+        label: a < PRIMER_ANIO_CUIPO ? `${a} · sin detalle de gasto` : String(a),
+      }))}
+    />
+  );
+}
+
 /** «Gasto público de un municipio»: how much it received, where it went, how far it got. */
 export function ResumenMunicipal({
   status,
@@ -60,20 +89,16 @@ export function ResumenMunicipal({
   detalleAbierto = false,
 }: ResumenMunicipalProps) {
   const titleId = useId();
+  const enPanel = useContext(EnPanel);
   const nombre = datos?.nombre ?? nombreDelLugar;
   return (
     <section className={styles.resumen} aria-labelledby={titleId}>
-      <h2 id={titleId}>Gasto público{nombre ? ` de ${nombre}` : ''}</h2>
-      {anio !== undefined && anios.length > 0 ? (
-        <Select
-          label="Año"
-          value={String(anio)}
-          onChange={(e) => onAnioChange(Number(e.target.value))}
-          options={anios.map((a) => ({
-            value: String(a),
-            label: a < PRIMER_ANIO_CUIPO ? `${a} · sin detalle de gasto` : String(a),
-          }))}
-        />
+      {/* In the panel the place's title and the selector are already in the header: the heading stays for screen readers. */}
+      <h2 id={titleId} className={enPanel ? styles.srOnly : undefined}>
+        Gasto público{nombre ? ` de ${nombre}` : ''}
+      </h2>
+      {!enPanel && anio !== undefined && anios.length > 0 ? (
+        <SelectorAnio anio={anio} anios={anios} onAnioChange={onAnioChange} />
       ) : null}
       <p className={styles.srOnly} aria-live="polite">
         {anunciar(status, datos)}
@@ -140,14 +165,13 @@ export function Recibido({ datos, nivel }: { datos: ResumenMunicipalDatos; nivel
         <p className={styles.cifra}>{formatDinero(recibido)}</p>
       )}
       <p className={styles.pequeno}>
-        Lo que ingresó a la caja de {NIVEL[nivel].entidad} en el año.
+        Lo que ingresó a la caja de {NIVEL[nivel].entidad} en el año
+        {/* A year still open (or closed with less than 4 quarters) is not a full year: say it in the same sentence. */}
+        {datos.gastoPublico && !datos.gastoPublico.completo
+          ? ` hasta ${formatPeriodo(datos.gastoPublico.periodo)}`
+          : ''}
+        .
       </p>
-      {datos.gastoPublico && !datos.gastoPublico.completo ? (
-        // A year still open (or closed with less than 4 quarters) is not a full year: say it next to the figure.
-        <p className={styles.pequeno}>
-          Acumulado hasta {formatPeriodo(datos.gastoPublico.periodo)}
-        </p>
-      ) : null}
       {cuipo ? (
         <p className={`${styles.pequeno} ${styles.suave}`}>
           CUIPO, corte {formatFecha(cuipo.fechaCorte)}
@@ -246,6 +270,7 @@ function Gasto({
   enfocar: boolean;
   onTabla: () => void;
 }) {
+  const enPanel = useContext(EnPanel);
   const reparto = repartoPorRubro(g.rubros);
   const escala = escalaComun(g.total);
   const etapas = [
@@ -273,9 +298,11 @@ function Gasto({
           message="Son las de San Andrés, Providencia y Santa Catalina como un solo departamento."
         />
       ) : null}
-      <div className={styles.bloque}>
-        <Recibido datos={datos} nivel={nivel} />
-      </div>
+      {enPanel ? null : (
+        <div className={styles.bloque}>
+          <Recibido datos={datos} nivel={nivel} />
+        </div>
+      )}
       <div className={styles.bloque}>
         <h3>Y se comprometió a gastar</h3>
         <p className={styles.cifraSecundaria}>{formatDinero(g.total.comprometido)}</p>
