@@ -52,7 +52,7 @@ describe('MapPage states', () => {
       expect(h1(html)).toBe('No encontramos ese lugar');
       expect(text(html)).toContain('Ese enlace no corresponde a un municipio de Colombia.');
       expect(text(html)).toContain('Ver el mapa de Colombia');
-      expect(text(html)).toContain('Mapa de Colombia por departamento');
+      expect(html).toContain('aria-label="Mapa de Colombia por departamento');
     }
   });
 

@@ -242,6 +242,14 @@ export interface MapView {
 
 const RISK_TEXT = { low: 'Riesgo bajo', medium: 'Riesgo intermedio', high: 'Riesgo alto' } as const;
 
+/** «Atlántico: 202.786 contratos»: the name and the figure the department's table row shows. */
+function departmentText(map: PreparedMap, code: string): string {
+  const d = map.data.departments.departamentos.find((x) => x.codigo === code);
+  if (!d) return '';
+  const name = code === ARCHIPELAGO ? 'San Andrés y Providencia' : d.nombre;
+  return `${name}: ${formatNumber(d.contratosEnMunicipios, 0)} contratos`;
+}
+
 /**
  * Territories, box and labels of a view. `fictionalLevel` is ONLY for the phase 2 preview in
  * Storybook: it paints invented levels and says «(ficticio)» in each title.
@@ -265,7 +273,7 @@ export function mapView(
           code: d.codigo,
           d: map.departmentShapes.get(d.codigo)?.d ?? '',
           fill: fill(d.codigo),
-          description: `${d.nombre}${risk(d.codigo)}`,
+          description: `${departmentText(map, d.codigo)}${risk(d.codigo)}`,
         })),
       box: map.mainland,
       inset: {
@@ -276,7 +284,7 @@ export function mapView(
             code: ARCHIPELAGO,
             d: map.archipelago.shapes.map((s) => s.d).join(''),
             fill: fill(ARCHIPELAGO),
-            description: `San Andrés y Providencia${risk(ARCHIPELAGO)}`,
+            description: `${departmentText(map, ARCHIPELAGO)}${risk(ARCHIPELAGO)}`,
           },
         ],
       },
@@ -441,7 +449,7 @@ export function fullscreenView(map: PreparedMap, route: MapRoute): FullscreenVie
         code: d.codigo,
         d: map.departmentShapes.get(d.codigo)?.d ?? '',
         fill: 'neutral',
-        description: d.nombre,
+        description: departmentText(map, d.codigo),
         dimmed: open !== undefined,
       }));
 

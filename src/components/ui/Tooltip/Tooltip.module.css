@@ -1,0 +1,27 @@
+.tooltip {
+  display: grid;
+  gap: 2px;
+  max-width: 240px;
+  padding: var(--el-space-8) var(--el-space-12);
+  background: var(--el-color-surface);
+  color: var(--el-color-text);
+  border: var(--el-rule-strong) solid var(--el-color-line-strong);
+  font-size: var(--el-size-small);
+  line-height: 1.3;
+  pointer-events: none;
+  overflow-wrap: anywhere;
+}
+
+.placed {
+  position: absolute;
+  z-index: 3;
+}
+
+.title {
+  font-weight: var(--el-weight-emphasis);
+}
+
+.detail {
+  color: var(--el-color-text-muted);
+  font-variant-numeric: tabular-nums;
+}

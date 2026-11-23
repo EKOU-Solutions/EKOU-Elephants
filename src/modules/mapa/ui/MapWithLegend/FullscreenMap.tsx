@@ -10,6 +10,7 @@ import {
 import type { SheetFrame } from '../../../../components/ui/BottomSheet/BottomSheet';
 import { Button } from '../../../../components/ui/Button/Button';
 import { Icon } from '../../../../components/ui/Icon/Icon';
+import { Tooltip } from '../../../../components/ui/Tooltip/Tooltip';
 import { unionBox } from '../geometry';
 import { ARCHIPELAGO, FILL, type FullscreenTerritory, type FullscreenView } from '../mapModel';
 import {
@@ -86,6 +87,18 @@ const codeAt = (target: EventTarget | null) =>
     ? (target.closest('[data-code]')?.getAttribute('data-code') ?? undefined)
     : undefined;
 
+/** What the pointer is over: the shape's description (name and figure), read from its `data-description`. */
+const descriptionAt = (target: EventTarget | null) =>
+  target instanceof Element
+    ? (target.closest('[data-description]')?.getAttribute('data-description') ?? undefined)
+    : undefined;
+
+/** «Ciénaga: 19.690 contratos» gives the name and the figure; a text without «: » is only a name. */
+const splitDescription = (text: string): [string, string | undefined] => {
+  const at = text.indexOf(': ');
+  return at < 0 ? [text, undefined] : [text.slice(0, at), text.slice(at + 2)];
+};
+
 /**
  * The map at full screen (map spec of 2026-11-17): one camera over one map, framed in the free area
  * over the sheet. One finger or the mouse always drags, two fingers, the wheel or + / − zoom, a still
@@ -112,7 +125,6 @@ export function FullscreenMap({
 }: FullscreenMapProps) {
   const id = useId().replace(/[^a-zA-Z0-9-]/g, '');
   const hatchId = `hatch-${id}`;
-  const titleId = `${hatchId}-title`;
   const frameRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const worldRef = useRef<SVGGElement>(null);
@@ -124,6 +136,8 @@ export function FullscreenMap({
   const [size, setSize] = useState({ w: 0, h: 0 });
   const [moved, setMoved] = useState(false);
   const [candidate, setCandidate] = useState<string>();
+  // The tooltip follows the mouse only: touch has no hover (decision 25).
+  const [hover, setHover] = useState<{ text: string; x: number; y: number }>();
   const [dragging, setDragging] = useState(false);
   // The zoom buttons and the corner inset hide when the sheet reaches their strip (short screens, 200 % text).
   const [covered, setCovered] = useState({ zoom: false, corner: false });
@@ -359,7 +373,12 @@ export function FullscreenMap({
   const handlePointerMove = (e: ReactPointerEvent<SVGSVGElement>) => {
     const g = gesture.current;
     if (!g || !pointers.current.has(e.pointerId)) {
-      if (e.pointerType === 'mouse') setCandidate(codeAt(e.target));
+      if (e.pointerType === 'mouse') {
+        setCandidate(codeAt(e.target));
+        const text = descriptionAt(e.target);
+        const [x, y] = local(e);
+        setHover(text ? { text, x, y } : undefined);
+      }
       return;
     }
     pointers.current.set(e.pointerId, local(e));
@@ -373,6 +392,7 @@ export function FullscreenMap({
       if (!dragging) {
         setDragging(true);
         setCandidate(undefined); // a drag is not a choice
+        setHover(undefined);
       }
       if (!movedRef.current) markMoved(true);
       cam.current = geo.clamp({ k: g.cam.k, x: g.cam.x + dx, y: g.cam.y + dy });
@@ -446,9 +466,8 @@ export function FullscreenMap({
       data-code={t.code}
       data-selected={t.code === selected ? 'true' : undefined}
       data-candidate={t.code === candidate ? 'true' : undefined}
-    >
-      <title>{t.description}</title>
-    </path>
+      data-description={t.description}
+    />
   );
 
   const [ix0, iy0, ix1, iy1] = inset.box;
@@ -461,17 +480,19 @@ export function FullscreenMap({
         ref={svgRef}
         className={styles.screenMap}
         role="img"
-        aria-labelledby={titleId}
+        aria-label={title}
         data-dragging={dragging ? 'true' : undefined}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerEnd}
         onPointerCancel={handlePointerEnd}
         onPointerLeave={(e) => {
-          if (e.pointerType === 'mouse') setCandidate(undefined);
+          if (e.pointerType === 'mouse') {
+            setCandidate(undefined);
+            setHover(undefined);
+          }
         }}
       >
-        <title id={titleId}>{title}</title>
         <defs>
           <pattern
             ref={patternRef}
@@ -507,9 +528,8 @@ export function FullscreenMap({
                 width={ix1 - ix0}
                 height={iy1 - iy0}
                 data-code={ARCHIPELAGO}
-              >
-                <title>{inset.label}</title>
-              </rect>
+                data-description={inset.label}
+              />
               {inset.placement === 'map'
                 ? inset.islands.map((island) => (
                     <path
@@ -519,9 +539,8 @@ export function FullscreenMap({
                       className={styles.neutral}
                       data-code={ARCHIPELAGO}
                       data-candidate={candidate === ARCHIPELAGO ? 'true' : undefined}
-                    >
-                      <title>{inset.label}</title>
-                    </path>
+                      data-description={inset.label}
+                    />
                   ))
                 : null}
             </g>
@@ -550,6 +569,15 @@ export function FullscreenMap({
           </span>
         ))}
       </div>
+      {hover && !dragging ? (
+        <Tooltip
+          title={splitDescription(hover.text)[0]}
+          detail={splitDescription(hover.text)[1]}
+          x={hover.x}
+          y={hover.y}
+          parentWidth={frameRef.current?.clientWidth}
+        />
+      ) : null}
       {inset.placement === 'corner' ? (
         <button
           ref={cornerRef}
