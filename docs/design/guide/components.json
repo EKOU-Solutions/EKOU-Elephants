@@ -1,5 +1,5 @@
 {
-  "version": "1.8.0",
+  "version": "1.9.0",
   "about": "Catálogo legible por máquina de los componentes de Elephants. 'core' = revisado y aceptado (Ronda 05); 'candidate' = se puede usar, pero lo debe confirmar la primera página que lo necesite (ver .claude/skills/elephant-designer/references/build-page.md). Los componentes con 'component' ya son React en src/components/ui/ y traen sus propios estilos ('styles', CSS Modules); los demás son especificación con clases de components.css. build.py comprueba que los archivos, las clases y los tokens existan.",
   "components": [
     {
@@ -344,6 +344,7 @@
         "columnas numéricas alineadas a la derecha (el-num)",
         "fila elegida (currentRowId: peso y aria-current, nunca color; v1.3.0)",
         "encabezado de fila con enlace y celdas con clave «Sin datos» (v1.3.0)",
+        "plegable (collapsedLabel, v1.9.0): la tabla queda cerrada tras un texto de 44 px (details nativo); sigue accesible por teclado",
         "encabezado fijo (stickyHeader, v1.6.0): el encabezado queda arriba mientras se desplaza el contenedor (la ficha del mapa); sin desplazamiento horizontal propio, solo para pocas columnas"
       ],
       "tokens": [

@@ -34,12 +34,24 @@ type Props = {
    * Sin desplazamiento horizontal propio: solo para tablas de pocas columnas que caben a 320 px.
    */
   stickyHeader?: boolean;
+  /**
+   * Plegable (v1.9.0): la tabla queda cerrada tras este texto («Ver la tabla de municipios») y se
+   * abre con un toque o con el teclado. Sigue siendo la ruta accesible al dato; solo sale del camino visual.
+   */
+  collapsedLabel?: string;
 };
 
 /** Para comparar y verificar; la alternativa accesible a cada mapa o gráfico. */
-export function DataTable({ caption, columns, rows, currentRowId, stickyHeader }: Props) {
+export function DataTable({
+  caption,
+  columns,
+  rows,
+  currentRowId,
+  stickyHeader,
+  collapsedLabel,
+}: Props) {
   const [headerColumn, ...valueColumns] = columns;
-  return (
+  const table = (
     // A labelled <section> is a region landmark. It must be focusable so keyboard users can
     // scroll it horizontally (WCAG 2.1.1, axe scrollable-region-focusable). With a sticky header it
     // does not scroll: the scrolling ancestor takes the keyboard.
@@ -84,5 +96,12 @@ export function DataTable({ caption, columns, rows, currentRowId, stickyHeader }
         </tbody>
       </table>
     </section>
+  );
+  if (!collapsedLabel) return table;
+  return (
+    <details className={styles.fold}>
+      <summary className={styles.foldSummary}>{collapsedLabel}</summary>
+      {table}
+    </details>
   );
 }

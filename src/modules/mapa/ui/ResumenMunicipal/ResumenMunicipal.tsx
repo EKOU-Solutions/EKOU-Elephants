@@ -2,7 +2,6 @@ import { createContext, useContext, useEffect, useId, useRef, useState } from 'r
 import { Alert } from '../../../../components/ui/Alert/Alert';
 import { Button } from '../../../../components/ui/Button/Button';
 import { Counter } from '../../../../components/ui/Counter/Counter';
-import { formatNumber } from '../../../../components/ui/format';
 import { LegendKey } from '../../../../components/ui/LegendKey/LegendKey';
 import { ProgressBar } from '../../../../components/ui/ProgressBar/ProgressBar';
 import { Select } from '../../../../components/ui/Select/Select';
@@ -23,6 +22,8 @@ import {
   ORDEN_BARRA,
   PRIMER_ANIO_CUIPO,
   type ResumenMunicipalDatos,
+  type RubroClave,
+  quedaLibre,
   repartoPorRubro,
   superaLoRecibido,
   TONO_RUBRO,
@@ -272,7 +273,10 @@ function Gasto({
   onTabla: () => void;
 }) {
   const enPanel = useContext(EnPanel);
-  const reparto = repartoPorRubro(g.rubros);
+  // With what was received known, the bar is that 100 % and what is left uncommitted is its empty part.
+  const libre = quedaLibre(g);
+  const reparto = repartoPorRubro(g.rubros, libre === null ? undefined : (g.recibido ?? undefined));
+  const porcentajeLibre = libre !== null && g.recibido ? (100 * libre) / g.recibido : 0;
   const escala = escalaComun(g.total);
   const etapas = [
     {
@@ -310,6 +314,7 @@ function Gasto({
         <ProgressBar
           size="thick"
           separated
+          max={libre === null ? undefined : (g.recibido ?? undefined)}
           segments={reparto
             .filter((r) => r.valor > 0)
             .map((r) => ({ value: r.valor, tone: TONO_RUBRO[r.clave] }))}
@@ -318,7 +323,9 @@ function Gasto({
               (r) =>
                 `${NOMBRE_RUBRO[r.clave].nombre.toLowerCase()} ${formatPorcentaje(r.porcentaje)}`,
             )
-            .join(', ')}`}
+            .join(
+              ', ',
+            )}${libre === null ? '' : `, queda libre ${formatPorcentaje(porcentajeLibre)}`}`}
         />
         <ul className={styles.leyenda}>
           {reparto.map((r) => (
@@ -331,6 +338,14 @@ function Gasto({
               <span className={styles.glosa}>{NOMBRE_RUBRO[r.clave].glosa}</span>
             </li>
           ))}
+          {libre === null ? null : (
+            <li>
+              <LegendKey kind="neutral" />
+              <span>Queda libre · {formatDinero(libre)}</span>
+              <b>{formatPorcentaje(porcentajeLibre)}</b>
+              <span className={styles.glosa}>lo que entró y todavía no está comprometido</span>
+            </li>
+          )}
         </ul>
         {superaLoRecibido(g) ? (
           <div className={styles.aviso}>
@@ -342,8 +357,68 @@ function Gasto({
           </div>
         ) : null}
       </div>
-      <div className={styles.bloque}>
-        <h3>¿Hasta dónde llegó ese dinero?</h3>
+      {tabla ? (
+        <>
+          <Recorrido g={g} anio={datos.anio} escala={escala} etapas={etapas} />
+          <Detalle g={g} anio={datos.anio} enfocar={enfocar} />
+        </>
+      ) : (
+        <Button
+          variant="secondary"
+          label="Ver hasta dónde llegó el dinero, cada rubro y fuentes"
+          onClick={onTabla}
+        />
+      )}
+    </>
+  );
+}
+
+type EtapaFila = { clave: string; nombre: string; glosa: string; valor: number };
+
+/**
+ * Only when the person asks for detail: how far the money went, in three clearly separated parts
+ * (this year, reservas, cuentas por pagar), each said in one plain sentence.
+ */
+function Recorrido({
+  g,
+  anio,
+  escala,
+  etapas,
+}: {
+  g: GastoPublico;
+  anio: number;
+  escala: number;
+  etapas: readonly EtapaFila[];
+}) {
+  const anteriores = [
+    {
+      id: 'reservas',
+      nombre: 'Reservas',
+      glosa:
+        'Compromisos de años anteriores que no alcanzaron a recibirse o pagarse y se terminan este año.',
+      d: g.reservas,
+    },
+    {
+      id: 'cuentas',
+      nombre: 'Cuentas por pagar',
+      glosa:
+        'Bienes y servicios que llegaron en años anteriores y todavía no se habían pagado; se saldan este año.',
+      d: g.cuentasPorPagar,
+    },
+  ];
+  return (
+    <div className={styles.bloque}>
+      <h3>¿Hasta dónde llegó ese dinero?</h3>
+      <p className={`${styles.pequeno} ${styles.suave}`}>
+        Cada peso pasa por tres pasos: se compromete (se firma), se recibe (llega el bien o el
+        servicio) y se paga. Abajo, el gasto del año y lo que viene de años anteriores, por
+        separado.
+      </p>
+      <div className={styles.seccion}>
+        <h4>Gasto de {anio}</h4>
+        <p className={`${styles.pequeno} ${styles.suave}`}>
+          Lo que se comprometió, recibió y pagó con el presupuesto de este año.
+        </p>
         <div className={styles.barras}>
           {etapas.map((et) => (
             <div key={et.clave} className={styles.barraConCifra}>
@@ -361,40 +436,9 @@ function Gasto({
           ))}
         </div>
       </div>
-      <Arrastre g={g} />
-      {tabla ? (
-        <Detalle g={g} anio={datos.anio} enfocar={enfocar} />
-      ) : (
-        <Button variant="secondary" label="Ver cada rubro, tabla y fuentes" onClick={onTabla} />
-      )}
-    </>
-  );
-}
-
-/** Each earlier-years block as short lines (a 4-column table would hide «Pagado» at 320 px). */
-function Arrastre({ g }: { g: GastoPublico }) {
-  const bloques = [
-    {
-      id: 'reservas',
-      nombre: 'Reservas',
-      glosa: 'gastos comprometidos antes que se pagan ahora',
-      d: g.reservas,
-    },
-    {
-      id: 'cuentas',
-      nombre: 'Cuentas por pagar',
-      glosa: 'deudas de años anteriores que se siguen pagando',
-      d: g.cuentasPorPagar,
-    },
-  ];
-  return (
-    <div className={styles.bloque}>
-      <h3>Además arrastra de años anteriores</h3>
-      {bloques.map((b) => (
-        <div key={b.id} className={styles.arrastre}>
-          <p>
-            <strong>{b.nombre}</strong>
-          </p>
+      {anteriores.map((b) => (
+        <div key={b.id} className={styles.seccion}>
+          <h4>{b.nombre} · de años anteriores</h4>
           <p className={`${styles.pequeno} ${styles.suave}`}>{b.glosa}</p>
           {b.d === null ? (
             <p>No reportó</p>
@@ -414,26 +458,29 @@ function Arrastre({ g }: { g: GastoPublico }) {
   );
 }
 
-const peso = (n: number) => `$${formatNumber(n, 0)}`;
-
 type Etapas = { comprometido: number; obligado: number; pagado: number };
 
-/** One concept with its three stages as lines: exact pesos never get cut, at any width. */
-function FilaExacta({ nombre, etapas }: { nombre: string; etapas: Etapas | null }) {
+/** One rubro: what it is, then its three stages as lines. A rubro with no money says so in one line. */
+function FilaRubro({ clave, etapas }: { clave: RubroClave; etapas: Etapas | null }) {
+  const sinGasto =
+    etapas !== null && etapas.comprometido === 0 && etapas.obligado === 0 && etapas.pagado === 0;
   return (
     <div className={styles.fila}>
-      <dt>{nombre}</dt>
+      <dt>{NOMBRE_RUBRO[clave].nombre}</dt>
+      <dd className={`${styles.pequeno} ${styles.suave}`}>{NOMBRE_RUBRO[clave].glosa}</dd>
       <dd>
         {etapas === null ? (
           <span className={styles.suave}>Sin información</span>
+        ) : sinGasto ? (
+          <span className={styles.suave}>Sin gasto en este rubro</span>
         ) : (
           <dl className={styles.etapas}>
             <dt>Comprometido</dt>
-            <dd>{peso(etapas.comprometido)}</dd>
+            <dd>{formatDinero(etapas.comprometido)}</dd>
             <dt>Recibido</dt>
-            <dd>{peso(etapas.obligado)}</dd>
+            <dd>{formatDinero(etapas.obligado)}</dd>
             <dt>Pagado</dt>
-            <dd>{peso(etapas.pagado)}</dd>
+            <dd>{formatDinero(etapas.pagado)}</dd>
           </dl>
         )}
       </dd>
@@ -441,7 +488,7 @@ function FilaExacta({ nombre, etapas }: { nombre: string; etapas: Etapas | null 
   );
 }
 
-/** The exact figures, as nested lists. Focus lands on the title when the person opened it. */
+/** The same three parts, now rubro by rubro. Focus lands on the title when the person opened it. */
 function Detalle({ g, anio, enfocar }: { g: GastoPublico; anio: number; enfocar: boolean }) {
   const titulo = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
@@ -455,26 +502,26 @@ function Detalle({ g, anio, enfocar }: { g: GastoPublico; anio: number; enfocar:
   return (
     <div className={styles.bloque}>
       <h3 tabIndex={-1} ref={titulo}>
-        Cada rubro, con los números exactos
+        Y en qué se gastó, rubro por rubro
       </h3>
       <p className={`${styles.pequeno} ${styles.suave}`}>
-        Gasto público por rubro y etapa, en pesos
+        Cada parte de arriba, repartida en obras y servicios (inversión), deuda y gastos de
+        funcionamiento. Cifras en millones de pesos.
       </p>
       {bloques.map((b) => (
-        <section key={b.id} className={styles.arrastre} aria-label={b.nombre}>
+        <section key={b.id} className={styles.seccion} aria-label={`${b.nombre}, por rubro`}>
           <h4>{b.nombre}</h4>
           {b.d === null ? (
             <p>No reportó</p>
           ) : (
             <dl className={styles.filas}>
               {ORDEN_BARRA.map((clave) => (
-                <FilaExacta
+                <FilaRubro
                   key={clave}
-                  nombre={NOMBRE_RUBRO[clave].nombre}
+                  clave={clave}
                   etapas={b.d?.rubros.find((r) => r.clave === clave)?.etapas ?? null}
                 />
               ))}
-              <FilaExacta nombre="Total" etapas={b.d.total} />
             </dl>
           )}
         </section>

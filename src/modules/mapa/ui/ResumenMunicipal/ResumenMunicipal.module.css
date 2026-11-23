@@ -127,6 +127,14 @@
   gap: var(--el-space-12);
 }
 
+.seccion {
+  display: grid;
+  gap: var(--el-space-8);
+  border-top: 1px solid var(--el-color-line);
+  padding-top: var(--el-space-16);
+  margin-top: var(--el-space-8);
+}
+
 .arrastre {
   display: grid;
   gap: var(--el-space-4);
@@ -177,6 +185,8 @@
 .fila {
   display: grid;
   gap: var(--el-space-4);
+  border-top: 1px solid var(--el-color-line);
+  padding-top: var(--el-space-12);
 }
 
 .fila > dt {

@@ -684,6 +684,7 @@ function sheetText(
             ]}
             rows={rows}
             stickyHeader
+            collapsedLabel="Ver la tabla de departamentos"
           />
           {sources}
         </>
@@ -755,6 +756,7 @@ function sheetText(
         rows={rows}
         currentRowId={municipality?.codigo}
         stickyHeader
+        collapsedLabel="Ver la tabla de municipios"
       />
     </>
   );

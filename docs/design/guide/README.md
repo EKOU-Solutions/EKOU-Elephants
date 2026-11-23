@@ -55,6 +55,7 @@ Qué cambió frente a la Ronda 05, y por qué:
 | 1.6.1 | 2026-11-17 | Desde las páginas generadas de cada lugar (ADR 0003). **`BottomSheet`** suma `prerendered`: la ficha llega a media altura solo con CSS en la página generada y la reemplaza la medida real al montar. **Mapa con leyenda** suma su versión estática (`StaticFullscreenMap`): contorno simplificado del departamento con el lugar marcado y el mismo encuadre que la cámara, sin JavaScript. Sin tokens nuevos. | Esteban Jimenez |
 | 1.7.0 | 2026-11-22 | Desde el resumen municipal (TASK-10). **`ProgressBar`** pasa de candidato a núcleo y suma dos tonos de tinta (`mid`, `light`) y `separated` (2 px entre tramos) para repartir un total en tres partes, por ejemplo el gasto por rubro; los tonos no se distinguen solos, cada tramo lleva su nombre y su cifra en texto. Sin cambios de tokens ni de dirección visual | Esteban Jimenez |
 | 1.8.0 | 2026-11-23 | Nuevo componente **Tooltip**: nombra lo que señala el puntero, pegado a él (nombre y cifra debajo), solo mouse y `aria-hidden`; se voltea a la izquierda cerca del borde. Lo usa el mapa en lugar del `<title>` nativo de cada territorio (que tardaba y no se podía leer). Sin tokens nuevos | Esteban |
+| 1.9.0 | 2026-11-23 | **Data table** suma `collapsedLabel`: la tabla puede quedar plegada (details nativo, cerrada por defecto, 44 px) para que la lista de departamentos o municipios de la ficha no haga ruido; sigue accesible por teclado. Sin cambios en tokens | Jouler |
 
 ## Archivos
 

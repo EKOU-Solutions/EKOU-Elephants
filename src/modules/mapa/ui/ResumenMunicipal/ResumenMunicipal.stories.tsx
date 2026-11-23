@@ -58,7 +58,7 @@ export const Normal: Story = {
 };
 
 export const TablaAbierta: Story = {
-  name: 'Tabla con los números exactos',
+  name: 'Detalle rubro por rubro',
   args: { ...listo(sanBenito), detalleAbierto: true },
 };
 

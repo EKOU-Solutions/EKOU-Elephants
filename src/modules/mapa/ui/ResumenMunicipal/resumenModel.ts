@@ -82,11 +82,24 @@ export function superaLoRecibido(g: GastoPublico): boolean {
   return g.recibido !== null && g.total.comprometido > g.recibido;
 }
 
-/** Share of the total of each rubro, in the bar order. A rubro at 0 stays in the list at «0 %». */
+/**
+ * What the place received and has not committed: the part of the bar left empty. `null` when the
+ * received amount is unknown or the spending exceeds it (then the bar splits the spending alone).
+ */
+export function quedaLibre(g: GastoPublico): number | null {
+  if (g.recibido === null || superaLoRecibido(g)) return null;
+  return g.recibido - g.total.comprometido;
+}
+
+/**
+ * Share of each rubro, in the bar order. A rubro at 0 stays in the list at «0 %». The 100 % is the
+ * `base` (what was received) or, without it, the committed total.
+ */
 export function repartoPorRubro(
   rubros: Rubro[],
+  base?: number,
 ): { clave: RubroClave; valor: number; porcentaje: number }[] {
-  const total = rubros.reduce((s, r) => s + r.etapas.comprometido, 0);
+  const total = base ?? rubros.reduce((s, r) => s + r.etapas.comprometido, 0);
   return ORDEN_BARRA.map((clave) => {
     const valor = rubros.find((r) => r.clave === clave)?.etapas.comprometido ?? 0;
     return { clave, valor, porcentaje: total > 0 ? (100 * valor) / total : 0 };

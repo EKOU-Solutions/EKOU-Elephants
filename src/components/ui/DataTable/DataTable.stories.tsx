@@ -126,3 +126,21 @@ export const StickyHeader: Story = {
     },
   },
 };
+
+export const Collapsed: Story = {
+  name: 'Plegable, cerrada por defecto',
+  args: {
+    caption: 'Departamentos · datos ficticios',
+    columns: [{ label: 'Departamento' }, { label: 'Con señales', numeric: true }],
+    rows: rankingRows(12).map((row) => ({ ...row, cells: row.cells.slice(0, 1) })),
+    collapsedLabel: 'Ver la tabla de departamentos',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          '`collapsedLabel` (v1.9.0): la tabla queda cerrada tras un texto de 44 px y se abre con un toque o con Intro. Sigue en la página para teclado y lectores de pantalla; solo sale del camino visual cuando la lista es larga y no es lo primero que busca la persona.',
+      },
+    },
+  },
+};
