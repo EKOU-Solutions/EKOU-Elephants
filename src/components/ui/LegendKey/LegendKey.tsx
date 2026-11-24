@@ -1,7 +1,7 @@
 import type { Level } from '../RiskTag/RiskTag';
 import styles from './LegendKey.module.css';
 
-export type LegendKeyKind = Level | 'flagged' | 'clean' | 'neutral';
+export type LegendKeyKind = Level | 'flagged' | 'clean' | 'neutral' | 'ink' | 'inkMid' | 'inkLight';
 
 type Props = {
   /** Nivel de riesgo, o «flagged» / «clean» para conteos de contratos con y sin señales (en tinta, nunca en rojo). */

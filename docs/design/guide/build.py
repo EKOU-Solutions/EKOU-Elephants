@@ -47,6 +47,8 @@ pairs = [
     ('Borde de control', 'control-border', 'surface', 3),
     ('Foco', 'focus', 'surface', 3),
     ('Trama sin datos', 'unknown', 'surface', 3),
+    ('Reparto: tinta media', 'ink-mid', 'surface', 3),
+    ('Reparto: tinta clara', 'ink-light', 'surface', 3),
     ('Etiqueta riesgo bajo', 'on-risk-low', 'risk-low', 4.5),
     ('Etiqueta riesgo intermedio', 'on-risk-medium', 'risk-medium', 4.5),
     ('Etiqueta riesgo alto', 'on-risk-high', 'risk-high', 4.5),

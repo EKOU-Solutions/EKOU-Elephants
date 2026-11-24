@@ -54,7 +54,7 @@ jobs:
       # Runner estándar: 4 CPU, 16 GB de RAM. Lo que no cabe en memoria va a disco temporal.
       EKOU_DUCKDB_MEMORY: 10GB
       EKOU_DUCKDB_TEMP: 20GiB
-      FUENTES: secop_contratos secop_procesos secop_ubicaciones secop_i divipola
+      FUENTES: secop_contratos secop_procesos secop_ubicaciones secop_i divipola cuipo_gastos cuipo_ingresos
       GH_TOKEN: ${{ github.token }}
     steps:
       - name: corte a procesar
@@ -304,8 +304,14 @@ jobs:
           for corte in $CORTES; do
             # Todos los JSON del Release con su nombre, menos el diagnóstico de la extracción:
             # el Worker es un espejo de los Releases (también los del mapa, de export-mapa).
-            gh release download "corte-$corte" --dir "$raiz/datos/$corte" --pattern '*.json'
+            gh release download "corte-$corte" --dir "$raiz/datos/$corte" --pattern '*.json' --pattern resumen.tar.gz
             rm -f "$raiz/datos/$corte/reporte-extraccion.json"
+            # Los resúmenes por territorio viajan en un solo paquete (un Release admite 1.000
+            # archivos): se extraen a resumen/ y resumen-departamento/. Un corte anterior no lo trae.
+            if [[ -f "$raiz/datos/$corte/resumen.tar.gz" ]]; then
+              tar -xzf "$raiz/datos/$corte/resumen.tar.gz" -C "$raiz/datos/$corte"
+              rm -f "$raiz/datos/$corte/resumen.tar.gz"
+            fi
           done
           # El puntero sale de la misma función que `npm run datos:descargar` (scripts/datos.mjs).
           RAIZ="$raiz" node --input-type=module -e '

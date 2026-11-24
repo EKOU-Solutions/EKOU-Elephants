@@ -13,9 +13,18 @@ type Props = FormFieldProps &
   };
 
 /** Elige un valor de una lista corta y conocida para filtrar. Acepta los atributos de un `select` nativo. */
-export function Select({ label, help, error, options, ...select }: Props) {
+export function Select({
+  label,
+  help,
+  error,
+  fullWidth,
+  hideLabel,
+  icon,
+  options,
+  ...select
+}: Props) {
   return (
-    <FormField label={label} help={help} error={error}>
+    <FormField {...({ label, help, error, fullWidth, hideLabel, icon } as FormFieldProps)}>
       {(control) => (
         <select {...select} {...control}>
           {options.map((o) => {

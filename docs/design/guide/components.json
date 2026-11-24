@@ -1,5 +1,5 @@
 {
-  "version": "1.6.1",
+  "version": "1.10.0",
   "about": "Catálogo legible por máquina de los componentes de Elephants. 'core' = revisado y aceptado (Ronda 05); 'candidate' = se puede usar, pero lo debe confirmar la primera página que lo necesite (ver .claude/skills/elephant-designer/references/build-page.md). Los componentes con 'component' ya son React en src/components/ui/ y traen sus propios estilos ('styles', CSS Modules); los demás son especificación con clases de components.css. build.py comprueba que los archivos, las clases y los tokens existan.",
   "components": [
     {
@@ -258,6 +258,34 @@
       "styles": "src/components/ui/Counter/Counter.module.css"
     },
     {
+      "name": "Tooltip",
+      "label_es": "Tooltip",
+      "status": "core",
+      "reference": "storybook: Componentes/UI/Tooltip",
+      "use": "Nombra lo que señala el puntero, pegado a él: el nombre y, debajo, la cifra. Solo para mouse; en táctil no existe.",
+      "variants": [
+        "nombre y cifra",
+        "sin datos",
+        "solo nombre",
+        "cerca del borde (se voltea a la izquierda del puntero)"
+      ],
+      "tokens": [
+        "--el-color-surface",
+        "--el-color-text",
+        "--el-color-text-muted",
+        "--el-color-line-strong",
+        "--el-rule-strong",
+        "--el-space-8",
+        "--el-space-12"
+      ],
+      "a11y": [
+        "aria-hidden: solo lo ven quienes usan puntero; las mismas cifras están en la tabla del mapa",
+        "No recibe puntero (pointer-events: none) ni foco; sin movimiento, así que respeta movimiento reducido"
+      ],
+      "component": "src/components/ui/Tooltip/Tooltip.tsx",
+      "styles": "src/components/ui/Tooltip/Tooltip.module.css"
+    },
+    {
       "name": "Active filter",
       "label_es": "Filtro activo",
       "status": "core",
@@ -316,6 +344,7 @@
         "columnas numéricas alineadas a la derecha (el-num)",
         "fila elegida (currentRowId: peso y aria-current, nunca color; v1.3.0)",
         "encabezado de fila con enlace y celdas con clave «Sin datos» (v1.3.0)",
+        "plegable (collapsedLabel, v1.9.0): la tabla queda cerrada tras un texto de 44 px (details nativo); sigue accesible por teclado",
         "encabezado fijo (stickyHeader, v1.6.0): el encabezado queda arriba mientras se desplaza el contenedor (la ficha del mapa); sin desplazamiento horizontal propio, solo para pocas columnas"
       ],
       "tokens": [
@@ -345,7 +374,8 @@
         "unknown (sin datos, con trama)",
         "flagged (con señales, en tinta)",
         "clean (sin señales)",
-        "neutral (territorio con contratos ubicados; mapa neutro, v1.3.0)"
+        "neutral (territorio con contratos ubicados; mapa neutro, v1.3.0)",
+        "ink, inkMid, inkLight (reparto en tres partes, v1.7.0)"
       ],
       "tokens": [
         "--el-color-risk-low",
@@ -355,7 +385,9 @@
         "--el-color-unknown-surface",
         "--el-color-text",
         "--el-color-line",
-        "--el-mark-radius"
+        "--el-mark-radius",
+        "--el-color-ink-mid",
+        "--el-color-ink-light"
       ],
       "a11y": [
         "Decorativo (aria-hidden); el texto que lo acompaña lleva el significado"
@@ -461,12 +493,13 @@
     {
       "name": "Progress bar",
       "label_es": "Barra de progreso",
-      "status": "candidate",
+      "status": "core",
       "reference": "examples.html#mapa",
-      "use": "Barra horizontal que se llena por tramos (valor y color de cada uno). Sirve para el desglose en barras (un tramo) y para la cobertura (con señales / sin señales / sin analizar). No trae leyenda: los números van en texto al lado.",
+      "use": "Barra horizontal que se llena por tramos (valor y tono de cada uno). Sirve para el desglose en barras (un tramo), la cobertura (con señales / sin señales / sin analizar) y el reparto de un total en tres partes (por ejemplo, el gasto por rubro). No trae leyenda: los números van en texto al lado.",
       "variants": [
         "un tramo, delgada (desglose)",
         "varios tramos, gruesa (cobertura)",
+        "tres tonos de tinta separados (reparto en rubros, v1.7.0)",
         "vacía"
       ],
       "tokens": [
@@ -474,11 +507,15 @@
         "--el-color-line",
         "--el-color-unknown",
         "--el-color-unknown-surface",
-        "--el-mark-radius"
+        "--el-mark-radius",
+        "--el-color-surface",
+        "--el-color-ink-mid",
+        "--el-color-ink-light"
       ],
       "a11y": [
         "Con label: role=img y aria-label con el reparto completo",
-        "Sin label: decorativa (aria-hidden); los números deben estar en texto al lado"
+        "Sin label: decorativa (aria-hidden); los números deben estar en texto al lado",
+        "Los tonos de tinta no se distinguen solos: cada tramo lleva su nombre y su cifra en texto al lado"
       ],
       "component": "src/components/ui/ProgressBar/ProgressBar.tsx",
       "styles": "src/components/ui/ProgressBar/ProgressBar.module.css"

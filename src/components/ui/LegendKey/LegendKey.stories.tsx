@@ -10,6 +10,9 @@ const KINDS: [LegendKeyKind, string][] = [
   ['flagged', 'Con señales'],
   ['clean', 'Sin señales'],
   ['neutral', 'Territorio con contratos ubicados (mapa neutro)'],
+  ['ink', 'Inversión (tinta)'],
+  ['inkMid', 'Deuda (tinta media)'],
+  ['inkLight', 'Funcionamiento (tinta clara)'],
 ];
 
 const meta = {

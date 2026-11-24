@@ -32,6 +32,35 @@ export function ultimoCorte(etiquetas) {
   return cortes.at(-1);
 }
 
+// Los resúmenes por territorio (~1.150 JSON) van en un solo archivo: un Release admite 1.000 assets.
+export const PAQUETE_RESUMEN = 'resumen.tar.gz';
+
+/**
+ * Baja de un Release los JSON y el paquete de resúmenes, y deja éste extraído en
+ * `<destino>/resumen/` y `<destino>/resumen-departamento/`. Un corte anterior a los resúmenes no
+ * trae el paquete: no es un error, esa ficha mostrará «sin información».
+ */
+export function descargarCorte(corte, destino, run = ejecutar) {
+  mkdirSync(destino, { recursive: true });
+  run('gh', [
+    'release',
+    'download',
+    `corte-${corte}`,
+    '--dir',
+    destino,
+    '--pattern',
+    '*.json',
+    '--pattern',
+    PAQUETE_RESUMEN,
+  ]);
+  if (existsSync(join(destino, PAQUETE_RESUMEN))) {
+    // Ruta relativa y con `cwd`: el tar de Git Bash en Windows toma `C:\...` por un host remoto.
+    run('tar', ['-xzf', PAQUETE_RESUMEN], { cwd: destino });
+    rmSync(join(destino, PAQUETE_RESUMEN), { force: true });
+  }
+  for (const archivo of NO_PUBLICABLES) rmSync(join(destino, archivo), { force: true });
+}
+
 /** Mismo formato que publica el corte mensual (TASK-15). */
 export function punteroLatest(corte, archivos, publicado = new Date().toISOString()) {
   return {
@@ -101,9 +130,7 @@ export function descargar({ corte, carpeta, forzar }, run = ejecutar) {
 
   rmSync(raiz, { recursive: true, force: true });
   const destino = join(raiz, 'datos', elegido);
-  mkdirSync(destino, { recursive: true });
-  run('gh', ['release', 'download', `corte-${elegido}`, '--pattern', '*.json', '--dir', destino]);
-  for (const archivo of NO_PUBLICABLES) rmSync(join(destino, archivo), { force: true });
+  descargarCorte(elegido, destino, run);
   const puntero = punteroLatest(elegido, readdirSync(destino));
   writeFileSync(join(raiz, 'datos', 'latest.json'), `${JSON.stringify(puntero, null, 2)}\n`);
   console.log(`Corte ${elegido} en ${carpeta}/datos/. Edita los JSON y súbelos con:`);

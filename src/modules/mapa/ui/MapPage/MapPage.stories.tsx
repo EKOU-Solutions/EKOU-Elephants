@@ -2,7 +2,16 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { type MapRoute, parseRoute } from '../mapModel';
+import {
+  anioCerradoParcial,
+  anioEnCurso,
+  anioSinCuipo,
+  sanBenito,
+  sinNingunDato,
+} from '../ResumenMunicipal/muestra';
+import type { ResumenMunicipalDatos } from '../ResumenMunicipal/resumenModel';
 import { sampleMap } from '../sample';
+import type { ResumenState } from '../useResumen';
 import { MapPage, type MapPageProps } from './MapPage';
 
 /** The page with the real sample; choosing a place changes it in place, as in the app. */
@@ -31,6 +40,54 @@ function Page({
     <div style={{ ...screen, containerType: 'size', containerName: 'screen', overflow: 'hidden' }}>
       {page}
     </div>
+  );
+}
+
+/** Sample figures of the summary (ResumenMunicipal/muestra.ts), with the name of the place on screen. */
+function muestraDe(anio: number, route: MapRoute): ResumenMunicipalDatos {
+  const porAnio: Record<number, ResumenMunicipalDatos> = {
+    2022: anioSinCuipo,
+    2024: anioCerradoParcial,
+    2025: sanBenito,
+    2026: anioEnCurso,
+  };
+  const base = porAnio[anio] ?? { ...sinNingunDato, anio };
+  const code = 'code' in route ? route.code : '';
+  const nombre =
+    (route.view === 'municipality' ? sampleMap.municipalities : sampleMap.departments).get(code)
+      ?.nombre ?? base.nombre;
+  return { ...base, codigo: code, nombre };
+}
+
+/** The page with the summary of sample figures; the year selector changes the year, as in the app. */
+function ConResumen({
+  initial,
+  anio: first = '2025',
+  estado,
+  anioInvalido,
+  ...props
+}: {
+  initial: MapRoute;
+  anio?: string;
+  /** A state other than «ready with the sample». */
+  estado?: ResumenState;
+  anioInvalido?: string;
+} & Partial<MapPageProps>) {
+  const [anio, setAnio] = useState(first);
+  const resumen: ResumenState = estado ?? {
+    status: 'ready',
+    datos: muestraDe(Number(anio), initial),
+    anioInvalido,
+  };
+  return (
+    <Page
+      initial={initial}
+      resumen={resumen}
+      anio={anio}
+      onAnioChange={(n) => setAnio(String(n))}
+      onRetryResumen={() => {}}
+      {...props}
+    />
   );
 }
 
@@ -193,5 +250,55 @@ export const FocusAfterCrumb: Story = {
     await userEvent.click(await canvas.findByRole('button', { name: 'Antioquia' }));
     await waitFor(() => expect(canvas.getByRole('button', { name: 'Colombia' })).toHaveFocus());
     await waitFor(() => expect(status(canvasElement)).toBe('Seleccionado: Antioquia'));
+  },
+};
+
+const MEDELLIN: MapRoute = { view: 'municipality', code: '05001' };
+const ANTIOQUIA: MapRoute = { view: 'department', code: '05' };
+
+export const ResumenFichaMedia: Story = {
+  name: 'Resumen: cifra clave en la ficha media (Medellín, datos de muestra)',
+  render: () => <ConResumen initial={MEDELLIN} />,
+};
+export const ResumenMunicipio: Story = {
+  name: 'Resumen: ficha completa de un municipio (datos de muestra)',
+  render: () => <ConResumen initial={MEDELLIN} defaultDetent="full" />,
+};
+export const ResumenDepartamento: Story = {
+  name: 'Resumen: ficha completa de un departamento, la gobernación (datos de muestra)',
+  render: () => <ConResumen initial={ANTIOQUIA} defaultDetent="full" />,
+};
+export const ResumenCargando: Story = {
+  name: 'Resumen: cargando',
+  render: () => (
+    <ConResumen initial={MEDELLIN} defaultDetent="full" estado={{ status: 'loading' }} />
+  ),
+};
+export const ResumenError: Story = {
+  name: 'Resumen: error con «Intentar de nuevo»',
+  render: () => <ConResumen initial={MEDELLIN} defaultDetent="full" estado={{ status: 'error' }} />,
+};
+export const ResumenAnioInvalido: Story = {
+  name: 'Resumen: el enlace pedía un año que no existe',
+  render: () => <ConResumen initial={MEDELLIN} anioInvalido="1999" defaultDetent="full" />,
+};
+export const ResumenAnioParcial: Story = {
+  name: 'Resumen: año cerrado con cifras hasta septiembre (2024)',
+  render: () => <ConResumen initial={MEDELLIN} anio="2024" defaultDetent="full" />,
+};
+
+export const FocusAfterYear: Story = {
+  name: 'Foco: cambiar de año deja el foco en el selector y anuncia «Mostrando 2024»',
+  render: () => <ConResumen initial={MEDELLIN} defaultDetent="full" />,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const select = await canvas.findByRole('combobox', { name: 'Año' });
+    await userEvent.selectOptions(select, '2024');
+    await waitFor(() => expect(select).toHaveFocus());
+    await waitFor(() =>
+      expect(canvasElement.querySelector('[aria-live="polite"]')?.textContent).toBe(
+        'Mostrando 2024',
+      ),
+    );
   },
 };

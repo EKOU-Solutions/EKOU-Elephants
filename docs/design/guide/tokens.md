@@ -12,6 +12,8 @@ Generado por `build.py` a partir de `tokens.json`. No lo edites a mano. Importa 
 | `--el-color-text-muted` | `#52626D` | `#A6B4BF` |
 | `--el-color-line` | `#DCE3E7` | `#2C3A45` |
 | `--el-color-line-strong` | `#192C3C` | `#E6EDF2` |
+| `--el-color-ink-mid` | `#52626D` | `#A6B4BF` |
+| `--el-color-ink-light` | `#85929C` | `#6F7F8B` |
 | `--el-color-control-border` | `#71818F` | `#7D8D99` |
 | `--el-color-action` | `#245B78` | `#8CC4E3` |
 | `--el-color-action-hover` | `#19415A` | `#B3D9EE` |

@@ -1,0 +1,229 @@
+/* Municipal summary (spec 2026-11-22). Tokens only; the components bring their own styles. */
+.resumen {
+  display: grid;
+  gap: var(--el-space-24);
+  color: var(--el-color-text);
+  font-family: var(--el-font-ui);
+}
+
+.resumen p {
+  text-wrap: pretty;
+  margin: 0;
+}
+
+.resumen h2,
+.resumen h3 {
+  margin: 0;
+  line-height: var(--el-line-heading);
+}
+
+.resumen h2 {
+  font-size: var(--el-size-title-mobile);
+}
+
+.resumen h3 {
+  font-size: var(--el-size-body);
+  font-weight: var(--el-weight-emphasis);
+}
+
+.bloque {
+  display: grid;
+  gap: var(--el-space-8);
+  /* The strong rule of the sheet's sections: each block reads as its own part. */
+  border-top: var(--el-rule-strong) solid var(--el-color-line-strong);
+  padding-top: var(--el-space-16);
+  margin-top: var(--el-space-8);
+}
+
+.cifra {
+  font-size: var(--el-size-figure-mobile);
+  font-weight: var(--el-weight-heading);
+  font-variant-numeric: tabular-nums;
+  line-height: var(--el-line-figure);
+  letter-spacing: -0.02em;
+  overflow-wrap: anywhere;
+}
+
+.cifraSecundaria {
+  composes: cifra;
+  font-size: var(--el-size-title);
+}
+
+.pequeno,
+.pie {
+  font-size: var(--el-size-small);
+}
+
+.suave,
+.pie {
+  color: var(--el-color-text-muted);
+}
+
+.leyenda {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--el-space-8);
+  font-size: var(--el-size-body);
+}
+
+.leyenda li {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: var(--el-space-8);
+  align-items: baseline;
+}
+
+.leyenda b {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.glosa {
+  grid-column: 2 / -1;
+  font-size: var(--el-size-small);
+  color: var(--el-color-text-muted);
+}
+
+.barras {
+  display: grid;
+  gap: var(--el-space-12);
+}
+
+.barraConCifra {
+  display: grid;
+  gap: var(--el-space-4);
+}
+
+.barraConCifra > span {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--el-space-8);
+  font-size: var(--el-size-small);
+}
+
+.barraConCifra b {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.sinInfo {
+  display: flex;
+  align-items: center;
+  gap: var(--el-space-12);
+  font-size: var(--el-size-body);
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.cargando {
+  display: grid;
+  gap: var(--el-space-12);
+}
+
+.seccion {
+  display: grid;
+  gap: var(--el-space-8);
+  border-top: 1px solid var(--el-color-line);
+  padding-top: var(--el-space-16);
+  margin-top: var(--el-space-8);
+}
+
+.arrastre {
+  display: grid;
+  gap: var(--el-space-4);
+}
+
+.etapas {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--el-space-4) var(--el-space-12);
+  margin: var(--el-space-4) 0 0;
+  font-size: var(--el-size-body);
+}
+
+.etapas dt {
+  color: var(--el-color-text-muted);
+}
+
+.etapas dd {
+  margin: 0;
+  font-weight: var(--el-weight-emphasis);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.aviso {
+  margin-top: var(--el-space-8);
+}
+
+/* SECOP is not spending: its own tinted block, with the warning before the figures. */
+.bloque:has(.aclaracion) {
+  background: var(--el-color-surface-subtle);
+  padding: var(--el-space-16);
+  border-top: 0;
+  border-radius: var(--el-control-radius);
+}
+
+.aclaracion {
+  font-size: var(--el-size-small);
+  font-weight: var(--el-weight-emphasis);
+}
+
+.filas {
+  display: grid;
+  gap: var(--el-space-12);
+  margin: 0;
+}
+
+.fila {
+  display: grid;
+  gap: var(--el-space-4);
+  border-top: 1px solid var(--el-color-line);
+  padding-top: var(--el-space-12);
+}
+
+.fila > dt {
+  font-weight: var(--el-weight-emphasis);
+}
+
+.fila > dd {
+  margin: 0;
+}
+
+.resumen h4 {
+  margin: 0;
+  font-size: var(--el-size-body);
+  font-weight: var(--el-weight-emphasis);
+}
+
+/* The detail unfolds in place (0fr → 1fr); reduced motion is handled globally. */
+.desplegable {
+  display: grid;
+  grid-template-rows: 0fr;
+  visibility: hidden;
+  transition:
+    grid-template-rows var(--el-duration-base) var(--el-ease-standard),
+    visibility 0s var(--el-duration-base);
+}
+
+.abierto {
+  grid-template-rows: 1fr;
+  visibility: visible;
+  transition:
+    grid-template-rows var(--el-duration-base) var(--el-ease-standard),
+    visibility 0s;
+}
+
+.desplegableInterior {
+  min-height: 0;
+  overflow: hidden;
+}

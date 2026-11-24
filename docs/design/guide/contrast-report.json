@@ -113,6 +113,22 @@
       "passes": true
     },
     {
+      "usage": "Reparto: tinta media",
+      "foreground": "#52626D",
+      "background": "#FFFFFF",
+      "ratio": 6.31,
+      "minimum": 3,
+      "passes": true
+    },
+    {
+      "usage": "Reparto: tinta clara",
+      "foreground": "#85929C",
+      "background": "#FFFFFF",
+      "ratio": 3.19,
+      "minimum": 3,
+      "passes": true
+    },
+    {
       "usage": "Etiqueta riesgo bajo",
       "foreground": "#192C3C",
       "background": "#7FB4D4",
@@ -271,6 +287,22 @@
       "foreground": "#6B7680",
       "background": "#121A21",
       "ratio": 3.79,
+      "minimum": 3,
+      "passes": true
+    },
+    {
+      "usage": "Reparto: tinta media",
+      "foreground": "#A6B4BF",
+      "background": "#121A21",
+      "ratio": 8.28,
+      "minimum": 3,
+      "passes": true
+    },
+    {
+      "usage": "Reparto: tinta clara",
+      "foreground": "#6F7F8B",
+      "background": "#121A21",
+      "ratio": 4.25,
       "minimum": 3,
       "passes": true
     },

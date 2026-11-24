@@ -182,6 +182,11 @@
 
 /* ---- desktop (decision 22, BottomSheet's 1024 px): the sheet is the panel on the right, the search above it ---- */
 @container page (min-width: 1024px) {
+  /* The place's name is the first thing to read in the panel. */
+  .title {
+    font-size: var(--el-size-title);
+  }
+
   .search {
     top: 0;
     left: auto;
@@ -244,4 +249,22 @@
   .prerendered .actions:has(> [data-height-button]:only-child) {
     display: none;
   }
+}
+
+.resumen,
+.resumenAviso {
+  margin-top: var(--el-space-16);
+}
+
+/* The year selector breathes: room under the title and before the figure. */
+.selectorAnio {
+  margin-block: var(--el-space-16);
+}
+
+/* Year selector, then its figure: a strong rule keeps the figure from mixing with the filter. */
+.resumen {
+  display: grid;
+  gap: var(--el-space-16);
+  border-top: var(--el-rule-strong) solid var(--el-color-line-strong);
+  padding-top: var(--el-space-16);
 }

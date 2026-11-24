@@ -45,3 +45,82 @@ models:
                 field: cod_dpto
       - name: contratos
         data_tests: [not_null, mayor_que_cero]
+
+  - name: resumen_gasto_cuipo
+    description: >
+      Gasto público (CUIPO) por territorio, año, vigencia y rubro. Contrato de la API:
+      docs/design/pages/resumen-municipal/contract.md. La ausencia de datos es falta de fila
+      o null, nunca cero.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [nivel, cod_dpto, cod_mpio, anio, vigencia, rubro]
+    columns:
+      - name: nivel
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [municipio, departamento]
+      - name: rubro
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [funcionamiento, deuda, inversion]
+      - name: vigencia
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [1, 2, 3]
+                quote: false
+      - name: cod_dpto
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('stg_divipola')
+                field: cod_dpto
+      - name: cod_mpio
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('stg_divipola')
+                field: cod_mpio
+      - name: anio
+        description: Sin gasto antes de 2023, cuando CUIPO empieza a publicar.
+        data_tests:
+          - not_null
+          - anio_desde_2023
+
+  - name: resumen_municipal
+    description: >
+      Contratos firmados por municipio y año de firma (SECOP), separados del gasto de CUIPO.
+      Solo hay fila donde hay contratos.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [cod_mpio, anio]
+    columns:
+      - name: contratos
+        data_tests: [not_null, mayor_que_cero]
+      - name: valor_contratado
+        description: Null cuando todos los valores del año son atípicos; nunca 0.
+        data_tests:
+          - mayor_que_cero
+
+  - name: resumen_departamento
+    description: Contratos firmados por departamento y año de firma (SECOP), sin gasto.
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [cod_dpto, anio]
+    columns:
+      - name: cod_dpto
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_divipola')
+                field: cod_dpto
+      - name: contratos
+        data_tests: [not_null, mayor_que_cero]

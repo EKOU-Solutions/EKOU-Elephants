@@ -7,6 +7,7 @@ import type {
   MunicipiosDelCorte,
   MunicipioSeleccionado,
 } from '../../domain/mapa';
+import type { ResumenMunicipalDatos } from '../../domain/resumen-municipal';
 import type { ResumenTerritorial } from '../../domain/resumen-territorial';
 
 const params = z.object({
@@ -23,41 +24,62 @@ export interface MapaCasosDeUso {
   listarMunicipios: () => Promise<MunicipiosDelCorte>;
   listarDepartamentos: () => Promise<DepartamentosDelCorte>;
   obtenerMunicipio: (codigo: string) => Promise<MunicipioSeleccionado>;
+  obtenerResumenMunicipal: (codigo: string, anio?: string) => Promise<ResumenMunicipalDatos>;
+  obtenerResumenDepartamental: (codigo: string, anio?: string) => Promise<ResumenMunicipalDatos>;
 }
 
 export function mapaRoutes(casos: MapaCasosDeUso) {
-  return new Hono()
-    .get(
-      '/territorios/:codigo/resumen',
-      zValidator('param', params, (resultado, c) => {
-        if (!resultado.success) return c.json({ error: 'codigo_invalido' }, 400);
-      }),
-      async (c) => c.json(await casos.obtenerResumenTerritorial(c.req.valid('param').codigo)),
-    )
-    .get('/corte', async (c) => {
-      const corte = await casos.obtenerCorte();
-      c.header('Cache-Control', CACHE_CORTE);
-      return c.json(corte);
-    })
-    .get('/municipios', async (c) => {
-      const municipios = await casos.listarMunicipios();
-      c.header('Cache-Control', CACHE_CORTE);
-      return c.json(municipios);
-    })
-    .get('/departamentos', async (c) => {
-      const departamentos = await casos.listarDepartamentos();
-      c.header('Cache-Control', CACHE_CORTE);
-      return c.json(departamentos);
-    })
-    .get(
-      '/municipios/:codigo',
-      zValidator('param', municipioParams, (resultado, c) => {
-        if (!resultado.success) return c.json({ error: 'codigo_invalido' }, 400);
-      }),
-      async (c) => {
-        const municipio = await casos.obtenerMunicipio(c.req.valid('param').codigo);
+  return (
+    new Hono()
+      .get(
+        '/territorios/:codigo/resumen',
+        zValidator('param', params, (resultado, c) => {
+          if (!resultado.success) return c.json({ error: 'codigo_invalido' }, 400);
+        }),
+        async (c) => c.json(await casos.obtenerResumenTerritorial(c.req.valid('param').codigo)),
+      )
+      .get('/corte', async (c) => {
+        const corte = await casos.obtenerCorte();
         c.header('Cache-Control', CACHE_CORTE);
-        return c.json(municipio);
-      },
-    );
+        return c.json(corte);
+      })
+      .get('/municipios', async (c) => {
+        const municipios = await casos.listarMunicipios();
+        c.header('Cache-Control', CACHE_CORTE);
+        return c.json(municipios);
+      })
+      .get('/departamentos', async (c) => {
+        const departamentos = await casos.listarDepartamentos();
+        c.header('Cache-Control', CACHE_CORTE);
+        return c.json(departamentos);
+      })
+      .get(
+        '/municipios/:codigo',
+        zValidator('param', municipioParams, (resultado, c) => {
+          if (!resultado.success) return c.json({ error: 'codigo_invalido' }, 400);
+        }),
+        async (c) => {
+          const municipio = await casos.obtenerMunicipio(c.req.valid('param').codigo);
+          c.header('Cache-Control', CACHE_CORTE);
+          return c.json(municipio);
+        },
+      )
+      // `codigo` is not validated here: a malformed one is simply not found (404), per the contract.
+      .get('/municipios/:codigo/resumen', async (c) => {
+        const resumen = await casos.obtenerResumenMunicipal(
+          c.req.param('codigo'),
+          c.req.query('anio'),
+        );
+        c.header('Cache-Control', CACHE_CORTE);
+        return c.json(resumen);
+      })
+      .get('/departamentos/:codigo/resumen', async (c) => {
+        const resumen = await casos.obtenerResumenDepartamental(
+          c.req.param('codigo'),
+          c.req.query('anio'),
+        );
+        c.header('Cache-Control', CACHE_CORTE);
+        return c.json(resumen);
+      })
+  );
 }

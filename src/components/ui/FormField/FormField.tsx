@@ -35,8 +35,8 @@ type WithLabel = Common & {
  */
 type WithHiddenLabel = Common & {
   hideLabel: true;
-  /** Obligatorio con `hideLabel`: sin etiqueta a la vista, el ícono dice qué es el campo. */
-  icon: ReactNode;
+  /** Sin etiqueta a la vista, un ícono puede decir qué es el campo; sin ícono, el valor elegido ya lo dice (el año junto al título). */
+  icon?: ReactNode;
 };
 
 export type FormFieldProps = WithLabel | WithHiddenLabel;

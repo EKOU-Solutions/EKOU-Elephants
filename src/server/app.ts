@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { secureHeaders } from 'hono/secure-headers';
 import type { AlmacenObjetos } from '../modules/mapa/adapters/worker-datos/mapa.worker-datos';
 import { CorteNoDisponible, MunicipioNoEncontrado } from '../modules/mapa/domain/mapa';
+import { AnioInvalido, DepartamentoNoEncontrado } from '../modules/mapa/domain/resumen-municipal';
 import { TerritorioNoEncontrado } from '../modules/mapa/domain/resumen-territorial';
 import { componerMapa } from './composition/mapa';
 import type { Queryable } from './db';
@@ -30,6 +31,10 @@ export function crearApp(db: Queryable, datos: AlmacenObjetos = sinDatos) {
       return c.json({ error: 'territorio_no_encontrado' }, 404);
     if (err instanceof MunicipioNoEncontrado)
       return c.json({ error: 'municipio_no_encontrado' }, 404);
+    if (err instanceof DepartamentoNoEncontrado)
+      return c.json({ error: 'departamento_no_encontrado' }, 404);
+    if (err instanceof AnioInvalido)
+      return c.json({ error: 'anio_invalido', anios: err.anios }, 400);
     if (err instanceof CorteNoDisponible) {
       console.error('Corte no disponible:', err.message); // keys and reasons only, no data
       return c.json({ error: 'corte_no_disponible' }, 503);

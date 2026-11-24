@@ -212,14 +212,24 @@ async function checkRender(context, axeSource, base, story, theme, width, screen
     });
 
     await page.evaluate(axeSource);
-    const axe = await page.evaluate(
-      (tags) =>
-        globalThis.axe.run('#storybook-root', {
-          runOnly: { type: 'tag', values: tags },
-          resultTypes: ['violations', 'incomplete'],
-        }),
-      AXE_TAGS,
-    );
+    // The Storybook a11y addon runs its own axe on a heavy story; if ours collides with it, wait and retry.
+    let axe;
+    for (let attempt = 1; ; attempt += 1) {
+      try {
+        axe = await page.evaluate(
+          (tags) =>
+            globalThis.axe.run('#storybook-root', {
+              runOnly: { type: 'tag', values: tags },
+              resultTypes: ['violations', 'incomplete'],
+            }),
+          AXE_TAGS,
+        );
+        break;
+      } catch (error) {
+        if (attempt >= 5 || !String(error).includes('Axe is already running')) throw error;
+        await page.waitForTimeout(500 * attempt);
+      }
+    }
     const compact = ({ id, impact, help, nodes }) => ({
       id,
       impact,

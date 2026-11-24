@@ -1,7 +1,6 @@
 .figure {
   border-top: var(--el-rule-strong) solid var(--el-color-line-strong);
   padding-top: 12px;
-  max-width: 340px;
 }
 
 .label {

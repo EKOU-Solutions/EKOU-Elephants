@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Resumen municipal · bocetos</title>
+<link rel="stylesheet" href="../../guide/tokens.css">
+<style>
+  body { margin: 0; padding: 24px 16px 64px; background: var(--el-color-surface, #fff); color: var(--el-color-text, #111); font: 16px/1.4 var(--el-font-body, system-ui, sans-serif); }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  .nota { color: #555; max-width: 70ch; margin: 0 0 24px; }
+  .fila { display: flex; gap: 32px; flex-wrap: wrap; align-items: flex-start; }
+  .opcion { width: 390px; }
+  .opcion > h2 { font-size: 16px; margin: 0 0 8px; }
+  .rec { background: #111; color: #fff; font-size: 12px; padding: 2px 8px; margin-left: 8px; }
+  .marco { width: 390px; box-sizing: border-box; border: 2px solid #999; padding: 16px; background: #fff; }
+  .rot { font-size: 12px; color: #555; margin: 0 0 4px; }
+  .marco h3 { font-size: 22px; margin: 0 0 8px; line-height: 1.2; }
+  .marco h4 { font-size: 14px; margin: 16px 0 6px; text-transform: uppercase; letter-spacing: .04em; color: #444; }
+  .cifra { font-size: 36px; font-weight: 700; line-height: 1.05; }
+  .peq { font-size: 13px; color: #555; }
+  .anios { display: flex; gap: 6px; flex-wrap: wrap; margin: 8px 0 12px; }
+  .anios span { border: 1px solid #888; padding: 8px 10px; min-width: 44px; min-height: 44px; box-sizing: border-box; text-align: center; font-size: 14px; }
+  .anios .on { background: #333; color: #fff; }
+  .anios .off { border-style: dashed; color: #999; }
+  .barra { height: 22px; background: #ddd; margin: 4px 0; position: relative; }
+  .barra i { display: block; height: 100%; background: #666; }
+  .barra.seg { display: flex; }
+  .barra.seg i:nth-child(1) { background: #333; }
+  .barra.seg i:nth-child(2) { background: #777; }
+  .barra.seg i:nth-child(3) { background: #bbb; }
+  .linea { display: flex; justify-content: space-between; gap: 8px; font-size: 14px; padding: 6px 0; border-top: 1px solid #ccc; }
+  .linea b { white-space: nowrap; }
+  .aviso { border-left: 4px solid #666; padding: 4px 10px; margin: 12px 0; font-size: 14px; background: #f3f3f3; }
+  .btn { display: block; border: 1px solid #333; padding: 12px; text-align: center; min-height: 44px; box-sizing: border-box; margin-top: 12px; }
+  ol.orden { font-size: 14px; padding-left: 20px; margin: 8px 0; }
+  .fav { font-size: 14px; margin: 4px 0; }
+</style>
+</head>
+<body>
+<h1>Resumen municipal · tres composiciones</h1>
+<p class="nota">Baja fidelidad, 390 px, escala de grises, cifras reales: San Benito Abad (Sucre), año 2025 completo, CUIPO (Contaduría) con corte al 30 jun 2026 (cifras en millones de pesos; contratado SECOP aún sin medir, aparece como «[pendiente]»). El resumen vive en la ficha del municipio del mapa; estas son las tres formas de contarlo. Marcado con ★ lo recomendado. Elegido: <strong>A · La barra del balance</strong> (2026-11-22, el equipo).</p>
+
+<div class="fila">
+
+<!-- A -->
+<section class="opcion">
+<h2>A · La barra del balance <span class="rec">★ recomendada</span></h2>
+<div class="marco">
+  <p class="rot">Sucre · DANE 70678</p>
+  <h3>San Benito Abad</h3>
+  <div class="anios"><span class="off">2021</span><span class="off">2022</span><span>2023</span><span>2024</span><span class="on">2025</span><span>2026*</span></div>
+  <p class="peq">En 2025 la alcaldía recibió</p>
+  <div class="cifra">$70.684 millones</div>
+  <h4>Y se comprometió a gastar</h4>
+  <div class="cifra" style="font-size:28px">$71.020 millones</div>
+  <div class="barra seg"><i style="width:86%"></i><i style="width:8%"></i><i style="width:6%"></i></div>
+  <div class="linea"><span>■ Inversión (obras, salud, educación)</span><b>86 %</b></div>
+  <div class="linea"><span>■ Pago de deuda</span><b>8 %</b></div>
+  <div class="linea"><span>■ Funcionamiento (nómina, oficinas)</span><b>6 %</b></div>
+  <h4>¿Hasta dónde llegó ese dinero?</h4>
+  <div class="barra"><i style="width:100%"></i></div><div class="linea" style="border:0"><span>Comprometido (contratos y órdenes firmadas)</span><b>71.020</b></div>
+  <div class="barra"><i style="width:90%"></i></div><div class="linea" style="border:0"><span>Por pagar (bienes y servicios ya recibidos)</span><b>63.994</b></div>
+  <div class="barra"><i style="width:88%"></i></div><div class="linea" style="border:0"><span>Pagado</span><b>62.801</b></div>
+  <div class="aviso">Además arrastra de años anteriores: reservas $388 M y cuentas por pagar $1.312 M (pagado $789 M).</div>
+  <div class="btn">Ver cada rubro, tabla y fuentes</div>
+  <h4>Aparte: contratos firmados (SECOP)</h4>
+  <p class="peq">[pendiente] contratos · $[pendiente] M. Es lo prometido en contratos, no lo gastado.</p>
+  <p class="peq">Gasto: CUIPO, corte 30 jun 2026 · Contratos: SECOP II, corte 7 nov 2026</p>
+</div>
+<ol class="orden"><li>Cuánto recibió (cifra grande)</li><li>En qué lo gastó: barra por rubro</li><li>Hasta dónde llegó: comprometido → por pagar → pagado</li></ol>
+<p class="fav"><b>Favorece:</b> es el balance que pidió el equipo, en el orden de una cuenta: entra, se compromete, sale. Se lee de arriba abajo con el dedo y se entiende en una captura.</p>
+<p class="fav"><b>Sacrifica:</b> es largo en celular (se cuenta con la ficha completa); los tres rubros y las tres etapas son seis datos que el primer vistazo no separa.</p>
+<p class="fav"><b>Apuesta fuerte:</b> la barra segmentada de rubros. El resto, sobrio.</p>
+</section>
+
+<!-- B -->
+<section class="opcion">
+<h2>B · Por rubro, cada uno con su avance</h2>
+<div class="marco">
+  <p class="rot">Sucre · DANE 70678</p>
+  <h3>San Benito Abad</h3>
+  <div class="anios"><span class="off">2021</span><span class="off">2022</span><span>2023</span><span>2024</span><span class="on">2025</span><span>2026*</span></div>
+  <p class="peq">2025: recibió $70.684 M · comprometió $71.020 M</p>
+  <h4>Inversión · $60.910 M</h4>
+  <div class="barra seg"><i style="width:87%"></i><i style="width:2%"></i><i style="width:11%"></i></div>
+  <p class="peq">Pagado 53.083 · por pagar 801 · sin obligar 7.026</p>
+  <h4>Pago de deuda · $5.688 M</h4>
+  <div class="barra seg"><i style="width:100%"></i></div>
+  <p class="peq">Pagado 5.688 · todo al día</p>
+  <h4>Funcionamiento · $4.422 M</h4>
+  <div class="barra seg"><i style="width:91%"></i><i style="width:9%"></i></div>
+  <p class="peq">Pagado 4.029 · por pagar 393</p>
+  <div class="aviso">Arrastre de años anteriores: reservas $388 M · cuentas por pagar $1.312 M.</div>
+  <div class="btn">Ver tabla y fuentes</div>
+  <h4>Aparte: contratos firmados</h4>
+  <p class="peq">[pendiente]. Gasto: CUIPO 30 jun 2026 · Contratos: SECOP 7 nov 2026</p>
+</div>
+<ol class="orden"><li>Año y titular de lo recibido</li><li>El rubro más grande (inversión)</li><li>El avance de pago de cada rubro</li></ol>
+<p class="fav"><b>Favorece:</b> responde «¿en qué se gastó?» de frente y deja ver si un rubro va atrasado en pagos.</p>
+<p class="fav"><b>Sacrifica:</b> no hay una sola barra del balance; se pierde la imagen de «entró tanto, salió tanto». Tres barras con tres tramos exigen entender la leyenda.</p>
+</section>
+
+<!-- C -->
+<section class="opcion">
+<h2>C · Una frase, y el detalle debajo</h2>
+<div class="marco">
+  <p class="rot">Sucre · DANE 70678</p>
+  <h3>San Benito Abad</h3>
+  <div class="anios"><span class="off">2021</span><span class="off">2022</span><span>2023</span><span>2024</span><span class="on">2025</span><span>2026*</span></div>
+  <div class="cifra" style="font-size:26px">En 2025 la alcaldía pagó $62.801 millones de los $71.020 millones que se comprometió a gastar.</div>
+  <div class="barra"><i style="width:88%"></i></div>
+  <p class="peq">88 % pagado. Recibió $70.684 millones.</p>
+  <div class="btn">Ver en qué lo gastó</div>
+  <div class="btn">Ver lo que arrastra de años anteriores</div>
+  <div class="btn">Ver tabla y fuentes</div>
+  <h4>Aparte: contratos firmados</h4>
+  <p class="peq">[pendiente]. Gasto: CUIPO 30 jun 2026 · Contratos: SECOP 7 nov 2026</p>
+</div>
+<ol class="orden"><li>La frase con la cifra de lo pagado</li><li>Una sola barra: pagado sobre comprometido</li><li>Tres botones al detalle</li></ol>
+<p class="fav"><b>Favorece:</b> la mejor captura para compartir por WhatsApp: una sola idea, una cifra. Entra en la ficha media.</p>
+<p class="fav"><b>Sacrifica:</b> esconde los rubros y el arrastre detrás de toques; el equipo pidió ver todo el balance, no un resumen. Con 88 % «pagado» suena a buena noticia sin decir en qué.</p>
+</section>
+
+</div>
+</body>
+</html>

@@ -13,3 +13,11 @@ select {{ column_name }}
 from {{ model }}
 where {{ column_name }} <= 0
 {% endtest %}
+
+
+{#- Falla si hay filas de un año anterior a 2023: CUIPO no publica antes. -#}
+{% test anio_desde_2023(model, column_name) %}
+select {{ column_name }}
+from {{ model }}
+where {{ column_name }} < 2023
+{% endtest %}

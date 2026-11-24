@@ -21,6 +21,7 @@ La maqueta no es un archivo de esta carpeta: es la pantalla en Storybook, `Módu
 | Página | Estado | Contrato |
 | --- | --- | --- |
 | [Mapa](map/README.md) | *Aprobada* 2026-11-17 (Aprobación 2 de la experiencia en una sola pantalla: mapa a pantalla completa con ficha deslizable; sin color de riesgo hasta TASK-07) | [contract.md](map/contract.md) |
+| [Resumen municipal](resumen-municipal/README.md) | *Aprobada* 2026-11-22 (gasto público por municipio con selector de año; CUIPO y SECOP separados) | [contract.md](resumen-municipal/contract.md) |
 
 Estados: *Bloqueada: sin contrato* · *Explorando* · *Especificación pendiente de aprobación* · *Maqueta en revisión* · *Aprobada*.
 

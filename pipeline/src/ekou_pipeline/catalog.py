@@ -32,6 +32,16 @@ class DatasetSpec:
     """Particiones ``(nombre, condición SoQL)`` para datasets sin columna de fecha.
     Deben cubrir todo el dataset: se verifica contra ``count(*)`` antes de extraer."""
 
+    period_partition_column: str | None = None
+    """Columna de texto ``AAAAMMDD`` por la que se extrae una partición por cada valor distinto
+    (los informes trimestrales de CUIPO). Solo entran los valores >= ``min_period``."""
+
+    min_period: str | None = None
+
+    row_filter: str | None = None
+    """Condición SoQL que se añade a todas las consultas de la fuente (conteo y páginas): deja
+    en bronze solo las filas que el producto usa, por ejemplo el nivel de cuenta que no duplica."""
+
     description: str = ""
 
     min_rows: int = 0
@@ -43,8 +53,13 @@ class DatasetSpec:
 
     @property
     def schema_fingerprint(self) -> str:
-        """Huella de las columnas: si cambian, las particiones ya extraídas dejan de valer."""
-        return hashlib.sha256(",".join(self.columns).encode()).hexdigest()[:16]
+        """Huella de las columnas y del filtro: si cambian, las particiones extraídas no valen."""
+        base = ",".join(self.columns)
+        if (
+            self.row_filter
+        ):  # sin filtro, la huella no cambia y las particiones en caché siguen valiendo
+            base += f"|{self.row_filter}"
+        return hashlib.sha256(base.encode()).hexdigest()[:16]
 
 
 def _prefix_partitions(column: str, prefix: str) -> tuple[tuple[str, str], ...]:
@@ -203,7 +218,53 @@ DIVIPOLA = DatasetSpec(
     columns=("cod_dpto", "dpto", "cod_mpio", "nom_mpio", "tipo_municipio", "longitud", "latitud"),
 )
 
+# CUIPO (Contaduría, informe trimestral de ejecución presupuestal). Solo la administración central
+# (ámbitos de departamentos, municipios, Bogotá y San Andrés; los descentralizados A442 no se
+# pueden asignar a un territorio) y desde 2023, cuando CUIPO empieza a publicar.
+# Las cuentas son jerárquicas: solo se extrae el nivel que no duplica (docs/datos-gov-co/README.md).
+_CUIPO_AMBITOS = "ambito_codigo in('A438','A439','A440','A441')"
+_CUIPO_DESDE = "20230101"
+
+CUIPO_GASTOS = DatasetSpec(
+    key="cuipo_gastos",
+    min_rows=237_000,  # 2026-11 (desde 2023, con el filtro): 264.254
+    socrata_id="4f7r-epif",
+    description="CUIPO – Ejecución de gastos (compromisos, obligaciones y pagos por rubro)",
+    period_partition_column="periodo",
+    min_period=_CUIPO_DESDE,
+    row_filter=f"{_CUIPO_AMBITOS} AND cuenta in('2','2.1','2.2','2.3')",
+    columns=(
+        "codigo_entidad",
+        "ambito_codigo",
+        "periodo",
+        "cuenta",
+        "cod_vigencia_del_gasto",
+        "compromisos",
+        "obligaciones",
+        "pagos",
+    ),
+)
+
+CUIPO_INGRESOS = DatasetSpec(
+    key="cuipo_ingresos",
+    min_rows=14_000,  # 2026-11 (desde 2023, con el filtro): 15.750
+    socrata_id="9axr-9gnb",
+    description="CUIPO – Ejecución de ingresos (recaudo total)",
+    period_partition_column="periodo",
+    min_period=_CUIPO_DESDE,
+    row_filter=f"{_CUIPO_AMBITOS} AND cuenta = '1'",
+    columns=("codigo_entidad", "ambito_codigo", "periodo", "cuenta", "total_recaudo"),
+)
+
 CATALOG: dict[str, DatasetSpec] = {
     spec.key: spec
-    for spec in (SECOP_CONTRATOS, SECOP_PROCESOS, SECOP_UBICACIONES, SECOP_I, DIVIPOLA)
+    for spec in (
+        SECOP_CONTRATOS,
+        SECOP_PROCESOS,
+        SECOP_UBICACIONES,
+        SECOP_I,
+        DIVIPOLA,
+        CUIPO_GASTOS,
+        CUIPO_INGRESOS,
+    )
 }

@@ -72,3 +72,22 @@
   z-index: 1;
   background: var(--el-color-surface);
 }
+
+/* Collapsed table (collapsedLabel): a native <details>, closed by default. */
+.fold {
+  border-bottom: 1px solid var(--el-color-line);
+}
+
+.foldSummary {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.foldSummary:focus-visible {
+  outline: var(--el-focus-width) solid var(--el-color-focus);
+  outline-offset: var(--el-focus-offset);
+}
