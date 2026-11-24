@@ -56,6 +56,7 @@ Qué cambió frente a la Ronda 05, y por qué:
 | 1.7.0 | 2026-11-22 | Desde el resumen municipal (TASK-10). **`ProgressBar`** pasa de candidato a núcleo y suma dos tonos de tinta (`mid`, `light`) y `separated` (2 px entre tramos) para repartir un total en tres partes, por ejemplo el gasto por rubro; los tonos no se distinguen solos, cada tramo lleva su nombre y su cifra en texto. Sin cambios de tokens ni de dirección visual | Esteban Jimenez |
 | 1.8.0 | 2026-11-23 | Nuevo componente **Tooltip**: nombra lo que señala el puntero, pegado a él (nombre y cifra debajo), solo mouse y `aria-hidden`; se voltea a la izquierda cerca del borde. Lo usa el mapa en lugar del `<title>` nativo de cada territorio (que tardaba y no se podía leer). Sin tokens nuevos | Esteban |
 | 1.9.0 | 2026-11-23 | **Data table** suma `collapsedLabel`: la tabla puede quedar plegada (details nativo, cerrada por defecto, 44 px) para que la lista de departamentos o municipios de la ficha no haga ruido; sigue accesible por teclado. Sin cambios en tokens | Jouler |
+| 1.10.0 | 2026-11-24 | Desde el resumen de gasto (TASK-10), correcciones de la revisión. **`Select`** reenvía `hideLabel` y `fullWidth` a `FormField`, y `hideLabel` ya no exige `icon`: el selector de año va sin etiqueta a la vista (la etiqueta sigue siendo su nombre accesible). Sin cambios en tokens | Jouler |
 
 ## Archivos
 

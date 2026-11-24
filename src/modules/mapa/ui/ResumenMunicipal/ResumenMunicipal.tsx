@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useId, useRef, useState } from 'react';
+import { createContext, useContext, useId, useState } from 'react';
 import { Alert } from '../../../../components/ui/Alert/Alert';
 import { Button } from '../../../../components/ui/Button/Button';
 import { Counter } from '../../../../components/ui/Counter/Counter';
@@ -7,7 +7,6 @@ import { ProgressBar } from '../../../../components/ui/ProgressBar/ProgressBar';
 import { Select } from '../../../../components/ui/Select/Select';
 import styles from './ResumenMunicipal.module.css';
 import {
-  type Desglose,
   escalaComun,
   formatDinero,
   formatFecha,
@@ -19,10 +18,8 @@ import {
   NIVEL,
   motivoSinGasto,
   NOMBRE_RUBRO,
-  ORDEN_BARRA,
   PRIMER_ANIO_CUIPO,
   type ResumenMunicipalDatos,
-  type RubroClave,
   quedaLibre,
   repartoPorRubro,
   superaLoRecibido,
@@ -67,6 +64,7 @@ export function SelectorAnio({
   return (
     <Select
       label="Año"
+      hideLabel
       value={String(anio)}
       onChange={(e) => onAnioChange(Number(e.target.value))}
       options={anios.map((a) => ({
@@ -163,7 +161,7 @@ export function Recibido({ datos, nivel }: { datos: ResumenMunicipalDatos; nivel
       {recibido === null ? (
         <SinInformacion>Sin información</SinInformacion>
       ) : (
-        <p className={styles.cifra}>{formatDinero(recibido)}</p>
+        <p className={styles.cifra}>{formatDinero(recibido, true)}</p>
       )}
       <p className={styles.pequeno}>
         Lo que ingresó a la caja de {NIVEL[nivel].entidad} en el año
@@ -207,9 +205,8 @@ function Listo({
 }) {
   const g = datos.gastoPublico;
   const motivo = motivoSinGasto(datos);
-  const [tabla, setTabla] = useState(detalleAbierto);
-  // Focus goes to the table title only when the person opened it, never on first paint.
-  const [enfocar, setEnfocar] = useState(false);
+  // The detail opens and closes in place: the button stays, focus stays, the page does not jump.
+  const [abierto, setAbierto] = useState(detalleAbierto);
   if (!g && !datos.contratado) {
     const otro = [...anios].reverse().find((a) => a !== datos.anio && a >= PRIMER_ANIO_CUIPO);
     return (
@@ -233,12 +230,8 @@ function Listo({
           datos={datos}
           nivel={nivel}
           g={g}
-          tabla={tabla}
-          enfocar={enfocar}
-          onTabla={() => {
-            setTabla(true);
-            setEnfocar(true);
-          }}
+          abierto={abierto}
+          onAlternar={() => setAbierto((a) => !a)}
         />
       ) : null}
       {motivo ? (
@@ -261,17 +254,16 @@ function Gasto({
   datos,
   nivel,
   g,
-  tabla,
-  enfocar,
-  onTabla,
+  abierto,
+  onAlternar,
 }: {
   datos: ResumenMunicipalDatos;
   nivel: Nivel;
   g: GastoPublico;
-  tabla: boolean;
-  enfocar: boolean;
-  onTabla: () => void;
+  abierto: boolean;
+  onAlternar: () => void;
 }) {
+  const idDetalle = useId();
   const enPanel = useContext(EnPanel);
   // With what was received known, the bar is that 100 % and what is left uncommitted is its empty part.
   const libre = quedaLibre(g);
@@ -310,7 +302,7 @@ function Gasto({
       )}
       <div className={styles.bloque}>
         <h3>Y se comprometió a gastar</h3>
-        <p className={styles.cifraSecundaria}>{formatDinero(g.total.comprometido)}</p>
+        <p className={styles.cifraSecundaria}>{formatDinero(g.total.comprometido, true)}</p>
         <ProgressBar
           size="thick"
           separated
@@ -357,27 +349,59 @@ function Gasto({
           </div>
         ) : null}
       </div>
-      {tabla ? (
-        <>
+      <Button
+        variant="secondary"
+        label={abierto ? 'Ver menos' : 'Ver hasta dónde llegó el dinero'}
+        onClick={onAlternar}
+        aria-expanded={abierto}
+        aria-controls={idDetalle}
+      />
+      <div className={abierto ? `${styles.desplegable} ${styles.abierto}` : styles.desplegable}>
+        <div id={idDetalle} className={styles.desplegableInterior} inert={!abierto}>
           <Recorrido g={g} anio={datos.anio} escala={escala} etapas={etapas} />
-          <Detalle g={g} anio={datos.anio} enfocar={enfocar} />
-        </>
-      ) : (
-        <Button
-          variant="secondary"
-          label="Ver hasta dónde llegó el dinero, cada rubro y fuentes"
-          onClick={onTabla}
-        />
-      )}
+        </div>
+      </div>
     </>
   );
 }
 
 type EtapaFila = { clave: string; nombre: string; glosa: string; valor: number };
 
+/** The three stages as bars on one scale; the plain-words gloss only where asked (once is enough). */
+function BarrasEtapas({
+  etapas,
+  escala,
+  conGlosa,
+}: {
+  etapas: readonly EtapaFila[];
+  escala: number;
+  conGlosa: boolean;
+}) {
+  return (
+    <div className={styles.barras}>
+      {etapas.map((et) => (
+        <div key={et.clave} className={styles.barraConCifra}>
+          <span>
+            <span>{et.nombre}</span>
+            <b>{formatDinero(et.valor)}</b>
+          </span>
+          {conGlosa ? (
+            <span className={`${styles.pequeno} ${styles.suave}`}>{et.glosa}</span>
+          ) : null}
+          <ProgressBar
+            max={escala}
+            segments={[{ value: et.valor, tone: 'ink' }]}
+            label={`${et.nombre}: ${formatDinero(et.valor)}`}
+          />
+        </div>
+      ))}
+    </div>
+  );
+}
+
 /**
  * Only when the person asks for detail: how far the money went, in three clearly separated parts
- * (this year, reservas, cuentas por pagar), each said in one plain sentence.
+ * (this year, reservas, cuentas por pagar), each said in one plain sentence and drawn as bars.
  */
 function Recorrido({
   g,
@@ -411,30 +435,14 @@ function Recorrido({
       <h3>¿Hasta dónde llegó ese dinero?</h3>
       <p className={`${styles.pequeno} ${styles.suave}`}>
         Cada peso pasa por tres pasos: se compromete (se firma), se recibe (llega el bien o el
-        servicio) y se paga. Abajo, el gasto del año y lo que viene de años anteriores, por
-        separado.
+        servicio) y se paga.
       </p>
       <div className={styles.seccion}>
         <h4>Gasto de {anio}</h4>
         <p className={`${styles.pequeno} ${styles.suave}`}>
           Lo que se comprometió, recibió y pagó con el presupuesto de este año.
         </p>
-        <div className={styles.barras}>
-          {etapas.map((et) => (
-            <div key={et.clave} className={styles.barraConCifra}>
-              <span>
-                <span>{et.nombre}</span>
-                <b>{formatDinero(et.valor)}</b>
-              </span>
-              <span className={`${styles.pequeno} ${styles.suave}`}>{et.glosa}</span>
-              <ProgressBar
-                max={escala}
-                segments={[{ value: et.valor, tone: 'ink' }]}
-                label={`${et.nombre}: ${formatDinero(et.valor)}`}
-              />
-            </div>
-          ))}
-        </div>
+        <BarrasEtapas etapas={etapas} escala={escala} conGlosa />
       </div>
       {anteriores.map((b) => (
         <div key={b.id} className={styles.seccion}>
@@ -443,88 +451,17 @@ function Recorrido({
           {b.d === null ? (
             <p>No reportó</p>
           ) : (
-            <dl className={styles.etapas}>
-              <dt>Comprometido</dt>
-              <dd>{formatDinero(b.d.total.comprometido)}</dd>
-              <dt>Recibido</dt>
-              <dd>{formatDinero(b.d.total.obligado)}</dd>
-              <dt>Pagado</dt>
-              <dd>{formatDinero(b.d.total.pagado)}</dd>
-            </dl>
+            <BarrasEtapas
+              etapas={[
+                { clave: 'c', nombre: 'Comprometido', glosa: '', valor: b.d.total.comprometido },
+                { clave: 'o', nombre: 'Recibido', glosa: '', valor: b.d.total.obligado },
+                { clave: 'p', nombre: 'Pagado', glosa: '', valor: b.d.total.pagado },
+              ]}
+              escala={escalaComun(b.d.total)}
+              conGlosa={false}
+            />
           )}
         </div>
-      ))}
-    </div>
-  );
-}
-
-type Etapas = { comprometido: number; obligado: number; pagado: number };
-
-/** One rubro: what it is, then its three stages as lines. A rubro with no money says so in one line. */
-function FilaRubro({ clave, etapas }: { clave: RubroClave; etapas: Etapas | null }) {
-  const sinGasto =
-    etapas !== null && etapas.comprometido === 0 && etapas.obligado === 0 && etapas.pagado === 0;
-  return (
-    <div className={styles.fila}>
-      <dt>{NOMBRE_RUBRO[clave].nombre}</dt>
-      <dd className={`${styles.pequeno} ${styles.suave}`}>{NOMBRE_RUBRO[clave].glosa}</dd>
-      <dd>
-        {etapas === null ? (
-          <span className={styles.suave}>Sin información</span>
-        ) : sinGasto ? (
-          <span className={styles.suave}>Sin gasto en este rubro</span>
-        ) : (
-          <dl className={styles.etapas}>
-            <dt>Comprometido</dt>
-            <dd>{formatDinero(etapas.comprometido)}</dd>
-            <dt>Recibido</dt>
-            <dd>{formatDinero(etapas.obligado)}</dd>
-            <dt>Pagado</dt>
-            <dd>{formatDinero(etapas.pagado)}</dd>
-          </dl>
-        )}
-      </dd>
-    </div>
-  );
-}
-
-/** The same three parts, now rubro by rubro. Focus lands on the title when the person opened it. */
-function Detalle({ g, anio, enfocar }: { g: GastoPublico; anio: number; enfocar: boolean }) {
-  const titulo = useRef<HTMLHeadingElement>(null);
-  useEffect(() => {
-    if (enfocar) titulo.current?.focus();
-  }, [enfocar]);
-  const bloques: { id: string; nombre: string; d: Desglose | null }[] = [
-    { id: 'actual', nombre: `Gasto de ${anio}`, d: { rubros: g.rubros, total: g.total } },
-    { id: 'reservas', nombre: 'Reservas', d: g.reservas },
-    { id: 'cuentas', nombre: 'Cuentas por pagar', d: g.cuentasPorPagar },
-  ];
-  return (
-    <div className={styles.bloque}>
-      <h3 tabIndex={-1} ref={titulo}>
-        Y en qué se gastó, rubro por rubro
-      </h3>
-      <p className={`${styles.pequeno} ${styles.suave}`}>
-        Cada parte de arriba, repartida en obras y servicios (inversión), deuda y gastos de
-        funcionamiento. Cifras en millones de pesos.
-      </p>
-      {bloques.map((b) => (
-        <section key={b.id} className={styles.seccion} aria-label={`${b.nombre}, por rubro`}>
-          <h4>{b.nombre}</h4>
-          {b.d === null ? (
-            <p>No reportó</p>
-          ) : (
-            <dl className={styles.filas}>
-              {ORDEN_BARRA.map((clave) => (
-                <FilaRubro
-                  key={clave}
-                  clave={clave}
-                  etapas={b.d?.rubros.find((r) => r.clave === clave)?.etapas ?? null}
-                />
-              ))}
-            </dl>
-          )}
-        </section>
       ))}
     </div>
   );

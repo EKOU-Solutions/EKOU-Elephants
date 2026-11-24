@@ -29,8 +29,10 @@
 .bloque {
   display: grid;
   gap: var(--el-space-8);
-  border-top: 1px solid var(--el-color-line);
+  /* The strong rule of the sheet's sections: each block reads as its own part. */
+  border-top: var(--el-rule-strong) solid var(--el-color-line-strong);
   padding-top: var(--el-space-16);
+  margin-top: var(--el-space-8);
 }
 
 .cifra {
@@ -201,4 +203,27 @@
   margin: 0;
   font-size: var(--el-size-body);
   font-weight: var(--el-weight-emphasis);
+}
+
+/* The detail unfolds in place (0fr → 1fr); reduced motion is handled globally. */
+.desplegable {
+  display: grid;
+  grid-template-rows: 0fr;
+  visibility: hidden;
+  transition:
+    grid-template-rows var(--el-duration-base) var(--el-ease-standard),
+    visibility 0s var(--el-duration-base);
+}
+
+.abierto {
+  grid-template-rows: 1fr;
+  visibility: visible;
+  transition:
+    grid-template-rows var(--el-duration-base) var(--el-ease-standard),
+    visibility 0s;
+}
+
+.desplegableInterior {
+  min-height: 0;
+  overflow: hidden;
 }

@@ -261,8 +261,10 @@
   margin-block: var(--el-space-16);
 }
 
-/* Year selector, then its figure. */
+/* Year selector, then its figure: a strong rule keeps the figure from mixing with the filter. */
 .resumen {
   display: grid;
   gap: var(--el-space-16);
+  border-top: var(--el-rule-strong) solid var(--el-color-line-strong);
+  padding-top: var(--el-space-16);
 }

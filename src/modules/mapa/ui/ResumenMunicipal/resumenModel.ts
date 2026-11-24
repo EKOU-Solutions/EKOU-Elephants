@@ -39,15 +39,16 @@ export const LLAVE_RUBRO = {
 } as const;
 
 /** Whole pesos → «$70.684 millones», «$11,0 billones»; never rounds a small amount to «0 millones». */
-export function formatDinero(cop: number): string {
+export function formatDinero(cop: number, dePesos = false): string {
+  const unidad = dePesos ? ' de pesos' : '';
   if (cop >= 1e12) {
     const n = (cop / 1e12).toLocaleString('es-CO', {
       minimumFractionDigits: 1,
       maximumFractionDigits: 1,
     });
-    return `$${n} ${n === '1,0' ? 'billón' : 'billones'}`;
+    return `$${n} ${n === '1,0' ? 'billón' : 'billones'}${unidad}`;
   }
-  if (cop >= 1e6) return `$${formatNumber(cop / 1e6, 0)} millones`;
+  if (cop >= 1e6) return `$${formatNumber(cop / 1e6, 0)} millones${unidad}`;
   return `$${formatNumber(cop, 0)}`;
 }
 
